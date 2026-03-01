@@ -3,12 +3,21 @@ export interface Vector2 {
   y: number;
 }
 
-export interface GameState {
-  paused: boolean;
+export interface GameObject {
+  lane: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
+export type GameStatus = "playing" | "gameover";
+
 export type UpdateFn = (dt: number, input: InputState) => void;
-export type RenderFn = (ctx: CanvasRenderingContext2D, width: number, height: number) => void;
+export type RenderFn = (
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+) => void;
 
 export interface InputState {
   keys: ReadonlySet<string>;
