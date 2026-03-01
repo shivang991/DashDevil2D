@@ -1,15 +1,13 @@
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { useGameCanvas } from "@/hooks/useGameCanvas";
 import {
   drawRoad,
   drawCar,
   drawCoin,
   drawObstacle,
-  drawHUD,
   drawGameOver,
 } from "@/game/renderer";
 import { GameStateManager } from "@/game/state";
-import { Button } from "@/components/ui/button";
 import type { UpdateFn, RenderFn } from "@/game/types";
 
 const COIN_SIZE = 28;
@@ -36,12 +34,29 @@ function createUpdate(state: GameStateManager): UpdateFn {
       }
     }
 
+    // ── Smooth lane lerp ──
+    const diff = state.currentLane - state.visualLane;
+    state.visualLane += diff * Math.min(state.laneLerpSpeed * dt, 1);
+
+    // ── Accelerate ──
+    state.accelerating = input.isKeyDown("ArrowUp") || input.isKeyDown("w");
+
+    const targetCarY = state.accelerating
+      ? state.carYBase - state.accelCarOffset
+      : state.carYBase;
+    const carDiff = targetCarY - state.carY;
+    state.carY += carDiff * Math.min(state.accelLerpSpeed * dt, 1);
+
+    const effectiveSpeed = state.accelerating
+      ? state.roadSpeed * state.accelSpeedMultiplier
+      : state.roadSpeed;
+
     // ── Scroll road ──
-    state.roadOffset += state.roadSpeed * dt;
+    state.roadOffset += effectiveSpeed * dt;
 
     // ── Move objects downward ──
-    for (const obj of state.coins) obj.y += state.roadSpeed * dt;
-    for (const obj of state.obstacles) obj.y += state.roadSpeed * dt;
+    for (const obj of state.coins) obj.y += effectiveSpeed * dt;
+    for (const obj of state.obstacles) obj.y += effectiveSpeed * dt;
 
     // ── Spawn timer ──
     state.spawnTimer += dt;
@@ -78,39 +93,96 @@ function createUpdate(state: GameStateManager): UpdateFn {
       );
     }
 
-    // ── Collision detection (lane + Y overlap) ──
+    // ── Hit effect timers ──
+    if (state.invincibleTimer > 0) {
+      state.invincibleTimer -= dt;
+      // Blink: divide invincibility into segments, toggle visibility
+      const blinkPeriod = state.invincibleDuration / (state.blinkCount * 2);
+      state.blinkTimer += dt;
+      if (state.blinkTimer >= blinkPeriod) {
+        state.blinkTimer -= blinkPeriod;
+        state.carVisible = !state.carVisible;
+      }
+      if (state.invincibleTimer <= 0) {
+        state.invincibleTimer = 0;
+        state.carVisible = true;
+      }
+    }
+
+    if (state.shakeTimer > 0) {
+      state.shakeTimer -= dt;
+      const t = state.shakeTimer / state.shakeDuration; // 1→0
+      const intensity = state.shakeIntensity * t;
+      state.shakeOffsetX = (Math.random() * 2 - 1) * intensity;
+      state.shakeOffsetY = (Math.random() * 2 - 1) * intensity;
+      if (state.shakeTimer <= 0) {
+        state.shakeTimer = 0;
+        state.shakeOffsetX = 0;
+        state.shakeOffsetY = 0;
+      }
+    }
+
+    // ── Collision detection (AABB on both axes) ──
+    const w = state.canvasWidth;
+    if (w === 0) return; // canvas not ready yet
+
+    const carCx = state.laneX(state.visualLane, w);
+    const carLeft = carCx - state.carWidth / 2;
+    const carRight = carCx + state.carWidth / 2;
     const carTop = state.carY;
     const carBottom = state.carY + state.carHeight;
 
     state.coins = state.coins.filter((coin) => {
-      if (coin.lane === state.currentLane) {
-        const objTop = coin.y;
-        const objBottom = coin.y + coin.height;
-        if (objBottom >= carTop && objTop <= carBottom) {
-          state.score += 10;
-          return false;
-        }
+      const objCx = state.laneX(coin.lane, w);
+      const objLeft = objCx - coin.width / 2;
+      const objRight = objCx + coin.width / 2;
+      const objTop = coin.y;
+      const objBottom = coin.y + coin.height;
+
+      const overlapsX = carRight > objLeft && carLeft < objRight;
+      const overlapsY = carBottom > objTop && carTop < objBottom;
+
+      if (overlapsX && overlapsY) {
+        state.score += 10;
+        return false;
       }
       return true;
     });
 
     state.obstacles = state.obstacles.filter((obs) => {
-      if (obs.lane === state.currentLane) {
-        const objTop = obs.y;
-        const objBottom = obs.y + obs.height;
-        if (objBottom >= carTop && objTop <= carBottom) {
-          state.health--;
-          if (state.health <= 0) {
-            state.status = "gameover";
-          }
-          return false;
+      const objCx = state.laneX(obs.lane, w);
+      const objLeft = objCx - obs.width / 2;
+      const objRight = objCx + obs.width / 2;
+      const objTop = obs.y;
+      const objBottom = obs.y + obs.height;
+
+      const overlapsX = carRight > objLeft && carLeft < objRight;
+      const overlapsY = carBottom > objTop && carTop < objBottom;
+
+      if (overlapsX && overlapsY) {
+        // Skip damage if invincible, but still remove the obstacle
+        if (state.invincibleTimer > 0) return false;
+
+        state.health--;
+        // Trigger hit effects
+        state.invincibleTimer = state.invincibleDuration;
+        state.blinkTimer = 0;
+        state.carVisible = true;
+        state.shakeTimer = state.shakeDuration;
+
+        if (state.health <= 0) {
+          state.status = "gameover";
+          state.invincibleTimer = 0;
+          state.carVisible = true;
+          state.shakeOffsetX = 0;
+          state.shakeOffsetY = 0;
         }
+        return false;
       }
       return true;
     });
 
     // ── Remove off-screen objects ──
-    // We use a generous bottom bound; actual canvas height checked in render
     state.coins = state.coins.filter((c) => c.y < 2000);
     state.obstacles = state.obstacles.filter((o) => o.y < 2000);
   };
@@ -118,27 +190,38 @@ function createUpdate(state: GameStateManager): UpdateFn {
 
 function createRender(state: GameStateManager): RenderFn {
   return (ctx, width, height) => {
-    // Initialize carY on first render if not set
-    if (state.carY === 0) {
-      state.carY = height - state.carHeight - 40;
+    state.canvasWidth = width;
+    if (state.carYBase === 0) {
+      state.carYBase = height - state.carHeight - 40;
+      state.carY = state.carYBase;
+    }
+
+    // Apply screen shake
+    const shaking = state.shakeOffsetX !== 0 || state.shakeOffsetY !== 0;
+    if (shaking) {
+      ctx.save();
+      ctx.translate(state.shakeOffsetX, state.shakeOffsetY);
     }
 
     drawRoad(ctx, state, width, height);
 
-    // Draw coins
     for (const coin of state.coins) {
       const cx = state.laneX(coin.lane, width);
-      drawCoin(ctx, state, cx, coin.y, coin.width);
+      drawCoin(ctx, cx, coin.y, coin.width);
     }
 
-    // Draw obstacles
     for (const obs of state.obstacles) {
       const ox = state.laneX(obs.lane, width);
-      drawObstacle(ctx, state, ox, obs.y, obs.width, obs.height);
+      drawObstacle(ctx, ox, obs.y, obs.width, obs.height);
     }
 
-    drawCar(ctx, state, width);
-    drawHUD(ctx, state, width);
+    if (state.carVisible) {
+      drawCar(ctx, state, width);
+    }
+
+    if (shaking) {
+      ctx.restore();
+    }
 
     if (state.status === "gameover") {
       drawGameOver(ctx, state, width, height);
@@ -146,17 +229,26 @@ function createRender(state: GameStateManager): RenderFn {
   };
 }
 
+const MAX_HEALTH = 4;
+
 export function GameScreen() {
-  const stateRef = useRef(new GameStateManager());
+  const stateRef = useRef<GameStateManager | null>(null);
+  if (stateRef.current === null) {
+    stateRef.current = new GameStateManager();
+  }
   const state = stateRef.current;
 
   const [paused, setPaused] = useState(false);
   const [gameOver, setGameOver] = useState(false);
+  const [score, setScore] = useState(0);
+  const [health, setHealth] = useState(MAX_HEALTH);
 
   const update = useCallback<UpdateFn>(
     (dt, input) => {
       createUpdate(state)(dt, input);
-      // Sync React state for overlay
+      // Sync React state for UI
+      setScore(state.score);
+      setHealth(state.health);
       if (state.status === "gameover" && !gameOver) {
         setGameOver(true);
       }
@@ -171,54 +263,88 @@ export function GameScreen() {
 
   const { canvasRef, togglePause, engineRef } = useGameCanvas(update, render);
 
-  const handlePause = () => {
-    if (state.status === "gameover") return;
-    togglePause();
-    setPaused((p) => !p);
-  };
-
-  const handleRestart = () => {
+  const handleRestart = useCallback(() => {
     const canvas = canvasRef.current;
     state.reset(canvas ? canvas.height : 600);
     setGameOver(false);
     setPaused(false);
-    // Make sure engine is running
+    setScore(0);
+    setHealth(MAX_HEALTH);
     if (engineRef.current?.paused) {
       engineRef.current.togglePause();
     }
-  };
+  }, [state, canvasRef, engineRef]);
+
+  const handleTogglePause = useCallback(() => {
+    if (state.status === "gameover") return;
+    togglePause();
+    setPaused((p) => !p);
+  }, [state, togglePause]);
+
+  // Keyboard controls
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === " ") {
+        e.preventDefault();
+        handleTogglePause();
+      }
+      if (e.key === "Enter" && gameOver) {
+        e.preventDefault();
+        handleRestart();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleTogglePause, handleRestart, gameOver]);
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black">
-      <canvas ref={canvasRef} className="block w-full h-full" />
-
-      {/* Pause button (hidden during game over) */}
-      {!gameOver && (
-        <div className="absolute top-4 right-4">
-          <Button variant="secondary" onClick={handlePause}>
-            {paused ? "Resume" : "Pause"}
-          </Button>
+    <div className="flex flex-col w-screen h-screen overflow-hidden bg-neutral-950">
+      {/* ── Top HUD bar ── */}
+      <div className="flex items-center justify-between px-6 py-3 shrink-0">
+        {/* Left side */}
+        <div className="flex flex-col gap-1">
+          <h1 className="text-white text-xl font-bold tracking-wide">
+            Branding
+          </h1>
+          <p className="text-neutral-400 text-sm">
+            Accelerating! Hit [Space] to pause
+          </p>
         </div>
-      )}
 
-      {/* Pause overlay */}
-      {paused && !gameOver && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <p className="text-white text-2xl font-bold">PAUSED</p>
-        </div>
-      )}
-
-      {/* Game over overlay */}
-      {gameOver && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-6">
-          {/* The canvas already draws the dim overlay + text, so just add the button */}
-          <div className="mt-24">
-            <Button size="lg" onClick={handleRestart}>
-              Restart
-            </Button>
+        {/* Right side */}
+        <div className="flex flex-col items-end gap-1">
+          {/* Health hearts */}
+          <div className="flex gap-2">
+            {Array.from({ length: MAX_HEALTH }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-6 h-6 rounded-full border-2 ${
+                  i < health
+                    ? "bg-red-500 border-red-400"
+                    : "bg-transparent border-neutral-600"
+                }`}
+              />
+            ))}
           </div>
+
+          {/* Score */}
+          <p className="text-white text-sm font-mono">Score: {score}</p>
         </div>
-      )}
+      </div>
+
+      {/* ── Game canvas ── */}
+      <div className="flex-1 min-h-0 px-4 pb-4">
+        <div className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700">
+          <canvas ref={canvasRef} className="block w-full h-full" />
+
+          {/* Pause overlay */}
+          {paused && !gameOver && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+              <p className="text-white text-2xl font-bold">PAUSED</p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

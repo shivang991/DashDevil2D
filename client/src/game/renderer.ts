@@ -69,7 +69,7 @@ export function drawRoad(
   ctx.fillStyle = "#3a3a3a";
   ctx.fillRect(roadLeft, 0, roadWidth, height);
 
-  // Road edges (white solid lines)
+  // Road edges
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 3;
   ctx.beginPath();
@@ -81,22 +81,21 @@ export function drawRoad(
   ctx.lineTo(roadLeft + roadWidth, height);
   ctx.stroke();
 
-  // Lane dividers (dashed, animated)
+  // Lane dividers — thick solid rectangles scrolling downward
   const laneWidth = roadWidth / state.laneCount;
-  ctx.strokeStyle = "#cccccc";
-  ctx.lineWidth = 2;
-  ctx.setLineDash([30, 20]);
-  ctx.lineDashOffset = -state.roadOffset;
+  const dividerW = 16;
+  const segmentH = 40;
+  const gapH = 20;
+  const period = segmentH + gapH;
+  const offset = state.roadOffset % period;
 
+  ctx.fillStyle = "#cccccc";
   for (let i = 1; i < state.laneCount; i++) {
-    const x = roadLeft + laneWidth * i;
-    ctx.beginPath();
-    ctx.moveTo(x, 0);
-    ctx.lineTo(x, height);
-    ctx.stroke();
+    const x = roadLeft + laneWidth * i - dividerW / 2;
+    for (let y = -period + offset; y < height; y += period) {
+      ctx.fillRect(x, y, dividerW, segmentH);
+    }
   }
-
-  ctx.setLineDash([]);
 }
 
 export function drawCar(
@@ -104,110 +103,39 @@ export function drawCar(
   state: GameStateManager,
   width: number,
 ) {
-  const cx = state.laneX(state.currentLane, width);
+  const cx = state.laneX(state.visualLane, width);
   const x = cx - state.carWidth / 2;
   const y = state.carY;
-  const w = state.carWidth;
-  const h = state.carHeight;
 
-  // Car body
+  // Simple rectangle — will be replaced with sprite
   ctx.fillStyle = "#2196f3";
-  ctx.beginPath();
-  ctx.roundRect(x, y, w, h, 6);
-  ctx.fill();
-
-  // Windshield
-  ctx.fillStyle = "#90caf9";
-  ctx.fillRect(x + 8, y + 12, w - 16, 18);
-
-  // Rear window
-  ctx.fillStyle = "#90caf9";
-  ctx.fillRect(x + 10, y + h - 28, w - 20, 14);
-
-  // Wheels
-  ctx.fillStyle = "#222";
-  ctx.fillRect(x - 4, y + 10, 6, 16);
-  ctx.fillRect(x + w - 2, y + 10, 6, 16);
-  ctx.fillRect(x - 4, y + h - 26, 6, 16);
-  ctx.fillRect(x + w - 2, y + h - 26, 6, 16);
+  ctx.fillRect(x, y, state.carWidth, state.carHeight);
 }
 
 export function drawCoin(
   ctx: CanvasRenderingContext2D,
-  state: GameStateManager,
   coinX: number,
   coinY: number,
-  coinSize: number,
+  size: number,
 ) {
-  void state; // available for future use
-  const radius = coinSize / 2;
-
-  // Outer circle
+  // Simple yellow circle
+  const radius = size / 2;
   ctx.fillStyle = "#ffd700";
   ctx.beginPath();
   ctx.arc(coinX, coinY + radius, radius, 0, Math.PI * 2);
   ctx.fill();
-
-  // Inner dollar sign
-  ctx.fillStyle = "#b8860b";
-  ctx.font = `bold ${Math.floor(coinSize * 0.6)}px monospace`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("$", coinX, coinY + radius);
-  ctx.textAlign = "start";
-  ctx.textBaseline = "alphabetic";
 }
 
 export function drawObstacle(
   ctx: CanvasRenderingContext2D,
-  _state: GameStateManager,
   ox: number,
   oy: number,
   ow: number,
   oh: number,
 ) {
-  // Red barrier / crate
+  // Simple red rectangle
   ctx.fillStyle = "#e53935";
-  ctx.beginPath();
-  ctx.roundRect(ox - ow / 2, oy, ow, oh, 4);
-  ctx.fill();
-
-  // X marking
-  ctx.strokeStyle = "#ffcdd2";
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(ox - ow / 2 + 6, oy + 6);
-  ctx.lineTo(ox + ow / 2 - 6, oy + oh - 6);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(ox + ow / 2 - 6, oy + 6);
-  ctx.lineTo(ox - ow / 2 + 6, oy + oh - 6);
-  ctx.stroke();
-}
-
-export function drawHUD(
-  ctx: CanvasRenderingContext2D,
-  state: GameStateManager,
-  width: number,
-) {
-  // Score
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "bold 20px monospace";
-  ctx.fillText(`Score: ${state.score}`, 16, 32);
-
-  // Health hearts
-  const heartSize = 22;
-  const heartGap = 6;
-  const totalWidth =
-    state.maxHealth * heartSize + (state.maxHealth - 1) * heartGap;
-  const startX = width - totalWidth - 16;
-
-  for (let i = 0; i < state.maxHealth; i++) {
-    const hx = startX + i * (heartSize + heartGap);
-    ctx.font = `${heartSize}px serif`;
-    ctx.fillStyle = i < state.health ? "#e53935" : "#555";
-    ctx.fillText("♥", hx, 34);
-  }
+  ctx.fillRect(ox - ow / 2, oy, ow, oh);
 }
 
 export function drawGameOver(
@@ -230,6 +158,11 @@ export function drawGameOver(
   ctx.fillStyle = "#ffffff";
   ctx.font = "24px monospace";
   ctx.fillText(`Score: ${state.score}`, width / 2, height / 2 + 20);
+
+  // Restart hint
+  ctx.fillStyle = "#aaa";
+  ctx.font = "16px monospace";
+  ctx.fillText("Press [Enter] to restart", width / 2, height / 2 + 60);
 
   ctx.textAlign = "start";
 }
