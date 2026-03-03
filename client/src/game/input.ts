@@ -19,6 +19,14 @@ export class InputManager implements InputState {
     this._keys.delete(e.key);
   };
 
+  simulateKeyDown(key: string) {
+    this._keys.add(key);
+  }
+
+  simulateKeyUp(key: string) {
+    this._keys.delete(key);
+  }
+
   attach(target: Window = window) {
     target.addEventListener("keydown", this.handleKeyDown);
     target.addEventListener("keyup", this.handleKeyUp);

@@ -8,6 +8,7 @@ import {
   drawGameOver,
 } from "@/game/renderer";
 import { GameStateManager } from "@/game/state";
+import { Joystick } from "@/components/Joystick";
 import type { UpdateFn, RenderFn } from "@/game/types";
 
 const COIN_SIZE = 28;
@@ -191,6 +192,8 @@ function createUpdate(state: GameStateManager): UpdateFn {
 function createRender(state: GameStateManager): RenderFn {
   return (ctx, width, height) => {
     state.canvasWidth = width;
+    // Full-width road on small screens (no grass), narrower on larger
+    state.roadWidthRatio = width <= 320 ? 1.0 : 0.6;
     if (state.carYBase === 0) {
       state.carYBase = height - state.carHeight - 40;
       state.carY = state.carYBase;
@@ -297,52 +300,75 @@ export function GameScreen() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleTogglePause, handleRestart, gameOver]);
 
-  return (
-    <div className="flex flex-col w-screen h-screen overflow-hidden bg-neutral-950">
-      {/* ── Top HUD bar ── */}
-      <div className="flex items-center justify-between px-6 py-3 shrink-0">
-        {/* Left side */}
-        <div className="flex flex-col gap-1">
-          <h1 className="text-white text-xl font-bold tracking-wide">
-            Branding
-          </h1>
-          <p className="text-neutral-400 text-sm">
-            Accelerating! Hit [Space] to pause
-          </p>
-        </div>
+  const handleJoystick = useCallback(
+    (keys: { left: boolean; up: boolean; right: boolean }) => {
+      const input = engineRef.current?.input;
+      if (!input) return;
+      if (keys.left) input.simulateKeyDown("ArrowLeft");
+      else input.simulateKeyUp("ArrowLeft");
+      if (keys.up) input.simulateKeyDown("ArrowUp");
+      else input.simulateKeyUp("ArrowUp");
+      if (keys.right) input.simulateKeyDown("ArrowRight");
+      else input.simulateKeyUp("ArrowRight");
+    },
+    [engineRef],
+  );
 
-        {/* Right side */}
-        <div className="flex flex-col items-end gap-1">
-          {/* Health hearts */}
-          <div className="flex gap-2">
-            {Array.from({ length: MAX_HEALTH }).map((_, i) => (
-              <div
-                key={i}
-                className={`w-6 h-6 rounded-full border-2 ${
-                  i < health
-                    ? "bg-red-500 border-red-400"
-                    : "bg-transparent border-neutral-600"
-                }`}
-              />
-            ))}
+  return (
+    <div className="flex items-center justify-center w-screen h-screen bg-neutral-950 overflow-hidden">
+      <div className="flex flex-col w-[320px] sm:w-160 h-screen max-h-screen overflow-hidden">
+        {/* ── Top HUD bar ── */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 shrink-0">
+          {/* Left side */}
+          <div className="flex flex-col gap-1">
+            <h1 className="text-white text-base sm:text-xl font-bold tracking-wide">
+              Branding
+            </h1>
+            <p className="text-neutral-400 text-xs sm:text-sm">
+              Accelerating! Hit [Space] to pause
+            </p>
           </div>
 
-          {/* Score */}
-          <p className="text-white text-sm font-mono">Score: {score}</p>
-        </div>
-      </div>
-
-      {/* ── Game canvas ── */}
-      <div className="flex-1 min-h-0 px-4 pb-4">
-        <div className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700">
-          <canvas ref={canvasRef} className="block w-full h-full" />
-
-          {/* Pause overlay */}
-          {paused && !gameOver && (
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-              <p className="text-white text-2xl font-bold">PAUSED</p>
+          {/* Right side */}
+          <div className="flex flex-col items-end gap-1">
+            {/* Health hearts */}
+            <div className="flex gap-1.5 sm:gap-2">
+              {Array.from({ length: MAX_HEALTH }).map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 ${
+                    i < health
+                      ? "bg-red-500 border-red-400"
+                      : "bg-transparent border-neutral-600"
+                  }`}
+                />
+              ))}
             </div>
-          )}
+
+            {/* Score */}
+            <p className="text-white text-xs sm:text-sm font-mono">
+              Score: {score}
+            </p>
+          </div>
+        </div>
+
+        {/* ── Game canvas ── */}
+        <div className="flex-1 min-h-0 px-2 sm:px-4 pb-2 sm:pb-4">
+          <div className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700">
+            <canvas ref={canvasRef} className="block w-full h-full" />
+
+            {/* Pause overlay */}
+            {paused && !gameOver && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                <p className="text-white text-2xl font-bold">PAUSED</p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Mobile joystick (visible only on small screens) ── */}
+        <div className="flex sm:hidden items-center justify-center pb-3 pt-1 shrink-0">
+          <Joystick onDirectionChange={handleJoystick} />
         </div>
       </div>
     </div>
