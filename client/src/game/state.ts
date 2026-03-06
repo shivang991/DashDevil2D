@@ -50,7 +50,7 @@ export class GameStateManager {
   carVisible = true; // toggled by blink effect
   shakeTimer = 0; // seconds remaining of screen shake
   shakeDuration = 0.5; // how long the shake lasts
-  shakeIntensity = 8; // max pixel offset for shake
+  shakeIntensity = 24; // max pixel offset for shake
   shakeOffsetX = 0; // current shake offset (computed each frame)
   shakeOffsetY = 0;
 

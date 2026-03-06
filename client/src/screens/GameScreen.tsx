@@ -8,7 +8,6 @@ import {
   drawGameOver,
 } from "@/game/renderer";
 import { GameStateManager } from "@/game/state";
-import { Joystick } from "@/components/Joystick";
 import type { UpdateFn, RenderFn } from "@/game/types";
 
 const COIN_SIZE = 28;
@@ -300,20 +299,6 @@ export function GameScreen() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [handleTogglePause, handleRestart, gameOver]);
 
-  const handleJoystick = useCallback(
-    (keys: { left: boolean; up: boolean; right: boolean }) => {
-      const input = engineRef.current?.input;
-      if (!input) return;
-      if (keys.left) input.simulateKeyDown("ArrowLeft");
-      else input.simulateKeyUp("ArrowLeft");
-      if (keys.up) input.simulateKeyDown("ArrowUp");
-      else input.simulateKeyUp("ArrowUp");
-      if (keys.right) input.simulateKeyDown("ArrowRight");
-      else input.simulateKeyUp("ArrowRight");
-    },
-    [engineRef],
-  );
-
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-neutral-950 overflow-hidden">
       <div className="flex flex-col w-[320px] sm:w-160 h-screen max-h-screen overflow-hidden">
@@ -366,10 +351,6 @@ export function GameScreen() {
           </div>
         </div>
 
-        {/* ── Mobile joystick (visible only on small screens) ── */}
-        <div className="flex sm:hidden items-center justify-center pb-3 pt-1 shrink-0">
-          <Joystick onDirectionChange={handleJoystick} />
-        </div>
       </div>
     </div>
   );

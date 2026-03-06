@@ -22,7 +22,7 @@ export class GameEngine {
   }
 
   start() {
-    this.input.attach();
+    this.input.attachListener();
     this.lastTime = performance.now();
     this.loop(this.lastTime);
   }
@@ -32,7 +32,7 @@ export class GameEngine {
       cancelAnimationFrame(this.animationId);
       this.animationId = null;
     }
-    this.input.detach();
+    this.input.detachListener();
   }
 
   togglePause() {

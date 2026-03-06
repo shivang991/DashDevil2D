@@ -1,5 +1,8 @@
 import type { InputState } from "./types";
 
+/**
+ * Keeps track of currently pressed/held down keys
+ */
 export class InputManager implements InputState {
   private _keys = new Set<string>();
 
@@ -27,12 +30,12 @@ export class InputManager implements InputState {
     this._keys.delete(key);
   }
 
-  attach(target: Window = window) {
+  attachListener(target: Window = window) {
     target.addEventListener("keydown", this.handleKeyDown);
     target.addEventListener("keyup", this.handleKeyUp);
   }
 
-  detach(target: Window = window) {
+  detachListener(target: Window = window) {
     target.removeEventListener("keydown", this.handleKeyDown);
     target.removeEventListener("keyup", this.handleKeyUp);
     this._keys.clear();
