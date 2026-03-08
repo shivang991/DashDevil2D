@@ -1,4 +1,5 @@
-import type { GameStateManager } from "./state";
+import type { GameState } from "@/hooks/useGameContext";
+import type { GameConfig } from "@/lib/constants";
 
 // ── Generic helpers ──
 
@@ -54,7 +55,8 @@ export function drawText(
 
 export function drawRoad(
   ctx: CanvasRenderingContext2D,
-  state: GameStateManager,
+  state: GameState,
+  config: GameConfig,
   width: number,
   height: number,
 ) {
@@ -82,7 +84,7 @@ export function drawRoad(
   ctx.stroke();
 
   // Lane dividers — thick solid rectangles scrolling downward
-  const laneWidth = roadWidth / state.laneCount;
+  const laneWidth = roadWidth / config.laneCount;
   const dividerW = 16;
   const segmentH = 40;
   const gapH = 20;
@@ -90,7 +92,7 @@ export function drawRoad(
   const offset = state.roadOffset % period;
 
   ctx.fillStyle = "#cccccc";
-  for (let i = 1; i < state.laneCount; i++) {
+  for (let i = 1; i < config.laneCount; i++) {
     const x = roadLeft + laneWidth * i - dividerW / 2;
     for (let y = -period + offset; y < height; y += period) {
       ctx.fillRect(x, y, dividerW, segmentH);
@@ -100,16 +102,16 @@ export function drawRoad(
 
 export function drawCar(
   ctx: CanvasRenderingContext2D,
-  state: GameStateManager,
-  width: number,
+  cx: number,
+  state: GameState,
+  config: GameConfig,
 ) {
-  const cx = state.laneX(state.visualLane, width);
-  const x = cx - state.carWidth / 2;
+  const x = cx - config.carWidth / 2;
   const y = state.carY;
 
   // Simple rectangle — will be replaced with sprite
   ctx.fillStyle = "#2196f3";
-  ctx.fillRect(x, y, state.carWidth, state.carHeight);
+  ctx.fillRect(x, y, config.carWidth, config.carHeight);
 }
 
 export function drawCoin(
@@ -140,7 +142,7 @@ export function drawObstacle(
 
 export function drawGameOver(
   ctx: CanvasRenderingContext2D,
-  state: GameStateManager,
+  state: GameState,
   width: number,
   height: number,
 ) {

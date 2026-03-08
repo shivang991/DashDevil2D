@@ -1,0 +1,63 @@
+export interface GameConfig {
+  laneCount: number;
+  maxHealth: number;
+  carWidth: number;
+  carHeight: number;
+  carBottomMargin: number;
+  accelSpeedMultiplier: number;
+  accelCarOffset: number;
+  accelLerpSpeed: number;
+  invincibleDuration: number;
+  blinkCount: number;
+  shakeDuration: number;
+  shakeIntensity: number;
+  laneLerpSpeed: number;
+  laneSwitchCooldownDuration: number;
+  minSpawnInterval: number;
+  coinSize: number;
+  coinScore: number;
+  coinSpawnChance: number;
+  obstacleW: number;
+  obstacleH: number;
+  difficultyRampInterval: number;
+  roadSpeedIncrement: number;
+  maxRoadSpeed: number;
+  spawnIntervalDecrement: number;
+  offScreenThreshold: number;
+  narrowScreenWidth: number;
+  roadWidthRatioNarrow: number;
+  roadWidthRatioNormal: number;
+  maxDeltaTime: number;
+}
+
+export const gameConfig: GameConfig = {
+  laneCount: 3,
+  maxHealth: 4,
+  carWidth: 50,
+  carHeight: 80,
+  carBottomMargin: 40,
+  accelSpeedMultiplier: 10,
+  accelCarOffset: 80,
+  accelLerpSpeed: 8,
+  invincibleDuration: 2.0,
+  blinkCount: 3,
+  shakeDuration: 0.5,
+  shakeIntensity: 24,
+  laneLerpSpeed: 10,
+  laneSwitchCooldownDuration: 0.15,
+  minSpawnInterval: 0.35,
+  coinSize: 28,
+  coinScore: 10,
+  coinSpawnChance: 0.45,
+  obstacleW: 48,
+  obstacleH: 40,
+  difficultyRampInterval: 1,
+  roadSpeedIncrement: 15,
+  maxRoadSpeed: 900,
+  spawnIntervalDecrement: 0.03,
+  offScreenThreshold: 2000,
+  narrowScreenWidth: 320,
+  roadWidthRatioNarrow: 1.0,
+  roadWidthRatioNormal: 0.6,
+  maxDeltaTime: 0.1,
+};
