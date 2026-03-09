@@ -28,11 +28,17 @@ export interface GameConfig {
   roadWidthRatioNarrow: number;
   roadWidthRatioNormal: number;
   maxDeltaTime: number;
+  carTiltMaxAngle: number;
+  carTiltLerpSpeed: number;
+  gameOverFadeMaxOpacity: number;
+  gameOverShakeMultiplier: number;
+  gameOverShakeDuration: number;
+  gameOverFadeSpeed: number;
 }
 
 export const gameConfig: GameConfig = {
   laneCount: 3,
-  maxHealth: 4,
+  maxHealth: 2,
   carWidth: 50,
   carHeight: 80,
   carBottomMargin: 40,
@@ -60,4 +66,10 @@ export const gameConfig: GameConfig = {
   roadWidthRatioNarrow: 1.0,
   roadWidthRatioNormal: 0.6,
   maxDeltaTime: 0.1,
+  carTiltMaxAngle: 1,
+  carTiltLerpSpeed: 12,
+  gameOverFadeMaxOpacity: 0.75,
+  gameOverShakeMultiplier: 1.5,
+  gameOverShakeDuration: 0.5,
+  gameOverFadeSpeed: 2,
 };

@@ -34,8 +34,40 @@ function update(
   notify: (partial: Partial<GameState>) => void,
   restart: () => void,
 ): void {
+  // ── Shake timer — runs even during gameover ──
+  if (state.shakeTimer > 0) {
+    state.shakeTimer -= dt;
+    const duration =
+      state.shakeIntensityMultiplier > 1
+        ? gameConfig.gameOverShakeDuration
+        : gameConfig.shakeDuration;
+    const t = Math.max(0, state.shakeTimer / duration);
+    const intensity =
+      gameConfig.shakeIntensity * state.shakeIntensityMultiplier * t;
+    state.shakeOffsetX = (Math.random() * 2 - 1) * intensity;
+    state.shakeOffsetY = (Math.random() * 2 - 1) * intensity;
+    if (state.shakeTimer <= 0) {
+      state.shakeTimer = 0;
+      state.shakeOffsetX = 0;
+      state.shakeOffsetY = 0;
+      state.shakeIntensityMultiplier = 1;
+    }
+  }
+
   if (state.status === "gameover") {
-    if (input.popRestartToggle()) {
+    state.gameOverFadeAlpha = Math.min(
+      gameConfig.gameOverFadeMaxOpacity,
+      state.gameOverFadeAlpha + gameConfig.gameOverFadeSpeed * dt,
+    );
+    if (
+      !state.gameOverAnimDone &&
+      state.shakeTimer <= 0 &&
+      state.gameOverFadeAlpha >= gameConfig.gameOverFadeMaxOpacity
+    ) {
+      state.gameOverAnimDone = true;
+      notify({ gameOverAnimDone: true });
+    }
+    if (state.gameOverAnimDone && input.popRestartToggle()) {
       restart();
       input.popPauseToggle(); // clear stale pause toggle after returning to playing
     }
@@ -53,7 +85,8 @@ function update(
   // ── Initial Car Y position ──
 
   if (state.carYBase === 0) {
-    state.carYBase = state.canvasHeight - gameConfig.carHeight - gameConfig.carBottomMargin;
+    state.carYBase =
+      state.canvasHeight - gameConfig.carHeight - gameConfig.carBottomMargin;
     state.carY = state.carYBase;
   }
 
@@ -76,6 +109,13 @@ function update(
   // ── Smooth lane lerp ──
   const laneDiff = state.currentLane - state.visualLane;
   state.visualLane += laneDiff * Math.min(gameConfig.laneLerpSpeed * dt, 1);
+
+  // ── Tilt animation ──
+  const targetTilt =
+    Math.max(-1, Math.min(1, laneDiff)) * gameConfig.carTiltMaxAngle;
+  state.carTilt +=
+    (targetTilt - state.carTilt) *
+    Math.min(gameConfig.carTiltLerpSpeed * dt, 1);
 
   // ── Accelerate ──
   state.accelerating = input.isAccelerating();
@@ -122,7 +162,10 @@ function update(
   state.difficultyTimer += dt;
   if (state.difficultyTimer > gameConfig.difficultyRampInterval) {
     state.difficultyTimer = 0;
-    state.roadSpeed = Math.min(state.roadSpeed + gameConfig.roadSpeedIncrement, gameConfig.maxRoadSpeed);
+    state.roadSpeed = Math.min(
+      state.roadSpeed + gameConfig.roadSpeedIncrement,
+      gameConfig.maxRoadSpeed,
+    );
     state.spawnInterval = Math.max(
       state.spawnInterval - gameConfig.spawnIntervalDecrement,
       gameConfig.minSpawnInterval,
@@ -142,19 +185,6 @@ function update(
     if (state.invincibleTimer <= 0) {
       state.invincibleTimer = 0;
       state.carVisible = true;
-    }
-  }
-
-  if (state.shakeTimer > 0) {
-    state.shakeTimer -= dt;
-    const t = state.shakeTimer / gameConfig.shakeDuration;
-    const intensity = gameConfig.shakeIntensity * t;
-    state.shakeOffsetX = (Math.random() * 2 - 1) * intensity;
-    state.shakeOffsetY = (Math.random() * 2 - 1) * intensity;
-    if (state.shakeTimer <= 0) {
-      state.shakeTimer = 0;
-      state.shakeOffsetX = 0;
-      state.shakeOffsetY = 0;
     }
   }
 
@@ -211,8 +241,8 @@ function update(
         state.status = "gameover";
         state.invincibleTimer = 0;
         state.carVisible = true;
-        state.shakeOffsetX = 0;
-        state.shakeOffsetY = 0;
+        state.shakeTimer = gameConfig.gameOverShakeDuration;
+        state.shakeIntensityMultiplier = gameConfig.gameOverShakeMultiplier;
         input.popRestartToggle(); // invalidate stale restart input on gameover
       }
       return false;
@@ -222,7 +252,9 @@ function update(
 
   // ── Remove off-screen objects ──
   state.coins = state.coins.filter((c) => c.y < gameConfig.offScreenThreshold);
-  state.obstacles = state.obstacles.filter((o) => o.y < gameConfig.offScreenThreshold);
+  state.obstacles = state.obstacles.filter(
+    (o) => o.y < gameConfig.offScreenThreshold,
+  );
 
   // ── Notify React of reactive state changes ──
   notify({ score: state.score, health: state.health, status: state.status });
@@ -236,8 +268,8 @@ function render(
   height: number,
   state: GameState,
 ): void {
-  const shaking = state.shakeOffsetX !== 0 || state.shakeOffsetY !== 0;
-  if (shaking) {
+  const needsTransform = state.shakeOffsetX !== 0 || state.shakeOffsetY !== 0;
+  if (needsTransform) {
     ctx.save();
     ctx.translate(state.shakeOffsetX, state.shakeOffsetY);
   }
@@ -265,16 +297,16 @@ function render(
   }
 
   if (state.carVisible) {
-    const cx = laneX(
+    const carX = laneX(
       state.visualLane,
       width,
       state.roadWidthRatio,
       gameConfig.laneCount,
     );
-    drawCar(ctx, cx, state, gameConfig);
+    drawCar(ctx, carX, state, gameConfig);
   }
 
-  if (shaking) {
+  if (needsTransform) {
     ctx.restore();
   }
 
@@ -306,7 +338,10 @@ export function useGameLoop({
       const newState: Partial<GameState> = {};
       newState.canvasWidth = canvas.width;
       newState.canvasHeight = canvas.height;
-      newState.roadWidthRatio = canvas.width <= gameConfig.narrowScreenWidth ? gameConfig.roadWidthRatioNarrow : gameConfig.roadWidthRatioNormal;
+      newState.roadWidthRatio =
+        canvas.width <= gameConfig.narrowScreenWidth
+          ? gameConfig.roadWidthRatioNarrow
+          : gameConfig.roadWidthRatioNormal;
       gameContext.updateGameState(newState);
     };
 

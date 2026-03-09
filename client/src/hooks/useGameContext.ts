@@ -23,10 +23,14 @@ export interface GameState {
   shakeTimer: number;
   shakeOffsetX: number;
   shakeOffsetY: number;
+  shakeIntensityMultiplier: number;
+  gameOverFadeAlpha: number;
+  carTilt: number;
   canvasWidth: number;
   canvasHeight: number;
   status: "playing" | "gameover";
   paused: boolean;
+  gameOverAnimDone: boolean;
 }
 
 export interface GameContext {
@@ -61,10 +65,14 @@ function makeInitialState(): GameState {
     shakeTimer: 0,
     shakeOffsetX: 0,
     shakeOffsetY: 0,
+    shakeIntensityMultiplier: 1,
+    gameOverFadeAlpha: 0,
+    carTilt: 0,
     canvasWidth: 0,
     canvasHeight: 0,
     status: "playing",
     paused: false,
+    gameOverAnimDone: false,
   };
 }
 
@@ -75,6 +83,7 @@ export function useGameContext(): GameContext {
   const [, setHealth] = useState(_state.health);
   const [, setStatus] = useState<"playing" | "gameover">(_state.status);
   const [, setPaused] = useState(_state.paused);
+  const [, setGameOverAnimDone] = useState(_state.gameOverAnimDone);
 
   const context = useMemo(() => {
     const updateGameState = (partial: Partial<GameState>) => {
@@ -83,6 +92,7 @@ export function useGameContext(): GameContext {
       if (typeof partial.status === "string") setStatus(partial.status);
       if (typeof partial.score === "number") setScore(partial.score);
       if (typeof partial.paused === "boolean") setPaused(partial.paused);
+      if (typeof partial.gameOverAnimDone === "boolean") setGameOverAnimDone(partial.gameOverAnimDone);
     };
 
     const resetGameState = () => {
@@ -101,6 +111,7 @@ export function useGameContext(): GameContext {
       setHealth(gameConfig.maxHealth);
       setStatus("playing");
       setPaused(false);
+      setGameOverAnimDone(false);
     };
 
     return { gameState: _state, updateGameState, resetGameState };

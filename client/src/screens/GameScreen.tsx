@@ -62,6 +62,15 @@ export function GameScreen() {
                 <p className="text-white text-2xl font-bold">PAUSED</p>
               </div>
             )}
+
+            {/* Game over overlay */}
+            {gameContext.gameState.gameOverAnimDone && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <p className="text-red-500 text-4xl font-bold font-mono">GAME OVER</p>
+                <p className="text-white text-xl font-mono mt-4">Score: {gameContext.gameState.score}</p>
+                <p className="text-neutral-400 text-sm font-mono mt-3">Press [Enter] to restart</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

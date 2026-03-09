@@ -1,5 +1,5 @@
 import type { GameState } from "@/hooks/useGameContext";
-import type { GameConfig } from "@/lib/constants";
+import { type GameConfig } from "@/lib/constants";
 
 // ── Generic helpers ──
 
@@ -106,12 +106,22 @@ export function drawCar(
   state: GameState,
   config: GameConfig,
 ) {
-  const x = cx - config.carWidth / 2;
-  const y = state.carY;
+  const centerY = state.carY + config.carHeight / 2;
+
+  ctx.save();
+  ctx.translate(cx, centerY);
+  ctx.rotate(state.carTilt);
 
   // Simple rectangle — will be replaced with sprite
   ctx.fillStyle = "#2196f3";
-  ctx.fillRect(x, y, config.carWidth, config.carHeight);
+  ctx.fillRect(
+    -config.carWidth / 2,
+    -config.carHeight / 2,
+    config.carWidth,
+    config.carHeight,
+  );
+
+  ctx.restore();
 }
 
 export function drawCoin(
@@ -146,25 +156,6 @@ export function drawGameOver(
   width: number,
   height: number,
 ) {
-  // Dim overlay
-  ctx.fillStyle = "rgba(0, 0, 0, 0.65)";
+  ctx.fillStyle = `rgba(0, 0, 0, ${state.gameOverFadeAlpha})`;
   ctx.fillRect(0, 0, width, height);
-
-  // Game over text
-  ctx.fillStyle = "#e53935";
-  ctx.font = "bold 48px monospace";
-  ctx.textAlign = "center";
-  ctx.fillText("GAME OVER", width / 2, height / 2 - 30);
-
-  // Score
-  ctx.fillStyle = "#ffffff";
-  ctx.font = "24px monospace";
-  ctx.fillText(`Score: ${state.score}`, width / 2, height / 2 + 20);
-
-  // Restart hint
-  ctx.fillStyle = "#aaa";
-  ctx.font = "16px monospace";
-  ctx.fillText("Press [Enter] to restart", width / 2, height / 2 + 60);
-
-  ctx.textAlign = "start";
 }
