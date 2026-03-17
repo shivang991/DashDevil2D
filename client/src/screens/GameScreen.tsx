@@ -11,8 +11,6 @@ export function GameScreen() {
 
   useGameLoop({ canvasRef, gameContext, gameInput });
 
-  const gameOver = gameContext.gameState.status === "gameover";
-
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-neutral-950 overflow-hidden">
       <div className="flex flex-col w-[320px] sm:w-160 h-screen max-h-screen overflow-hidden">
@@ -56,19 +54,35 @@ export function GameScreen() {
           <div className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700">
             <canvas ref={canvasRef} className="block w-full h-full" />
 
-            {/* Pause overlay */}
-            {gameContext.gameState.paused && !gameOver && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                <p className="text-white text-2xl font-bold">PAUSED</p>
+            {/* Countdown overlay */}
+            {gameContext.gameState.status === "countdown" && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/60 pointer-events-none">
+                <p className="text-white text-8xl font-bold font-mono">
+                  {Math.ceil(gameContext.gameState.countdownTimer)}
+                </p>
               </div>
             )}
+
+            {/* Pause overlay */}
+            {gameContext.gameState.paused &&
+              gameContext.gameState.status === "playing" && (
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                  <p className="text-white text-2xl font-bold">PAUSED</p>
+                </div>
+              )}
 
             {/* Game over overlay */}
             {gameContext.gameState.gameOverAnimDone && (
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <p className="text-red-500 text-4xl font-bold font-mono">GAME OVER</p>
-                <p className="text-white text-xl font-mono mt-4">Score: {gameContext.gameState.score}</p>
-                <p className="text-neutral-400 text-sm font-mono mt-3">Press [Enter] to restart</p>
+                <p className="text-red-500 text-4xl font-bold font-mono">
+                  GAME OVER
+                </p>
+                <p className="text-white text-xl font-mono mt-4">
+                  Score: {gameContext.gameState.score}
+                </p>
+                <p className="text-neutral-400 text-sm font-mono mt-3">
+                  Press [Enter] to restart
+                </p>
               </div>
             )}
           </div>

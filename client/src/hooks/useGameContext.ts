@@ -28,9 +28,10 @@ export interface GameState {
   carTilt: number;
   canvasWidth: number;
   canvasHeight: number;
-  status: "playing" | "gameover";
+  status: "countdown" | "playing" | "gameover";
   paused: boolean;
   gameOverAnimDone: boolean;
+  countdownTimer: number;
 }
 
 export interface GameContext {
@@ -70,9 +71,10 @@ function makeInitialState(): GameState {
     carTilt: 0,
     canvasWidth: 0,
     canvasHeight: 0,
-    status: "playing",
+    status: "countdown",
     paused: false,
     gameOverAnimDone: false,
+    countdownTimer: 5,
   };
 }
 
@@ -81,9 +83,12 @@ const _state: GameState = makeInitialState();
 export function useGameContext(): GameContext {
   const [, setScore] = useState(_state.score);
   const [, setHealth] = useState(_state.health);
-  const [, setStatus] = useState<"playing" | "gameover">(_state.status);
+  const [, setStatus] = useState<"countdown" | "playing" | "gameover">(
+    _state.status,
+  );
   const [, setPaused] = useState(_state.paused);
   const [, setGameOverAnimDone] = useState(_state.gameOverAnimDone);
+  const [, setCountdownDisplay] = useState(Math.ceil(_state.countdownTimer));
 
   const context = useMemo(() => {
     const updateGameState = (partial: Partial<GameState>) => {
@@ -92,7 +97,10 @@ export function useGameContext(): GameContext {
       if (typeof partial.status === "string") setStatus(partial.status);
       if (typeof partial.score === "number") setScore(partial.score);
       if (typeof partial.paused === "boolean") setPaused(partial.paused);
-      if (typeof partial.gameOverAnimDone === "boolean") setGameOverAnimDone(partial.gameOverAnimDone);
+      if (typeof partial.gameOverAnimDone === "boolean")
+        setGameOverAnimDone(partial.gameOverAnimDone);
+      if (typeof partial.countdownTimer === "number")
+        setCountdownDisplay(partial.countdownTimer);
     };
 
     const resetGameState = () => {
@@ -105,11 +113,13 @@ export function useGameContext(): GameContext {
       next.roadWidthRatio = _state.roadWidthRatio;
       next.carYBase = _state.carYBase;
       next.carY = next.carYBase;
+      next.status = "countdown";
+      next.countdownTimer = 3;
       Object.assign(_state, next);
 
       setScore(0);
       setHealth(gameConfig.maxHealth);
-      setStatus("playing");
+      setStatus("countdown");
       setPaused(false);
       setGameOverAnimDone(false);
     };

@@ -74,6 +74,25 @@ function update(
     return;
   }
 
+  // ── Countdown state ──
+  if (state.status === "countdown") {
+    // Initialize car position during countdown so the road renders
+    if (state.carYBase === 0) {
+      state.carYBase =
+        state.canvasHeight - gameConfig.carHeight - gameConfig.carBottomMargin;
+      state.carY = state.carYBase;
+    }
+    state.countdownTimer -= dt;
+    if (state.countdownTimer <= 0) {
+      state.countdownTimer = 0;
+      state.status = "playing";
+      notify({ status: "playing", countdownTimer: 0 });
+    } else {
+      notify({ countdownTimer: state.countdownTimer });
+    }
+    return;
+  }
+
   // state.status === "playing"
   if (input.popPauseToggle()) {
     notify({ paused: !state.paused });
