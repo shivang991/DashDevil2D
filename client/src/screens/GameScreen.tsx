@@ -4,7 +4,11 @@ import { useGameContext } from "@/hooks/useGameContext";
 import { useGameLoop } from "@/hooks/useGameLoop";
 import { gameConfig } from "@/lib/constants";
 
-export function GameScreen() {
+interface GameScreenProps {
+  onBack?: () => void;
+}
+
+export function GameScreen({ onBack }: GameScreenProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const gameInput = useGameInput();
   const gameContext = useGameContext();
@@ -73,7 +77,7 @@ export function GameScreen() {
 
             {/* Game over overlay */}
             {gameContext.gameState.gameOverAnimDone && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <p className="text-red-500 text-4xl font-bold font-mono">
                   GAME OVER
                 </p>
@@ -83,6 +87,17 @@ export function GameScreen() {
                 <p className="text-neutral-400 text-sm font-mono mt-3">
                   Press [Enter] to restart
                 </p>
+                {onBack && (
+                  <button
+                    onClick={() => {
+                      gameContext.resetGameState();
+                      onBack();
+                    }}
+                    className="mt-6 px-4 py-2 rounded-lg border border-neutral-600 text-neutral-300 text-sm hover:border-neutral-400 hover:text-white transition-colors"
+                  >
+                    Back to Menu
+                  </button>
+                )}
               </div>
             )}
           </div>
