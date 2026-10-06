@@ -60,8 +60,15 @@ export function GameScreen({ onBack }: GameScreenProps) {
 
             {/* Countdown overlay */}
             {gameContext.gameState.status === "countdown" && (
-              <div className="absolute inset-0 flex items-center justify-center bg-black/60 pointer-events-none">
-                <p className="text-white text-8xl font-bold font-mono">
+              <div
+                className="game-overlay absolute inset-0 flex items-center justify-center pointer-events-none"
+                style={{
+                  backdropFilter: "blur(3px)",
+                  WebkitBackdropFilter: "blur(3px)",
+                }}
+              >
+                <DirtBackdrop />
+                <p className="relative text-white text-8xl font-bold font-mono drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
                   {Math.ceil(gameContext.gameState.countdownTimer)}
                 </p>
               </div>
@@ -70,21 +77,35 @@ export function GameScreen({ onBack }: GameScreenProps) {
             {/* Pause overlay */}
             {gameContext.gameState.paused &&
               gameContext.gameState.status === "playing" && (
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-                  <p className="text-white text-2xl font-bold">PAUSED</p>
+                <div
+                  className="game-overlay absolute inset-0 flex items-center justify-center"
+                  style={{
+                    backdropFilter: "blur(3px)",
+                    WebkitBackdropFilter: "blur(3px)",
+                  }}
+                >
+                  <DirtBackdrop />
+                  <p className="relative text-white text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PAUSED</p>
                 </div>
               )}
 
             {/* Game over overlay */}
             {gameContext.gameState.gameOverAnimDone && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <p className="text-red-500 text-4xl font-bold font-mono">
+              <div
+                className="game-overlay absolute inset-0 flex flex-col items-center justify-center"
+                style={{
+                  backdropFilter: "blur(3px)",
+                  WebkitBackdropFilter: "blur(3px)",
+                }}
+              >
+                <DirtBackdrop />
+                <p className="relative text-red-500 text-4xl font-bold font-mono">
                   GAME OVER
                 </p>
-                <p className="text-white text-xl font-mono mt-4">
+                <p className="relative text-white text-xl font-mono mt-4">
                   Score: {gameContext.gameState.score}
                 </p>
-                <p className="text-neutral-400 text-sm font-mono mt-3">
+                <p className="relative text-neutral-400 text-sm font-mono mt-3">
                   Press [Enter] to restart
                 </p>
                 {onBack && (
@@ -93,7 +114,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
                       gameContext.resetGameState();
                       onBack();
                     }}
-                    className="mt-6 px-4 py-2 rounded-lg border border-neutral-600 text-neutral-300 text-sm hover:border-neutral-400 hover:text-white transition-colors"
+                    className="relative mt-6 px-4 py-2 rounded-lg border border-neutral-600 text-neutral-300 text-sm hover:border-neutral-400 hover:text-white transition-colors"
                   >
                     Back to Menu
                   </button>
@@ -104,5 +125,20 @@ export function GameScreen({ onBack }: GameScreenProps) {
         </div>
       </div>
     </div>
+  );
+}
+
+function DirtBackdrop() {
+  return (
+    <div
+      aria-hidden="true"
+      className="absolute inset-0 bg-[#49301f] opacity-60"
+      style={{
+        backgroundImage: `url(${import.meta.env.BASE_URL}textures/dirt.png)`,
+        backgroundRepeat: "repeat",
+        backgroundSize: "64px 64px",
+        imageRendering: "pixelated",
+      }}
+    />
   );
 }

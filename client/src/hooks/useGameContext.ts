@@ -9,6 +9,7 @@ export interface GameState {
   carYBase: number;
   roadSpeed: number;
   roadOffset: number;
+  grassSeed: number;
   roadWidthRatio: number;
   accelerating: boolean;
   spawnTimer: number;
@@ -52,6 +53,7 @@ function makeInitialState(): GameState {
     carYBase: 0,
     roadSpeed: 400,
     roadOffset: 0,
+    grassSeed: Math.floor(Math.random() * 0x100000000),
     roadWidthRatio: 0.6,
     accelerating: false,
     spawnTimer: 0,
