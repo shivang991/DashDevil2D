@@ -22,7 +22,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
         <div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 shrink-0">
           {/* Left side */}
           <div className="flex flex-col gap-1">
-            <h1 className="text-white text-base sm:text-xl font-bold tracking-wide">
+            <h1 className="text-white text-base sm:text-xl tracking-wide">
               Branding
             </h1>
             <p className="text-neutral-400 text-xs sm:text-sm">
@@ -47,7 +47,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
             </div>
 
             {/* Score */}
-            <p className="text-white text-xs sm:text-sm font-mono">
+            <p className="text-white text-xs sm:text-sm">
               Score: {gameContext.gameState.score}
             </p>
           </div>
@@ -68,7 +68,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
                 }}
               >
                 <DirtBackdrop />
-                <p className="relative text-white text-8xl font-bold font-mono drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                <p className="font-heading font-light relative text-white text-8xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
                   {Math.ceil(gameContext.gameState.countdownTimer)}
                 </p>
               </div>
@@ -85,7 +85,7 @@ export function GameScreen({ onBack }: GameScreenProps) {
                   }}
                 >
                   <DirtBackdrop />
-                  <p className="relative text-white text-2xl font-bold drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PAUSED</p>
+                  <h2 className="relative text-white text-2xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PAUSED</h2>
                 </div>
               )}
 
@@ -99,13 +99,13 @@ export function GameScreen({ onBack }: GameScreenProps) {
                 }}
               >
                 <DirtBackdrop />
-                <p className="relative text-red-500 text-4xl font-bold font-mono">
+                <h2 className="relative text-red-500 text-4xl">
                   GAME OVER
-                </p>
-                <p className="relative text-white text-xl font-mono mt-4">
+                </h2>
+                <p className="relative text-white text-xl mt-4">
                   Score: {gameContext.gameState.score}
                 </p>
-                <p className="relative text-neutral-400 text-sm font-mono mt-3">
+                <p className="relative text-neutral-400 text-sm mt-3">
                   Press [Enter] to restart
                 </p>
                 {onBack && (

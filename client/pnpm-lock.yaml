@@ -5,6 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@fontsource/bruno-ace-sc':
+    specifier: ^5.3.0
+    version: 5.3.0
+  '@fontsource-variable/bitcount-ink':
+    specifier: ^5.3.0
+    version: 5.3.0
   class-variance-authority:
     specifier: ^0.7.1
     version: 0.7.1
@@ -84,6 +90,14 @@ devDependencies:
     version: 7.3.1(@types/node@24.11.0)(tsx@4.23.15)
 
 packages:
+
+  /@fontsource/bruno-ace-sc@5.3.0:
+    resolution: {integrity: sha512-jQLpVbpmped/MMXyukOLGyroF/SBqY36slCy0GgDyYKcSbTCLcoz32rW1E+i8Mvvm61NfWIyPfeM9Bem3/1QQg==}
+    dev: false
+
+  /@fontsource-variable/bitcount-ink@5.3.0:
+    resolution: {integrity: sha512-//RzJdiiucnEWTO+eHDGHyj/QtXSLvPZkKWjlhqei51bKRu1Hh8aH2ur3Xwa8wNOJerMZggpKHSI595PQtew3w==}
+    dev: false
 
   /@antfu/ni@25.0.0:
     resolution: {integrity: sha512-9q/yCljni37pkMr4sPrI3G4jqdIk074+iukc5aFJl7kmDCCsiJrbZ6zKxnES1Gwg+i9RcDZwvktl23puGslmvA==}

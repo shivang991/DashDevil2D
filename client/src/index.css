@@ -25,6 +25,8 @@
 }
 
 @theme inline {
+    --font-sans: "Bruno Ace SC", sans-serif;
+    --font-heading: "Bitcount Ink Variable", monospace;
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -140,6 +142,11 @@
     }
 
     body {
-        @apply bg-background text-foreground;
+        @apply bg-background text-foreground font-sans;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-heading);
+        font-weight: 300;
     }
 }
