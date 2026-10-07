@@ -50,6 +50,8 @@ const textureNames = [
   "car",
   "coin",
   "barrier",
+  "road-edge",
+  "lane-divider",
   ...grassVariants.map((v) => v.name),
 ] as const;
 type TextureName = (typeof textureNames)[number];
@@ -122,11 +124,12 @@ function drawGrassTiles(
 
 function drawTiledTexture(
   ctx: CanvasRenderingContext2D,
-  name: "asphalt" | "grass",
+  name: "asphalt" | "grass" | "road-edge" | "lane-divider",
   x: number,
   width: number,
   height: number,
   offset: number,
+  scale = 2,
 ) {
   const image = getTexture(name);
   if (!image) return;
@@ -142,7 +145,6 @@ function drawTiledTexture(
     pattern = created;
     cache.set(name, pattern);
   }
-  const scale = 2;
   const scroll = Math.floor(offset % (image.height * scale));
   ctx.save();
   ctx.imageSmoothingEnabled = false;
@@ -183,32 +185,18 @@ export function drawRoad(
     state.roadOffset,
   );
 
-  // Road edges
-  ctx.strokeStyle = "#ffffff";
-  ctx.lineWidth = 3;
-  ctx.beginPath();
-  ctx.moveTo(roadLeft, 0);
-  ctx.lineTo(roadLeft, height);
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(roadLeft + roadWidth, 0);
-  ctx.lineTo(roadLeft + roadWidth, height);
-  ctx.stroke();
+  // Selected variant #5 tiles: weathered edges and double yellow dividers.
+  // Keep the edges inside the road so they remain visible on narrow screens.
+  const edgeWidth = 8;
+  for (const x of [roadLeft, roadLeft + roadWidth - edgeWidth]) {
+    drawTiledTexture(ctx, "road-edge", Math.round(x), edgeWidth, height, state.roadOffset, 1);
+  }
 
-  // Lane dividers — thick solid rectangles scrolling downward
   const laneWidth = roadWidth / config.laneCount;
-  const dividerW = 16;
-  const segmentH = 40;
-  const gapH = 20;
-  const period = segmentH + gapH;
-  const offset = state.roadOffset % period;
-
-  ctx.fillStyle = "#cccccc";
+  const dividerWidth = 16;
   for (let i = 1; i < config.laneCount; i++) {
-    const x = roadLeft + laneWidth * i - dividerW / 2;
-    for (let y = -period + offset; y < height; y += period) {
-      ctx.fillRect(x, y, dividerW, segmentH);
-    }
+    const x = Math.round(roadLeft + laneWidth * i - dividerWidth / 2);
+    drawTiledTexture(ctx, "lane-divider", x, dividerWidth, height, state.roadOffset, 1);
   }
 }
 

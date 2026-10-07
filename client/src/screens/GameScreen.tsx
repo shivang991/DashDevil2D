@@ -33,14 +33,24 @@ export function GameScreen({ onBack }: GameScreenProps) {
           {/* Right side */}
           <div className="flex flex-col items-end gap-1">
             {/* Health hearts */}
-            <div className="flex gap-1.5 sm:gap-2">
+            <div
+              className="flex gap-1.5 sm:gap-2"
+              role="img"
+              aria-label={`Health: ${gameContext.gameState.health} of ${gameConfig.maxHealth}`}
+            >
               {Array.from({ length: gameConfig.maxHealth }).map((_, i) => (
-                <div
+                <img
                   key={i}
-                  className={`w-5 h-5 sm:w-6 sm:h-6 rounded-full border-2 ${
+                  src={`${import.meta.env.BASE_URL}textures/heart.png`}
+                  alt=""
+                  draggable={false}
+                  width={16}
+                  height={16}
+                  style={{ imageRendering: "pixelated" }}
+                  className={`w-5 h-5 sm:w-6 sm:h-6 object-contain ${
                     i < gameContext.gameState.health
-                      ? "bg-red-500 border-red-400"
-                      : "bg-transparent border-neutral-600"
+                      ? ""
+                      : "grayscale opacity-30"
                   }`}
                 />
               ))}
