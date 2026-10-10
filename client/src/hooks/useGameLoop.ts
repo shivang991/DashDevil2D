@@ -3,6 +3,7 @@ import type { RefObject } from "react";
 import type { GameState, GameContext } from "@/hooks/useGameContext";
 import type { GameInput } from "@/hooks/useGameInput";
 import { gameConfig } from "@/lib/constants";
+import { gameAudio } from "@/lib/gameAudio";
 import {
   drawRoad,
   drawCar,
@@ -381,6 +382,7 @@ export function useGameLoop({
         gameContext.updateGameState,
         gameContext.resetGameState,
       );
+      gameAudio.update(gameContext.gameState);
 
       const ctx = canvas.getContext("2d");
       if (ctx) {
@@ -396,6 +398,7 @@ export function useGameLoop({
 
     return () => {
       cancelAnimationFrame(animationId);
+      gameAudio.stop();
       window.removeEventListener("resize", resize);
     };
   }, [canvasRef, gameContext, gameInput]);
