@@ -46,7 +46,7 @@ QUIC avoids head-of-line blocking **between** independent streams; loss still bl
 
 Stream resets can stop retransmission and terminate a stream, but that is a stream-level cancellation mechanism, not arbitrary deletion of an already queued message within an ongoing byte stream. [quic-go streams documentation](https://quic-go.net/docs/quic/streams/).
 
-**Inference for DashDevil:** reliable ordering can preserve discrete inputs/control events within a client's stream, but it creates no universal order across the two clients' independent connections. Road Rage's “first input” rule still requires an authoritative server ordering policy. A continuously queued snapshot stream can force new snapshots to wait for obsolete bytes. Separate streams can isolate some traffic classes, but a queue bound/coalescing policy, sequence/tick identifiers, disconnect deadline, and latency acceptance criteria remain necessary. No transport guarantees a particular gameplay latency without measurements.
+**Inference for DashDevil:** reliable ordering can preserve discrete inputs/control events within a client's stream, but it creates no universal order across the two clients' independent connections. Road Rage's “second-to-last input” collision rule still requires an authoritative server ordering policy. A continuously queued snapshot stream can force new snapshots to wait for obsolete bytes. Separate streams can isolate some traffic classes, but a queue bound/coalescing policy, sequence/tick identifiers, disconnect deadline, and latency acceptance criteria remain necessary. No transport guarantees a particular gameplay latency without measurements.
 
 ### WebSocket fallback feasibility
 
