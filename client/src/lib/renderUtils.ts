@@ -1,4 +1,4 @@
-import type { GameState } from "@/hooks/useGameContext";
+import type { GameState } from "../../../packages/simulation/state";
 import { type GameConfig } from "@/lib/constants";
 
 // Relative weights: these total 100, so they also read as percentages.

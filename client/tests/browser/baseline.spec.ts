@@ -58,7 +58,7 @@ test('public app: five-second start, actual canvas, keyboard pause and mute', as
   // Randomness seed at the platform boundary, not product internals.
   await page.addInitScript(seedPlatformRandomness);
   await page.goto('http://127.0.0.1:4173');
-  await page.getByText('Solo Trip', { exact: true }).click();
+  await page.getByText('Long Drive', { exact: true }).click();
   await expect(page.locator('.game-overlay')).toHaveText('5');
   const dimensions = await page.locator('canvas').evaluate(c => { const canvas = c as HTMLCanvasElement; const r = canvas.getBoundingClientRect(); return { width: canvas.width, height: canvas.height, css: { width: r.width, height: r.height } }; });
   fs.writeFileSync(path.join(evidence, 'browser-environment.json'), JSON.stringify({ provenance: testInfo.config.metadata.captureProvenance, randomSeed: 21, viewport: { width: 1280, height: 900 }, canvas: dimensions, browser: browser.version(), platform: os.platform(), release: os.release(), architecture: os.arch(), memoryBytes: os.totalmem(), cpu: os.cpus()[0].model, humanReview: 'pending', audioAudition: 'pending', powerSettings: 'unrecorded', referenceHardwareEquivalence: 'not established' }, null, 2));
@@ -82,7 +82,7 @@ test('record real-time public presentation for later human comparison', async ({
   await page.addInitScript(audioCaptureScript);
   await page.addInitScript(seedPlatformRandomness);
   await page.goto('http://127.0.0.1:4173');
-  await page.getByText('Solo Trip', { exact: true }).click();
+  await page.getByText('Long Drive', { exact: true }).click();
   await expect(page.locator('.game-overlay')).toHaveCount(0, { timeout: 7000 });
   await page.keyboard.down('ArrowUp'); await page.waitForTimeout(500);
   await page.screenshot({ path: path.join(evidence, 'baseline-acceleration.png') });
@@ -101,7 +101,7 @@ test('record real-time public presentation for later human comparison', async ({
   await expect(page.getByText('GAME OVER', { exact: true })).toBeVisible({ timeout: 45000 });
   await page.screenshot({ path: path.join(evidence, 'baseline-gameover.png') });
   await page.getByRole('button', { name: 'Back to Menu' }).click();
-  await expect(page.getByText('Solo Trip', { exact: true })).toBeVisible();
+  await expect(page.getByText('Long Drive', { exact: true })).toBeVisible();
   const audio = await page.evaluate('finishBaselineAudio()') as number[] | null;
   if (audio) fs.writeFileSync(path.join(evidence, 'baseline-audio.webm'), Buffer.from(audio));
   fs.writeFileSync(path.join(evidence, 'audio-capture.json'), JSON.stringify({ recordedBytes: audio?.length ?? 0, method: 'parallel Web Audio MediaStreamDestination', captures: ['countdown/GO', 'engine', 'acceleration/release', 'lane change', 'pause/resume', 'damage', 'gameover'], missing: ['coin cue not independently isolated', 'hidden-tab mute'], humanAudition: 'pending' }, null, 2));
@@ -113,7 +113,7 @@ test('audio unavailable still allows gameplay', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
   await page.clock.pauseAt(new Date('2026-10-14T19:00:01Z'));
   await page.goto('http://127.0.0.1:4173');
-  await page.getByText('Solo Trip', { exact: true }).click();
+  await page.getByText('Long Drive', { exact: true }).click();
   await page.clock.runFor(5100);
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.locator('.game-overlay')).toHaveCount(0);
@@ -125,7 +125,7 @@ test('isolated coin cue from public seeded gameplay', async ({ page, evidence })
   await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
   await page.clock.pauseAt(new Date('2026-10-14T19:00:01Z'));
   await page.goto('http://127.0.0.1:4173');
-  await page.getByText('Solo Trip', { exact: true }).click();
+  await page.getByText('Long Drive', { exact: true }).click();
   await page.clock.runFor(5050);
   await page.clock.runFor(2900);
   await expect(page.getByText('Score: 10', { exact: true })).toBeVisible();

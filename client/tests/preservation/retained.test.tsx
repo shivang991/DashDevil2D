@@ -1,25 +1,27 @@
-import { act, createElement, useRef, useEffect } from 'react';
-import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { useGameContext, type GameContext } from '../../src/hooks/useGameContext';
-import { useGameInput } from '../../src/hooks/useGameInput';
-import { useGameLoop } from '../../src/hooks/useGameLoop';
+import { createLongDrive, advanceLongDrive, type LongDrive } from '../../../packages/simulation/longDrive';
+import { makeInitialState, type GameState } from '../../../packages/simulation/state';
+import { KeyboardInput } from '../../src/game/KeyboardInput';
 
-// Confirmed observable seam: actual input/context/loop hooks, clock and randomness
-// controlled at the browser boundary. Canvas/audio unavailable is a supported case.
-let context: GameContext;
+// Approved simulation/input seams (#17): retained contract cases use controlled
+// platform clock/randomness and initial headless objects; app sessions expose no
+// arbitrary state setter. Actual GameWorld/lifecycle behavior is browser-tested.
+interface FixtureContext { gameState: GameState; updateGameState(partial: Partial<GameState>): void; resetGameState(): void }
+let context: FixtureContext;
+let game: LongDrive;
+let input: KeyboardInput;
 let now = 0;
+let lastTime = 0;
 let nextFrame: FrameRequestCallback;
-let root: ReturnType<typeof createRoot>;
 let firstMount = true;
-function Harness() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const gameContext = useGameContext();
-  useEffect(() => { context = gameContext; }, [gameContext]);
-  const gameInput = useGameInput();
-  useGameLoop({ canvasRef, gameContext, gameInput });
-  return <canvas ref={canvasRef} />;
+let away = false;
+let restartPending = false;
+function act(run: () => void) { run(); }
+function loseFocus() {
+  away = true; input.clear(); game.state.accelerating = false;
+  if (game.state.status === 'playing' && !game.state.paused) advanceLongDrive(game, 0, { pause: true });
 }
+function restoreFocus() { away = false; lastTime = now; }
 function key(key: string, type = 'keydown', repeat = false) {
   window.dispatchEvent(new KeyboardEvent(type, { key, repeat, cancelable: true }));
 }
@@ -32,22 +34,33 @@ function advance(seconds: number, fps: number) {
 function playing() { act(() => context.updateGameState({ status: 'playing', paused: false, canvasWidth: 606, canvasHeight: 802, roadWidthRatio: 0.6, carYBase: 682, carY: 682 })); }
 function object(lane = 1, height = 40, width = 48) { return { lane, y: 680, height, width }; }
 beforeEach(() => {
-  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
-  vi.spyOn(performance, 'now').mockImplementation(() => now);
   vi.spyOn(Math, 'random').mockReturnValue(0.5);
-  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
-  vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => { nextFrame = callback; return 1; });
-  vi.stubGlobal('cancelAnimationFrame', () => {});
-  now = 0;
-  root = createRoot(document.createElement('div'));
-  act(() => root.render(createElement(Harness)));
+  now = 0; lastTime = 0; away = false; restartPending = false;
+  game = createLongDrive(() => Math.random());
+  context = { gameState: game.state, updateGameState: partial => { Object.assign(game.state, partial); }, resetGameState: () => {
+    Object.assign(game.state, makeInitialState(() => Math.random()), { countdownTimer: 3 });
+  } };
+  const surface = document.createElement('canvas'); surface.tabIndex = 0; document.body.append(surface); surface.focus();
+  input = new KeyboardInput(surface, () => ({ status: game.state.status, paused: game.state.paused, restartable: game.state.gameOverAnimDone, suspended: away || document.hidden }), command => {
+    input.clear();
+    if (command === 'pause') advanceLongDrive(game, 0, { pause: true });
+    else restartPending = true;
+  });
+  window.addEventListener('blur', loseFocus); window.addEventListener('focus', restoreFocus);
+  nextFrame = time => {
+    const dt = Math.max(0, (time - lastTime) / 1000); lastTime = time;
+    const phase = game.state.status;
+    advanceLongDrive(game, away || document.hidden ? 0 : dt, { ...input.read(), restart: restartPending });
+    restartPending = false;
+    if (phase !== game.state.status) input.clear();
+  };
   if (firstMount) {
     expect(context.gameState).toMatchObject({ health: 2, score: 0, currentLane: 1, coins: [], obstacles: [], roadSpeed: 400, spawnInterval: 1, status: "countdown", countdownTimer: 5 });
     firstMount = false;
   }
-  act(() => context.resetGameState());
+  context.resetGameState();
 });
-afterEach(() => { act(() => root.unmount()); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { input.dispose(); window.removeEventListener('blur', loseFocus); window.removeEventListener('focus', restoreFocus); document.body.replaceChildren(); vi.restoreAllMocks(); });
 for (const fps of [30, 60, 120]) {
   test(`${fps} FPS: reset gives three-second stationary countdown within 50 ms`, () => {
     expect(context.gameState).toMatchObject({ health: 2, score: 0, currentLane: 1, status: 'countdown', countdownTimer: 3 });
@@ -126,7 +139,7 @@ for (const fps of [30, 60, 120]) {
 }
 // Later owning slices must use PRESERVATION_ENFORCE=22,23,26 (or all).
 function correction(owner: number, name: string, run: () => void) {
-  const enforce = ['22', ...(process.env.PRESERVATION_ENFORCE?.split(',') ?? [])];
+  const enforce = ['22', '23', ...(process.env.PRESERVATION_ENFORCE?.split(',') ?? [])];
   (enforce.includes(String(owner)) || enforce.includes('all') ? test : test.fails)(`correction #${owner}: ${name}`, run);
 }
 correction(22, 'pause freezes shake', () => { playing(); act(() => context.updateGameState({ paused: true, shakeTimer: 0.5 })); advance(0.2, 60); expect(context.gameState.shakeTimer).toBe(0.5); });
@@ -185,6 +198,7 @@ correction(23, 'hidden countdown freezes until return', () => {
   expect(context.gameState.countdownTimer).toBe(before);
 });
 correction(23, 'keyboard movement prevents browser defaults', () => {
+  playing();
   const event = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true }); window.dispatchEvent(event); expect(event.defaultPrevented).toBe(true);
 });
 

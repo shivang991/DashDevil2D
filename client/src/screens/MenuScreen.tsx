@@ -51,7 +51,7 @@ export function MenuScreen({ onStartGame }: MenuScreenProps) {
         {/* Menu items */}
         <div className="flex flex-col gap-3">
           <MenuItem
-            title="Solo Trip"
+            title="Long Drive"
             subtitle="Single player runner"
             onClick={onStartGame}
           />
