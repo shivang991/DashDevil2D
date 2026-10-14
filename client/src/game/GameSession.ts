@@ -37,7 +37,6 @@ export class GameSession {
   private lastTime = 0;
   private disposed = false;
   private readonly input: KeyboardInput;
-  private restartRequested = false;
   private focused = true;
 
   private readonly options: SessionOptions;
@@ -78,15 +77,10 @@ export class GameSession {
       this.input.clear();
       state.accelerating = false;
       this.audio.update(state, advanceLongDrive(this.game, 0, { pause: true }));
-    } else if (command === 'restart' && state.status === 'gameover' && state.gameOverAnimDone) {
-      this.lastTime = Math.max(this.lastTime, this.clock.now());
-      this.restartRequested = true;
-      this.input.clear();
-    } else if (command === 'reset') {
+    } else if (command === 'reset' || (command === 'restart' && state.status === 'gameover' && state.gameOverAnimDone)) {
       this.lastTime = Math.max(this.lastTime, this.clock.now());
       resetLongDrive(this.game);
       this.input.clear();
-      this.restartRequested = false;
       this.audio.update(state, advanceLongDrive(this.game, 0, {}));
     }
     this.publish();
@@ -99,7 +93,7 @@ export class GameSession {
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('blur', this.blur); window.removeEventListener('focus', this.focusReturned);
     document.removeEventListener('visibilitychange', this.visibility);
-    this.listeners.clear(); this.input.clear(); this.restartRequested = false;
+    this.listeners.clear(); this.input.clear();
     this.input.dispose();
     this.audio.dispose();
   }
@@ -120,8 +114,7 @@ export class GameSession {
     this.lastTime = Math.max(this.lastTime, now);
     this.audio.unlock();
     const previousStatus = this.game.state.status;
-    const events = advanceLongDrive(this.game, this.suspended() ? 0 : dt, { ...this.input.read(), restart: this.restartRequested });
-    this.restartRequested = false;
+    const events = advanceLongDrive(this.game, this.suspended() ? 0 : dt, this.input.read());
     if (this.game.state.status !== previousStatus) this.input.clear();
     this.audio.update(this.game.state, events);
     this.publish();
@@ -134,7 +127,7 @@ export class GameSession {
   focus(): void { if (!this.disposed) this.options.canvas.focus({ preventScroll: true }); }
   private suspended(): boolean { return !this.focused || document.hidden; }
   private suspend(): void {
-    this.input.clear(); this.restartRequested = false;
+    this.input.clear();
     this.game.state.accelerating = false;
     if (this.game.state.status === 'playing' && !this.game.state.paused) this.command('pause');
     this.audio.syncVisibility(); this.publish();

@@ -205,3 +205,15 @@ test('unavailable pause and restart commands cannot rebase or delay a running co
   expect(session.getPresentation().roadOffset).toBe(0);
   session.dispose();
 });
+
+test('accepted restart survives an earlier zero-elapsed RAF boundary', () => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const time = clock(); const canvas = document.createElement('canvas'); document.body.append(canvas);
+  Object.defineProperties(canvas, { clientWidth: { value: 606 }, clientHeight: { value: 806 } });
+  const session = new GameSession({ mode: 'long-drive', canvas, clock: time.boundary, countdown: 3, random: () => 0.5 });
+  session.start(); time.advance(15);
+  expect(session.getSnapshot()).toMatchObject({ status: 'gameover', gameOverAnimDone: true });
+  time.elapse(20); session.command('restart'); time.deliver(34999); time.advance(1 / 60);
+  expect(session.getSnapshot()).toMatchObject({ status: 'countdown', countdown: 3, health: 2 });
+  session.dispose();
+});
