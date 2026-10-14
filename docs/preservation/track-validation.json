@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "issue": 26,
+  "date": "2026-10-14",
+  "startingRevision": "17e476dddfea41877e02454cbc21e1c08375659e",
+  "testedRevision": "24019b702c8ac8d8bfa9323f25e2322d9c8bcbf2",
+  "testedWorktreeClean": true,
+  "fixtureVersion": 3,
+  "configurationVersion": 1,
+  "generationVersion": 1,
+  "browserRun": "apps/client/test-results/run-2026-10-14T15-49-01.566Z-skOkGs",
+  "browserManifestSha256": "4d445806cc205ed3c914db184f69530cad2d7cd2b6f79d5b6452649b3d424fae",
+  "browserResult": "11 passed; zero retries",
+  "check": "pnpm check --force; 10 tasks passed, zero cache reuse; 150 Vitest checks; native Go generation fixtures/vet/build; TypeScript, ESLint, production build",
+  "checkLogSha256": "dcbcdcac36ac10213fc60a81a1db67446e90d7b0687fbc59ce4a84a0cab2994e",
+  "browserLogSha256": "721766e7579c2fe43bd598af31f28d8997aa232cf0dc5b59f7b3f732d30c4ce6",
+  "independentReview": {
+    "standards": "0 findings, /root/track_standards",
+    "spec": "0 actionable findings, /root/track_spec",
+    "expectations": "independently recalculated seed vectors, anchors, browser seed outcomes and pending-spawn pause case"
+  },
+  "inputs": {
+    "packages/contracts/track/fixtures.json": "46bf10ec02aa1e364ee3676fb9612febe36cae279c782fb0737abc9faadae66e",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "apps/client/tests/simulation/track.test.ts": "307680d70f698292509984e64ac67915750d1b4057e6e2d493baf56f0dd9bf0a",
+    "apps/server/track/track.go": "9ca2a72b9a155310acaf190c5aa8a6b9d403aac41548cd52a64dff773921dea0",
+    "apps/server/track/track_test.go": "d0ac728d7b935f59d8d7a64532046e5d5b9ee2ca8a5ed6b40b1b70e480c72a9d"
+  },
+  "environment": {
+    "node": "26.10.0",
+    "pnpm": "8.15.9",
+    "go": "1.26.0",
+    "browser": "Chrome 155.0.8059.79",
+    "os": "macOS, Darwin 25.5.0, arm64",
+    "hardware": "Apple M2, 8 GB RAM",
+    "viewport": [
+      1280,
+      900
+    ],
+    "canvas": [
+      606,
+      806
+    ],
+    "resizeViewport": [
+      320,
+      600
+    ],
+    "referenceEquivalence": "not established"
+  },
+  "seeds": {
+    "shared": 1,
+    "coin": 5408,
+    "obstacleHeart": 5410,
+    "realTimeRoundSeedSource": "platform LCG 21"
+  },
+  "evidenceDirectory": "/private/tmp/dashdevil-stage3-evidence/track",
+  "manualReview": "pending; assistant inspected one resized heart/HP screenshot only, not human audiovisual acceptance",
+  "unavailable": {
+    "generatedOutput": "#27 schema/generator not introduced",
+    "fullGoSimulationParity": "#28 authority/contact integration not introduced; generation parity passes",
+    "realTwoBrowserTransport": "#29 transport not introduced"
+  },
+  "stageGate": "Geometry/track implementation complete; full Stage 3 and human audiovisual approval remain pending",
+  "failures": "Original diagnostic outputs and all retry runs retained. Early output is in Codex tool transcript. See track-checkpoint.md for failure explanations. Browser-03 was an intermediate passing run while review edits occurred; final browser-04 is the clean source-frozen evidence."
+}
