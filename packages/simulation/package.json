@@ -1,0 +1,17 @@
+{
+  "name": "@dashdevil/simulation",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./config": "./config.ts",
+    "./geometry": "./geometry.ts",
+    "./longDrive": "./longDrive.ts",
+    "./state": "./state.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "build": "pnpm typecheck"
+  }
+}

@@ -4,26 +4,25 @@ on:
   push:
     branches: [main]
 jobs:
-  client:
+  workspace:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: client
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '26'
+          node-version-file: '.node-version'
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: .go-version
+          cache: false
       - run: npm install --global pnpm@8.15.9
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test
-      - run: pnpm build
-      - run: pnpm lint
-      - run: pnpm exec playwright install --with-deps chrome ffmpeg
+      - run: pnpm check
+      - run: pnpm --filter @dashdevil/client exec playwright install --with-deps chrome ffmpeg
       - run: pnpm test:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: preservation-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
-            client/test-results
+            apps/client/test-results

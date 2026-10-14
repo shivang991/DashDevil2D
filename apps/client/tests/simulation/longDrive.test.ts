@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, test } from 'vitest';
-import { createLongDrive, advanceLongDrive, resetLongDrive } from '../../../packages/simulation/longDrive';
+import { createLongDrive, advanceLongDrive, resetLongDrive } from '@dashdevil/simulation/longDrive';
 // Approved simulation state/events seam (#17). Literal defaults/timer outcomes
 // come from #3's owner-approved preservation contract, not the implementation.
 test('headless Long Drive starts stationary and advances difficulty on active seconds', () => {

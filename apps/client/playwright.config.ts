@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import { defineConfig } from '@playwright/test';
 import { createCaptureRun } from './tests/browser/capture';
 const capture = createCaptureRun({
-  outputRoot: path.resolve('test-results'), repositoryRoot: path.resolve('..'), fixtureVersion: 2,
-  fixtures: ['client/tests/browser/baseline.spec.ts', 'client/tests/browser/capture.ts', 'client/tests/browser/capture-reporter.ts'],
-  configuration: ['client/src/lib/constants.ts', 'client/playwright.config.ts', 'client/package.json', 'client/pnpm-lock.yaml'],
+  outputRoot: path.resolve('test-results'), repositoryRoot: path.resolve('../..'), fixtureVersion: 2,
+  fixtures: ['apps/client/tests/browser/baseline.spec.ts', 'apps/client/tests/browser/capture.ts', 'apps/client/tests/browser/capture-reporter.ts'],
+  configuration: ['apps/client/src/lib/constants.ts', 'apps/client/playwright.config.ts', 'apps/client/package.json', 'pnpm-lock.yaml', 'package.json', 'turbo.json', 'pnpm-workspace.yaml', '.node-version', '.go-version', 'packages/simulation/package.json', 'packages/simulation/config.ts'],
 });
 // Worker processes evaluate this file too. Share one invocation directory
 // through their inherited environment instead of creating a second run identity.

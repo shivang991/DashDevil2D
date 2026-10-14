@@ -1,5 +1,5 @@
-import type { LongDriveEvent } from "../../../packages/simulation/longDrive";
-import type { GameState } from "../../../packages/simulation/state";
+import type { LongDriveEvent } from "@dashdevil/simulation/longDrive";
+import type { GameState } from "@dashdevil/simulation/state";
 
 const STORAGE_KEY = "runner-sound-enabled";
 

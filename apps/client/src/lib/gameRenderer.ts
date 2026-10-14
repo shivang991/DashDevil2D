@@ -1,4 +1,4 @@
-import type { GameState } from "../../../packages/simulation/state";
+import type { GameState } from "@dashdevil/simulation/state";
 import { gameConfig } from "./constants";
 import { drawRoad, drawCar, drawCoin, drawObstacle, drawGameOver } from "./renderUtils";
 

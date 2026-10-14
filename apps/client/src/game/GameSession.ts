@@ -1,5 +1,5 @@
-import { advanceLongDrive, createLongDrive, resetLongDrive } from '../../../packages/simulation/longDrive';
-import { type GameState } from '../../../packages/simulation/state';
+import { advanceLongDrive, createLongDrive, resetLongDrive } from '@dashdevil/simulation/longDrive';
+import { type GameState } from '@dashdevil/simulation/state';
 import { gameConfig } from '../lib/constants';
 import { GameAudio } from '../lib/gameAudio';
 import { KeyboardInput } from './KeyboardInput';

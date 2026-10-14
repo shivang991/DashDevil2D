@@ -1,4 +1,4 @@
-import type { LongDriveInput } from '../../../packages/simulation/longDrive';
+import type { LongDriveInput } from '@dashdevil/simulation/longDrive';
 
 export interface InputAvailability {
   status: 'countdown' | 'playing' | 'gameover'; paused: boolean; restartable: boolean; suspended?: boolean;

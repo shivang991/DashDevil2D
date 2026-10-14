@@ -1,6 +1,6 @@
 import { afterEach, expect, test, vi } from 'vitest';
 import { GameAudio } from '../../src/lib/gameAudio';
-import { createLongDrive, type LongDriveEvent } from '../../../packages/simulation/longDrive';
+import { createLongDrive, type LongDriveEvent } from '@dashdevil/simulation/longDrive';
 
 afterEach(() => vi.unstubAllGlobals());
 test('audio consumes an identified terminal cue once and cannot mutate frozen gameplay', () => {

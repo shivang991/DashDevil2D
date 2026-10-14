@@ -10,9 +10,9 @@ afterEach(() => { for (const dir of temporary.splice(0)) fs.rmSync(dir, { recurs
 test('capture result keeps earlier runs and identifies the actual tested source and bytes', () => {
   const outputRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dashdevil-capture-test-'));
   temporary.push(outputRoot);
-  const repositoryRoot = path.resolve('..');
+  const repositoryRoot = path.resolve('../..');
   const expectedRevision = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repositoryRoot, encoding: 'utf8' }).trim();
-  const options = { outputRoot, repositoryRoot, fixtureVersion: 1, fixtures: ['client/tests/browser/baseline.spec.ts'], configuration: ['client/src/lib/constants.ts', 'client/playwright.config.ts'] };
+  const options = { outputRoot, repositoryRoot, fixtureVersion: 1, fixtures: ['apps/client/tests/browser/baseline.spec.ts'], configuration: ['apps/client/src/lib/constants.ts', 'apps/client/playwright.config.ts'] };
   const first = createCaptureRun(options);
   fs.writeFileSync(first.artifactPath('environment.json'), JSON.stringify({ viewport: { width: 1280, height: 900 }, browser: 'fixture browser' }));
   fs.writeFileSync(first.artifactPath('screen.bin'), 'original pixels');
@@ -28,7 +28,7 @@ test('capture result keeps earlier runs and identifies the actual tested source 
   expect(manifest.provenance.testedRevision).toBe(expectedRevision);
   expect(manifest.provenance.fixtureVersion).toBe(1);
   expect(manifest.provenance.trackedWorktreeDiffSha256).toBe(createHash('sha256').update(execFileSync('git', ['diff', 'HEAD', '--binary'], { cwd: repositoryRoot, maxBuffer: 128 * 1024 * 1024 })).digest('hex'));
-  expect(manifest.provenance.configuration['client/src/lib/constants.ts']).toEqual({ sha256: createHash('sha256').update(fs.readFileSync(path.join(repositoryRoot, 'client/src/lib/constants.ts'))).digest('hex') });
+  expect(manifest.provenance.configuration['apps/client/src/lib/constants.ts']).toEqual({ sha256: createHash('sha256').update(fs.readFileSync(path.join(repositoryRoot, 'apps/client/src/lib/constants.ts'))).digest('hex') });
   expect(manifest.artifacts['screen.bin']).toEqual({ bytes: 12, sha256: createHash('sha256').update('retry pixels').digest('hex') });
   expect(manifest.result.status).toBe('passed');
 });

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { createLongDrive, advanceLongDrive, resetLongDrive, type LongDrive } from '../../../packages/simulation/longDrive';
-import { type GameState } from '../../../packages/simulation/state';
+import { createLongDrive, advanceLongDrive, resetLongDrive, type LongDrive } from '@dashdevil/simulation/longDrive';
+import { type GameState } from '@dashdevil/simulation/state';
 import { KeyboardInput } from '../../src/game/KeyboardInput';
 
 // Approved simulation/input seams (#17): retained contract cases use controlled

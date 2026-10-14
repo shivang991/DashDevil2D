@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, test } from 'vitest';
-import { firstContact, chronologicalContacts } from '../../../packages/simulation/geometry';
+import { firstContact, chronologicalContacts } from '@dashdevil/simulation/geometry';
 
 test('continuous strict AABB finds crossing contact but excludes a mere edge touch', () => {
   const car = { left: 0, right: 50, top: 682, bottom: 762 };
