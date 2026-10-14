@@ -3,7 +3,9 @@ import { gameConfig } from "./config";
 import { makeInitialState, type GameState } from "./state";
 
 export interface LongDriveInput { steering?: "left" | "right"; accelerating?: boolean; pause?: boolean; restart?: boolean }
-export interface LongDriveEvent { readonly id: number; readonly time: number; readonly type: "countdown" | "go" | "lane" | "coin" | "damage" | "gameover" | "pause" | "resume"; readonly objectId?: number }
+/** Identified local observations. observedAt is this adapter advance boundary,
+ * not canonical input/contact time; chronological canonical integration belongs to #26. */
+export interface LongDriveEvent { readonly id: number; readonly observedAt: number; readonly type: "countdown" | "go" | "lane" | "coin" | "damage" | "gameover" | "pause" | "resume"; readonly objectId?: number }
 export interface LongDrive { readonly state: GameState; readonly random: () => number; time: number; eventId: number; countdownDisplay?: number }
 export function createLongDrive(random: () => number = Math.random): LongDrive {
   return { state: makeInitialState(random), random, time: 0, eventId: 0 };
@@ -15,7 +17,7 @@ function nextObjectId(state: GameState) { const id = (objectIds.get(state) ?? 0)
 export function advanceLongDrive(game: LongDrive, seconds: number, input: LongDriveInput): readonly LongDriveEvent[] {
   if (!Number.isFinite(seconds) || seconds < 0) throw new Error("Elapsed time must be finite and nonnegative");
   const events: LongDriveEvent[] = [];
-  const emit = (type: LongDriveEvent["type"], objectId?: number) => events.push(Object.freeze({ id: ++game.eventId, time: game.time, type, objectId }));
+  const emit = (type: LongDriveEvent["type"], objectId?: number) => events.push(Object.freeze({ id: ++game.eventId, observedAt: game.time, type, objectId }));
   if (game.state.status === "playing" && input.pause) {
     game.state.paused = !game.state.paused;
     emit(game.state.paused ? "pause" : "resume");

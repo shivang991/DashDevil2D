@@ -20,7 +20,7 @@ test('audio consumes an identified terminal cue once and cannot mutate frozen ga
   audio.unlock();
   const initial = oscillators;
   const state = Object.freeze({ ...createLongDrive().state, status: 'gameover' as const });
-  const event: LongDriveEvent = Object.freeze({ id: 1, time: 0, type: 'gameover' });
+  const event: LongDriveEvent = Object.freeze({ id: 1, observedAt: 0, type: 'gameover' });
   audio.update(state, Object.freeze([event]));
   expect(oscillators - initial).toBe(4); // Four-note baseline terminal melody.
   audio.update(state, Object.freeze([event]));

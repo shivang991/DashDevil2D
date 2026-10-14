@@ -80,3 +80,11 @@ test('restart and explicit reset announce their first countdown cue exactly once
   Object.assign(game.state, { status: 'countdown', countdownTimer: 3 });
   expect(advanceLongDrive(game, 1 / 60, {}).map(event => event.type)).toEqual(['countdown']);
 });
+
+for (const [fps, observedAt] of [[30, 0.03333333333333333], [60, 0.016666666666666666], [120, 0.008333333333333333]]) {
+  test(`${fps} FPS event time is explicitly a local observation boundary`, () => {
+    const game = createLongDrive(() => 0.5);
+    game.state.status = 'playing';
+    expect(advanceLongDrive(game, 1 / fps, { steering: 'left' })).toMatchObject([{ id: 1, type: 'lane', observedAt }]);
+  });
+}
