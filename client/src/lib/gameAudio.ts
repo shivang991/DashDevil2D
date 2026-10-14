@@ -1,3 +1,4 @@
+import type { LongDriveEvent } from "../../../packages/simulation/longDrive";
 import type { GameState } from "@/hooks/useGameContext";
 
 const STORAGE_KEY = "runner-sound-enabled";
@@ -83,7 +84,8 @@ function readPreference() {
   }
 }
 
-class GameAudio {
+export class GameAudio {
+  private lastEventId = 0;
   enabled = readPreference();
   private context?: AudioContext;
   private master?: GainNode;
@@ -424,48 +426,28 @@ class GameAudio {
     };
   }
 
-  update(state: GameState) {
+  update(state: Readonly<GameState>, events: readonly LongDriveEvent[] = []) {
     // Compare snapshots so effects fire once per event, not every animation frame.
     const previous = this.previous;
     const countdown = Math.ceil(state.countdownTimer);
-    if (
-      state.status === "countdown" &&
-      countdown > 0 &&
-      (!previous ||
-        previous.status !== "countdown" ||
-        previous.countdown !== countdown)
-    ) {
-      // Countdown: steady A4 beep, 130 ms long, square-wave gain 0.16.
-      this.tone(440, 440, 0.13, "square", 0.16);
-    }
-    if (previous) {
-      // GO cue: upward pitch sweep. Increase duration for a longer starting beep.
-      if (previous.status === "countdown" && state.status === "playing")
-        this.tone(880, 1100, 0.35, "square", 0.16);
-      // Lane change: short, soft downward swoop; final argument sets its volume.
-      if (
-        state.currentLane !== previous.currentLane &&
-        state.status === "playing"
-      )
-        this.tone(180, 90, 0.09, "triangle", 0.2);
-      if (state.score > previous.score) {
-        // Coin: two overlapping notes; the second starts 70 ms after the first.
-        this.tone(880, 880, 0.1);
-        this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);
+    for (const event of events) {
+      if (event.id <= this.lastEventId) continue;
+      this.lastEventId = event.id;
+      switch (event.type) {
+        case "countdown": this.tone(440, 440, 0.13, "square", 0.16); break;
+        case "go": this.tone(880, 1100, 0.35, "square", 0.16); break;
+        case "lane": this.tone(180, 90, 0.09, "triangle", 0.2); break;
+        case "coin":
+          this.tone(880, 880, 0.1);
+          this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);
+          break;
+        case "damage": this.tone(130, 30, 0.3, "sawtooth", 0.5); break;
+        case "gameover":
+          [330, 262, 196, 98].forEach((note, index) => this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16));
+          break;
+        case "pause": this.tone(440, 220, 0.16); break;
+        case "resume": this.tone(220, 440, 0.16); break;
       }
-      // Crash: rough bass sweep from 130 Hz to 30 Hz over 300 ms.
-      if (state.health < previous.health)
-        this.tone(130, 30, 0.3, "sawtooth", 0.5);
-      if (state.status === "gameover" && previous.status !== "gameover") {
-        // Edit this array for a different melody. Notes start 160 ms apart;
-        // each lasts 300 ms and falls to 90% of its initial pitch.
-        [330, 262, 196, 98].forEach((note, index) =>
-          this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16),
-        );
-      }
-      // Pause falls an octave; resume rises an octave. Uses the default gain.
-      if (state.paused !== previous.paused && state.status === "playing")
-        this.tone(state.paused ? 440 : 220, state.paused ? 220 : 440, 0.16);
     }
     if (this.context && this.engine && this.engineGain) {
       const running = state.status === "playing" && !state.paused;
@@ -556,6 +538,7 @@ class GameAudio {
     // Short cleanup fades prevent clicks when leaving the game; these aren't
     // the musical boost-release settings above. Reset events for the next run.
     this.previous = undefined;
+    this.lastEventId = 0;
     if (this.context && this.engineGain)
       this.engineGain.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
     if (this.context) {

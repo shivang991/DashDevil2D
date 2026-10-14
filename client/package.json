@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "build": "tsc -p ../packages/simulation/tsconfig.json && tsc -b && vite build",
+    "lint": "cd .. && client/node_modules/.bin/eslint client packages/simulation",
     "preview": "vite preview",
     "test": "vitest run",
     "test:browser": "playwright test"

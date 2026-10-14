@@ -126,7 +126,7 @@ for (const fps of [30, 60, 120]) {
 }
 // Later owning slices must use PRESERVATION_ENFORCE=22,23,26 (or all).
 function correction(owner: number, name: string, run: () => void) {
-  const enforce = process.env.PRESERVATION_ENFORCE?.split(',') ?? [];
+  const enforce = ['22', ...(process.env.PRESERVATION_ENFORCE?.split(',') ?? [])];
   (enforce.includes(String(owner)) || enforce.includes('all') ? test : test.fails)(`correction #${owner}: ${name}`, run);
 }
 correction(22, 'pause freezes shake', () => { playing(); act(() => context.updateGameState({ paused: true, shakeTimer: 0.5 })); advance(0.2, 60); expect(context.gameState.shakeTimer).toBe(0.5); });
