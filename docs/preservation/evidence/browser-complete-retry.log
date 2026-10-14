@@ -1,0 +1,13 @@
+[WebServer] (node:67373) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:67373) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 3 tests using 1 worker
+
+(node:67375) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/baseline.spec.ts:6:1 › public app: five-second start, actual canvas, keyboard pause and mute (5.1s)
+  ✓  2 tests/browser/baseline.spec.ts:31:1 › record real-time public presentation for later human comparison (23.5s)
+  ✓  3 tests/browser/baseline.spec.ts:90:1 › audio unavailable still allows gameplay (2.5s)
+
+  3 passed (34.5s)

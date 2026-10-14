@@ -1,0 +1,63 @@
+[WebServer] (node:66524) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:66524) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:66526) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/baseline.spec.ts:6:1 › public app: five-second start, actual canvas, keyboard pause and mute (333ms)
+(node:66540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 tests/browser/baseline.spec.ts:31:1 › record real-time public presentation for later human comparison (223ms)
+
+
+  1) tests/browser/baseline.spec.ts:6:1 › public app: five-second start, actual canvas, keyboard pause and mute 
+
+    Error: browserContext.newPage: Executable doesn't exist at /Users/shivang/Library/Caches/ms-playwright/ffmpeg-1013/ffmpeg-mac
+    ╔═════════════════════════════════════════════════════════════════╗
+    ║ Video rendering requires ffmpeg binary.                         ║
+    ║ Downloading it will not affect any of the system-wide settings. ║
+    ║ Please run the following command:                               ║
+    ║                                                                 ║
+    ║     npx playwright install ffmpeg                               ║
+    ║                                                                 ║
+    ║ <3 Playwright Team                                              ║
+    ╚═════════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) tests/browser/baseline.spec.ts:31:1 › record real-time public presentation for later human comparison 
+
+    Error: browserContext.newPage: Executable doesn't exist at /Users/shivang/Library/Caches/ms-playwright/ffmpeg-1013/ffmpeg-mac
+    ╔═════════════════════════════════════════════════════════════════╗
+    ║ Video rendering requires ffmpeg binary.                         ║
+    ║ Downloading it will not affect any of the system-wide settings. ║
+    ║ Please run the following command:                               ║
+    ║                                                                 ║
+    ║     npx playwright install ffmpeg                               ║
+    ║                                                                 ║
+    ║ <3 Playwright Team                                              ║
+    ╚═════════════════════════════════════════════════════════════════╝
+
+    Error Context: test-results/baseline-record-real-time--8dd01--for-later-human-comparison/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    tests/browser/baseline.spec.ts:6:1 › public app: five-second start, actual canvas, keyboard pause and mute 
+    tests/browser/baseline.spec.ts:31:1 › record real-time public presentation for later human comparison 

@@ -1,0 +1,27 @@
+{
+  "baselineRevision": "a68f27efd1d79ec8eea7ef0b0a6d8567606189dd",
+  "fixtureVersion": 1,
+  "randomSeed": 21,
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "canvas": {
+    "width": 606,
+    "height": 806,
+    "css": {
+      "width": 606,
+      "height": 806
+    }
+  },
+  "browser": "154.0.8037.98",
+  "platform": "darwin",
+  "release": "25.5.0",
+  "architecture": "arm64",
+  "memoryBytes": 8589934592,
+  "cpu": "Apple M2",
+  "humanReview": "pending",
+  "audioAudition": "pending",
+  "powerSettings": "unrecorded",
+  "referenceHardwareEquivalence": "not established"
+}

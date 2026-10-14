@@ -1,0 +1,17 @@
+
+/private/tmp/dashdevil-ticket-21/client/tests/preservation/retained.test.tsx
+  16:3  error  Error: Cannot reassign variables declared outside of the component/hook
+
+Variable `context` is declared outside of the component/hook. Reassigning this value during render is a form of side effect, which can cause unpredictable behavior depending on when the component happens to re-render. If this variable is used in rendering, use useState instead. Otherwise, consider updating it in an effect. (https://react.dev/reference/rules/components-and-hooks-must-be-pure#side-effects-must-run-outside-of-render).
+
+/private/tmp/dashdevil-ticket-21/client/tests/preservation/retained.test.tsx:16:3
+  14 | function Harness() {
+  15 |   const canvasRef = useRef<HTMLCanvasElement>(null);
+> 16 |   context = useGameContext();
+     |   ^^^^^^^ `context` cannot be reassigned
+  17 |   const gameInput = useGameInput();
+  18 |   useGameLoop({ canvasRef, gameContext: context, gameInput });
+  19 |   return createElement('canvas', { ref: canvasRef });  react-hooks/globals
+
+✖ 1 problem (1 error, 0 warnings)
+

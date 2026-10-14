@@ -1,0 +1,126 @@
+
+ RUN  v5.0.4 /private/tmp/dashdevil-ticket-21/client
+
+stdout | tests/preservation/retained.test.tsx > correction #22: pause freezes shake
+Re running
+
+stdout | tests/preservation/retained.test.tsx > correction #22: fatal overlaps clamp HP
+Re running
+
+stdout | tests/preservation/retained.test.tsx > correction #23: blur pauses and clears acceleration
+Re running
+
+stdout | tests/preservation/retained.test.tsx > correction #23: Space repeat ignored
+Re running
+
+stdout | tests/preservation/retained.test.tsx > correction #23: early pause discarded
+Re running
+
+stdout | tests/preservation/retained.test.tsx > correction #26: swept collision detects tunneling
+Re running
+
+ ❯ tests/preservation/retained.test.tsx (33 tests | 6 failed) 105ms
+   × correction #22: pause freezes shake 5ms
+   × correction #22: fatal overlaps clamp HP 1ms
+   × correction #23: blur pauses and clears acceleration 2ms
+   × correction #23: Space repeat ignored 1ms
+   × correction #23: early pause discarded 6ms
+   × correction #26: swept collision detects tunneling 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 6 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/preservation/retained.test.tsx > correction #22: pause freezes shake
+AssertionError: expected 0.30000000000000004 to be 0.5 // Object.is equality
+
+- Expected
++ Received
+
+- 0.5
++ 0.30000000000000004
+
+ ❯ tests/preservation/retained.test.tsx:118:184
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/6]⎯
+
+ FAIL  tests/preservation/retained.test.tsx > correction #22: fatal overlaps clamp HP
+AssertionError: expected -1 to be +0 // Object.is equality
+
+- Expected
++ Received
+
+- 0
++ -1
+
+ ❯ tests/preservation/retained.test.tsx:119:190
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/6]⎯
+
+ FAIL  tests/preservation/retained.test.tsx > correction #23: blur pauses and clears acceleration
+AssertionError: expected { health: 2, score: +0, …(30) } to match object { paused: true, accelerating: false }
+(30 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "accelerating": false,
+-   "paused": true,
++   "accelerating": true,
++   "paused": false,
+  }
+
+ ❯ tests/preservation/retained.test.tsx:120:173
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/6]⎯
+
+ FAIL  tests/preservation/retained.test.tsx > correction #23: Space repeat ignored
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/preservation/retained.test.tsx:121:130
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/6]⎯
+
+ FAIL  tests/preservation/retained.test.tsx > correction #23: early pause discarded
+AssertionError: expected true to be false // Object.is equality
+
+- Expected
++ Received
+
+- false
++ true
+
+ ❯ tests/preservation/retained.test.tsx:122:110
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/6]⎯
+
+ FAIL  tests/preservation/retained.test.tsx > correction #26: swept collision detects tunneling
+AssertionError: expected 2 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 2
+
+ ❯ tests/preservation/retained.test.tsx:123:239
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/6]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  6 failed | 27 passed (33)
+   Start at  00:09:54
+   Duration  745ms (environment 75%, tests 18%, import 5%, transform 2%)
+
