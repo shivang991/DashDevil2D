@@ -1,0 +1,87 @@
+
+ RUN  v5.0.4 /private/tmp/dashdevil-ticket-21/client
+
+ ❯ tests/preservation/retained.test.tsx (33 tests | 27 failed) 22ms
+   × 30 FPS: reset gives three-second stationary countdown within 50 ms 10ms
+   × 30 FPS: held steering respects lane bounds and latest-key release 1ms
+   × 30 FPS: coin on fatal contact counts and is consumed 1ms
+   × 30 FPS: invincible contact consumes obstacle and coin without damage 1ms
+   × 30 FPS: pause freezes road, spawns, difficulty and lane movement 1ms
+   × 60 FPS: reset gives three-second stationary countdown within 50 ms 0ms
+   × 60 FPS: held steering respects lane bounds and latest-key release 0ms
+   × 60 FPS: coin on fatal contact counts and is consumed 0ms
+   × 60 FPS: invincible contact consumes obstacle and coin without damage 0ms
+   × 60 FPS: pause freezes road, spawns, difficulty and lane movement 0ms
+   × 120 FPS: reset gives three-second stationary countdown within 50 ms 0ms
+   × 120 FPS: held steering respects lane bounds and latest-key release 0ms
+   × 120 FPS: coin on fatal contact counts and is consumed 0ms
+   × 120 FPS: invincible contact consumes obstacle and coin without damage 0ms
+   × 120 FPS: pause freezes road, spawns, difficulty and lane movement 0ms
+   × 30 FPS: tenfold acceleration and release easing 0ms
+   × 30 FPS: one-second spawn/difficulty and caps 0ms
+   × 30 FPS: nonfatal protection expires within 50 ms 0ms
+   × 30 FPS: strict edge needs actual overlap 0ms
+   × 60 FPS: tenfold acceleration and release easing 0ms
+   × 60 FPS: one-second spawn/difficulty and caps 0ms
+   × 60 FPS: nonfatal protection expires within 50 ms 0ms
+   × 60 FPS: strict edge needs actual overlap 0ms
+   × 120 FPS: tenfold acceleration and release easing 0ms
+   × 120 FPS: one-second spawn/difficulty and caps 0ms
+   × 120 FPS: nonfatal protection expires within 50 ms 0ms
+   × 120 FPS: strict edge needs actual overlap 0ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: reset gives three-second stationary countdown within 50 ms
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: held steering respects lane bounds and latest-key release
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: coin on fatal contact counts and is consumed
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: invincible contact consumes obstacle and coin without damage
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: pause freezes road, spawns, difficulty and lane movement
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: reset gives three-second stationary countdown within 50 ms
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: held steering respects lane bounds and latest-key release
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: coin on fatal contact counts and is consumed
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: invincible contact consumes obstacle and coin without damage
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: pause freezes road, spawns, difficulty and lane movement
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: reset gives three-second stationary countdown within 50 ms
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: held steering respects lane bounds and latest-key release
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: coin on fatal contact counts and is consumed
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: invincible contact consumes obstacle and coin without damage
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: pause freezes road, spawns, difficulty and lane movement
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: tenfold acceleration and release easing
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: one-second spawn/difficulty and caps
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: nonfatal protection expires within 50 ms
+ FAIL  tests/preservation/retained.test.tsx > 30 FPS: strict edge needs actual overlap
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: tenfold acceleration and release easing
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: one-second spawn/difficulty and caps
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: nonfatal protection expires within 50 ms
+ FAIL  tests/preservation/retained.test.tsx > 60 FPS: strict edge needs actual overlap
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: tenfold acceleration and release easing
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: one-second spawn/difficulty and caps
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: nonfatal protection expires within 50 ms
+ FAIL  tests/preservation/retained.test.tsx > 120 FPS: strict edge needs actual overlap
+ReferenceError: React is not defined
+ ❯ Harness tests/preservation/retained.test.tsx:20:3
+     18|   const gameInput = useGameInput();
+     19|   useGameLoop({ canvasRef, gameContext, gameInput });
+     20|   return <canvas ref={canvasRef} />;
+       |   ^
+     21| }
+     22| function key(key: string, type = 'keydown', repeat = false) {
+ ❯ Object.react_stack_bottom_frame node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:25904:20
+ ❯ renderWithHooks node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:7662:22
+ ❯ updateFunctionComponent node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:10166:19
+ ❯ beginWork node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:11778:18
+ ❯ runWithFiberInDEV node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:874:13
+ ❯ performUnitOfWork node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17641:22
+ ❯ workLoopSync node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17469:41
+ ❯ renderRootSync node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:17450:11
+ ❯ performWorkOnRoot node_modules/.pnpm/react-dom@19.2.4_react@19.2.4/node_modules/react-dom/cjs/react-dom-client.development.js:16583:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  27 failed | 6 expected fail (33)
+   Start at  00:14:24
+   Duration  1.22s (environment 82%, transform 7%, import 6%, tests 5%, worker 1%)
+
