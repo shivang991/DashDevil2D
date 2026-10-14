@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     "./configuration": "./configuration/defaults.json",
-    "./configuration-fixtures": "./configuration/fixtures.json"
+    "./configuration-fixtures": "./configuration/fixtures.json",
+    "./track-fixtures": "./track/fixtures.json"
   }
 }

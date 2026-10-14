@@ -61,6 +61,7 @@ export function advanceLongDrive(game: LongDrive, seconds: number, input: LongDr
     resetLongDrive(game); announceCountdown(); return Object.freeze(events);
   }
   announceCountdown();
+  if (game.state.paused) return Object.freeze(events);
   const observedAt = game.time + (game.state.paused ? 0 : seconds);
   const restart = () => resetLongDrive(game);
   // Countdown expiry splits an advance: elapsed active time is never discarded.
@@ -309,9 +310,6 @@ function tick(
   }
   state.carWorldX = (state.visualLane - 1) * gameConfig.laneSpacing;
   state.carWorldDistance = state.roadOffset + state.carOffset;
-  for (const object of [...state.coins, ...state.hearts, ...state.obstacles]) {
-    object.y = state.carYBase + gameConfig.carHeight / 2 - (object.distance! - state.roadOffset) - object.height / 2;
-  }
   const behind = state.roadOffset - gameConfig.carHeight / 2;
   retireSlices(state.track, behind, gameConfig);
   const retain = (object: typeof objects[number]) => object.distance! + object.height / 2 >= behind;

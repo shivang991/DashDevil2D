@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { expect, test } from 'vitest';
-import fixture from '../../../../packages/contracts/track/fixtures.json';
-import { createTrack, draw } from '../../../../packages/simulation/track';
+import fixture from '@dashdevil/contracts/track-fixtures';
+import { createTrack, draw } from '@dashdevil/simulation/track';
 import { advanceLongDrive, createLongDrive } from '@dashdevil/simulation/longDrive';
 
 // Approved public simulation seam, decisions #5/#11/#14/#17.
@@ -117,4 +117,16 @@ test('seeded contact identities, consumption and canonical times agree at 30/60/
   expect(run(30)).toEqual(run(60));
   expect(run(120)).toEqual(run(60));
   expect(run(60).events[0]).toMatchObject({ type: 'coin', objectId: 1 });
+});
+
+test('pause freezes a pending spawn opportunity after the difficulty interval shrinks', () => {
+  const game = createLongDrive(1, { gameplay: { initialSpawnInterval: 2, spawnIntervalDecrement: 1 } });
+  game.state.status = 'playing';
+  advanceLongDrive(game, 1, {});
+  expect(game.state).toMatchObject({ spawnInterval: 1 });
+  advanceLongDrive(game, 0, { pause: true });
+  const before = structuredClone(game.state);
+  advanceLongDrive(game, 20, {});
+  expect(game.state).toEqual(before);
+  expect(game.state.track.nextId).toBe(1);
 });
