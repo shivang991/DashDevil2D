@@ -45,7 +45,8 @@ test('validated weights disable types and optional hearts heal exactly one up to
   expect(game.state.coins).toHaveLength(0); expect(game.state.obstacles).toHaveLength(0);
   expect(game.state.hearts).toHaveLength(1);
   Object.assign(game.state, { canvasWidth: 606, canvasHeight: 806, carY: 686, carYBase: 686, health: 2 });
-  game.state.hearts[0].y = 680;
+  // #26 fixture placement uses a world center; y is now view-only.
+  game.state.hearts = [{ ...game.state.hearts[0], distance: 432, y: 680 }];
   expect(advanceLongDrive(game, 1 / 60, {}).map(event => event.type)).toEqual(['heart']);
   expect(game.state.health).toBe(3); expect(game.state.hearts).toHaveLength(0);
   game.state.hearts.push({ id: 99, lane: 1, y: 680, width: 28, height: 28 }); game.state.health = 4;

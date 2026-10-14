@@ -32,6 +32,7 @@ export function renderLongDrive(
   }
 
   drawRoad(ctx, state, gameConfig, width, height);
+  const objectY = (object: GameState["coins"][number]) => object.distance === undefined ? object.y : state.carYBase + gameConfig.carHeight / 2 - (object.distance - state.roadOffset) - object.height / 2;
 
   for (const coin of state.coins) {
     const cx = laneX(
@@ -40,11 +41,11 @@ export function renderLongDrive(
       state.roadWidthRatio,
       gameConfig.laneCount,
     );
-    drawCoin(ctx, cx, coin.y, coin.width);
+    drawCoin(ctx, cx, objectY(coin), coin.width);
   }
 
   for (const heart of state.hearts) {
-    drawHeart(ctx, laneX(heart.lane, width, state.roadWidthRatio, gameConfig.laneCount), heart.y, heart.width);
+    drawHeart(ctx, laneX(heart.lane, width, state.roadWidthRatio, gameConfig.laneCount), objectY(heart), heart.width);
   }
 
   for (const obs of state.obstacles) {
@@ -54,7 +55,7 @@ export function renderLongDrive(
       state.roadWidthRatio,
       gameConfig.laneCount,
     );
-    drawObstacle(ctx, ox, obs.y, obs.width, obs.height);
+    drawObstacle(ctx, ox, objectY(obs), obs.width, obs.height);
   }
 
   if (state.carVisible) {

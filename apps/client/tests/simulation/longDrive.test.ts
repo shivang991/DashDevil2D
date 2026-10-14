@@ -47,6 +47,8 @@ for (const fps of [30, 60, 120]) {
   test(`${fps} FPS retains fractional active-time remainder through difficulty milestones`, () => {
     const game = createLongDrive(() => 0.5);
     game.state.status = 'playing';
+    // Keep this timer-only scenario clear of newly viewport-independent contacts.
+    game.state.currentLane = 0; game.state.visualLane = 0;
     // Literal n=22 and n=34 expectations independently reviewed against #3
     // (/private/tmp/dashdevil-implementation-context/stage2-expectations.md).
     for (let frame = 0; frame < 22 * fps; frame++) advanceLongDrive(game, 1 / fps, {});

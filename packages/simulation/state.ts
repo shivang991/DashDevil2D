@@ -1,6 +1,14 @@
 import { gameConfig, type GameConfig } from "./config";
 
+import { createTrack, type Track } from "./track";
+
+export interface RoadObject { id?: number; lane: number; y: number; width: number; height: number; distance?: number }
+
 export interface GameState {
+  track: Track;
+  carOffset: number;
+  carWorldX: number;
+  carWorldDistance: number;
   health: number;
   score: number;
   currentLane: number;
@@ -15,9 +23,9 @@ export interface GameState {
   spawnTimer: number;
   spawnInterval: number;
   difficultyTimer: number;
-  obstacles: { id?: number; lane: number; y: number; width: number; height: number }[];
-  coins: { id?: number; lane: number; y: number; width: number; height: number }[];
-  hearts: { id?: number; lane: number; y: number; width: number; height: number }[];
+  obstacles: RoadObject[];
+  coins: RoadObject[];
+  hearts: RoadObject[];
   laneSwitchCooldown: number;
   invincibleTimer: number;
   blinkTimer: number;
@@ -40,6 +48,10 @@ export function makeInitialState(random: () => number = Math.random, configurati
   const gameConfig = configuration;
   const midLane = Math.floor(gameConfig.laneCount / 2);
   return {
+    track: createTrack(1),
+    carOffset: 0,
+    carWorldX: 0,
+    carWorldDistance: 0,
     health: gameConfig.maxHealth,
     score: 0,
     currentLane: midLane,

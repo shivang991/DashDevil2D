@@ -120,7 +120,10 @@ for (const fps of [30, 60, 120]) {
   });
   test(`${fps} FPS: nonfatal protection expires within 50 ms`, () => {
     playing(); act(() => context.updateGameState({ obstacles: [object()] })); frame(fps);
-    expect(context.gameState).toMatchObject({ health: 1, invincibleTimer: 2, shakeTimer: 0.5 });
+    expect(context.gameState.health).toBe(1);
+    // #26 contacts are timed at entry, rather than the render-frame endpoint.
+    expect(context.gameState.invincibleTimer).toBeCloseTo(2 - 1 / fps, 8);
+    expect(context.gameState.shakeTimer).toBeGreaterThanOrEqual(0.5 - 1 / fps);
     const damagedAt = now;
     // Observe the first expiry transition, rather than rounding a requested delay
     // into extra frames and accidentally accepting late protection expiry.
@@ -139,7 +142,7 @@ for (const fps of [30, 60, 120]) {
 }
 // Later owning slices must use PRESERVATION_ENFORCE=22,23,26 (or all).
 function correction(owner: number, name: string, run: () => void) {
-  const enforce = ['22', '23', ...(process.env.PRESERVATION_ENFORCE?.split(',') ?? [])];
+  const enforce = ['22', '23', '26', ...(process.env.PRESERVATION_ENFORCE?.split(',') ?? [])];
   (enforce.includes(String(owner)) || enforce.includes('all') ? test : test.fails)(`correction #${owner}: ${name}`, run);
 }
 correction(22, 'pause freezes shake', () => { playing(); act(() => context.updateGameState({ paused: true, shakeTimer: 0.5 })); advance(0.2, 60); expect(context.gameState.shakeTimer).toBe(0.5); });

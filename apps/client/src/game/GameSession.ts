@@ -21,6 +21,7 @@ export interface SessionOptions {
   countdown: 5 | 3;
   clock?: FrameClock;
   random?: () => number;
+  seed?: number;
   /** Developer/test source read only before each capture; never a player tuning UI. */
   configuration?: ConfigurationOverrides | (() => ConfigurationOverrides);
 }
@@ -45,7 +46,7 @@ export class GameSession {
   constructor(options: SessionOptions) {
     this.options = Object.freeze({ ...options });
     this.clock = options.clock ?? browserClock;
-    this.game = createLongDrive(options.random, this.configurationOverrides());
+    this.game = createLongDrive(options.seed ?? options.random, this.configurationOverrides());
     this.game.state.countdownTimer = options.countdown;
     options.canvas.tabIndex = 0;
     this.input = new KeyboardInput(options.canvas, () => ({ status: this.game.state.status, paused: this.game.state.paused, restartable: this.game.state.gameOverAnimDone, suspended: this.suspended() }), command => this.command(command));
@@ -57,6 +58,7 @@ export class GameSession {
   }
   getSnapshot = (): UISnapshot => this.snapshot;
   getPresentation = (): Readonly<GameState> => Object.freeze({ ...this.game.state,
+    track: { ...this.game.state.track, slices: [...this.game.state.track.slices], consumed: new Set(this.game.state.track.consumed) },
     hearts: this.game.state.hearts.map(object => Object.freeze({ ...object })),
     coins: this.game.state.coins.map(object => Object.freeze({ ...object })),
     obstacles: this.game.state.obstacles.map(object => Object.freeze({ ...object })),
@@ -108,7 +110,7 @@ export class GameSession {
     canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
     const state = this.game.state;
     const base = canvas.height - gameConfig.carHeight - gameConfig.carBottomMargin;
-    const displacement = state.carYBase === 0 ? 0 : state.carY - state.carYBase;
+    const displacement = -state.carOffset;
     Object.assign(state, { canvasWidth: canvas.width, canvasHeight: canvas.height,
       roadWidthRatio: canvas.width <= gameConfig.narrowScreenWidth ? gameConfig.roadWidthRatioNarrow : gameConfig.roadWidthRatioNormal,
       carYBase: base, carY: base + displacement });

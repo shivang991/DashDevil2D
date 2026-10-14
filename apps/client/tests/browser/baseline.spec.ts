@@ -114,7 +114,8 @@ test('audio unavailable still allows gameplay', async ({ page }) => {
 
 test('isolated coin cue from public seeded gameplay', async ({ page, evidence }) => {
   await page.addInitScript(audioCaptureScript);
-  await page.addInitScript(() => { Math.random = () => 0.4; });
+  // Seed 5408: first lane word 0x56269a32, coin word 0x297388c2.
+  await page.addInitScript(() => { Math.random = () => (5408 - .5) / 0xffffffff; });
   await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
   await page.clock.pauseAt(new Date('2026-10-14T19:00:01Z'));
   await page.goto('http://127.0.0.1:4173');

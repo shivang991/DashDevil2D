@@ -85,3 +85,7 @@ Technical integration checks pass; **Stage 2 exit is accepted** following the ow
 ## Stage 3 workspace move (#24)
 
 [Migration checkpoint](monorepo-checkpoint.md) records the move to `apps/client`, native `apps/server` scaffolding, workspace dependency boundaries, orchestration and applicable preservation checks. Historical checkpoint paths remain unchanged as provenance of their tested revisions. #24 alone does not satisfy the complete Stage 3 gate; #25–#27 still own validated configuration, discrete tracks/world geometry and generated contracts.
+
+## Stage 3 world geometry and track checkpoint (#26)
+
+[Track checkpoint](track-checkpoint.md) records canvas-independent world centers, strict swept contacts, immutable seeded slices with separate consumption, exact time-based spawn anchors and safe retirement. The #26 tunneling correction is now mandatory. Shared version-1 generation fixtures run in both TypeScript and Go; full Go contact parity, generated schema verification and real transport remain owned by #27–#29. Actual Chrome high-speed/resize evidence complements retained Long Drive checks. Full Stage 3 and new human audiovisual comparison remain pending.

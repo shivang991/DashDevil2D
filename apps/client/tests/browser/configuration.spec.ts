@@ -7,7 +7,8 @@ import { test } from './evidence';
 // one, an optional heart restores exactly one, score remains zero. Platform
 // randomness changes object selection without changing active configuration.
 test('developer capture drives actual Long Drive HP HUD, heart drawing, healing and audio', async ({ page, evidence }) => {
-  await page.addInitScript(() => { Reflect.set(window, "fixtureRandom", .4); Math.random = () => Reflect.get(window, "fixtureRandom") as number; });
+  // Seed 5410 draws middle obstacle, then middle heart.
+  await page.addInitScript(() => { Math.random = () => (5410 - .5) / 0xffffffff; });
   await page.addInitScript(() => {
     const Audio = window.AudioContext;
     let notes = 0;
@@ -26,12 +27,11 @@ test('developer capture drives actual Long Drive HP HUD, heart drawing, healing 
   await page.clock.runFor(3050);
   await page.clock.runFor(2900);
   await expect(page.getByRole('img', { name: 'Health: 3 of 4' })).toBeVisible();
-  await page.evaluate(() => { Reflect.set(window, "fixtureRandom", .5); });
-  await page.clock.runFor(1100);
+  await page.clock.runFor(500);
   await expect(page.getByRole('img', { name: 'Health: 3 of 4' })).toBeVisible();
   await page.screenshot({ path: path.join(evidence, 'override-heart-before-contact.png') });
   const before = await page.evaluate('recordedNotes()') as number;
-  await page.clock.runFor(1000);
+  await page.clock.runFor(500);
   await expect(page.getByRole('img', { name: 'Health: 4 of 4' })).toBeVisible();
   expect(await page.evaluate('recordedNotes()')).toBeGreaterThan(before);
   await expect(page.getByText('Score: 0', { exact: true })).toBeVisible();
@@ -39,5 +39,5 @@ test('developer capture drives actual Long Drive HP HUD, heart drawing, healing 
   await page.clock.runFor(1500);
   await expect(page.getByRole('img', { name: 'Health: 4 of 4' })).toBeVisible();
   await page.screenshot({ path: path.join(evidence, 'override-heart-healed.png') });
-  fs.writeFileSync(path.join(evidence, 'override-observations.json'), JSON.stringify({ configurationVersion: 1, fixtureVersion: 1, maximumHP: 4, damageHP: 3, healedHP: 4, finalScore: 0, randomness: 'constant 0.4 then 0.5', heartAudio: 'oscillator cue observed; human audition pending', heartRendering: 'screenshot retained; human comparison pending', activeOverrideMutation: 'HUD remains captured at 4' }, null, 2));
+  fs.writeFileSync(path.join(evidence, 'override-observations.json'), JSON.stringify({ configurationVersion: 1, fixtureVersion: 1, maximumHP: 4, damageHP: 3, healedHP: 4, finalScore: 0, randomness: 'xorshift32 seed 5410', heartAudio: 'oscillator cue observed; human audition pending', heartRendering: 'screenshot retained; human comparison pending', activeOverrideMutation: 'HUD remains captured at 4' }, null, 2));
 });
