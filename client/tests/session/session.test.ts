@@ -6,7 +6,7 @@ function clock() {
   let next = 0;
   const frames = new Map<number, FrameRequestCallback>();
   const boundary: FrameClock = { now: () => now, request: fn => { frames.set(++next, fn); return next; }, cancel: id => { frames.delete(id); } };
-  return { boundary, frames, deliver(timestamp: number) { const ready = [...frames.values()]; frames.clear(); for (const callback of ready) callback(timestamp); }, jump(seconds: number) { now += seconds * 1000; const ready = [...frames.values()]; frames.clear(); for (const callback of ready) callback(now); }, advance(seconds: number, fps = 60) { for (let i = 0; i < Math.round(seconds * fps); i++) { now += 1000 / fps; const ready = [...frames.values()]; frames.clear(); for (const callback of ready) callback(now); } } };
+  return { boundary, frames, elapse(seconds: number) { now += seconds * 1000; }, deliver(timestamp: number) { const ready = [...frames.values()]; frames.clear(); for (const callback of ready) callback(timestamp); }, jump(seconds: number) { now += seconds * 1000; const ready = [...frames.values()]; frames.clear(); for (const callback of ready) callback(now); }, advance(seconds: number, fps = 60) { for (let i = 0; i < Math.round(seconds * fps); i++) { now += 1000 / fps; const ready = [...frames.values()]; frames.clear(); for (const callback of ready) callback(now); } } };
 }
 afterEach(() => { document.body.replaceChildren(); vi.restoreAllMocks(); });
 test('independent sessions keep countdown, pause and reset state separate', () => {
@@ -138,3 +138,31 @@ for (const fps of [30, 60, 120]) {
     session.dispose();
   });
 }
+
+
+test('resuming after a paused interval without RAF does not catch up unseen gameplay', () => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const time = clock(); const canvas = document.createElement('canvas'); document.body.append(canvas);
+  const session = new GameSession({ mode: 'long-drive', canvas, clock: time.boundary, countdown: 3, random: () => 0.5 });
+  session.start(); time.advance(3); session.command('pause');
+  const before = session.getPresentation().roadOffset;
+  time.elapse(20); session.command('pause'); time.advance(1 / 60);
+  expect(session.getPresentation().roadOffset - before).toBeCloseTo(400 / 60, 8);
+  expect(session.getPresentation().roadSpeed).toBe(400);
+  session.dispose();
+});
+
+test('fresh nonrepeat press after an undelivered away keyup recovers controls', () => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const time = clock(); const canvas = document.createElement('canvas'); document.body.append(canvas);
+  const session = new GameSession({ mode: 'long-drive', canvas, clock: time.boundary, countdown: 3, random: () => 0.5 });
+  session.start(); time.advance(3); keyboard('w'); time.advance(1 / 60);
+  window.dispatchEvent(new Event('blur')); time.advance(5);
+  window.dispatchEvent(new Event('focus')); keyboard(' '); keyboard(' ', 'keyup');
+  // Release occurred outside this window, so its keyup was never delivered.
+  keyboard('w', 'keydown', true); time.advance(1 / 60);
+  expect(session.getSnapshot().accelerating).toBe(false);
+  keyboard('w', 'keydown', false); time.advance(1 / 60);
+  expect(session.getSnapshot().accelerating).toBe(true);
+  session.dispose();
+});

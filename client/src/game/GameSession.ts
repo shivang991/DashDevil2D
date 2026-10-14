@@ -74,6 +74,7 @@ export class GameSession {
     if (this.disposed) return;
     const state = this.game.state;
     if (command === 'pause' && state.status === 'playing') {
+      this.lastTime = Math.max(this.lastTime, this.clock.now());
       this.input.clear();
       state.accelerating = false;
       this.audio.update(state, advanceLongDrive(this.game, 0, { pause: true }));

@@ -6,8 +6,6 @@ export interface InputAvailability {
 const movements = new Map<string, 'left' | 'right' | 'accelerate'>([['ArrowLeft', 'left'], ['a', 'left'], ['ArrowRight', 'right'], ['d', 'right'], ['ArrowUp', 'accelerate'], ['w', 'accelerate']] as const);
 const interactive = 'button,input,textarea,select,a[href],[contenteditable]:not([contenteditable="false"]),[role="button"]';
 export class KeyboardInput {
-  private readonly held = new Set<string>();
-  private readonly blocked = new Set<string>();
   private active?: string;
   private disposed = false;
   private readonly surface: HTMLElement;
@@ -27,7 +25,6 @@ export class KeyboardInput {
     return movement === 'accelerate' ? { accelerating: true } : movement ? { steering: movement } : {};
   }
   clear = (): void => {
-    for (const key of this.held) this.blocked.add(key);
     this.active = undefined;
   };
   dispose(): void {
@@ -35,7 +32,7 @@ export class KeyboardInput {
     window.removeEventListener('keydown', this.keyDown); window.removeEventListener('keyup', this.keyUp);
     window.removeEventListener('blur', this.clear);
     document.removeEventListener('visibilitychange', this.visibility); document.removeEventListener('focusin', this.focusIn);
-    this.held.clear(); this.blocked.clear(); this.active = undefined;
+    this.active = undefined;
   }
   private focused(): boolean { return document.activeElement === this.surface; }
   private eligibleMovement(): boolean {
@@ -51,15 +48,13 @@ export class KeyboardInput {
     const focused = this.focused() && !nativeTarget && !available.suspended;
     const usable = focused && (movement ? available.status === 'playing' && !available.paused : key === ' ' ? available.status === 'playing' : available.status === 'gameover' && available.restartable);
     if (usable) event.preventDefault();
-    const alreadyHeld = this.held.has(key);
-    this.held.add(key);
-    if (!usable) { this.blocked.add(key); return; }
-    if (event.repeat || alreadyHeld || this.blocked.has(key)) return;
+    // The browser marks held-key repeats even when keyup happened elsewhere.
+    // A nonrepeat keydown is fresh and must recover after an undelivered keyup.
+    if (!usable || event.repeat) return;
     if (movement) this.active = key;
     else this.command(key === ' ' ? 'pause' : 'restart');
   };
   private readonly keyUp = (event: KeyboardEvent) => {
-    this.held.delete(event.key); this.blocked.delete(event.key);
     if (this.active === event.key) this.active = undefined;
   };
   private readonly visibility = () => { if (document.hidden) this.clear(); };

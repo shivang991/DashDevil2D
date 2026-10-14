@@ -141,3 +141,65 @@ test('isolated coin cue from public seeded gameplay', async ({ page, evidence })
   if (audio) fs.writeFileSync(path.join(evidence, 'baseline-coin-audio.webm'), Buffer.from(audio));
   await page.screenshot({ path: path.join(evidence, 'baseline-coin.png') });
 });
+
+test('session focus lifecycle: away countdown freezes and active blur requires fresh resume', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-10-14T19:00:01Z'));
+  await page.goto('http://127.0.0.1:4173');
+  await page.getByText('Long Drive', { exact: true }).click();
+  // Sample beyond the display boundary; RAF registration can precede its first callback.
+  await page.clock.runFor(1100);
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await page.clock.runFor(10000); await expect(page.locator('.game-overlay')).toHaveText('4');
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await page.clock.runFor(4100); await expect(page.locator('.game-overlay')).toHaveCount(0);
+  await page.keyboard.down('w'); await page.clock.runFor(20);
+  await expect(page.getByText('Accelerating!', { exact: false })).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await page.clock.runFor(10000); await expect(page.getByText('PAUSED', { exact: true })).toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await page.clock.runFor(1000); await expect(page.getByText('PAUSED', { exact: true })).toBeVisible();
+  await page.keyboard.press('Space'); await page.keyboard.down('w'); await page.clock.runFor(20);
+  await expect(page.getByText('Hold [Up/W] to accelerate', { exact: false })).toBeVisible();
+  await page.keyboard.up('w'); await page.keyboard.down('w'); await page.clock.runFor(20);
+  await expect(page.getByText('Accelerating!', { exact: false })).toBeVisible();
+  await page.keyboard.up('w');
+});
+
+test('native sound control keeps Space behavior and clears held movement', async ({ page }) => {
+  await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-10-14T19:00:01Z'));
+  await page.goto('http://127.0.0.1:4173'); await page.getByText('Long Drive', { exact: true }).click();
+  await page.clock.runFor(5100); await page.keyboard.down('w'); await page.clock.runFor(20);
+  await page.getByRole('button', { name: 'Mute sound' }).focus();
+  await page.keyboard.press('Space'); await page.clock.runFor(20);
+  await expect(page.getByRole('button', { name: 'Enable sound' })).toBeVisible();
+  await expect(page.getByText('PAUSED', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Hold [Up/W] to accelerate', { exact: false })).toBeVisible();
+  await page.locator('canvas').click(); await page.keyboard.down('w'); await page.clock.runFor(20);
+  await expect(page.getByText('Hold [Up/W] to accelerate', { exact: false })).toBeVisible();
+  await page.keyboard.up('w'); await page.keyboard.down('w'); await page.clock.runFor(20);
+  await expect(page.getByText('Accelerating!', { exact: false })).toBeVisible();
+});
+
+test('early Enter is discarded; restart and menu-return use fresh three-second countdowns', async ({ page }) => {
+  await page.addInitScript(() => { Math.random = () => 0.5; });
+  await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-10-14T19:00:01Z'));
+  await page.goto('http://127.0.0.1:4173'); await page.getByText('Long Drive', { exact: true }).click();
+  await page.keyboard.press('Enter'); await page.clock.runFor(5100);
+  await expect(page.locator('.game-overlay')).toHaveCount(0);
+  for (let i = 0; i < 200 && await page.getByRole('img', { name: 'Health: 0 of 2' }).count() === 0; i++) await page.clock.runFor(50);
+  await expect(page.getByRole('img', { name: 'Health: 0 of 2' })).toBeVisible();
+  await page.keyboard.down('Enter'); await page.clock.runFor(600);
+  await expect(page.getByText('GAME OVER', { exact: true })).toBeVisible();
+  await page.keyboard.up('Enter'); await page.keyboard.press('Enter'); await page.clock.runFor(20);
+  await expect(page.locator('.game-overlay')).toHaveText('3');
+  await page.clock.runFor(3100);
+  await expect(page.locator('.game-overlay')).toHaveCount(0);
+  await page.clock.runFor(11000); await expect(page.getByText('GAME OVER', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Back to Menu' }).click();
+  await page.keyboard.press('Space'); await expect(page.locator('canvas')).toHaveCount(0);
+  await page.getByText('Long Drive', { exact: true }).click();
+  await expect(page.locator('.game-overlay')).toHaveText('3');
+});
