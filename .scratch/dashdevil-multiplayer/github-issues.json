@@ -1,0 +1,277 @@
+{
+  "repo": "shivang991/DashDevil2D",
+  "issues": {
+    "01-long-drive-preservation.md": {
+      "id": 5809073048,
+      "number": 3,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/3",
+      "title": "Define the Long Drive preservation contract"
+    },
+    "02-nos-and-movement.md": {
+      "id": 5809073194,
+      "number": 4,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/4",
+      "title": "Define NOS and player movement"
+    },
+    "03-track-model.md": {
+      "id": 5809073312,
+      "number": 5,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/5",
+      "title": "Define the discrete track and world model"
+    },
+    "04-road-rage-collisions.md": {
+      "id": 5809073434,
+      "number": 6,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/6",
+      "title": "Define Road Rage collision responsibility"
+    },
+    "05-round-outcomes.md": {
+      "id": 5809073573,
+      "number": 7,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/7",
+      "title": "Define round outcomes and event precedence"
+    },
+    "06-room-lifecycle.md": {
+      "id": 5809073700,
+      "number": 8,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/8",
+      "title": "Define the four-digit room and round lifecycle"
+    },
+    "07-transport-feasibility.md": {
+      "id": 5809073864,
+      "number": 9,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/9",
+      "title": "Research browser and Go transport feasibility"
+    },
+    "08-internet-play-targets.md": {
+      "id": 5809074039,
+      "number": 10,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/10",
+      "title": "Define casual internet play acceptance targets"
+    },
+    "09-authoritative-simulation.md": {
+      "id": 5809074158,
+      "number": 11,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/11",
+      "title": "Define the authoritative simulation and time contract"
+    },
+    "10-prediction-and-correction.md": {
+      "id": 5809074401,
+      "number": 12,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/12",
+      "title": "Choose prediction and correction behavior"
+    },
+    "11-transport-contract.md": {
+      "id": 5809074544,
+      "number": 13,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/13",
+      "title": "Choose the supported gameplay transport"
+    },
+    "12-wire-protocol.md": {
+      "id": 5809074684,
+      "number": 14,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/14",
+      "title": "Define the snapshot and input protocol"
+    },
+    "13-module-boundaries.md": {
+      "id": 5809074903,
+      "number": 15,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/15",
+      "title": "Choose module and monorepo boundaries"
+    },
+    "14-configuration.md": {
+      "id": 5809075032,
+      "number": 16,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/16",
+      "title": "Define configurable gameplay and validation"
+    },
+    "15-verification-contract.md": {
+      "id": 5809075186,
+      "number": 17,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/17",
+      "title": "Define the behavior and integration verification contract"
+    },
+    "16-operating-model.md": {
+      "id": 5809075337,
+      "number": 18,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/18",
+      "title": "Define the initial server operating model"
+    },
+    "17-screen-behavior.md": {
+      "id": 5809075457,
+      "number": 19,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/19",
+      "title": "Define the multiplayer screen and input-focus behavior"
+    },
+    "18-migration-sequence.md": {
+      "id": 5809075585,
+      "number": 20,
+      "url": "https://github.com/shivang991/DashDevil2D/issues/20",
+      "title": "Choose the safe restructuring and multiplayer sequence"
+    }
+  },
+  "edges": [
+    [
+      "04-road-rage-collisions.md",
+      "02-nos-and-movement.md"
+    ],
+    [
+      "05-round-outcomes.md",
+      "02-nos-and-movement.md"
+    ],
+    [
+      "09-authoritative-simulation.md",
+      "03-track-model.md"
+    ],
+    [
+      "09-authoritative-simulation.md",
+      "04-road-rage-collisions.md"
+    ],
+    [
+      "09-authoritative-simulation.md",
+      "05-round-outcomes.md"
+    ],
+    [
+      "10-prediction-and-correction.md",
+      "08-internet-play-targets.md"
+    ],
+    [
+      "10-prediction-and-correction.md",
+      "09-authoritative-simulation.md"
+    ],
+    [
+      "11-transport-contract.md",
+      "07-transport-feasibility.md"
+    ],
+    [
+      "11-transport-contract.md",
+      "08-internet-play-targets.md"
+    ],
+    [
+      "12-wire-protocol.md",
+      "09-authoritative-simulation.md"
+    ],
+    [
+      "12-wire-protocol.md",
+      "10-prediction-and-correction.md"
+    ],
+    [
+      "12-wire-protocol.md",
+      "11-transport-contract.md"
+    ],
+    [
+      "13-module-boundaries.md",
+      "01-long-drive-preservation.md"
+    ],
+    [
+      "13-module-boundaries.md",
+      "09-authoritative-simulation.md"
+    ],
+    [
+      "13-module-boundaries.md",
+      "12-wire-protocol.md"
+    ],
+    [
+      "14-configuration.md",
+      "02-nos-and-movement.md"
+    ],
+    [
+      "14-configuration.md",
+      "03-track-model.md"
+    ],
+    [
+      "14-configuration.md",
+      "04-road-rage-collisions.md"
+    ],
+    [
+      "14-configuration.md",
+      "05-round-outcomes.md"
+    ],
+    [
+      "15-verification-contract.md",
+      "01-long-drive-preservation.md"
+    ],
+    [
+      "15-verification-contract.md",
+      "06-room-lifecycle.md"
+    ],
+    [
+      "15-verification-contract.md",
+      "10-prediction-and-correction.md"
+    ],
+    [
+      "15-verification-contract.md",
+      "12-wire-protocol.md"
+    ],
+    [
+      "15-verification-contract.md",
+      "13-module-boundaries.md"
+    ],
+    [
+      "15-verification-contract.md",
+      "14-configuration.md"
+    ],
+    [
+      "16-operating-model.md",
+      "06-room-lifecycle.md"
+    ],
+    [
+      "16-operating-model.md",
+      "11-transport-contract.md"
+    ],
+    [
+      "17-screen-behavior.md",
+      "01-long-drive-preservation.md"
+    ],
+    [
+      "17-screen-behavior.md",
+      "02-nos-and-movement.md"
+    ],
+    [
+      "17-screen-behavior.md",
+      "06-room-lifecycle.md"
+    ],
+    [
+      "18-migration-sequence.md",
+      "13-module-boundaries.md"
+    ],
+    [
+      "18-migration-sequence.md",
+      "15-verification-contract.md"
+    ],
+    [
+      "18-migration-sequence.md",
+      "16-operating-model.md"
+    ],
+    [
+      "18-migration-sequence.md",
+      "17-screen-behavior.md"
+    ]
+  ],
+  "children": [
+    "01-long-drive-preservation.md",
+    "02-nos-and-movement.md",
+    "03-track-model.md",
+    "04-road-rage-collisions.md",
+    "05-round-outcomes.md",
+    "06-room-lifecycle.md",
+    "07-transport-feasibility.md",
+    "08-internet-play-targets.md",
+    "09-authoritative-simulation.md",
+    "10-prediction-and-correction.md",
+    "11-transport-contract.md",
+    "12-wire-protocol.md",
+    "13-module-boundaries.md",
+    "14-configuration.md",
+    "15-verification-contract.md",
+    "16-operating-model.md",
+    "17-screen-behavior.md",
+    "18-migration-sequence.md"
+  ],
+  "map": {
+    "id": 5809072915,
+    "number": 2,
+    "url": "https://github.com/shivang991/DashDevil2D/issues/2"
+  },
+  "resolution_posted": true
+}

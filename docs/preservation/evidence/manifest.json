@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "baselineRevision": "a68f27efd1d79ec8eea7ef0b0a6d8567606189dd",
+  "integrationStart": "23979fb648636a46e763240bafb3c1965749758c",
+  "productSourceUnchanged": true,
+  "fixtureVersion": 1,
+  "browserSeeds": [
+    21,
+    0.4
+  ],
+  "virtualCaptureLimitation": "virtual-*-unreliable.png are stale compositor output, not valid presentation proof",
+  "visualInspection": "agent verified real-time acceleration car raised (HUD raster absent in that frame); real-time pause shows PAUSED overlay/HUD; human audiovisual equivalence pending",
+  "stage1": "accepted: owner reported review pass in Codex on 2026-10-14",
+  "ciWorkflow": "passed on c8a2dda4d481e3fec463f3f163b64eec20a4c6d6",
+  "artifacts": {
+    "audio-capture.json": {
+      "bytes": 352,
+      "sha256": "0b3bad2d9f267644e82f9ab11540d5902036fa607b6bcad67ae374b2bb541d4a"
+    },
+    "audio-hidden-platform-fixture.json": {
+      "bytes": 210,
+      "sha256": "e010598f545deba7fe20448596b74656bca04d418ffa074894eefc9959bc329a"
+    },
+    "baseline-acceleration.png": {
+      "bytes": 141374,
+      "sha256": "75ad8f350e10c0356a3608734ad0e8c9cd84a08e4bdedbf7054e6b9d3b10cf74"
+    },
+    "baseline-audio.webm": {
+      "bytes": 174265,
+      "sha256": "470f2ed63e9bf73ee63e31d4d2310fe94ee9db43239ce2ddb930415621d0549a"
+    },
+    "baseline-coin-audio.webm": {
+      "bytes": 61507,
+      "sha256": "7e93e198faf6d48fa1bc2fddaabe2f458390f55e6744a9dc26d18565e72294e7"
+    },
+    "baseline-coin.png": {
+      "bytes": 142061,
+      "sha256": "95efad0474fa3152d130ce69771992b2887b3a9738b258f8e922bdfe21522719"
+    },
+    "baseline-countdown.png": {
+      "bytes": 63909,
+      "sha256": "b1cbbd0f6261e50cd89f4930e34db4ba3ee3ba14fb00bf3989e5da15abc4d1be"
+    },
+    "baseline-gameover.png": {
+      "bytes": 212251,
+      "sha256": "6b5631b40537113b900b94f07dbec433f984ca5d7885f1a9d9ca5a479f7aa599"
+    },
+    "baseline-pause.png": {
+      "bytes": 229053,
+      "sha256": "77141cb0b9f8727a7bdf3907c3928a6906a157d6cbd2f9841341bd3288dfe2ce"
+    },
+    "baseline-resize-pause.png": {
+      "bytes": 142608,
+      "sha256": "e65bdf3d6941459f6129540d8bb98fc856b71a878c159f914fdbc3e05e06d865"
+    },
+    "browser-attempt-2-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/test-failed-1.png": {
+      "bytes": 142897,
+      "sha256": "a00a9dc61a29c0edbf5bd2a9abfffdb9a4b0f121297c13beb177db5734279040"
+    },
+    "browser-environment.json": {
+      "bytes": 582,
+      "sha256": "73c0c814177934b849cfeef19e9e7a3e09c7ffb33a65fdae1cf4e1f8a4bbfa37"
+    },
+    "browser-full-playthrough-failure-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/test-failed-1.png": {
+      "bytes": 16005,
+      "sha256": "ac5a05fb0f3448090647b2df57d83ff933b68a92b669edb17b92253a59032f95"
+    },
+    "browser-real-snapshots-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/video.webm": {
+      "bytes": 4181766,
+      "sha256": "39be1aa737083be66d9aa91202884aa25ea54bfd1a16edfa66fd1a7a3a4063c8"
+    },
+    "browser-verified-artifacts/baseline-isolated-coin-cue-from-public-seeded-gameplay/video.webm": {
+      "bytes": 1484629,
+      "sha256": "7778feb6dbf2dae616b39376936f548e6654a2a6841edb0c950abbf045aed4a2"
+    },
+    "failure-summary.json": {
+      "bytes": 3132,
+      "sha256": "283d49c9cde824e1ba4025882965debd06c6ac04f8b6e1f5ebe8e20a059c9b56"
+    },
+    "resize-environment.json": {
+      "bytes": 188,
+      "sha256": "31fba4538c314d6307f6b1d90a991a68a33b97fe839e76503257a62747fde84b"
+    },
+    "virtual-acceleration-unreliable.png": {
+      "bytes": 140357,
+      "sha256": "e0bc41fc4c043cb44fcbd35db4a8ffbc80707dff7b656b769f9f7b04e3b11021"
+    },
+    "virtual-pause-unreliable.png": {
+      "bytes": 140357,
+      "sha256": "e0bc41fc4c043cb44fcbd35db4a8ffbc80707dff7b656b769f9f7b04e3b11021"
+    }
+  },
+  "cleanup": {
+    "reason": "Explicit user request to remove logs, diagnostic traces, redundant Markdown and video copies",
+    "baselineMediaPreserved": true,
+    "originalMetadataPreserved": true,
+    "failureSummary": "failure-summary.json",
+    "hashesRegeneratedForRemainingArtifacts": true
+  },
+  "humanReview": {
+    "date": "2026-10-14",
+    "reviewer": "project owner",
+    "source": "Codex user message",
+    "statement": "review pass",
+    "additionalEnvironmentOrObservations": "not supplied",
+    "scope": "Stage 1 baseline audiovisual review"
+  }
+}

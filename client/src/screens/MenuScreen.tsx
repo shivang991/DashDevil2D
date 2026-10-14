@@ -25,7 +25,7 @@ function MenuItem({ title, subtitle, onClick, disabled, comingSoon }: MenuItemPr
         }`}
       >
         <div className="flex flex-col gap-0.5">
-          <span className="text-white text-sm font-semibold">{title}</span>
+          <span className="font-heading text-white text-sm font-light">{title}</span>
           <span className="text-neutral-400 text-xs">{subtitle}</span>
         </div>
         <div className={`flex items-center justify-center w-8 h-8 rounded-full border ${disabled ? "border-neutral-700" : "border-neutral-500"}`}>
@@ -45,13 +45,13 @@ export function MenuScreen({ onStartGame }: MenuScreenProps) {
       <div className="flex flex-col w-[320px] sm:w-96 gap-6 p-6">
         {/* Branding */}
         <div className="flex items-center justify-center px-6 py-8 rounded-xl border border-neutral-700">
-          <h1 className="text-white text-xl font-bold tracking-wide">Branding</h1>
+          <h1 className="text-white text-xl tracking-wide">Branding</h1>
         </div>
 
         {/* Menu items */}
         <div className="flex flex-col gap-3">
           <MenuItem
-            title="Solo Trip"
+            title="Long Drive"
             subtitle="Single player runner"
             onClick={onStartGame}
           />

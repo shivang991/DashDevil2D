@@ -4,7 +4,29 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.game-overlay {
+    animation: game-overlay-in 100ms ease-out;
+}
+
+@keyframes game-overlay-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .game-overlay {
+        animation: none;
+    }
+}
+
 @theme inline {
+    --font-sans: "Bruno Ace SC", sans-serif;
+    --font-heading: "Bitcount Ink Variable", monospace;
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);
@@ -115,10 +137,16 @@
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+
+    body {
+        @apply bg-background text-foreground font-sans;
+    }
+
+    h1, h2, h3, h4, h5, h6 {
+        font-family: var(--font-heading);
+        font-weight: 300;
     }
 }
