@@ -27,4 +27,3 @@ jobs:
           name: preservation-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             client/test-results
-            docs/preservation/evidence

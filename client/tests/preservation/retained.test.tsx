@@ -108,8 +108,16 @@ for (const fps of [30, 60, 120]) {
   test(`${fps} FPS: nonfatal protection expires within 50 ms`, () => {
     playing(); act(() => context.updateGameState({ obstacles: [object()] })); frame(fps);
     expect(context.gameState).toMatchObject({ health: 1, invincibleTimer: 2, shakeTimer: 0.5 });
-    advance(1.95, fps); expect(context.gameState.invincibleTimer).toBeGreaterThan(0);
-    advance(0.1, fps); expect(context.gameState.invincibleTimer).toBe(0); expect(context.gameState.carVisible).toBe(true);
+    const damagedAt = now;
+    // Observe the first expiry transition, rather than rounding a requested delay
+    // into extra frames and accidentally accepting late protection expiry.
+    while (context.gameState.invincibleTimer > 0 && now - damagedAt < 2100) frame(fps);
+    const elapsedMs = Math.round((now - damagedAt) * 1e6) / 1e6;
+    expect(context.gameState.invincibleTimer).toBe(0);
+    expect(elapsedMs).toBeGreaterThanOrEqual(1950);
+    expect(elapsedMs).toBeLessThanOrEqual(2050);
+    expect(context.gameState.carVisible).toBe(true);
+    console.info(`First invincibility expiry: ${fps} FPS, ${elapsedMs} ms active time after damage`);
   });
   test(`${fps} FPS: strict edge needs actual overlap`, () => {
     playing(); act(() => context.updateGameState({ roadSpeed: 0, coins: [{ lane: 1, y: 654, width: 28, height: 28 }] })); frame(fps); expect(context.gameState.score).toBe(0);

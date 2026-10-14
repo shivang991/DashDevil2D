@@ -1,8 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { test as base, expect } from '@playwright/test';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-const evidence = path.resolve('../docs/preservation/evidence');
+const test = base.extend<{ evidence: string }>({
+  evidence: async ({ browser }, provideEvidence, testInfo) => {
+    const directory = testInfo.outputPath('evidence');
+    fs.mkdirSync(directory, { recursive: true });
+    fs.writeFileSync(path.join(directory, 'scenario-environment.json'), JSON.stringify({ provenance: testInfo.config.metadata.captureProvenance, scenario: testInfo.title, browser: browser.version(), viewport: testInfo.project.use.viewport }, null, 2));
+    await provideEvidence(directory);
+  },
+});
+function seedPlatformRandomness() {
+  let seed = 21;
+  Math.random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; };
+}
 const audioCaptureScript = `
     const NativeContext = window.AudioContext;
     const recordings = [];
@@ -41,16 +52,16 @@ const audioCaptureScript = `
       return Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()));
     };
   `;
-test('public app: five-second start, actual canvas, keyboard pause and mute', async ({ page, browser }) => {
+test('public app: five-second start, actual canvas, keyboard pause and mute', async ({ page, browser, evidence }, testInfo) => {
   await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
   await page.clock.pauseAt(new Date('2026-10-14T19:00:01Z'));
   // Randomness seed at the platform boundary, not product internals.
-  await page.addInitScript(() => { let seed = 21; Math.random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; }; });
+  await page.addInitScript(seedPlatformRandomness);
   await page.goto('http://127.0.0.1:4173');
   await page.getByText('Solo Trip', { exact: true }).click();
   await expect(page.locator('.game-overlay')).toHaveText('5');
   const dimensions = await page.locator('canvas').evaluate(c => { const canvas = c as HTMLCanvasElement; const r = canvas.getBoundingClientRect(); return { width: canvas.width, height: canvas.height, css: { width: r.width, height: r.height } }; });
-  fs.writeFileSync(path.join(evidence, 'browser-environment.json'), JSON.stringify({ baselineRevision: 'a68f27efd1d79ec8eea7ef0b0a6d8567606189dd', fixtureVersion: 1, randomSeed: 21, viewport: { width: 1280, height: 900 }, canvas: dimensions, browser: browser.version(), platform: os.platform(), release: os.release(), architecture: os.arch(), memoryBytes: os.totalmem(), cpu: os.cpus()[0].model, humanReview: 'pending', audioAudition: 'pending', powerSettings: 'unrecorded', referenceHardwareEquivalence: 'not established' }, null, 2));
+  fs.writeFileSync(path.join(evidence, 'browser-environment.json'), JSON.stringify({ provenance: testInfo.config.metadata.captureProvenance, randomSeed: 21, viewport: { width: 1280, height: 900 }, canvas: dimensions, browser: browser.version(), platform: os.platform(), release: os.release(), architecture: os.arch(), memoryBytes: os.totalmem(), cpu: os.cpus()[0].model, humanReview: 'pending', audioAudition: 'pending', powerSettings: 'unrecorded', referenceHardwareEquivalence: 'not established' }, null, 2));
   await page.screenshot({ path: path.join(evidence, 'baseline-countdown.png') });
   await page.clock.runFor(4900); await expect(page.locator('.game-overlay')).toHaveText('1');
   await page.clock.runFor(150); await expect(page.locator('.game-overlay')).toHaveCount(0);
@@ -64,12 +75,12 @@ test('public app: five-second start, actual canvas, keyboard pause and mute', as
   await page.reload(); await expect(page.getByRole('button', { name: 'Enable sound' })).toBeVisible();
 });
 
-test('record real-time public presentation for later human comparison', async ({ page }) => {
+test('record real-time public presentation for later human comparison', async ({ page, evidence }) => {
   test.setTimeout(65000);
   // Capture Web Audio's actual output through a parallel platform recording sink.
   // This records audio bytes; it does not establish human-perceived equivalence.
   await page.addInitScript(audioCaptureScript);
-  await page.addInitScript(() => { let seed = 21; Math.random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; }; });
+  await page.addInitScript(seedPlatformRandomness);
   await page.goto('http://127.0.0.1:4173');
   await page.getByText('Solo Trip', { exact: true }).click();
   await expect(page.locator('.game-overlay')).toHaveCount(0, { timeout: 7000 });
@@ -108,7 +119,7 @@ test('audio unavailable still allows gameplay', async ({ page }) => {
   await expect(page.locator('.game-overlay')).toHaveCount(0);
 });
 
-test('isolated coin cue from public seeded gameplay', async ({ page }) => {
+test('isolated coin cue from public seeded gameplay', async ({ page, evidence }) => {
   await page.addInitScript(audioCaptureScript);
   await page.addInitScript(() => { Math.random = () => 0.4; });
   await page.clock.install({ time: new Date('2026-10-14T19:00:00Z') });
