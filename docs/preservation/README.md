@@ -1,6 +1,6 @@
 # Long Drive preservation
 
-**Stage 1 remains pending recorded human audiovisual comparison. #22 cannot begin until the gate passes or its governing decision is reopened.** Product gameplay and assets remain unchanged. Automated tests and recordings establish baseline evidence; they do not establish felt visual/audio equivalence.
+**Stage 1 accepted on 2026-10-14.** The project owner reported “review pass” in Codex after receiving the baseline review files. This records the owner’s audiovisual signoff and unblocks #22; no additional browser, hardware or observation details were supplied. Product gameplay and assets remain unchanged at this checkpoint.
 
 ## Authority and provenance
 
@@ -40,11 +40,11 @@ Behavioral fixture version 1 mounts actual context/input/loop hooks with control
 | Strict lateral/vertical/interpolated AABB, tilt-independent bounds | Retained hook cases at all FPS; viewport-independent world/swept corrections belong to #26. |
 | Coins/invincible consumption/fatal precedence, hit protection/blink/shake | Retained hook cases at all FPS; public isolated Score 10 capture/audio and real-time hit/gameover recording. First invincibility expiry is measured directly in the 1950–2050 ms window. |
 | Pause freeze, fatal gameplay freeze, delayed fade/shake overlay, restart/menu return | Retained hook cases at all FPS and public browser path; pause-effect/input defects are classified below. |
-| Textures/car/road/HUD/countdown/pause/gameover, resized presentation | Linked recordings/PNGs below; human comparison remains pending. Acceleration PNG lacks HUD raster in that frame; virtual stale captures are explicitly unreliable. |
-| Countdown/GO/lane/coin/damage/gameover/pause/resume/engine/boost/release audio, mute/unlock/optional audio | Actual parallel Web Audio sink recordings and public mute/persistence/unavailable-AudioContext checks. Controlled document.hidden output has RMS 0; native tab suspension and human audition are not established. |
+| Textures/car/road/HUD/countdown/pause/gameover, resized presentation | Linked recordings/PNGs below; owner review passed on 2026-10-14. Acceleration PNG lacks HUD raster in that frame; virtual stale captures are explicitly unreliable. |
+| Countdown/GO/lane/coin/damage/gameover/pause/resume/engine/boost/release audio, mute/unlock/optional audio | Actual parallel Web Audio sink recordings and public mute/persistence/unavailable-AudioContext checks. Controlled document.hidden output has RMS 0; native tab suspension is unproven; owner audiovisual review passed on 2026-10-14. |
 | Failed evidence and retries | Compact failure/retry JSON plus useful original failed PNGs; raw diagnostics removed at user request. Future complete diagnostics stay in ignored run folders. |
 
-Vitest, build/typecheck/lint and applicable Long Drive browser checks are mandatory now: **41 retained/capture API checks pass**, with **eight explicit authorized defect characterizations**, and four actual Chrome scenarios pass. CI runs introduced checks on PRs. Go tests, shared Go/TS compatibility fixtures, generated-output checks and two-browser real-transport smoke are **unavailable** because their server/contracts/transport components do not yet exist; introduce them as mandatory when available. No full browser matrix, reference performance, multiplayer/capacity acceptance or human playtesting is claimed.
+Vitest, build/typecheck/lint and applicable Long Drive browser checks are mandatory now: **41 retained/capture API checks pass**, with **eight explicit authorized defect characterizations**, and four actual Chrome scenarios pass. CI runs introduced checks on PRs. Go tests, shared Go/TS compatibility fixtures, generated-output checks and two-browser real-transport smoke are **unavailable** because their server/contracts/transport components do not yet exist; introduce them as mandatory when available. No full browser matrix, reference performance or multiplayer/capacity acceptance is claimed. The owner’s baseline review pass does not establish the later two-person multiplayer playtest gate.
 
 ## Corrections become mandatory in their owning slice
 
@@ -57,6 +57,8 @@ Baseline tests use explicit `test.fails` for accepted defects; this is historic 
 | #26 world/track | Swept high-speed contacts (baseline obstacle tunnels), viewport-independent collision geometry and reproducible cadence/consumption. #22 provides the reusable geometry seam. |
 
 ## Human review
+
+Owner signoff on 2026-10-14: **“review pass”** (Codex user message). The recording and environment metadata above identify the captured baseline; further reviewer environment/observations were not supplied. This acceptance applies to Stage 1 only.
 
 Review the canonical [real-time playthrough video](evidence/browser-real-snapshots-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/video.webm), [isolated coin video](evidence/browser-verified-artifacts/baseline-isolated-coin-cue-from-public-seeded-gameplay/video.webm), [engine/gameplay audio](evidence/baseline-audio.webm), and [coin audio](evidence/baseline-coin-audio.webm). Compare [countdown](evidence/baseline-countdown.png), [acceleration](evidence/baseline-acceleration.png), [pause](evidence/baseline-pause.png), [game-over](evidence/baseline-gameover.png) and [resize](evidence/baseline-resize-pause.png) with a manual playthrough of the pinned baseline.
 

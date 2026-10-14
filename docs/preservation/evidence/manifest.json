@@ -10,8 +10,8 @@
   ],
   "virtualCaptureLimitation": "virtual-*-unreliable.png are stale compositor output, not valid presentation proof",
   "visualInspection": "agent verified real-time acceleration car raised (HUD raster absent in that frame); real-time pause shows PAUSED overlay/HUD; human audiovisual equivalence pending",
-  "stage1": "blocked: human comparison missing",
-  "ciWorkflow": "configured, remote execution pending",
+  "stage1": "accepted: owner reported review pass in Codex on 2026-10-14",
+  "ciWorkflow": "passed on c8a2dda4d481e3fec463f3f163b64eec20a4c6d6",
   "artifacts": {
     "audio-capture.json": {
       "bytes": 352,
@@ -96,5 +96,13 @@
     "originalMetadataPreserved": true,
     "failureSummary": "failure-summary.json",
     "hashesRegeneratedForRemainingArtifacts": true
+  },
+  "humanReview": {
+    "date": "2026-10-14",
+    "reviewer": "project owner",
+    "source": "Codex user message",
+    "statement": "review pass",
+    "additionalEnvironmentOrObservations": "not supplied",
+    "scope": "Stage 1 baseline audiovisual review"
   }
 }
