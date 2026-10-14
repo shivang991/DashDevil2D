@@ -217,3 +217,22 @@ test('accepted restart survives an earlier zero-elapsed RAF boundary', () => {
   expect(session.getSnapshot()).toMatchObject({ status: 'countdown', countdown: 3, health: 2 });
   session.dispose();
 });
+
+test('session validates developer settings before start/reset and HUD reflects immutable capture', () => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const time = clock(); const canvas = document.createElement('canvas'); document.body.append(canvas);
+  let hp = 4;
+  const session = new GameSession({ mode: 'long-drive', canvas, clock: time.boundary, countdown: 5,
+    configuration: () => ({ gameplay: { maxHealth: hp, startingRoadSpeed: 500, roadSpeedIncrement: 0 } }) });
+  session.start(); hp = 3; time.advance(5.1);
+  expect(session.getSnapshot()).toMatchObject({ health: 4, maxHealth: 4, status: 'playing' });
+  expect(session.getPresentation().roadSpeed).toBe(500);
+  hp = 0;
+  const before = session.getPresentation();
+  expect(() => session.command('reset')).toThrow('gameplay.maxHealth');
+  expect(session.getPresentation()).toEqual(before);
+  hp = 3; session.command('reset');
+  expect(session.getSnapshot()).toMatchObject({ health: 3, maxHealth: 3, countdown: 3 });
+  session.dispose();
+  expect(() => new GameSession({ mode: 'long-drive', canvas, countdown: 5, configuration: { gameplay: { maxHealth: 0 } } })).toThrow('gameplay.maxHealth');
+});

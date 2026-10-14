@@ -1,6 +1,6 @@
 import type { GameState } from "@dashdevil/simulation/state";
-import { gameConfig } from "./constants";
-import { drawRoad, drawCar, drawCoin, drawObstacle, drawGameOver } from "./renderUtils";
+import { gameConfig as defaultConfig, type GameConfig } from "./constants";
+import { drawRoad, drawCar, drawCoin, drawHeart, drawObstacle, drawGameOver } from "./renderUtils";
 
 // ── Utility ──
 
@@ -23,6 +23,7 @@ export function renderLongDrive(
   width: number,
   height: number,
   state: Readonly<GameState>,
+  gameConfig: GameConfig = defaultConfig,
 ): void {
   const needsTransform = state.shakeOffsetX !== 0 || state.shakeOffsetY !== 0;
   if (needsTransform) {
@@ -40,6 +41,10 @@ export function renderLongDrive(
       gameConfig.laneCount,
     );
     drawCoin(ctx, cx, coin.y, coin.width);
+  }
+
+  for (const heart of state.hearts) {
+    drawHeart(ctx, laneX(heart.lane, width, state.roadWidthRatio, gameConfig.laneCount), heart.y, heart.width);
   }
 
   for (const obs of state.obstacles) {

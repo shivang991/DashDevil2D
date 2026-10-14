@@ -2,5 +2,9 @@
   "name": "@dashdevil/contracts",
   "version": "0.0.0",
   "private": true,
-  "type": "module"
+  "type": "module",
+  "exports": {
+    "./configuration": "./configuration/defaults.json",
+    "./configuration-fixtures": "./configuration/fixtures.json"
+  }
 }

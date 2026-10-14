@@ -1,6 +1,6 @@
 import { advanceLongDrive, createLongDrive, resetLongDrive } from '@dashdevil/simulation/longDrive';
 import { type GameState } from '@dashdevil/simulation/state';
-import { gameConfig } from '../lib/constants';
+import { renderingConfig, type ConfigurationOverrides } from '@dashdevil/simulation/config';
 import { GameAudio } from '../lib/gameAudio';
 import { KeyboardInput } from './KeyboardInput';
 import { renderLongDrive } from '../lib/gameRenderer';
@@ -21,9 +21,11 @@ export interface SessionOptions {
   countdown: 5 | 3;
   clock?: FrameClock;
   random?: () => number;
+  /** Developer/test source read only before each capture; never a player tuning UI. */
+  configuration?: ConfigurationOverrides | (() => ConfigurationOverrides);
 }
 export interface UISnapshot {
-  readonly health: number; readonly score: number;
+  readonly health: number; readonly maxHealth: number; readonly score: number;
   readonly status: GameState['status']; readonly paused: boolean;
   readonly gameOverAnimDone: boolean; readonly countdown: number; readonly accelerating: boolean;
 }
@@ -41,9 +43,9 @@ export class GameSession {
 
   private readonly options: SessionOptions;
   constructor(options: SessionOptions) {
-    this.options = options;
+    this.options = Object.freeze({ ...options });
     this.clock = options.clock ?? browserClock;
-    this.game = createLongDrive(options.random);
+    this.game = createLongDrive(options.random, this.configurationOverrides());
     this.game.state.countdownTimer = options.countdown;
     options.canvas.tabIndex = 0;
     this.input = new KeyboardInput(options.canvas, () => ({ status: this.game.state.status, paused: this.game.state.paused, restartable: this.game.state.gameOverAnimDone, suspended: this.suspended() }), command => this.command(command));
@@ -55,6 +57,7 @@ export class GameSession {
   }
   getSnapshot = (): UISnapshot => this.snapshot;
   getPresentation = (): Readonly<GameState> => Object.freeze({ ...this.game.state,
+    hearts: this.game.state.hearts.map(object => Object.freeze({ ...object })),
     coins: this.game.state.coins.map(object => Object.freeze({ ...object })),
     obstacles: this.game.state.obstacles.map(object => Object.freeze({ ...object })),
   });
@@ -78,8 +81,9 @@ export class GameSession {
       state.accelerating = false;
       this.audio.update(state, advanceLongDrive(this.game, 0, { pause: true }));
     } else if (command === 'reset' || (command === 'restart' && state.status === 'gameover' && state.gameOverAnimDone)) {
+      resetLongDrive(this.game, this.configurationOverrides());
       this.lastTime = Math.max(this.lastTime, this.clock.now());
-      resetLongDrive(this.game);
+      this.resize();
       this.input.clear();
       this.audio.update(state, advanceLongDrive(this.game, 0, {}));
     }
@@ -99,6 +103,7 @@ export class GameSession {
   }
   private readonly resize = () => {
     if (this.disposed) return;
+    const gameConfig = renderingConfig(this.game.configuration);
     const canvas = this.options.canvas;
     canvas.width = canvas.clientWidth; canvas.height = canvas.clientHeight;
     const state = this.game.state;
@@ -121,7 +126,7 @@ export class GameSession {
     if (this.disposed) return;
     const canvas = this.options.canvas;
     const ctx = canvas.getContext('2d');
-    if (ctx) renderLongDrive(ctx, canvas.width, canvas.height, this.getPresentation());
+    if (ctx) renderLongDrive(ctx, canvas.width, canvas.height, this.getPresentation(), renderingConfig(this.game.configuration));
     this.frame = this.clock.request(this.tick);
   };
   focus(): void { if (!this.disposed) this.options.canvas.focus({ preventScroll: true }); }
@@ -135,9 +140,13 @@ export class GameSession {
   private readonly blur = () => { this.focused = false; this.suspend(); };
   private readonly focusReturned = () => { this.focused = true; this.lastTime = this.clock.now(); };
   private readonly visibility = () => { if (document.hidden) this.suspend(); else { this.lastTime = this.clock.now(); this.audio.syncVisibility(); } };
+  private configurationOverrides(): ConfigurationOverrides {
+    const source = this.options.configuration;
+    return (typeof source === 'function' ? source() : source) ?? {};
+  }
   private uiSnapshot(): UISnapshot {
     const state = this.game.state;
-    return Object.freeze({ health: state.health, score: state.score, status: state.status, paused: state.paused,
+    return Object.freeze({ health: state.health, maxHealth: this.game.configuration.gameplay.maxHealth, score: state.score, status: state.status, paused: state.paused,
       gameOverAnimDone: state.gameOverAnimDone, countdown: Math.max(0, Math.ceil(state.countdownTimer - 1e-9)), accelerating: state.accelerating });
   }
   private publish(): void {

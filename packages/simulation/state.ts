@@ -1,4 +1,4 @@
-import { gameConfig } from "./config";
+import { gameConfig, type GameConfig } from "./config";
 
 export interface GameState {
   health: number;
@@ -17,6 +17,7 @@ export interface GameState {
   difficultyTimer: number;
   obstacles: { id?: number; lane: number; y: number; width: number; height: number }[];
   coins: { id?: number; lane: number; y: number; width: number; height: number }[];
+  hearts: { id?: number; lane: number; y: number; width: number; height: number }[];
   laneSwitchCooldown: number;
   invincibleTimer: number;
   blinkTimer: number;
@@ -35,7 +36,8 @@ export interface GameState {
   countdownTimer: number;
 }
 
-export function makeInitialState(random: () => number = Math.random): GameState {
+export function makeInitialState(random: () => number = Math.random, configuration: GameConfig = gameConfig): GameState {
+  const gameConfig = configuration;
   const midLane = Math.floor(gameConfig.laneCount / 2);
   return {
     health: gameConfig.maxHealth,
@@ -44,16 +46,17 @@ export function makeInitialState(random: () => number = Math.random): GameState 
     visualLane: midLane,
     carY: 0,
     carYBase: 0,
-    roadSpeed: 400,
+    roadSpeed: gameConfig.startingRoadSpeed,
     roadOffset: 0,
     grassSeed: Math.floor(random() * 0x100000000),
     roadWidthRatio: 0.6,
     accelerating: false,
     spawnTimer: 0,
-    spawnInterval: 1.0,
+    spawnInterval: gameConfig.initialSpawnInterval,
     difficultyTimer: 0,
     obstacles: [],
     coins: [],
+    hearts: [],
     laneSwitchCooldown: 0,
     invincibleTimer: 0,
     blinkTimer: 0,

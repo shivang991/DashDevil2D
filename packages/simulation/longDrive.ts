@@ -1,26 +1,35 @@
 import { laneCenter as laneX, overlaps } from "./geometry";
-import { gameConfig } from "./config";
+import { captureConfiguration, renderingConfig, type Configuration, type ConfigurationOverrides, type GameConfig } from "./config";
 import { makeInitialState, type GameState } from "./state";
 
 export interface LongDriveInput { steering?: "left" | "right"; accelerating?: boolean; pause?: boolean; restart?: boolean }
 /** Identified local observations. observedAt is this adapter advance boundary,
  * not canonical input/contact time; chronological canonical integration belongs to #26. */
-export interface LongDriveEvent { readonly id: number; readonly observedAt: number; readonly type: "countdown" | "go" | "lane" | "coin" | "damage" | "gameover" | "pause" | "resume"; readonly objectId?: number }
-export interface LongDrive { readonly state: GameState; readonly random: () => number; time: number; eventId: number; countdownDisplay?: number }
-export function createLongDrive(random: () => number = Math.random): LongDrive {
-  return { state: makeInitialState(random), random, time: 0, eventId: 0 };
+export interface LongDriveEvent { readonly id: number; readonly observedAt: number; readonly type: "countdown" | "go" | "lane" | "coin" | "heart" | "damage" | "gameover" | "pause" | "resume"; readonly objectId?: number }
+export interface LongDrive { readonly state: GameState; readonly random: () => number; readonly configuration: Configuration; time: number; eventId: number; countdownDisplay?: number }
+export function createLongDrive(random: () => number = Math.random, overrides: ConfigurationOverrides = {}): LongDrive {
+  const configuration = captureConfiguration("long-drive", overrides);
+  const game = { state: makeInitialState(random, renderingConfig(configuration)), random, time: 0, eventId: 0 };
+  Object.defineProperty(game, "configuration", { get: () => configurations.get(game) });
+  configurations.set(game, configuration);
+  return game as LongDrive;
 }
+// Captured settings cannot be replaced through the public game object.
+const configurations = new WeakMap<object, Configuration>();
 /** Reset one owned game, retaining current viewport and monotonic effect identities. */
-export function resetLongDrive(game: LongDrive): void {
+export function resetLongDrive(game: LongDrive, overrides?: ConfigurationOverrides): void {
+  const configuration = captureConfiguration("long-drive", overrides ?? { gameplay: game.configuration.gameplay, presentation: game.configuration.presentation });
+  const gameConfig = renderingConfig(configuration);
+  configurations.set(game, configuration);
   const { canvasWidth, canvasHeight, roadWidthRatio } = game.state;
   const carYBase = canvasHeight - gameConfig.carHeight - gameConfig.carBottomMargin;
-  Object.assign(game.state, makeInitialState(game.random), {
+  Object.assign(game.state, makeInitialState(game.random, gameConfig), {
     canvasWidth, canvasHeight, roadWidthRatio, carYBase, carY: carYBase, countdownTimer: 3,
   });
   game.countdownDisplay = undefined;
 }
 // Preserve the baseline 60 Hz easing feel while removing rendering-FPS dependence.
-function ease(rate: number, dt: number) { return 1 - Math.pow(1 - rate / 60, dt * 60); }
+function ease(rate: number, dt: number) { return rate < 60 ? 1 - Math.pow(1 - rate / 60, dt * 60) : 1 - Math.exp(-rate * dt); }
 const objectIds = new WeakMap<GameState, number>();
 function nextObjectId(state: GameState) { const id = (objectIds.get(state) ?? 0) + 1; objectIds.set(state, id); return id; }
 export function advanceLongDrive(game: LongDrive, seconds: number, input: LongDriveInput): readonly LongDriveEvent[] {
@@ -44,7 +53,7 @@ export function advanceLongDrive(game: LongDrive, seconds: number, input: LongDr
   while (remaining > 1e-12) {
     const step = Math.min(remaining, seconds <= 0.1 ? seconds : 1 / 60, game.state.status === "countdown" ? Math.max(game.state.countdownTimer, 1e-12) : Infinity);
     if (!game.state.paused) game.time += step;
-    tick(step, input, game.state, restart, game.random, emit);
+    tick(step, input, game.state, restart, game.random, emit, renderingConfig(game.configuration));
     announceCountdown();
     remaining -= step;
     // Commands are edge-triggered; held movement persists across the advance.
@@ -59,6 +68,7 @@ function tick(
   restart: () => void,
   random: () => number,
   emit: (type: LongDriveEvent["type"], objectId?: number) => void,
+  gameConfig: GameConfig,
 ): void {
   if (state.paused && !input.pause) return;
 
@@ -174,13 +184,17 @@ function tick(
   // ── Move objects downward ──
   for (const obj of state.coins) obj.y += effectiveSpeed * dt;
   for (const obj of state.obstacles) obj.y += effectiveSpeed * dt;
+  for (const obj of state.hearts) obj.y += effectiveSpeed * dt;
 
   // ── Spawn timer ──
   state.spawnTimer += dt;
   while (state.spawnTimer + 1e-12 >= state.spawnInterval) {
     state.spawnTimer = Math.max(0, state.spawnTimer - state.spawnInterval);
     const lane = Math.floor(random() * gameConfig.laneCount);
-    if (random() < gameConfig.coinSpawnChance) {
+    const total = gameConfig.coinWeight + gameConfig.obstacleWeight + gameConfig.heartWeight + gameConfig.emptyWeight;
+    const selection = random();
+    // Coin-first partition preserves the baseline seeded coin/obstacle sequence.
+    if (selection < gameConfig.coinWeight / total) {
       state.coins.push({
         id: nextObjectId(state),
         lane,
@@ -188,7 +202,7 @@ function tick(
         width: gameConfig.coinSize,
         height: gameConfig.coinSize,
       });
-    } else {
+    } else if (selection < (gameConfig.coinWeight + gameConfig.obstacleWeight) / total) {
       state.obstacles.push({
         id: nextObjectId(state),
         lane,
@@ -196,6 +210,8 @@ function tick(
         width: gameConfig.obstacleW,
         height: gameConfig.obstacleH,
       });
+    } else if (selection < (gameConfig.coinWeight + gameConfig.obstacleWeight + gameConfig.heartWeight) / total) {
+      state.hearts.push({ id: nextObjectId(state), lane, y: -gameConfig.heartSize, width: gameConfig.heartSize, height: gameConfig.heartSize });
     }
   }
 
@@ -217,7 +233,7 @@ function tick(
   if (state.invincibleTimer > 0) {
     state.invincibleTimer -= dt;
     const blinkPeriod =
-      gameConfig.invincibleDuration / (gameConfig.blinkCount * 2);
+      gameConfig.blinkCount === 0 ? Infinity : gameConfig.invincibleDuration / (gameConfig.blinkCount * 2);
     state.blinkTimer += dt;
     while (state.blinkTimer + 1e-12 >= blinkPeriod) {
       state.blinkTimer -= blinkPeriod;
@@ -259,6 +275,16 @@ function tick(
     return true;
   });
 
+  state.hearts = state.hearts.filter((heart) => {
+    const cx = laneX(heart.lane, w, state.roadWidthRatio, gameConfig.laneCount);
+    if (overlaps({ left: carLeft, right: carRight, top: carTop, bottom: carBottom }, { left: cx - heart.width / 2, right: cx + heart.width / 2, top: heart.y, bottom: heart.y + heart.height })) {
+      state.health = Math.min(gameConfig.maxHealth, state.health + 1);
+      emit("heart", heart.id);
+      return false;
+    }
+    return true;
+  });
+
   state.obstacles = state.obstacles.filter((obs) => {
     const objCx = laneX(
       obs.lane,
@@ -268,7 +294,8 @@ function tick(
     );
     if (overlaps({ left: carLeft, right: carRight, top: carTop, bottom: carBottom }, { left: objCx - obs.width / 2, right: objCx + obs.width / 2, top: obs.y, bottom: obs.y + obs.height })) {
       if (state.invincibleTimer > 0 || state.status === "gameover") return false;
-      state.health = Math.max(0, state.health - 1);
+      state.health = Math.max(0, state.health - gameConfig.obstacleDamage);
+      if (gameConfig.obstacleDamage === 0) return false;
       emit("damage", obs.id);
       state.invincibleTimer = gameConfig.invincibleDuration;
       state.blinkTimer = 0;
@@ -290,6 +317,7 @@ function tick(
 
   // ── Remove off-screen objects ──
   state.coins = state.coins.filter((c) => c.y < gameConfig.offScreenThreshold);
+  state.hearts = state.hearts.filter((h) => h.y < gameConfig.offScreenThreshold);
   state.obstacles = state.obstacles.filter(
     (o) => o.y < gameConfig.offScreenThreshold,
   );

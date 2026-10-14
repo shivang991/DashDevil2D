@@ -49,6 +49,7 @@ const textureNames = [
   "asphalt",
   "car",
   "coin",
+  "heart",
   "barrier",
   "road-edge",
   "lane-divider",
@@ -276,4 +277,10 @@ export function drawGameOver(
 ) {
   ctx.fillStyle = `rgba(0, 0, 0, ${state.gameOverFadeAlpha})`;
   ctx.fillRect(0, 0, width, height);
+}
+
+export function drawHeart(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
+  const texture = textureImages.get("heart");
+  if (texture?.complete && texture.naturalWidth) ctx.drawImage(texture, x - size / 2, y, size, size);
+  else { ctx.fillStyle = "#ef4444"; ctx.fillRect(x - size / 2, y, size, size); }
 }

@@ -442,6 +442,7 @@ export class GameAudio {
         case "countdown": this.tone(440, 440, 0.13, "square", 0.16); break;
         case "go": this.tone(880, 1100, 0.35, "square", 0.16); break;
         case "lane": this.tone(180, 90, 0.09, "triangle", 0.2); break;
+        case "heart":
         case "coin":
           this.tone(880, 880, 0.1);
           this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);

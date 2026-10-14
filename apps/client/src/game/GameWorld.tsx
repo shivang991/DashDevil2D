@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { GameSession, type UISnapshot } from "./GameSession";
-import { gameConfig } from "@/lib/constants";
 
 interface GameWorldProps {
   countdown: 5 | 3;
@@ -10,12 +9,13 @@ interface GameWorldProps {
 export function GameWorld({ onBack, countdown }: GameWorldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sessionRef = useRef<GameSession | null>(null);
-  const [ui, setUi] = useState<UISnapshot>({ health: 2, score: 0, status: "countdown", paused: false, gameOverAnimDone: false, countdown, accelerating: false });
+  const [ui, setUi] = useState<UISnapshot>({ health: 2, maxHealth: 2, score: 0, status: "countdown", paused: false, gameOverAnimDone: false, countdown, accelerating: false });
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const session = new GameSession({ mode: "long-drive", canvas, countdown });
     sessionRef.current = session;
+    setUi(session.getSnapshot());
     const unsubscribe = session.subscribe(() => setUi(session.getSnapshot()));
     session.start();
     return () => { unsubscribe(); session.dispose(); sessionRef.current = null; };
@@ -42,9 +42,9 @@ export function GameWorld({ onBack, countdown }: GameWorldProps) {
             <div
               className="flex gap-1.5 sm:gap-2"
               role="img"
-              aria-label={`Health: ${ui.health} of ${gameConfig.maxHealth}`}
+              aria-label={`Health: ${ui.health} of ${ui.maxHealth}`}
             >
-              {Array.from({ length: gameConfig.maxHealth }).map((_, i) => (
+              {Array.from({ length: ui.maxHealth }).map((_, i) => (
                 <img
                   key={i}
                   src={`${import.meta.env.BASE_URL}textures/heart.png`}
