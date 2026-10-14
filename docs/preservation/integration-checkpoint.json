@@ -65,8 +65,8 @@
     "architecture": "arm64",
     "memoryBytes": 8589934592,
     "cpu": "Apple M2",
-    "humanReview": "pending",
-    "audioAudition": "pending",
+    "humanReview": "accepted by owner on 2026-10-14",
+    "audioAudition": "owner accepted requested audiovisual comparison; detailed observations not supplied",
     "powerSettings": "unrecorded",
     "referenceHardwareEquivalence": "not established"
   },
@@ -196,8 +196,16 @@
   ],
   "originalFailure": "First new focus browser case sampled exactly one second after start, before one full simulated second due RAF registration boundary; expected countdown 4 received5. The sample now occurs at1.1s, while separate session tests still enforce5/3s deadlines at30/60/120FPS. Failed run retained; focused and complete clean retries passed.",
   "technicalCheckpoint": "pass",
-  "humanAudiovisualReview": "pending: Stage1 review pass does not accept Stage2 candidate",
-  "stageExit": "pending owner side-by-side audiovisual comparison of extraction and integrated candidate",
+  "humanAudiovisualReview": {
+    "status": "accepted",
+    "date": "2026-10-14",
+    "reviewer": "repository owner (Codex user reply)",
+    "statement": "looks good",
+    "scope": "Stage 2 extraction and GameSession integration audiovisual comparison against the accepted Stage 1 baseline",
+    "preview": "https://deploy-preview-46--dashdevil2d.netlify.app",
+    "reviewerEnvironment": "not supplied"
+  },
+  "stageExit": "accepted: technical checks and owner Stage 2 audiovisual review complete",
   "unavailableChecks": {
     "goTests": "server module absent",
     "sharedGoTypeScriptFixtures": "contracts/server not introduced",
@@ -208,7 +216,7 @@
     "Full supported browser matrix/reference hardware not established",
     "Canonical event-time/Go parity not yet available; observedAt remains local adapter observation",
     "Viewport-independent/swept corrections belong to #26",
-    "Agent inspection of captured pause image found recognizable road/car/HUD/overlay; human listening and side-by-side motion review pending"
+    "Agent inspection of captured pause image found recognizable road/car/HUD/overlay; owner audiovisual comparison accepted; detailed observations and reviewer environment not supplied"
   ],
   "behavioralInputHashes": {
     "client/tests/session/session.test.ts": "a6b538d23d6e79c20d4028b9c51ea75c8c16d58652c3cc8dc8a5d6eb49fd5f81",

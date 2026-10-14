@@ -118,12 +118,12 @@
     }
   ],
   "limitations": [
-    "Human side-by-side extraction audiovisual review remains pending; Stage 1 owner signoff applies to baseline only.",
+    "Owner accepted Stage 2 audiovisual comparison on 2026-10-14: \u201clooks good\u201d; reviewer environment and detailed observations were not supplied.",
     "Session/input/focus/naming ownership #23 and full swept/viewport-independent world geometry #26 remain separate tickets.",
     "Go tests, shared Go/TS contracts, generated-output checks and two-browser real-transport suite unavailable: server/contracts/transport do not yet exist.",
     "Full supported-browser matrix, reference hardware qualification, performance/capacity and native suspension evidence not established."
   ],
-  "stage2Acceptance": "Pending #23 integration checkpoint and required human audiovisual comparison; technical extraction checks do not claim full acceptance.",
+  "stage2Acceptance": "Accepted on 2026-10-14 following #23 technical integration checks and owner audiovisual review: \u201clooks good\u201d.",
   "agentStaticVisualInspection": {
     "reviewer": "/root/ticket22 (automated agent, not human signoff)",
     "candidateRun": "run-2026-10-14T08-15-24.438Z-Wa4UxW",
@@ -147,5 +147,14 @@
     },
     "artifactDirectory": "/private/tmp/dashdevil-ci-fix-evidence/run-2026-10-14T08-29-58.686Z-yTb4E7",
     "newSessionOwnership": "positive elapsed-time clipping is separately addressed by #23; focused fix retains the old upper clamp"
+  },
+  "humanAudiovisualReview": {
+    "status": "accepted",
+    "date": "2026-10-14",
+    "reviewer": "repository owner (Codex user reply)",
+    "statement": "looks good",
+    "scope": "Stage 2 extraction and GameSession integration audiovisual comparison against the accepted Stage 1 baseline",
+    "preview": "https://deploy-preview-46--dashdevil2d.netlify.app",
+    "reviewerEnvironment": "not supplied"
   }
 }
