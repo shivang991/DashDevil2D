@@ -120,8 +120,11 @@ export function useGameLoop({
     let lastTime = performance.now();
 
     const loop = (now: number) => {
-      const dt = Math.min((now - lastTime) / 1000, gameConfig.maxDeltaTime);
-      lastTime = now;
+      // RAF timestamps describe the frame start and may precede registration's
+      // performance.now() on the first callback. Never send negative elapsed
+      // time to simulation or move the observed clock backwards.
+      const dt = Math.min(Math.max(0, now - lastTime) / 1000, gameConfig.maxDeltaTime);
+      lastTime = Math.max(lastTime, now);
 
       const state = simulation.state;
       const restarting = state.status === "gameover" && state.gameOverAnimDone && gameInput.popRestartToggle();
