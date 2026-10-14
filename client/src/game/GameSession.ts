@@ -1,5 +1,5 @@
-import { advanceLongDrive, createLongDrive } from '../../../packages/simulation/longDrive';
-import { makeInitialState, type GameState } from '../../../packages/simulation/state';
+import { advanceLongDrive, createLongDrive, resetLongDrive } from '../../../packages/simulation/longDrive';
+import { type GameState } from '../../../packages/simulation/state';
 import { gameConfig } from '../lib/constants';
 import { GameAudio } from '../lib/gameAudio';
 import { KeyboardInput } from './KeyboardInput';
@@ -79,12 +79,12 @@ export class GameSession {
       state.accelerating = false;
       this.audio.update(state, advanceLongDrive(this.game, 0, { pause: true }));
     } else if (command === 'restart' && state.status === 'gameover' && state.gameOverAnimDone) {
+      this.lastTime = Math.max(this.lastTime, this.clock.now());
       this.restartRequested = true;
       this.input.clear();
     } else if (command === 'reset') {
-      const { canvasWidth, canvasHeight, roadWidthRatio } = state;
-      const carYBase = canvasHeight - gameConfig.carHeight - gameConfig.carBottomMargin;
-      Object.assign(state, makeInitialState(this.options.random), { canvasWidth, canvasHeight, roadWidthRatio, carYBase, carY: carYBase, countdownTimer: 3 });
+      this.lastTime = Math.max(this.lastTime, this.clock.now());
+      resetLongDrive(this.game);
       this.input.clear();
       this.restartRequested = false;
       this.audio.update(state, advanceLongDrive(this.game, 0, {}));

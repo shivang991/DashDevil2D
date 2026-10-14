@@ -166,3 +166,42 @@ test('fresh nonrepeat press after an undelivered away keyup recovers controls', 
   expect(session.getSnapshot().accelerating).toBe(true);
   session.dispose();
 });
+
+
+test('explicit reset discards pre-reset wall time before its fresh countdown', () => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const time = clock(); const canvas = document.createElement('canvas'); document.body.append(canvas);
+  const session = new GameSession({ mode: 'long-drive', canvas, clock: time.boundary, countdown: 5, random: () => 0.5 });
+  session.start(); time.elapse(20); session.command('reset'); time.advance(1 / 60);
+  expect(session.getSnapshot()).toMatchObject({ status: 'countdown', countdown: 3, score: 0, health: 2 });
+  expect(session.getPresentation().roadOffset).toBe(0);
+  time.advance(2.9); expect(session.getSnapshot().status).toBe('countdown');
+  time.advance(0.1); expect(session.getSnapshot().status).toBe('playing');
+  session.dispose();
+});
+
+
+test('accepted restart discards the completed-gameover RAF gap before its fresh countdown', () => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const time = clock(); const canvas = document.createElement('canvas'); document.body.append(canvas);
+  Object.defineProperties(canvas, { clientWidth: { value: 606 }, clientHeight: { value: 806 } });
+  const session = new GameSession({ mode: 'long-drive', canvas, clock: time.boundary, countdown: 3, random: () => 0.5 });
+  session.start(); time.advance(15);
+  expect(session.getSnapshot()).toMatchObject({ status: 'gameover', gameOverAnimDone: true });
+  time.elapse(20); session.command('restart'); time.advance(1 / 60);
+  expect(session.getSnapshot()).toMatchObject({ status: 'countdown', countdown: 3, score: 0, health: 2 });
+  expect(session.getPresentation().roadOffset).toBe(0);
+  time.advance(2.9); expect(session.getSnapshot().status).toBe('countdown');
+  time.advance(0.1); expect(session.getSnapshot().status).toBe('playing');
+  session.dispose();
+});
+
+test('unavailable pause and restart commands cannot rebase or delay a running countdown', () => {
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const time = clock(); const canvas = document.createElement('canvas'); document.body.append(canvas);
+  const session = new GameSession({ mode: 'long-drive', canvas, clock: time.boundary, countdown: 5, random: () => 0.5 });
+  session.start(); time.elapse(4); session.command('pause'); session.command('restart'); time.jump(1);
+  expect(session.getSnapshot()).toMatchObject({ status: 'playing', countdown: 0, paused: false });
+  expect(session.getPresentation().roadOffset).toBe(0);
+  session.dispose();
+});

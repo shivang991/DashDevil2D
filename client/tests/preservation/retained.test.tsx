@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
-import { createLongDrive, advanceLongDrive, type LongDrive } from '../../../packages/simulation/longDrive';
-import { makeInitialState, type GameState } from '../../../packages/simulation/state';
+import { createLongDrive, advanceLongDrive, resetLongDrive, type LongDrive } from '../../../packages/simulation/longDrive';
+import { type GameState } from '../../../packages/simulation/state';
 import { KeyboardInput } from '../../src/game/KeyboardInput';
 
 // Approved simulation/input seams (#17): retained contract cases use controlled
@@ -38,7 +38,7 @@ beforeEach(() => {
   now = 0; lastTime = 0; away = false; restartPending = false;
   game = createLongDrive(() => Math.random());
   context = { gameState: game.state, updateGameState: partial => { Object.assign(game.state, partial); }, resetGameState: () => {
-    Object.assign(game.state, makeInitialState(() => Math.random()), { countdownTimer: 3 });
+    resetLongDrive(game);
   } };
   const surface = document.createElement('canvas'); surface.tabIndex = 0; document.body.append(surface); surface.focus();
   input = new KeyboardInput(surface, () => ({ status: game.state.status, paused: game.state.paused, restartable: game.state.gameOverAnimDone, suspended: away || document.hidden }), command => {
