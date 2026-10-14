@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import { defineConfig } from '@playwright/test';
 import { createCaptureRun } from './tests/browser/capture';
 const capture = createCaptureRun({
-  outputRoot: path.resolve('test-results'), repositoryRoot: path.resolve('..'), fixtureVersion: 1,
+  outputRoot: path.resolve('test-results'), repositoryRoot: path.resolve('..'), fixtureVersion: 2,
   fixtures: ['client/tests/browser/baseline.spec.ts', 'client/tests/browser/capture.ts', 'client/tests/browser/capture-reporter.ts'],
   configuration: ['client/src/lib/constants.ts', 'client/playwright.config.ts', 'client/package.json', 'client/pnpm-lock.yaml'],
 });

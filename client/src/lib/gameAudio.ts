@@ -1,5 +1,5 @@
 import type { LongDriveEvent } from "../../../packages/simulation/longDrive";
-import type { GameState } from "@/hooks/useGameContext";
+import type { GameState } from "../../../packages/simulation/state";
 
 const STORAGE_KEY = "runner-sound-enabled";
 
@@ -84,9 +84,14 @@ function readPreference() {
   }
 }
 
+let preference = readPreference();
+const players = new Set<GameAudio>();
+
 export class GameAudio {
+  private disposed = false;
+  constructor() { players.add(this); }
   private lastEventId = 0;
-  enabled = readPreference();
+  enabled = preference;
   private context?: AudioContext;
   private master?: GainNode;
   private engine?: OscillatorNode;
@@ -106,7 +111,7 @@ export class GameAudio {
 
   // Called from a user gesture so browsers allow audio playback.
   unlock = () => {
-    if (!this.enabled) return;
+    if (!this.enabled || this.disposed) return;
     try {
       if (!this.context) {
         const context = new AudioContext();
@@ -355,15 +360,14 @@ export class GameAudio {
     };
   }
 
-  setEnabled(enabled: boolean) {
-    this.enabled = enabled;
-    try {
-      localStorage.setItem(STORAGE_KEY, String(enabled));
-    } catch {
-      /* Storage can be unavailable in private browsing. */
-    }
-    if (enabled) this.unlock();
-    this.syncVisibility();
+  setEnabled(enabled: boolean) { gameAudio.setEnabled(enabled); }
+
+  dispose(): void {
+    if (this.disposed) return;
+    this.disposed = true; players.delete(this); this.stop();
+    this.engine?.stop(); this.engineBass?.stop(); this.turbo?.stop();
+    try { void this.context?.close?.().catch(() => {}); } catch { /* Audio is optional. */ }
+    this.context = undefined;
   }
 
   syncVisibility = () => {
@@ -427,6 +431,7 @@ export class GameAudio {
   }
 
   update(state: Readonly<GameState>, events: readonly LongDriveEvent[] = []) {
+    if (this.disposed) return;
     // Compare snapshots so effects fire once per event, not every animation frame.
     const previous = this.previous;
     const countdown = Math.ceil(state.countdownTimer);
@@ -552,4 +557,14 @@ export class GameAudio {
   }
 }
 
-export const gameAudio = new GameAudio();
+/** App-shared preferences/gesture unlocking; sound playback belongs to each session. */
+export const gameAudio = {
+  get enabled() { return preference; },
+  setEnabled(enabled: boolean) {
+    preference = enabled;
+    try { localStorage.setItem(STORAGE_KEY, String(enabled)); } catch { /* Optional storage. */ }
+    for (const player of players) { player.enabled = enabled; if (enabled) player.unlock(); player.syncVisibility(); }
+  },
+  unlock: () => { for (const player of players) player.unlock(); },
+  syncVisibility: () => { for (const player of players) player.syncVisibility(); },
+};

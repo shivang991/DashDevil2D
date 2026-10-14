@@ -10,6 +10,15 @@ export interface LongDrive { readonly state: GameState; readonly random: () => n
 export function createLongDrive(random: () => number = Math.random): LongDrive {
   return { state: makeInitialState(random), random, time: 0, eventId: 0 };
 }
+/** Reset one owned game, retaining current viewport and monotonic effect identities. */
+export function resetLongDrive(game: LongDrive): void {
+  const { canvasWidth, canvasHeight, roadWidthRatio } = game.state;
+  const carYBase = canvasHeight - gameConfig.carHeight - gameConfig.carBottomMargin;
+  Object.assign(game.state, makeInitialState(game.random), {
+    canvasWidth, canvasHeight, roadWidthRatio, carYBase, carY: carYBase, countdownTimer: 3,
+  });
+  game.countdownDisplay = undefined;
+}
 // Preserve the baseline 60 Hz easing feel while removing rendering-FPS dependence.
 function ease(rate: number, dt: number) { return 1 - Math.pow(1 - rate / 60, dt * 60); }
 const objectIds = new WeakMap<GameState, number>();
@@ -29,10 +38,7 @@ export function advanceLongDrive(game: LongDrive, seconds: number, input: LongDr
     game.countdownDisplay = display;
   };
   announceCountdown();
-  const restart = () => {
-    const { canvasWidth, canvasHeight, carYBase, roadWidthRatio } = game.state;
-    Object.assign(game.state, makeInitialState(game.random), { canvasWidth, canvasHeight, carYBase, roadWidthRatio, carY: carYBase, countdownTimer: 3 });
-  };
+  const restart = () => resetLongDrive(game);
   // Countdown expiry splits an advance: elapsed active time is never discarded.
   let remaining = seconds;
   while (remaining > 1e-12) {

@@ -1,0 +1,225 @@
+{
+  "version": 1,
+  "stage": 2,
+  "checkpoint": "GameSession integration (#23)",
+  "testedRevision": "ebf63900cfacac36cedcee1b2eddaa283122b92c",
+  "baselineReference": "a68f27efd1d79ec8eea7ef0b0a6d8567606189dd",
+  "cleanCandidate": true,
+  "integrationBase": "15e77b2",
+  "governingDecisions": [
+    "https://github.com/shivang991/DashDevil2D/issues/3#issuecomment-6118779020",
+    "https://github.com/shivang991/DashDevil2D/issues/15#issuecomment-6144509055",
+    "https://github.com/shivang991/DashDevil2D/issues/19#issuecomment-6147750725",
+    "https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139",
+    "https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401"
+  ],
+  "independentExpectations": {
+    "path": "/private/tmp/dashdevil-implementation-context/stage2-expectations.md",
+    "sha256": "e21251ef61645c3643d16fc4aa58f8c9240cc71cc024c4bcfd09a464aff43674",
+    "reviewer": "/root/baseline_expectations",
+    "date": "2026-10-14"
+  },
+  "fixtureVersion": 2,
+  "fixtures": {
+    "client/tests/browser/baseline.spec.ts": {
+      "sha256": "4218a759af135f2928ad359fc1cdaf953912b67c06ecf35c6a81057ebe0af885"
+    },
+    "client/tests/browser/capture.ts": {
+      "sha256": "afc38b20be45905e4a9072d2454e80d100df971143c6acf082baffe3266827bb"
+    },
+    "client/tests/browser/capture-reporter.ts": {
+      "sha256": "0223a510fe3bd6338270ee8e5fefc91d6b92bc5ac46ce0a8adc151339ed089a0"
+    }
+  },
+  "configuration": {
+    "client/src/lib/constants.ts": {
+      "sha256": "51cf3f94f98a94d0a4ee73d505a3a2bffb11b299d7232e41e015ee45aeb2fd92"
+    },
+    "client/playwright.config.ts": {
+      "sha256": "9e64a45fa46d948449996248f1bd9b7610aa8984dc375e1feb1295a1bac62e24"
+    },
+    "client/package.json": {
+      "sha256": "1b967d5ed7874d8e9e7e3f905be93ef414fdcb939e20ae71c8e512177dba439b"
+    },
+    "client/pnpm-lock.yaml": {
+      "sha256": "87b60dbd9567f12715c1b02cd25af6b4834752ba50370025ed1a72ea0ec46c5c"
+    }
+  },
+  "environment": {
+    "randomSeed": 21,
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "canvas": {
+      "width": 606,
+      "height": 806,
+      "css": {
+        "width": 606,
+        "height": 806
+      }
+    },
+    "browser": "155.0.8059.79",
+    "platform": "darwin",
+    "release": "25.5.0",
+    "architecture": "arm64",
+    "memoryBytes": 8589934592,
+    "cpu": "Apple M2",
+    "humanReview": "pending",
+    "audioAudition": "pending",
+    "powerSettings": "unrecorded",
+    "referenceHardwareEquivalence": "not established"
+  },
+  "checks": {
+    "vitest": {
+      "outcome": "pass",
+      "log": "/private/tmp/dashdevil-stage2-evidence/integration/review-final-vitest.log",
+      "sha256": "f1b367dd5af8772189182e115a3201d66894980adf6a78f51844ec389da200a5"
+    },
+    "build": {
+      "outcome": "pass",
+      "log": "/private/tmp/dashdevil-stage2-evidence/integration/review-final-build.log",
+      "sha256": "78f3a43f8d9a054c9495d7b948c835e220e0383f13c07a7bf7cd9c9779f0539e"
+    },
+    "lint": {
+      "outcome": "pass",
+      "log": "/private/tmp/dashdevil-stage2-evidence/integration/review-final-lint.log",
+      "sha256": "aef8d0fdd3b06ad38cb73aeffa48381d87aabebf5870f2bcd4e51f7d59e57296"
+    },
+    "chrome": {
+      "outcome": "pass",
+      "log": "/private/tmp/dashdevil-stage2-evidence/integration/review-final-chrome.log",
+      "sha256": "d6680226958acc8b6f9461e96c8edc77111abec9b4d66f783eb1bb6314bd7c5b"
+    }
+  },
+  "vitest": {
+    "passing": 84,
+    "expectedFailure": {
+      "owner": 26,
+      "scenario": "swept collision detects tunneling"
+    },
+    "mandatoryCorrections": [
+      22,
+      23
+    ]
+  },
+  "browser": {
+    "actualRelease": "155.0.8059.79",
+    "passing": 7,
+    "freshStartCountdown": 5,
+    "restartAndExplicitResetCountdown": 3,
+    "randomSeeds": [
+      21,
+      "constant 0.4",
+      "constant 0.5"
+    ],
+    "focusMethod": "actual Chrome events with controlled window blur/focus, controlled document.hidden; native OS tab suspension not established"
+  },
+  "requirementEvidence": {
+    "commandsAndSmallUI": [
+      "client/src/game/GameSession.ts",
+      "client/src/game/GameWorld.tsx",
+      "client/tests/session/session.test.ts"
+    ],
+    "independentSessionsAndAudioTeardown": [
+      "client/tests/session/session.test.ts",
+      "client/tests/simulation/audio.test.ts"
+    ],
+    "keyboardAndFocus": [
+      "client/tests/session/session.test.ts",
+      "client/tests/browser/baseline.spec.ts"
+    ],
+    "retainedGameplayAndCorrectedTiming": [
+      "client/tests/preservation/retained.test.tsx",
+      "client/tests/simulation/longDrive.test.ts"
+    ],
+    "presentationAndAudio": [
+      "/private/tmp/dashdevil-stage2-evidence/integration/run-2026-10-14T12-36-34.783Z-uHVxqn"
+    ]
+  },
+  "runs": [
+    {
+      "directory": "/private/tmp/dashdevil-stage2-evidence/integration/run-2026-10-14T12-25-24.052Z-hZMHZC",
+      "manifestSha256": "96b880d6dee9d8adea1ab72b426bca9bd73c7b606497f334227a4f82a25c437d",
+      "testedRevision": "fff382de9512813d475271b5bceda985cc9ad8b8",
+      "dirty": true,
+      "result": {
+        "status": "failed",
+        "startedAt": "2026-10-14T12:25:24.091Z",
+        "durationMs": 64279.379
+      }
+    },
+    {
+      "directory": "/private/tmp/dashdevil-stage2-evidence/integration/run-2026-10-14T12-26-45.189Z-k9SoxS",
+      "manifestSha256": "aa1089c847dc056b657861e555ea87ced8b102b4fa851e25583884f218f2b6bb",
+      "testedRevision": "fff382de9512813d475271b5bceda985cc9ad8b8",
+      "dirty": true,
+      "result": {
+        "status": "passed",
+        "startedAt": "2026-10-14T12:26:45.242Z",
+        "durationMs": 11841.119
+      }
+    },
+    {
+      "directory": "/private/tmp/dashdevil-stage2-evidence/integration/run-2026-10-14T12-27-15.942Z-vrCr3c",
+      "manifestSha256": "7c7d758635a6c9b4a207c5da4415dc9b95e72916250228d41cf50d2dae63a528",
+      "testedRevision": "8cae03c210e55c2cbf0f47513cfff6b3dcd9c0b7",
+      "dirty": false,
+      "result": {
+        "status": "passed",
+        "startedAt": "2026-10-14T12:27:15.973Z",
+        "durationMs": 54714.261
+      }
+    },
+    {
+      "directory": "/private/tmp/dashdevil-stage2-evidence/integration/run-2026-10-14T12-33-48.386Z-58dBjd",
+      "manifestSha256": "7a6b1ed421318ba12045f43c7e63b4b5c17798eaab8d53234de4909de1ee6cdf",
+      "testedRevision": "111562445be7cfdb65580f247d86c129b15f2af9",
+      "dirty": false,
+      "result": {
+        "status": "failed",
+        "startedAt": "2026-10-14T12:33:48.427Z",
+        "durationMs": 67329.76
+      }
+    },
+    {
+      "directory": "/private/tmp/dashdevil-stage2-evidence/integration/run-2026-10-14T12-36-34.783Z-uHVxqn",
+      "manifestSha256": "73d618cd56caf3066d82a0858a259aa1b9391b2395e3c248d740fa224ff64e8a",
+      "testedRevision": "ebf63900cfacac36cedcee1b2eddaa283122b92c",
+      "dirty": false,
+      "result": {
+        "status": "passed",
+        "startedAt": "2026-10-14T12:36:34.819Z",
+        "durationMs": 56411.237
+      }
+    }
+  ],
+  "originalFailure": "First new focus browser case sampled exactly one second after start, before one full simulated second due RAF registration boundary; expected countdown 4 received5. The sample now occurs at1.1s, while separate session tests still enforce5/3s deadlines at30/60/120FPS. Failed run retained; focused and complete clean retries passed.",
+  "technicalCheckpoint": "pass",
+  "humanAudiovisualReview": "pending: Stage1 review pass does not accept Stage2 candidate",
+  "stageExit": "pending owner side-by-side audiovisual comparison of extraction and integrated candidate",
+  "unavailableChecks": {
+    "goTests": "server module absent",
+    "sharedGoTypeScriptFixtures": "contracts/server not introduced",
+    "generatedOutput": "schema/generator absent",
+    "twoBrowserRealTransportSmoke": "server/transport not introduced"
+  },
+  "limitations": [
+    "Full supported browser matrix/reference hardware not established",
+    "Canonical event-time/Go parity not yet available; observedAt remains local adapter observation",
+    "Viewport-independent/swept corrections belong to #26",
+    "Agent inspection of captured pause image found recognizable road/car/HUD/overlay; human listening and side-by-side motion review pending"
+  ],
+  "behavioralInputHashes": {
+    "client/tests/session/session.test.ts": "a6b538d23d6e79c20d4028b9c51ea75c8c16d58652c3cc8dc8a5d6eb49fd5f81",
+    "client/tests/preservation/retained.test.tsx": "4ace041090c43a71dda99f0773962ed29b66738c66a088c5b90525ade409eb9e",
+    "client/tests/simulation/longDrive.test.ts": "94406b71d622267b59956ead346c58b1066ecf7b218efcd8fe4a4e64a647e0aa",
+    "client/tests/simulation/audio.test.ts": "f9fa2b91b8d7f19466cf82e5c9b9787285301e0dd1a53f616f3861d6f7edf214",
+    "packages/simulation/config.ts": "a9da9721fc01130f68548ffa7cb18ef40e9599ad43dd26edc029ff86b62e4529"
+  },
+  "reviewFixes": {
+    "acceptedCommandClocks": "Accepted reset/restart rebase monotonic scheduling time; unavailable commands leave clock intact. Public tests reproduced the lost countdown after20s precommandRAF gap then passed. Accepted restart also survives earlier zero-elapsedRAF.",
+    "simulationOwnership": "Explicit reset and terminal restart share resetLongDrive, keeping fresh viewport/base/grass/countdown3 and monotonic cueIDs; session applies accepted restart synchronously with no pending latch.",
+    "intermediateCapture": "1115624 fullChrome6/7 failed when focus scenario unexpectedly navigated/reloaded; trace shows Vite reconnect while agent edited test file during capture. Filewatch reload is inferred cause. Entire failure preserved; finalebf6390 seven-case capture ran without concurrent filewrites and passed."
+  }
+}

@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, test } from 'vitest';
-import { createLongDrive, advanceLongDrive } from '../../../packages/simulation/longDrive';
+import { createLongDrive, advanceLongDrive, resetLongDrive } from '../../../packages/simulation/longDrive';
 // Approved simulation state/events seam (#17). Literal defaults/timer outcomes
 // come from #3's owner-approved preservation contract, not the implementation.
 test('headless Long Drive starts stationary and advances difficulty on active seconds', () => {
@@ -77,7 +77,7 @@ test('restart and explicit reset announce their first countdown cue exactly once
   expect(advanceLongDrive(game, 0.25, {})).toEqual([]);
   expect(advanceLongDrive(game, 0.75, {}).map(event => event.type)).toEqual(['countdown']);
   advanceLongDrive(game, 2, {});
-  Object.assign(game.state, { status: 'countdown', countdownTimer: 3 });
+  resetLongDrive(game);
   expect(advanceLongDrive(game, 1 / 60, {}).map(event => event.type)).toEqual(['countdown']);
 });
 
@@ -88,3 +88,35 @@ for (const [fps, observedAt] of [[30, 0.03333333333333333], [60, 0.0166666666666
     expect(advanceLongDrive(game, 1 / fps, { steering: 'left' })).toMatchObject([{ id: 1, type: 'lane', observedAt }]);
   });
 }
+
+
+test('simulation-owned reset restores fresh defaults and current viewport while preserving event identities', () => {
+  let random = 0.5; const game = createLongDrive(() => random);
+  Object.assign(game.state, { canvasWidth: 320, canvasHeight: 600, roadWidthRatio: 0.8 });
+  const firstCue = advanceLongDrive(game, 0, {})[0];
+  advanceLongDrive(game, 1, {}); random = 0.25;
+  resetLongDrive(game);
+  expect(game.state).toMatchObject({ canvasWidth: 320, canvasHeight: 600, roadWidthRatio: 0.8,
+    carYBase: 480, carY: 480, countdownTimer: 3, status: 'countdown', paused: false,
+    grassSeed: 1073741824, health: 2, score: 0, currentLane: 1, visualLane: 1, roadOffset: 0,
+    coins: [], obstacles: [], invincibleTimer: 0, shakeTimer: 0, gameOverFadeAlpha: 0, gameOverAnimDone: false });
+  const resetCue = advanceLongDrive(game, 0, {})[0];
+  expect(resetCue.type).toBe('countdown'); expect(resetCue.id).toBeGreaterThan(firstCue.id);
+  expect(advanceLongDrive(game, 0, {})).toEqual([]);
+  resetLongDrive(game);
+  expect(advanceLongDrive(game, 0, {})).toMatchObject([{ type: 'countdown', id: resetCue.id + 1 }]);
+});
+
+test('terminal restart uses the same fresh viewport and reset defaults as explicit reset', () => {
+  let random = 0.5; const game = createLongDrive(() => random);
+  advanceLongDrive(game, 0, {});
+  Object.assign(game.state, { canvasWidth: 320, canvasHeight: 600, roadWidthRatio: 0.8,
+    carYBase: 682, carY: 602, status: 'gameover', gameOverAnimDone: true, score: 50, health: 0 });
+  random = 0.25;
+  expect(advanceLongDrive(game, 1 / 60, { restart: true })).toMatchObject([{ type: 'countdown', id: 2 }]);
+  expect(game.state).toMatchObject({ canvasWidth: 320, canvasHeight: 600, roadWidthRatio: 0.8,
+    carYBase: 480, carY: 480, countdownTimer: 3, status: 'countdown', paused: false,
+    grassSeed: 1073741824, health: 2, score: 0, currentLane: 1, visualLane: 1, roadOffset: 0,
+    coins: [], obstacles: [], invincibleTimer: 0, shakeTimer: 0, gameOverFadeAlpha: 0, gameOverAnimDone: false });
+  expect(advanceLongDrive(game, 0, {})).toEqual([]);
+});

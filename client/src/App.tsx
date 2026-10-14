@@ -1,12 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
-import { GameScreen } from "@/screens/GameScreen";
+import { GameWorld } from "@/game/GameWorld";
 import { MenuScreen } from "@/screens/MenuScreen";
 
 type Screen = "menu" | "game";
 
 function App() {
+  const hasStarted = useRef(false);
+  const [countdown, setCountdown] = useState<5 | 3>(5);
   const [screen, setScreen] = useState<Screen>("menu");
   const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
 
@@ -18,16 +20,15 @@ function App() {
       window.removeEventListener("pointerdown", gameAudio.unlock);
       window.removeEventListener("keydown", gameAudio.unlock);
       document.removeEventListener("visibilitychange", gameAudio.syncVisibility);
-      gameAudio.stop();
     };
   }, []);
 
   return (
     <>
       {screen === "menu" ? (
-        <MenuScreen onStartGame={() => { gameAudio.unlock(); setScreen("game"); }} />
+        <MenuScreen onStartGame={() => { gameAudio.unlock(); setCountdown(hasStarted.current ? 3 : 5); hasStarted.current = true; setScreen("game"); }} />
       ) : (
-        <GameScreen onBack={() => setScreen("menu")} />
+        <GameWorld countdown={countdown} onBack={() => setScreen("menu")} />
       )}
       <button
         type="button"
