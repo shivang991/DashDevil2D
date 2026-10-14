@@ -132,5 +132,20 @@
       "Pause snapshots retain textured three-lane road, grass, blue left-lane car and centered PAUSED; object positions differ. Candidate pause includes HUD raster absent from baseline pause snapshot."
     ],
     "limit": "Inconsistent single-frame HUD raster cannot establish visual parity or a product regression; actual browser DOM HUD assertions pass. Motion, shake/blink/fade feel and audio equivalence still require human side-by-side playthrough/listening."
+  },
+  "ciFollowup": {
+    "failureRun": "https://github.com/shivang991/DashDevil2D/actions/runs/38534276593",
+    "symptom": "first RAF earlier than loop registration caused a negative elapsed value and aborted countdown at 5",
+    "implementationRevision": "b7811e8",
+    "integrationMerge": "a92a23ddb59bb83bbbe2d3f82ff41d0c63aa51f9",
+    "fix": "nonnegative elapsed delta and monotonic clock baseline; countdown requirement and test timeout unchanged",
+    "validation": {
+      "passed": 61,
+      "historicalExpectedFailures": 6,
+      "actualChromeScenarios": 4,
+      "typecheckBuildLint": "passed"
+    },
+    "artifactDirectory": "/private/tmp/dashdevil-ci-fix-evidence/run-2026-10-14T08-29-58.686Z-yTb4E7",
+    "newSessionOwnership": "positive elapsed-time clipping is separately addressed by #23; focused fix retains the old upper clamp"
   }
 }
