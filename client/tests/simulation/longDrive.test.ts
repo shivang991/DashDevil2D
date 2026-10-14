@@ -63,8 +63,8 @@ for (const fps of [30, 60, 120]) {
     Object.assign(game.state, { status: 'playing', carY: 682, carYBase: 682 });
     for (let frame = 0; frame < fps / 2; frame++) advanceLongDrive(game, 1 / fps, { accelerating: true });
     expect(game.state.roadOffset).toBeCloseTo(2000, 8);
-    // Worked baseline 60 Hz reference: 30 easing steps toward Y602 yields603.0930821078.
-    expect(game.state.carY).toBeCloseTo(603.0930821078, 8);
+    // Worked baseline 60 Hz reference: 30 easing steps toward Y602 yields603.0930821051551.
+    expect(game.state.carY).toBeCloseTo(603.0930821051551, 10);
   });
 }
 

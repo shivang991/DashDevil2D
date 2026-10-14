@@ -187,3 +187,15 @@ correction(23, 'hidden countdown freezes until return', () => {
 correction(23, 'keyboard movement prevents browser defaults', () => {
   const event = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true }); window.dispatchEvent(event); expect(event.defaultPrevented).toBe(true);
 });
+
+test('restart clears a pause entered during gameover before the new countdown', () => {
+  playing();
+  act(() => context.updateGameState({ health: 1, obstacles: [object()] }));
+  frame(60);
+  key(' ');
+  advance(0.55, 60);
+  key('Enter'); frame(60);
+  expect(context.gameState.status).toBe('countdown');
+  advance(3.05, 60);
+  expect(context.gameState).toMatchObject({ status: 'playing', paused: false });
+});

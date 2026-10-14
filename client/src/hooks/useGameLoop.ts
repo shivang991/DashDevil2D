@@ -124,12 +124,14 @@ export function useGameLoop({
       lastTime = now;
 
       const state = simulation.state;
+      const restarting = state.status === "gameover" && state.gameOverAnimDone && gameInput.popRestartToggle();
       const events = advanceLongDrive(simulation, dt, {
         steering: gameInput.isSteeringLeft() ? "left" : gameInput.isSteeringRight() ? "right" : undefined,
         accelerating: gameInput.isAccelerating(),
         pause: state.status === "playing" ? gameInput.popPauseToggle() : false,
-        restart: state.status === "gameover" && state.gameOverAnimDone ? gameInput.popRestartToggle() : false,
+        restart: restarting,
       });
+      if (restarting) gameInput.popPauseToggle();
       if (events.some(event => event.type === "gameover")) gameInput.popRestartToggle();
       if (state.status === "countdown" && events.length === 0) gameInput.popRestartToggle();
       gameContext.updateGameState({ score: state.score, health: state.health, status: state.status, paused: state.paused, gameOverAnimDone: state.gameOverAnimDone, countdownTimer: state.countdownTimer });

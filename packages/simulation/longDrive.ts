@@ -36,7 +36,7 @@ export function advanceLongDrive(game: LongDrive, seconds: number, input: LongDr
   while (remaining > 1e-12) {
     const step = Math.min(remaining, seconds <= 0.1 ? seconds : 1 / 60, game.state.status === "countdown" ? Math.max(game.state.countdownTimer, 1e-12) : Infinity);
     if (!game.state.paused) game.time += step;
-    tick(step, input, game.state, partial => Object.assign(game.state, partial), restart, game.random, emit);
+    tick(step, input, game.state, restart, game.random, emit);
     announceCountdown();
     remaining -= step;
     // Commands are edge-triggered; held movement persists across the advance.
@@ -48,7 +48,6 @@ function tick(
   dt: number,
   input: LongDriveInput,
   state: GameState,
-  notify: (partial: Partial<GameState>) => void,
   restart: () => void,
   random: () => number,
   emit: (type: LongDriveEvent["type"], objectId?: number) => void,
@@ -87,7 +86,6 @@ function tick(
       state.gameOverFadeAlpha >= gameConfig.gameOverFadeMaxOpacity
     ) {
       state.gameOverAnimDone = true;
-      notify({ gameOverAnimDone: true });
     }
     if (state.gameOverAnimDone && input.restart) {
       restart();
@@ -109,21 +107,9 @@ function tick(
       state.countdownTimer = 0;
       state.status = "playing";
       emit("go");
-      notify({ status: "playing", countdownTimer: 0 });
-    } else {
-      notify({ countdownTimer: state.countdownTimer });
     }
     return;
   }
-
-  // state.status === "playing"
-  if (input.pause) {
-    notify({ paused: !state.paused });
-    emit(state.paused ? "pause" : "resume");
-    return;
-  }
-
-  if (state.paused) return;
 
   // ── Initial Car Y position ──
 
@@ -300,7 +286,5 @@ function tick(
     (o) => o.y < gameConfig.offScreenThreshold,
   );
 
-  // ── Notify React of reactive state changes ──
-  notify({ score: state.score, health: state.health, status: state.status });
 }
 
