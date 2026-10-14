@@ -1,0 +1,136 @@
+{
+  "checkpoint": "#22 Stage 2 headless extraction (separate from #23 session integration)",
+  "version": 1,
+  "recordedDate": "2026-10-14",
+  "implementationRevision": "68ffd73068dd0ea6d17fdbb17527a1f0d2056198",
+  "integrationBase": "0733173498656c97d36722c268d69ce5d8c110a5",
+  "baselineRevision": "a68f27efd1d79ec8eea7ef0b0a6d8567606189dd",
+  "governingDecisions": {
+    "preservation": "https://github.com/shivang991/DashDevil2D/issues/3#issuecomment-6118779020",
+    "architecture": "https://github.com/shivang991/DashDevil2D/issues/15#issuecomment-6144509055",
+    "verificationAndApprovedSeams": "https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139",
+    "stageSequence": "https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401"
+  },
+  "expectations": {
+    "reviewer": "/root/baseline_expectations",
+    "reviewDate": "2026-10-14",
+    "reviewNotes": "/private/tmp/dashdevil-implementation-context/stage2-expectations.md",
+    "source": "Owner-approved contract and independent worked arithmetic; not regenerated from implementation outputs."
+  },
+  "fixtureVersion": 1,
+  "sha256": {
+    "client/tests/simulation/longDrive.test.ts": "c9fddde27e74ef505e4523e31e61f8ad8142e431b5d40ff25caf0493de06b72d",
+    "client/tests/simulation/geometry.test.ts": "385e01df33e871c15e22a6ba75ffdf046a942e067a8e6e9b745106d81434f73f",
+    "client/tests/simulation/audio.test.ts": "f52699e56108b34b30ed252e873eff125b0bd389b32bf57fd96fe1a749b1527c",
+    "client/tests/preservation/retained.test.tsx": "fac561f70cefbfe3c9c7df168e8768cb75c86ba2f516e5f7fcbaa11ce276b129",
+    "packages/simulation/config.ts": "a9da9721fc01130f68548ffa7cb18ef40e9599ad43dd26edc029ff86b62e4529"
+  },
+  "checks": {
+    "vitest": {
+      "passed": 60,
+      "historicalExpectedFailures": 6,
+      "mandatoryCorrections": [
+        22
+      ],
+      "reservedOwners": [
+        23,
+        26
+      ]
+    },
+    "DOMFreeSimulationTypecheck": "passed (ES2022 only, no browser/Node ambient types)",
+    "productionBuild": "passed",
+    "lintClientAndSimulation": "passed",
+    "actualChromeBrowserScenarios": 4
+  },
+  "requirements": {
+    "headlessOwnership": "packages/simulation owns state, movement, timers, spawn RNG, pickups, damage and lifecycle; actual browser loop delegates to advanceLongDrive. Transitional dimension/effect fields remain until owning #23/#26 seams.",
+    "retainedRules": "Default tuning, reference-60Hz easing, acceleration, coin-only scoring and strict endpoint collision; baseline recordings unchanged. Restart discards a pause queued during gameover before its fresh countdown.",
+    "authorizedCorrections": "Active timer remainder retained, paused effects freeze, HP clamped with one fatal event; countdown/reset cues identified and deduplicated.",
+    "reusableSeams": "Continuous strict AABB and chronological contact ordering in geometry.ts; endpoint Long Drive wiring remains until #26 swept/world migration.",
+    "timingAndFPS": "30/60/120 FPS retained and headless cases, literal 22s=730/.35 and 34s=900/.35 plus fractional remainder, fatal coin precedence, .5s terminal effects and pause-effect freeze.",
+    "consumers": "Renderer uses read-only view; audio consumes immutable identified events with replay suppression. Frozen-state audio platform test exercises one terminal melody.",
+    "eventTemporalSemantics": "LongDriveEvent.observedAt is a local simulation-step observation boundary, explicitly varying by render FPS; it is not canonical input/contact time. No Go/TS canonical-time parity is claimed before owning #26 and authoritative simulation work."
+  },
+  "browser": {
+    "name": "actual Chrome",
+    "version": "155.0.8059.79",
+    "os": "darwin 25.5.0",
+    "architecture": "arm64",
+    "hardware": "Apple M2, 8 GiB",
+    "viewport": [
+      1280,
+      900
+    ],
+    "canvas": [
+      606,
+      806
+    ],
+    "additionalViewport": [
+      800,
+      600
+    ],
+    "randomSeeds": [
+      "LCG21",
+      "constant0.4"
+    ],
+    "powerSettings": "unrecorded",
+    "referenceHardwareEquivalence": "not established"
+  },
+  "runs": [
+    {
+      "run": "run-2026-10-14T08-05-14.466Z-a3pMZL",
+      "result": "failed",
+      "note": "Sandbox denied loopback server bind; no gameplay assertions ran.",
+      "preservedDirectory": "/private/tmp/dashdevil-stage2-evidence/extraction/run-2026-10-14T08-05-14.466Z-a3pMZL",
+      "manifestSha256": "c1356823bb99644ca2c0f57d376a9fbb4f757288820157b9f0624b70208a8d28"
+    },
+    {
+      "run": "run-2026-10-14T08-05-55.329Z-bmAZWH",
+      "result": "failed",
+      "note": "Three scenarios passed; real-time terminal wait timed out with menu visible while source edits caused Vite hot reload. Kept all diagnostics; repeated against committed source.",
+      "preservedDirectory": "/private/tmp/dashdevil-stage2-evidence/extraction/run-2026-10-14T08-05-55.329Z-bmAZWH",
+      "manifestSha256": "e3980cd8739dacdcbce64f17f677a753b2666ffd3912ee927a5d281cdb5db6ff"
+    },
+    {
+      "run": "run-2026-10-14T08-09-08.984Z-ZIBKTg",
+      "result": "passed",
+      "note": "All four actual Chrome scenarios passed on clean committed source; no source edits during capture.",
+      "preservedDirectory": "/private/tmp/dashdevil-stage2-evidence/extraction/run-2026-10-14T08-09-08.984Z-ZIBKTg",
+      "manifestSha256": "5e34102e28a67644e334587ad2a2775e7ec78c3f8b1a5ea6bc4a6d1c69f8db6a"
+    },
+    {
+      "run": "run-2026-10-14T08-12-58.069Z-IuC2km",
+      "result": "passed",
+      "note": "All four actual Chrome scenarios passed after reviewed restart fix on committed product revision; dirty worktree contained only checkpoint documentation. Earlier attempts retained.",
+      "testedRevision": "ab5e81949cea072ddb53280e5ed91477f393ac56",
+      "worktreeStatus": "M docs/preservation/README.md\n?? docs/preservation/extraction-checkpoint.json",
+      "preservedDirectory": "/private/tmp/dashdevil-stage2-evidence/extraction/run-2026-10-14T08-12-58.069Z-IuC2km",
+      "manifestSha256": "f5ed802c09aa0768299bb35531042ce390ef368b0322e1b93b897d987e746297"
+    },
+    {
+      "run": "run-2026-10-14T08-15-24.438Z-Wa4UxW",
+      "result": "passed",
+      "note": "All four actual Chrome scenarios passed on clean committed final product revision, after explicit local observation-time naming. No source edits during capture.",
+      "testedRevision": "68ffd73068dd0ea6d17fdbb17527a1f0d2056198",
+      "worktreeStatus": "",
+      "preservedDirectory": "/private/tmp/dashdevil-stage2-evidence/extraction/run-2026-10-14T08-15-24.438Z-Wa4UxW",
+      "manifestSha256": "28bf91e587cd84e63ac87a90e318a1e33bebb80502228a61e04e80edb318baaf"
+    }
+  ],
+  "limitations": [
+    "Human side-by-side extraction audiovisual review remains pending; Stage 1 owner signoff applies to baseline only.",
+    "Session/input/focus/naming ownership #23 and full swept/viewport-independent world geometry #26 remain separate tickets.",
+    "Go tests, shared Go/TS contracts, generated-output checks and two-browser real-transport suite unavailable: server/contracts/transport do not yet exist.",
+    "Full supported-browser matrix, reference hardware qualification, performance/capacity and native suspension evidence not established."
+  ],
+  "stage2Acceptance": "Pending #23 integration checkpoint and required human audiovisual comparison; technical extraction checks do not claim full acceptance.",
+  "agentStaticVisualInspection": {
+    "reviewer": "/root/ticket22 (automated agent, not human signoff)",
+    "candidateRun": "run-2026-10-14T08-15-24.438Z-Wa4UxW",
+    "comparison": [
+      "Countdown snapshots retain same canvas placement, round border and centered5; baseline includes HUD raster while candidate initial snapshot omits it.",
+      "Pause snapshots retain textured three-lane road, grass, blue left-lane car and centered PAUSED; object positions differ. Candidate pause includes HUD raster absent from baseline pause snapshot."
+    ],
+    "limit": "Inconsistent single-frame HUD raster cannot establish visual parity or a product regression; actual browser DOM HUD assertions pass. Motion, shake/blink/fade feel and audio equivalence still require human side-by-side playthrough/listening."
+  }
+}

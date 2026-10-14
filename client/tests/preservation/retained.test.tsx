@@ -126,7 +126,7 @@ for (const fps of [30, 60, 120]) {
 }
 // Later owning slices must use PRESERVATION_ENFORCE=22,23,26 (or all).
 function correction(owner: number, name: string, run: () => void) {
-  const enforce = process.env.PRESERVATION_ENFORCE?.split(',') ?? [];
+  const enforce = ['22', ...(process.env.PRESERVATION_ENFORCE?.split(',') ?? [])];
   (enforce.includes(String(owner)) || enforce.includes('all') ? test : test.fails)(`correction #${owner}: ${name}`, run);
 }
 correction(22, 'pause freezes shake', () => { playing(); act(() => context.updateGameState({ paused: true, shakeTimer: 0.5 })); advance(0.2, 60); expect(context.gameState.shakeTimer).toBe(0.5); });
@@ -186,4 +186,16 @@ correction(23, 'hidden countdown freezes until return', () => {
 });
 correction(23, 'keyboard movement prevents browser defaults', () => {
   const event = new KeyboardEvent('keydown', { key: 'ArrowUp', cancelable: true }); window.dispatchEvent(event); expect(event.defaultPrevented).toBe(true);
+});
+
+test('restart clears a pause entered during gameover before the new countdown', () => {
+  playing();
+  act(() => context.updateGameState({ health: 1, obstacles: [object()] }));
+  frame(60);
+  key(' ');
+  advance(0.55, 60);
+  key('Enter'); frame(60);
+  expect(context.gameState.status).toBe('countdown');
+  advance(3.05, 60);
+  expect(context.gameState).toMatchObject({ status: 'playing', paused: false });
 });
