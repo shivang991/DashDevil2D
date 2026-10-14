@@ -29,22 +29,22 @@ Every browser invocation writes to a unique ignored `client/test-results/run-<UT
 
 Keep complete failed and successful run folders/CI artifacts for handoff; never replace an earlier run. Routine captures must not be copied over `docs/preservation/evidence`. Future logs stay in ignored run folders or CI artifacts, not commits.
 
-Behavioral fixture version 1 mounts actual context/input/loop hooks with controlled platform RAF/time/randomness and test-only initial objects; scenario canvas 606×802/car top 682 is fixture setup, not measured browser layout. Seeded browser scenarios use LCG seed 21 or constant 0.4 for isolated coin capture. jsdom has no canvas/audio output, so its assertions prove behavior rather than presentation.
+The archived Stage 1 behavioral fixture version 1 mounted the original context/input/loop hooks. Current fixture version 2 tests the public simulation, session and keyboard boundaries with controlled platform RAF/time/randomness and simulation-only initial objects; scenario canvas 606×802/car top 682 is fixture setup, not measured browser layout. Seeded browser scenarios use LCG seed 21 or constant 0.4 for isolated coin capture. jsdom has no canvas/audio output, so its assertions prove behavior rather than presentation.
 
 ## Requirement-to-evidence checklist
 
 | Requirement | Evidence and remaining limit |
 | --- | --- |
-| Initial/reset defaults, countdowns, lane bounds/aliases/held repeat/latest-key release | Executable retained hook cases at 30/60/120 FPS; public first-countdown/browser HUD. |
-| Acceleration/easing/release, spawning/random boundaries, difficulty growth/caps | Retained hook cases at all three FPS; real-time video/audio. Exact multi-interval timing corrections belong to #22/#26. |
-| Strict lateral/vertical/interpolated AABB, tilt-independent bounds | Retained hook cases at all FPS; viewport-independent world/swept corrections belong to #26. |
-| Coins/invincible consumption/fatal precedence, hit protection/blink/shake | Retained hook cases at all FPS; public isolated Score 10 capture/audio and real-time hit/gameover recording. First invincibility expiry is measured directly in the 1950–2050 ms window. |
-| Pause freeze, fatal gameplay freeze, delayed fade/shake overlay, restart/menu return | Retained hook cases at all FPS and public browser path; pause-effect/input defects are classified below. |
+| Initial/reset defaults, countdowns, lane bounds/aliases/held repeat/latest-key release | Executable retained boundary cases at 30/60/120 FPS; public first-countdown/browser HUD. |
+| Acceleration/easing/release, spawning/random boundaries, difficulty growth/caps | Retained boundary cases at all three FPS; real-time video/audio. Exact multi-interval timing corrections belong to #22/#26. |
+| Strict lateral/vertical/interpolated AABB, tilt-independent bounds | Retained boundary cases at all FPS; viewport-independent world/swept corrections belong to #26. |
+| Coins/invincible consumption/fatal precedence, hit protection/blink/shake | Retained boundary cases at all FPS; public isolated Score 10 capture/audio and real-time hit/gameover recording. First invincibility expiry is measured directly in the 1950–2050 ms window. |
+| Pause freeze, fatal gameplay freeze, delayed fade/shake overlay, restart/menu return | Retained boundary cases at all FPS and public browser path; pause-effect/input defects are classified below. |
 | Textures/car/road/HUD/countdown/pause/gameover, resized presentation | Linked recordings/PNGs below; owner review passed on 2026-10-14. Acceleration PNG lacks HUD raster in that frame; virtual stale captures are explicitly unreliable. |
 | Countdown/GO/lane/coin/damage/gameover/pause/resume/engine/boost/release audio, mute/unlock/optional audio | Actual parallel Web Audio sink recordings and public mute/persistence/unavailable-AudioContext checks. Controlled document.hidden output has RMS 0; native tab suspension is unproven; owner audiovisual review passed on 2026-10-14. |
 | Failed evidence and retries | Compact failure/retry JSON plus useful original failed PNGs; raw diagnostics removed at user request. Future complete diagnostics stay in ignored run folders. |
 
-Vitest, build/typecheck/lint and applicable Long Drive browser checks are mandatory now: **41 retained/capture API checks pass**, with **eight explicit authorized defect characterizations**, and four actual Chrome scenarios pass. CI runs introduced checks on PRs. Go tests, shared Go/TS compatibility fixtures, generated-output checks and two-browser real-transport smoke are **unavailable** because their server/contracts/transport components do not yet exist; introduce them as mandatory when available. No full browser matrix, reference performance or multiplayer/capacity acceptance is claimed. The owner’s baseline review pass does not establish the later two-person multiplayer playtest gate.
+Vitest, build/typecheck/lint and applicable Long Drive browser checks remain mandatory. Stage 1 recorded 41 passing checks/eight authorized defect characterizations and four Chrome scenarios. The current Stage 2 candidate records **84 passing checks**, one #26 collision characterization and seven Chrome scenarios (see checkpoints below). CI runs introduced checks on PRs. Go tests, shared Go/TS compatibility fixtures, generated-output checks and two-browser real-transport smoke are **unavailable** because their server/contracts/transport components do not yet exist; introduce them as mandatory when available. No full browser matrix, reference performance or multiplayer/capacity acceptance is claimed. The owner’s baseline review pass does not establish the later two-person multiplayer playtest gate.
 
 ## Corrections become mandatory in their owning slice
 
