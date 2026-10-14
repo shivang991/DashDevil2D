@@ -1,9 +1,0 @@
-
- RUN  v5.0.4 /private/tmp/dashdevil-ticket-21/client
-
-
- Test Files  1 passed (1)
-      Tests  15 passed (15)
-   Start at  00:05:58
-   Duration  728ms (environment 76%, transform 11%, tests 9%, import 4%)
-

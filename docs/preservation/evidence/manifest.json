@@ -21,14 +21,6 @@
       "bytes": 210,
       "sha256": "e010598f545deba7fe20448596b74656bca04d418ffa074894eefc9959bc329a"
     },
-    "authorized-corrections-observed.log": {
-      "bytes": 3413,
-      "sha256": "fe0b9d24e411b707017de2c7239ad988ba1c03e21e71e58f29b314537863801b"
-    },
-    "authorized-corrections-red.log": {
-      "bytes": 2207,
-      "sha256": "ea4d7973e4215d5f9c517d9abdf99384005c1d654b2576f6ca8b8c84af75b954"
-    },
     "baseline-acceleration.png": {
       "bytes": 141374,
       "sha256": "75ad8f350e10c0356a3608734ad0e8c9cd84a08e4bdedbf7054e6b9d3b10cf74"
@@ -61,205 +53,33 @@
       "bytes": 142608,
       "sha256": "e65bdf3d6941459f6129540d8bb98fc856b71a878c159f914fdbc3e05e06d865"
     },
-    "baseline-source-diff.log": {
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    "browser-attempt-2-artifacts/.last-run.json": {
-      "bytes": 96,
-      "sha256": "40203775dcae1d4a3c239ac8a71f40465bdcd1e86738256d6436774e2ef10ad8"
-    },
-    "browser-attempt-2-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/error-context.md": {
-      "bytes": 3834,
-      "sha256": "a5558288ec8d6fc20f4027ed6aa9b5da3db3d46c71a3cb171fe73d23a04beef4"
-    },
     "browser-attempt-2-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/test-failed-1.png": {
       "bytes": 142897,
       "sha256": "a00a9dc61a29c0edbf5bd2a9abfffdb9a4b0f121297c13beb177db5734279040"
-    },
-    "browser-attempt-2-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/trace.zip": {
-      "bytes": 4588974,
-      "sha256": "fd4f3ec6405b7502720073e3fbdb64072bd7918456c9b08b8b78f696d6a548a5"
-    },
-    "browser-attempt-2.log": {
-      "bytes": 3826,
-      "sha256": "eb80690a517943869ee4c809ed26a7ca7bc3fb5d1f3c373913265cc1f1e10eb5"
-    },
-    "browser-attempt-3.log": {
-      "bytes": 656,
-      "sha256": "f0be0296c461d89feab9120105402b8ce883091fd8ac45f7138c207481e1dd5d"
-    },
-    "browser-coin-hidden.log": {
-      "bytes": 634,
-      "sha256": "6b8a3ed61f897cf6d091883485360f23cbe304c8fcda0d0075c2b3b6ffa020de"
-    },
-    "browser-coin.log": {
-      "bytes": 634,
-      "sha256": "eb3bdea162a34d60f0d6908a96161cbf1e59753846c3b68873b735d1f78741ee"
-    },
-    "browser-complete-retry.log": {
-      "bytes": 875,
-      "sha256": "95e1d421c1edc7a68387cbe1dd715d0c40cd0fdfd01cade3f05d4b3ad75c8414"
     },
     "browser-environment.json": {
       "bytes": 582,
       "sha256": "73c0c814177934b849cfeef19e9e7a3e09c7ffb33a65fdae1cf4e1f8a4bbfa37"
     },
-    "browser-final.log": {
-      "bytes": 656,
-      "sha256": "7e7fd71afa1878b35fe567b87928df682721b6bcebd2920aa0fe275cb8433642"
-    },
-    "browser-full-playthrough-failure-artifacts/.last-run.json": {
-      "bytes": 96,
-      "sha256": "50c81302923b2412fbd4cbe0b9ba555a9074bc39300fd19ebe465dccf911bea6"
-    },
-    "browser-full-playthrough-failure-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/trace.zip": {
-      "bytes": 5981468,
-      "sha256": "f47f1d904a646f4fa2ae5ffcae51497db9f288292b4deed112bc9ee5ef89a4b3"
-    },
-    "browser-full-playthrough-failure-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/video.webm": {
-      "bytes": 1115876,
-      "sha256": "1810cbbef147f34bb5432ffd9e292ce2063fa2ee8076e759381335b5a812b03e"
-    },
-    "browser-full-playthrough-failure-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/error-context.md": {
-      "bytes": 8240,
-      "sha256": "6855371e0084cbb21dc43bd74d38c04e096553e9bb8f92cbd45d1033575adedd"
-    },
     "browser-full-playthrough-failure-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/test-failed-1.png": {
       "bytes": 16005,
       "sha256": "ac5a05fb0f3448090647b2df57d83ff933b68a92b669edb17b92253a59032f95"
-    },
-    "browser-full-playthrough-failure-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip": {
-      "bytes": 21922855,
-      "sha256": "3bbd69080d9c8e0ba8dd7cedd09b805e8e9b3835df328194cd3ed92caaa3fcaa"
-    },
-    "browser-full-playthrough-failure-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/video.webm": {
-      "bytes": 7200936,
-      "sha256": "3a40466984a2953803fdfefac27f35cc35b42598aaf0e7a654696262e150cf9e"
-    },
-    "browser-full-playthrough.log": {
-      "bytes": 4352,
-      "sha256": "fdf66139bc7a2cea42f0e6c377cd69d7d8bf7f68967cc1540d49667452c5143b"
-    },
-    "browser-initial.log": {
-      "bytes": 791,
-      "sha256": "4288a51b4d53c8d77c3e210f56cfb28146c4695290b500461a0a7886b12456da"
-    },
-    "browser-real-snapshots-artifacts/.last-run.json": {
-      "bytes": 45,
-      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
-    },
-    "browser-real-snapshots-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip": {
-      "bytes": 15942374,
-      "sha256": "433960560104c4cd3a45707375d3892b74e15bdceca3398515da28769e648cdb"
     },
     "browser-real-snapshots-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/video.webm": {
       "bytes": 4181766,
       "sha256": "39be1aa737083be66d9aa91202884aa25ea54bfd1a16edfa66fd1a7a3a4063c8"
     },
-    "browser-real-snapshots.log": {
-      "bytes": 653,
-      "sha256": "d306e577479b6c564918ca309d86e9527f36947936c6fd15ce6958d622c0748c"
-    },
-    "browser-verified-artifacts/.last-run.json": {
-      "bytes": 45,
-      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
-    },
-    "browser-verified-artifacts/baseline-audio-unavailable-still-allows-gameplay/trace.zip": {
-      "bytes": 2460431,
-      "sha256": "ebe248fd8aad018318e618e3c711eeb568bf5430121742ff41e5f194f0a6d2d9"
-    },
-    "browser-verified-artifacts/baseline-audio-unavailable-still-allows-gameplay/video.webm": {
-      "bytes": 566694,
-      "sha256": "2ce723df79bf84f81ddcf416fd6c5d038dd122f426e5a0faa2ede5a4e9ce06c1"
-    },
-    "browser-verified-artifacts/baseline-isolated-coin-cue-from-public-seeded-gameplay/trace.zip": {
-      "bytes": 4138122,
-      "sha256": "44522abf2ea3eefb5bc3729f6a89b2810ebd13dc51769a5d72ec7235d1396a77"
-    },
     "browser-verified-artifacts/baseline-isolated-coin-cue-from-public-seeded-gameplay/video.webm": {
       "bytes": 1484629,
       "sha256": "7778feb6dbf2dae616b39376936f548e6654a2a6841edb0c950abbf045aed4a2"
     },
-    "browser-verified-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/trace.zip": {
-      "bytes": 6053379,
-      "sha256": "867ac71ab91305d0c475d894809b16110996653f366b5b7e8e0bcc43ba05fde0"
-    },
-    "browser-verified-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/video.webm": {
-      "bytes": 1158453,
-      "sha256": "4e8394fecf8a802be335e42fd4b59c42a377e01a42ec3d80915ee0b33405a4e0"
-    },
-    "browser-verified-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip": {
-      "bytes": 19734562,
-      "sha256": "3cdd56644f3c5ef7b134864f8eec4fb619856ccc2fb89f8dd4c40caf9bd88d24"
-    },
-    "browser-verified-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/video.webm": {
-      "bytes": 6532713,
-      "sha256": "0106b3a39b1c957372a9b3e55af77d8ddb48b0585051a88d8359b01f777709ce"
-    },
-    "browser-verified.log": {
-      "bytes": 979,
-      "sha256": "162b142dbde8c32053f155e90ec7f75db4b9054d012eba9b7d7e1938982cb7b4"
-    },
-    "browser-video-audio-retry.log": {
-      "bytes": 778,
-      "sha256": "fd842d1e7c2d280d2ad0fbaf81cfc86a44501b1b502e44588a2f031788e7570d"
-    },
-    "browser-video-failure-artifacts/.last-run.json": {
-      "bytes": 145,
-      "sha256": "a437f7b3d5db78d3b7bafe92225865ea0a74900bb224c5edd06ccfcf9ac39afa"
-    },
-    "browser-video-failure-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/error-context.md": {
-      "bytes": 1387,
-      "sha256": "9bcd163f8d0056c8f502f3db6bcd126acfb1d7fd154170f3083de8b095f0f042"
-    },
-    "browser-video-failure-artifacts/baseline-public-app-five-s-4c259-vas-keyboard-pause-and-mute/trace.zip": {
-      "bytes": 4354,
-      "sha256": "bf6d8311a79f3c7f278b6baca7994aa931a22457339437f0bcf798fa8006ce11"
-    },
-    "browser-video-failure-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/error-context.md": {
-      "bytes": 1382,
-      "sha256": "5558cee965460e2a0348c57f016889290121bd3bf1b3bfc421d9a0ea833c11a8"
-    },
-    "browser-video-failure-artifacts/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip": {
-      "bytes": 4349,
-      "sha256": "18f81c36fa9accff325661f3267232a65592fbe9c27f69341d7afd4c7958fa59"
-    },
-    "browser-video.log": {
-      "bytes": 5215,
-      "sha256": "f698dc7d4da7c7de4e2cc87e14531bd70f32fa3d447cf1537bc7bc8795c22457"
-    },
-    "build.log": {
-      "bytes": 1071,
-      "sha256": "a19f7d27b306a7749b0f228078ee458518ddbb0c1e292185836caaecd8ffba07"
-    },
-    "lint-complete.log": {
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    "lint-final.log": {
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    "lint-retry.log": {
-      "bytes": 1028,
-      "sha256": "db98874c4a806f716264d0a4934c714328236cbc0368d5ea5b8994d06a44b53b"
-    },
-    "lint-verified.log": {
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    "lint.log": {
-      "bytes": 1091,
-      "sha256": "8298c52c4de5c619fd867a9c8aad68b381ebd0e3b344fa32f905e47304380a34"
+    "failure-summary.json": {
+      "bytes": 3132,
+      "sha256": "283d49c9cde824e1ba4025882965debd06c6ac04f8b6e1f5ebe8e20a059c9b56"
     },
     "resize-environment.json": {
       "bytes": 188,
       "sha256": "31fba4538c314d6307f6b1d90a991a68a33b97fe839e76503257a62747fde84b"
-    },
-    "typecheck.log": {
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "virtual-acceleration-unreliable.png": {
       "bytes": 140357,
@@ -268,46 +88,13 @@
     "virtual-pause-unreliable.png": {
       "bytes": 140357,
       "sha256": "e0bc41fc4c043cb44fcbd35db4a8ffbc80707dff7b656b769f9f7b04e3b11021"
-    },
-    "vitest-complete-retry.log": {
-      "bytes": 224,
-      "sha256": "db58d865c38472b307aeecfe68e378cd23c20046ec7126b7b935642f05df91e0"
-    },
-    "vitest-complete.log": {
-      "bytes": 1556,
-      "sha256": "95f476c33a281e8739440fcefc7c9100cb048ec42a422ce88cf6ee7259bcb8ad"
-    },
-    "vitest-expanded.log": {
-      "bytes": 224,
-      "sha256": "8b84e379b51889d29051bab56228971b89f6c7919d953c4da095cb6bdf161311"
-    },
-    "vitest-final-2.log": {
-      "bytes": 6593,
-      "sha256": "887b30171871ee58fbe861c3c233dc82f6897c593b25fee4d2e4185e1a127e14"
-    },
-    "vitest-final-3.log": {
-      "bytes": 7165,
-      "sha256": "a175aefc74da5aef8e2f0c1e20dd6a744ce512ed088f5ee89dc9ed13c6708e3e"
-    },
-    "vitest-final.log": {
-      "bytes": 235,
-      "sha256": "8f75f241d8295c4bb13bd6d806ea5aa93b2f861d6947f2dbcfb66feb2771e56a"
-    },
-    "vitest-initial.log": {
-      "bytes": 206,
-      "sha256": "249fd19556a446292f56762bfc7e12e4dc0896d111eb8d2046ae71f6c3d1f36e"
-    },
-    "vitest-pinned.log": {
-      "bytes": 225,
-      "sha256": "e08a00781cbbc9214a3fdfe7edc9d1b3e4ad24d57921c63e0441edf08e5a921f"
-    },
-    "vitest-verified.log": {
-      "bytes": 224,
-      "sha256": "9d35f153ebb2db75e42e33b1464f7b52eb07077d559334b7b2294388bf3ca102"
-    },
-    "lint-delivery.log": {
-      "bytes": 0,
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     }
+  },
+  "cleanup": {
+    "reason": "Explicit user request to remove logs, diagnostic traces, redundant Markdown and video copies",
+    "baselineMediaPreserved": true,
+    "originalMetadataPreserved": true,
+    "failureSummary": "failure-summary.json",
+    "hashesRegeneratedForRemainingArtifacts": true
   }
 }

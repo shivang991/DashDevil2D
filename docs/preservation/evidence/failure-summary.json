@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "requestedCleanup": "Remove logs and unnecessary Markdown introduced by this PR; also remove diagnostic traces and redundant videos.",
+  "originalFailuresAndResolutions": [
+    {
+      "failure": "Pinned pnpm auto-install blocked in sandbox / install overlapping tests temporarily removed dependencies",
+      "resolution": "Installed pinned pnpm 8 dependencies before rerunning checks."
+    },
+    {
+      "failure": "Virtual countdown assertion included real elapsed setup time",
+      "resolution": "Pause platform clock before browser navigation."
+    },
+    {
+      "failure": "Video capture missing matching ffmpeg binary",
+      "resolution": "Install Playwright ffmpeg before retry."
+    },
+    {
+      "failure": "Hook context published during render / test JSX not transformed automatically",
+      "resolution": "Publish context through effect and enable automatic JSX."
+    },
+    {
+      "failure": "Lateral fixture inherited narrow-road ratio from zero-sized jsdom canvas",
+      "resolution": "Set documented fixture road ratio 0.6 explicitly."
+    },
+    {
+      "failure": "Full playthrough reached gameover but canvas absent for final resize (development reload suspected)",
+      "resolution": "Finish source edits before run and capture resize while paused."
+    },
+    {
+      "failure": "Virtual acceleration/pause screenshots showed stale compositor pixels",
+      "resolution": "Mark unreliable screenshots; use real-time captures for visual evidence."
+    },
+    {
+      "failure": "Routine capture overwrote original archive and mislabelled tested revision",
+      "resolution": "Unique ignored invocation directories, actual Git/worktree metadata and per-run hashed manifest."
+    },
+    {
+      "failure": "Old 30 FPS invincibility observation allowed 2066.666667 ms",
+      "resolution": "Measure first expiry transition; require 1950\u20132050 ms at 30/60/120 FPS."
+    },
+    {
+      "failure": "Repeated Playwright config evaluation split workers from reporter, yielding empty manifest",
+      "resolution": "Share invocation directory through inherited environment; hash resolved output after reporters finish."
+    },
+    {
+      "failure": "Dirty deletion of large diagnostic archives exceeded Git stdout buffer during provenance capture",
+      "resolution": "Write Git patch to temporary run file and hash in bounded chunks; remove temporary patch afterward."
+    }
+  ],
+  "diagnosticsPolicy": "Raw logs, diagnostic trace ZIPs, generated error-context Markdown and redundant video copies removed at user request. Original useful failure screenshots remain. Future full diagnostics are kept only in ignored run folders and CI uploads.",
+  "reviewFixValidation": {
+    "vitest": "41 retained/API checks pass; 8 authorized defect characterizations remain expected failures",
+    "browser": "4 actual Chrome scenarios pass; final verified run manifest hashes 24 artifacts across all 4 scenario directories, with no missing files or invalid hashes",
+    "buildTypecheckLint": "passed",
+    "stage1": "pending recorded human audiovisual review"
+  },
+  "removedArtifactCount": 66
+}
