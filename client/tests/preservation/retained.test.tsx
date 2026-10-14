@@ -213,3 +213,14 @@ test('restart clears a pause entered during gameover before the new countdown', 
   advance(3.05, 60);
   expect(context.gameState).toMatchObject({ status: 'playing', paused: false });
 });
+
+// RAF callbacks use the frame timestamp, which can predate registration's
+// performance.now(). The clock remains monotonic; this is a legal browser frame.
+test('earlier first RAF timestamp cannot abort the five-second countdown', () => {
+  act(() => context.updateGameState({ countdownTimer: 5 }));
+  expect(() => act(() => nextFrame(-1))).not.toThrow();
+  advance(4.9, 60);
+  expect(context.gameState.status).toBe('countdown');
+  advance(0.1, 60);
+  expect(context.gameState).toMatchObject({ status: 'playing', countdownTimer: 0 });
+});
