@@ -84,3 +84,14 @@ test('configuration objects and mode names reject malformed shapes instead of us
   expect(() => captureConfiguration('long-drive', { gameplay: null } as unknown as ConfigurationOverrides)).toThrow('gameplay');
   expect(() => captureConfiguration('long-drive', { other: {} } as ConfigurationOverrides)).toThrow('other');
 });
+
+test.each([0, .5])('disabled ordinary shake and fatal multiplier %s keep rendering finite', multiplier => {
+  const game = createLongDrive(() => .5, { presentation: { shakeDuration: 0, gameOverShakeDuration: .5, gameOverShakeMultiplier: multiplier } });
+  Object.assign(game.state, { status: 'playing', health: 1, canvasWidth: 606, carY: 686, carYBase: 686,
+    obstacles: [{ lane: 1, y: 680, width: 48, height: 40 }] });
+  advanceLongDrive(game, 1 / 60, {}); expect(game.state.status).toBe('gameover');
+  advanceLongDrive(game, .1, {});
+  expect(Number.isFinite(game.state.shakeOffsetX)).toBe(true);
+  expect(Number.isFinite(game.state.shakeOffsetY)).toBe(true);
+  advanceLongDrive(game, .4, {}); expect(game.state.gameOverAnimDone).toBe(true);
+});

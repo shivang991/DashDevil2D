@@ -76,7 +76,7 @@ function tick(
   if (state.shakeTimer > 0) {
     state.shakeTimer -= dt;
     const duration =
-      state.shakeIntensityMultiplier > 1
+      state.status === "gameover"
         ? gameConfig.gameOverShakeDuration
         : gameConfig.shakeDuration;
     const t = Math.max(0, state.shakeTimer / duration);

@@ -4,8 +4,8 @@ import { defineConfig } from '@playwright/test';
 import { createCaptureRun } from './tests/browser/capture';
 const capture = createCaptureRun({
   outputRoot: path.resolve('test-results'), repositoryRoot: path.resolve('../..'), fixtureVersion: 2,
-  fixtures: ['apps/client/tests/browser/baseline.spec.ts', 'apps/client/tests/browser/capture.ts', 'apps/client/tests/browser/capture-reporter.ts'],
-  configuration: ['apps/client/src/lib/constants.ts', 'apps/client/playwright.config.ts', 'apps/client/package.json', 'pnpm-lock.yaml', 'package.json', 'turbo.json', 'pnpm-workspace.yaml', '.node-version', '.go-version', 'packages/simulation/package.json', 'packages/simulation/config.ts'],
+  fixtures: ['apps/client/tests/browser/evidence.ts', 'packages/contracts/configuration/fixtures.json', 'apps/client/tests/browser/configuration.spec.ts', 'apps/client/tests/browser/configuration.html', 'apps/client/tests/browser/baseline.spec.ts', 'apps/client/tests/browser/capture.ts', 'apps/client/tests/browser/capture-reporter.ts'],
+  configuration: ['packages/contracts/configuration/defaults.json', 'apps/client/src/lib/constants.ts', 'apps/client/playwright.config.ts', 'apps/client/package.json', 'pnpm-lock.yaml', 'package.json', 'turbo.json', 'pnpm-workspace.yaml', '.node-version', '.go-version', 'packages/simulation/package.json', 'packages/simulation/config.ts'],
 });
 // Worker processes evaluate this file too. Share one invocation directory
 // through their inherited environment instead of creating a second run identity.

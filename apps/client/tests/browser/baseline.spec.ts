@@ -1,15 +1,8 @@
-import { test as base, expect } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from './evidence';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-const test = base.extend<{ evidence: string }>({
-  evidence: async ({ browser }, provideEvidence, testInfo) => {
-    const directory = testInfo.outputPath('evidence');
-    fs.mkdirSync(directory, { recursive: true });
-    fs.writeFileSync(path.join(directory, 'scenario-environment.json'), JSON.stringify({ provenance: testInfo.config.metadata.captureProvenance, scenario: testInfo.title, browser: browser.version(), viewport: testInfo.project.use.viewport }, null, 2));
-    await provideEvidence(directory);
-  },
-});
 function seedPlatformRandomness() {
   let seed = 21;
   Math.random = () => { seed = (1664525 * seed + 1013904223) >>> 0; return seed / 4294967296; };

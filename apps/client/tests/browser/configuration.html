@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="UTF-8"><title>Long Drive developer configuration fixture</title></head>
+<body><div id="root"></div><script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { GameWorld } from '/src/game/GameWorld.tsx';
+import '/src/index.css';
+// Developer harness only: exercise the production session, renderer and HUD.
+window.configurationOverride = { gameplay: { maxHealth: 4, coinWeight: 0, obstacleWeight: 1, heartWeight: 1, roadSpeedIncrement: 0, spawnIntervalDecrement: 0 } };
+const configuration = () => window.configurationOverride;
+createRoot(document.getElementById('root')).render(React.createElement(GameWorld, { countdown: 3, configuration }));
+</script></body></html>
