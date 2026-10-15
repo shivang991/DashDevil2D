@@ -1,0 +1,149 @@
+
+> dashdevil@ check /Users/shivang/.codex/worktrees/6b7b/claude-code-test
+> pnpm check:generated && turbo run typecheck lint test build "--force" "--env-mode=loose"
+
+
+> dashdevil@ check:generated /Users/shivang/.codex/worktrees/6b7b/claude-code-test
+> pnpm --filter @dashdevil/contracts check:generated
+
+
+> @dashdevil/contracts@0.0.0 check:generated /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+> node protocol/generate.mjs --check
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running typecheck, lint, test, build in 4 packages
+   • Remote caching disabled, using shared worktree cache
+
+@dashdevil/contracts:generate: cache bypass, force executing 9b651ac8ab1cdd01
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:lint: cache bypass, force executing 837d8def2747fa44
+@dashdevil/contracts:test: cache bypass, force executing 90ce668eccee5caf
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/server:generate: cache bypass, force executing b1984a61ab9d3d88
+@dashdevil/contracts:typecheck: cache bypass, force executing 113e1f8656748c08
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:lint: > @dashdevil/contracts@0.0.0 lint /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:lint: > eslint .
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/server
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/server:generate: 
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 test /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > pnpm check:generated
+@dashdevil/contracts:test: 
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 check:generated /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > node protocol/generate.mjs --check
+@dashdevil/contracts:test: 
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/server:test: cache bypass, force executing f50b54cb20a115cd
+@dashdevil/server:typecheck: cache bypass, force executing 3aadf604bd201085
+@dashdevil/simulation:typecheck: cache bypass, force executing 3cf4e8f49e91efe5
+@dashdevil/simulation:lint: cache bypass, force executing e6265ff7011395e1
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:lint: 
+@dashdevil/simulation:lint: > @dashdevil/simulation@0.0.0 lint /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/simulation
+@dashdevil/simulation:lint: > eslint .
+@dashdevil/simulation:lint: 
+@dashdevil/server:typecheck: 
+@dashdevil/server:typecheck: > @dashdevil/server@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/server
+@dashdevil/server:typecheck: > go vet ./...
+@dashdevil/server:typecheck: 
+@dashdevil/server:test: 
+@dashdevil/server:test: > @dashdevil/server@0.0.0 test /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/server
+@dashdevil/server:test: > go test -count=1 ./...
+@dashdevil/server:test: 
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server	[no test files]
+@dashdevil/server:build: cache bypass, force executing 8cdb700f623542fe
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/server:build: 
+@dashdevil/server:build: > @dashdevil/server@0.0.0 build /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/server
+@dashdevil/server:build: > go build ./...
+@dashdevil/server:build: 
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/client:test: cache bypass, force executing dd89bd1e9ec243d9
+@dashdevil/client:typecheck: cache bypass, force executing 1d380c53fbf4165a
+@dashdevil/client:lint: cache bypass, force executing 2e8430d514956947
+@dashdevil/simulation:build: cache bypass, force executing 75ec76f38cd68124
+@dashdevil/client:lint: 
+@dashdevil/client:lint: > @dashdevil/client@0.0.0 lint /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+@dashdevil/client:lint: > eslint .
+@dashdevil/client:lint: 
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 build /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > pnpm typecheck
+@dashdevil/simulation:build: 
+@dashdevil/client:test: 
+@dashdevil/client:test: > @dashdevil/client@0.0.0 test /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+@dashdevil/client:test: > vitest run
+@dashdevil/client:test: 
+@dashdevil/client:typecheck: 
+@dashdevil/client:typecheck: > @dashdevil/client@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+@dashdevil/client:typecheck: > tsc -b
+@dashdevil/client:typecheck: 
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/configuration	0.482s
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > tsc -p tsconfig.json
+@dashdevil/simulation:build: 
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/protocol	0.996s
+@dashdevil/client:test: 
+@dashdevil/client:test:  RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+@dashdevil/client:test: 
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/simulation	1.164s
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/track	1.639s
+@dashdevil/client:test: 
+@dashdevil/client:test:  Test Files  10 passed (10)
+@dashdevil/client:test:       Tests  257 passed (257)
+@dashdevil/client:test:    Start at  00:23:41
+@dashdevil/client:test:    Duration  2.01s (environment 66%, tests 16%, transform 11%, import 6%, worker 2%)
+@dashdevil/client:test: 
+@dashdevil/client:test:     Isolate  10 workers spawned · ~713ms startup each (spawn + environment, per file)
+@dashdevil/client:test:              at least ~306ms faster with isolate: false — reuses workers across files instead of one per file
+@dashdevil/client:test: 
+@dashdevil/client:build: cache bypass, force executing da4f27a5ca1414da
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 build /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+@dashdevil/client:build: > pnpm typecheck && vite build
+@dashdevil/client:build: 
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+@dashdevil/client:build: > tsc -b
+@dashdevil/client:build: 
+@dashdevil/client:build: vite v7.3.1 building client environment for production...
+@dashdevil/client:build: (node:44420) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@dashdevil/client:build: (Use `node --trace-deprecation ...` to show where the warning was created)
+@dashdevil/client:build: transforming...
+@dashdevil/client:build: ✓ 1746 modules transformed.
+@dashdevil/client:build: rendering chunks...
+@dashdevil/client:build: computing gzip size...
+@dashdevil/client:build: dist/index.html                                                  0.45 kB │ gzip:  0.29 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-BKRTx50S.woff      8.01 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-ext-wght-normal-BKihR4CZ.woff2    8.87 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-DoFJSI0R.woff2     9.30 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-wght-normal-BudczbaH.woff2       10.30 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-Dh0jW_6n.woff         13.91 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-D7DxpFcE.woff2        15.51 kB
+@dashdevil/client:build: dist/assets/index-Bt1jXUvE.css                                  25.69 kB │ gzip:  5.51 kB
+@dashdevil/client:build: dist/assets/index-BRQPqdk5.js                                  256.73 kB │ gzip: 79.20 kB
+@dashdevil/client:build: ✓ built in 1.16s
+
+ Tasks:    15 successful, 15 total
+Cached:    0 cached, 15 total
+  Time:    7.701s 
+

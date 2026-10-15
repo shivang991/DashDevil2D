@@ -1,0 +1,4 @@
+# ./configuration
+stat /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/server/configuration: directory not found
+FAIL	./configuration [setup failed]
+FAIL

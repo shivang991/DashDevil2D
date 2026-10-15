@@ -1,0 +1,24 @@
+--- FAIL: TestSharedTimelines (0.01s)
+    --- FAIL: TestSharedTimelines/malformed_fresh_press_cannot_consume_a_valid_input_sequence (0.00s)
+        simulation_test.go:135: got [{"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"ignored"},{"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"rejected"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "rejected"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      }
+                    ]
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation	0.512s
+FAIL

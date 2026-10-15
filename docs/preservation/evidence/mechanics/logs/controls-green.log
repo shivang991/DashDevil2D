@@ -1,0 +1,40 @@
+
+ RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (5 tests | 1 failed) 9ms
+   × disconnect releases held NOS immediately without cancelling an in-flight shift 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > disconnect releases held NOS immediately without cancelling an in-flight shift
+AssertionError: expected { progress: 120.00000000000003, …(21) } to match object { effective: +0, progress: 120 }
+(20 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "effective": 0,
+-   "progress": 120,
++   "progress": 120.00000000000003,
+  }
+
+ ❯ tests/simulation/multiplayer.test.ts:38:34
+     36|  const game = new Multiplayer(captureConfiguration('drag-race'), 1, [i…
+     37|  game.submit(identity, input);game.advanceTo(.1);game.disconnect(ident…
+     38|  expect(game.snapshot().cars[0]).toMatchObject({ effective: 0, progres…
+       |                                  ^
+     39| });
+     40| test('overload abandons without skipping forward or revising final sta…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  00:05:34
+   Duration  165ms (transform 59%, import 19%, tests 18%, worker 4%)
+
+undefined
+/Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/multiplayer.test.ts

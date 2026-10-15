@@ -37,3 +37,17 @@ No new Long Drive gameplay correction is authorized by this work. Its only mecha
 - [Configuration](https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6146866917)
 - [Verification and tolerance](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139)
 - [Stage gates](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401)
+
+## Final verification and reviews
+
+Reviewed product revision: `445395276ca7706fed4c178785edf7a40a102269` (clean at final test start). `pnpm check --force --env-mode=loose` passed **257 Vitest tests**, generated-output verification, TypeScript checks, ESLint, native Go vet/tests/build and production builds: **15/15 tasks, zero Turborepo cache reuse**. Native Go tests now use `-count=1`, including shared external fixtures. The final actual-Chrome suite passed **12/12 scenarios with zero retries**, covering all previous Long Drive browser scenarios and the new headless mechanics diagnostic.
+
+Tests used installed pinned Go 1.26.0 via its cached binary path, `GOTOOLCHAIN=local`, and a writable temporary Go build cache. Turborepo's loose environment mode passed those execution-environment settings through; it did not change source validation. Original default-cache and restricted-network toolchain failures remain retained.
+
+[Independent review](mechanics-review.md): Standards **0 outstanding**, Spec **0 outstanding**. The initial semantic-input P2 was fixed and retested red→green in both languages; independent reviewers verified the timeline equations, seed words, literal geometry/placement expectations, schedule invariance and independent-window correction. There are now **17 shared timeline scenarios, six canonical-time vectors, six swept-geometry vectors and two placement scenarios**, plus public API ownership/abuse checks.
+
+[Structured validation](mechanics-validation.json) records versions, hashes, seeds, exact commands, actual environment, logs, retained failures and unavailable prerequisites. Final browser source-frozen manifest and representative screenshots/observations are retained under [evidence/mechanics](evidence/mechanics/browser-final-manifest.json); full videos/traces/audio remain in `apps/client/test-results/run-2026-10-15T07-24-20.343Z-5AsYaj`.
+
+Actual browser: Chrome **155.0.8059.79**; Apple M2/8 GB, Darwin 25.5.0 arm64; Node 26.10.0, pnpm 8.15.9, Go 1.26.0. Viewport 1280×900, Long Drive canvas 606×806, with resized scenarios. Reference-hardware equivalence and power settings remain unestablished. Static agent inspection confirmed the diagnostic canvas and recognizable Long Drive countdown; this does not establish new manual multiplayer or screen-visible performance acceptance.
+
+#28's implemented-mechanics scope is complete. The **combined Stage 4 gate remains incomplete until #29 passes actual supported-browser transport checks**; no later-stage gameplay or acceptance claim is made.

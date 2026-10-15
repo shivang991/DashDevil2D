@@ -1,0 +1,48 @@
+
+ RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (38 tests | 1 failed) 29ms
+   × shared timeline: malformed fresh press cannot consume a valid input sequence 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: malformed fresh press cannot consume a valid input sequence
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -1,16 +1,16 @@
+  [
+    {
+-     "disposition": "rejected",
++     "disposition": "ignored",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
+-     "disposition": "accepted",
++     "disposition": "rejected",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+
+ ❯ tests/simulation/multiplayer.test.ts:76:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 37 passed (38)
+   Start at  00:20:27
+   Duration  173ms (tests 47%, transform 31%, import 19%, worker 3%)
+
+undefined
+/Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/multiplayer.test.ts

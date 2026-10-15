@@ -1,0 +1,4 @@
+# github.com/shivang991/DashDevil2D/apps/server/simulation [github.com/shivang991/DashDevil2D/apps/server/simulation.test]
+simulation/simulation_test.go:13:10: undefined: New
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation [build failed]
+FAIL

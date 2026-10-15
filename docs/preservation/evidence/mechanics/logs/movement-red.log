@@ -1,0 +1,38 @@
+
+ RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts [ tests/simulation/multiplayer.test.ts ]
+Error: Missing "./multiplayer" specifier in "@dashdevil/simulation" package
+  Plugin: vite:import-analysis
+  File: /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client/tests/simulation/multiplayer.test.ts:4:28
+  1  |  import { expect, test } from "vitest";
+  2  |  import { captureConfiguration } from "@dashdevil/simulation/config";
+  3  |  import { Multiplayer } from "@dashdevil/simulation/multiplayer";
+     |                               ^
+  4  |  const identity = { roomId: 1, seatSession: 11, pairGeneration: 1, seat: 0 };
+  5  |  const input = { identity, round: { roundId: 1, inputGeneration: 1 }, sequence: 1, intent: 0, control: 3, heldMask: 4 };
+ ❯ e ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:6651:8
+ ❯ n ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:6663:14
+ ❯ o ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:6691:10
+ ❯ resolveExportsOrImports ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:32827:45
+ ❯ resolveDeepImport ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:32841:22
+ ❯ tryNodeResolve ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:32716:70
+ ❯ ResolveIdContext.handler ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:32555:16
+ ❯ EnvironmentPluginContainer.resolveId ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:28717:56
+ ❯ TransformPluginContext.resolve ../../node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:28929:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  00:03:30
+   Duration  148ms (worker 97%, environment 3%)
+
+undefined
+/Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/multiplayer.test.ts
