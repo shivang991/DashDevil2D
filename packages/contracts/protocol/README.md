@@ -1,0 +1,60 @@
+# Protocol schema version 1
+
+Issue [#27](https://github.com/shivang991/DashDevil2D/issues/27). Governing [protocol](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562), [resource gate](https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6171130505), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139) and [sequence](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).
+
+`schema.json` is the language-neutral source for every mechanical field, its order, width, enum ceiling, flag allocation and section bound. `generate.mjs` emits TypeScript interfaces/layouts/functions and native Go structs/layouts/functions. The small layout interpreters implement mechanical encoding; `validation.ts` / Go `validation.go` own semantic checks. Consumers must perform **both** mechanical decoding and applicable semantic/context/stateful admission checks. Go's complete semantic configuration capture is #28; the Go resource API accepts an already validated Context. No endpoint, input application, prediction controller or transport is introduced here.
+
+Run `pnpm generate` after changing the schema, then `pnpm check:generated`. The latter compares in memory and never regenerates files. `pnpm check` and CI check stale output **before** generation dependencies can repair it. TypeScript output belongs to the contracts task; Go output belongs to the server task, and each has declared cache outputs. `fixture-reference.py` is an independent Python/struct authoring reference, **not** a generation task or an acceptance oracle. Expected fixture changes need independent review; never regenerate a failed expectation from a production codec.
+
+## Wire layout
+
+All multibyte scalars are big-endian. Reliable records have `u32 bodyLength | u8 messageType | payload`, where the length includes the discriminator and excludes the four-byte prefix. The configured frame bound includes all five framing bytes. Reject advertised body length before body allocation. `FrameReader` supports partial prefixes/bodies and multiple frames in a read; end of stream with an incomplete frame is an error. Unknown types, trailing bytes, bad UTF-8, nonfinite float64, enum overflow and reserved bits fail explicitly.
+
+| Schema scalar/section | Wire representation |
+| --- | --- |
+| `u8`, `u16`, `u32` | 1, 2, 4 unsigned bytes |
+| `us` | 8 unsigned bytes, constrained to 0…9,007,199,254,740,991 before converting to JS Number |
+| `f64` | 8 IEEE-754 bytes; baseline positions retain full precision, including signed zero |
+| `string`, `bytes` | u32 byte count then exactly that many bytes; per-field maximum in schema; strings strict UTF-8 |
+| fixed array | exactly the schema count, no count prefix; cars/seats are Player 1 then Player 2 |
+| variable array | u32 element count, bounded before allocation/traversal, then records in schema order |
+| adjacent `bits` fields | fill a byte from low bits upwards in schema order; start a new byte if the next field does not fit; unused high bits zero |
+
+Car lane/departure/target/phase occupy one byte (2 bits each); winning/effective controls and four flags occupy the next (2+2+4). Object lane and kind/consumption flags occupy seven bits, with the high bit reserved. Held physical controls are a separate three-bit mask (left/right/NOS); winning/effective controls remain distinct so releases, expiry and return restrictions can continue correctly. HP, scores, identities and progress are uint32; accepted configuration proves their resource/numeric limits. Enum names and flags are specified in `schema.json`. A missing/unused mode-specific configuration field is zero; expected Context comparison rejects mismatched captures.
+
+| Datagram offset | Field | Width |
+| --- | --- | --- |
+| 0 | epoch | 2 |
+| 2 | tick | 4 |
+| 6 | CRC32C | 4 |
+
+A verification datagram is **exactly ten bytes**, with no reliable framing or type/version byte. Schema/direction are agreed by handshake. The generated decoder rejects any other length; the future datagram adapter discards that error without refreshing liveness. Reliable decoder errors instead fail the connection. Versions agree exactly; no downgrade. `nextCounter` / `NextCounter` refuse wrap; the caller renews the relevant context before exhaustion. Sequence admission, duplicates, old pairs/rounds/generations and epoch/barrier readiness remain stateful responsibilities for #28/#29.
+
+## Families and continuation coverage
+
+| Channel | Generated records and interpretation |
+| --- | --- |
+| HTTPS | AdmissionRequest(create/join/resume), Admission(paired tickets, credential, identity, expiry/origin), ProtocolError |
+| Room | RoomInitialization(version/current pair), RoomState(revision, two seats, mode/host/readiness/reservation, phase/start/cancellation, idle warning/expiry), RoomCommand(mode/ready/start/leave) |
+| Gameplay control | Handshake, Initialization(immutable Context), Ready(initialization/baseline barrier), ClockRequest/Reply, Recovery, AuthorityAck, ProtocolError, Outcome |
+| Inputs | Input(round, sender input generation, sequence, press/release/refresh, control and held mask) |
+| Authority | Disposition(accepted/ignored/rejected and resulting Car/Contact), Event(causal IDs and resulting state/consumption), Barrier(contiguous watermarks), Coverage(complete replacement windows and generator state), BaselineChunk |
+| Unreliable authority | Verification(epoch, tick, CRC32C) |
+
+`Identity` distinguishes internal room, room-seat session, pair generation and authenticated seat. `Round` distinguishes round and recipient/sender input generation. Each Car additionally carries its own seat's input generation so recovery can reset one seat independently. `Progress` carries authority/event watermarks and both seats' contiguous processed/disposed cutoffs. An accepted event's canonical microsecond time and record identity are exact; client send times cannot backdate application. The ordering rule remains inputs before contacts and Player 1 before Player 2 at equal times; these records carry sufficient order/time information without implementing that simulation in #27.
+
+A Baseline contains coherent tick/time, identity/epoch/watermarks and full immutable Context: configuration/generation versions, authority-assigned configuration identity, nonzero seed, mode, round-start clock and all five configuration responsibility groups. Its continuation includes float64 car progress/lateral coordinates and normal speeds; held mask/winner/effective controls and per-seat generations; freshness/protection/repeat deadlines; NOS/restriction/blocking flags; lane/departure/target/phase and movement origin/target/start/end; HP/score/input progress; contact episode/damage/tailgating and latest qualifying Road Rage input with canonical ordering; PRNG state, slice/object cursors, generation position/time and reserved-heart cursor; and represented windows' bounds, stable placement and complete shared/per-seat consumption.
+
+Windows are sorted by increasing nonoverlapping bounds; objects within each are sorted by stable object identity. They may omit the empty distance between cars. Placement can regenerate from seed/configuration; this version also transmits placement so decoding does not depend on a later gameplay generator. Coverage records establish mutable availability before using an expanded window; unknown coverage must freeze speculation/request recovery. State outside the windows is **not** assumed unconsumed. Server retention, replay, event suppression, freshness expiry and datagram/barrier ordering are subsequent runtime work, not claims made by fixture codecs.
+
+`BaselineTransfer` assembles only bounded, nonoverlapping, metadata-consistent chunks, validates complete state against expected immutable Context and checks transfer/baseline identity/tick/epoch/watermarks before returning it. Partial state is never exposed. Reordered chunks work; duplicate, overlapping, inconsistent, undersized or oversized transfers fail. Cancel discards bytes permanently, allowing a separate self-contained terminal outcome to supersede the transfer. Outcome includes round/unique outcome identity, final time/tick, result/reason, both float64 final positions/HP/scores and progress. It needs no baseline/authority arrival to decode and validate. Immediate/idempotent application and prevention of subsequent gameplay belong to #29's session controller.
+
+## Projection and resource gate
+
+Projection order is the generated `Projection` record: round/input generation, configuration identity, generation version, seed, tick/time, watermarks, both cars, contact, generator and canonical windows/objects. It excludes admission/pair identity, verification epoch, monotonic start-clock estimates, presentation configuration/offsets and provisional input. Mutable position fields marked `projection` use `floor(value*1024+0.5)`, negative zero → zero, encoded as signed **int64 two's complement**. The supported JS-exact subset is ±9,007,199,254,740,991 quantized units. Other fields retain their exact canonical encodings. Simulation/baselines are never quantized. CRC32C is reflected Castagnoli (`0x82F63B78`, initial/final XOR `0xFFFFFFFF`). Equality remains a drift diagnostic, not equality proof or anti-cheat.
+
+`configurationResources` is invoked by immutable TypeScript configuration capture for multiplayer. Its independent-car enclosure uses capped maximum boosted speed over the fixed one-second prediction horizon, car/object longitudinal extents, a generation-ahead slice and alignment guards. The complete lateral lane range covers shifts and returns. It budgets a nonempty random object at every opportunity regardless of weights, plus **all** reserved hearts in addition to random hearts; both disjoint car windows are counted. This conservative supported envelope may reject a configuration that a smaller state could fit, and never approves from a lower bound alone. It does not store the potentially enormous gap between cars.
+
+The gate measures fixed and object records with the actual codecs, rejects impossible counts/limits before allocating, serializes the entire bounded worst-density continuation, serializes coverage against the reliable frame bound, and verifies an actual chunk with all metadata against frame/queue limits. Supported assembled baselines are at most 1 MiB, each window at most 40,000 objects, with smaller configured limits honored. It also checks round maximum progress/position projection, uint32 identities/score/HP and tick exhaustion, plus exact continuation microseconds. Road Rage uses its deadline and maximum boosted speed; Drag Race's maximum duration uses finish distance/minimum normal speed. Larger unsupported configurations fail explicitly, without dropping state, lowering precision or changing defaults. Queue drain, timeout and measured network-budget acceptance require actual transport later.
+
+Shared fixture version 1 includes every family, literal endian and packed bytes, bounded UTF-8/sections, float64/timestamp/counter boundaries, accepted/ignored/rejected and refresh/release records, complete synthetic continuation and projection bytes/CRC, malformed records, and exact resource vectors. These are **codec/validation** scenarios; they do not assert a multiplayer simulation rollout. Existing track fixture version 1 retains owner-published seed-1 xorshift words and independent spawn expectations. Continuous simulation tolerance remains `0.000001 + 1e-12*abs(expected)`; decisions, event times, bytes, IDs and consumption remain exact.

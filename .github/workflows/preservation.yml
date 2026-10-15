@@ -17,6 +17,7 @@ jobs:
           cache: false
       - run: npm install --global pnpm@8.15.9
       - run: pnpm install --frozen-lockfile
+      - run: pnpm check:generated
       - run: pnpm check
       - run: pnpm --filter @dashdevil/client exec playwright install --with-deps chrome ffmpeg
       - run: pnpm test:browser

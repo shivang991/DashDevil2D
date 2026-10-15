@@ -94,6 +94,14 @@
         "^build",
         "typecheck"
       ]
+    },
+    "@dashdevil/server#generate": {
+      "dependsOn": [
+        "^generate"
+      ],
+      "outputs": [
+        "protocol/generated.go"
+      ]
     }
   }
 }

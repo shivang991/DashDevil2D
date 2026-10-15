@@ -14,7 +14,9 @@
     "test": "turbo run test",
     "build": "turbo run build",
     "test:browser": "turbo run test:browser --filter=@dashdevil/client",
-    "check": "turbo run typecheck lint test build"
+    "check": "pnpm check:generated && turbo run typecheck lint test build",
+    "generate": "turbo run generate",
+    "check:generated": "pnpm --filter @dashdevil/contracts check:generated"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

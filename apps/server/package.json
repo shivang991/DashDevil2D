@@ -8,6 +8,7 @@
   "scripts": {
     "typecheck": "go vet ./...",
     "test": "go test ./...",
-    "build": "go build ./..."
+    "build": "go build ./...",
+    "generate": "node ../../packages/contracts/protocol/generate.mjs --target=go"
   }
 }

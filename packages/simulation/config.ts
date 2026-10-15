@@ -1,4 +1,5 @@
 import defaults from "@dashdevil/contracts/configuration";
+import { configurationResources } from "@dashdevil/contracts/validation";
 
 // JSON is the language-neutral source; freeze it before any capture uses it.
 function freezeDefinition(value: object): void {
@@ -124,7 +125,9 @@ export function captureConfiguration<M extends Mode>(mode: M, overrides: Configu
       if (g[key] !== undefined) requireValue(Number.isSafeInteger(Math.ceil(g[key] * 1024)), `gameplay.${key}`, "projection must remain an exact JavaScript integer");
     }
   }
-  return Object.freeze({ version: defaults.version, mode, gameplay, presentation, room, connection, operational });
+  const configuration = Object.freeze({ version: defaults.version, mode, gameplay, presentation, room, connection, operational });
+  try { configurationResources(configuration); } catch (error) { throw new ConfigurationError("configuration.resources", error instanceof Error ? error.message : "unsupported serialization"); }
+  return configuration;
 }
 /** Read-only drawing adapter; responsibility groups remain the canonical contract. */
 export type GameConfig = GameplayConfig & PresentationConfig & { readonly laneCount: number; readonly coinScore: number; readonly offScreenThreshold: number };

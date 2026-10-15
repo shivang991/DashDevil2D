@@ -6,6 +6,19 @@
   "exports": {
     "./configuration": "./configuration/defaults.json",
     "./configuration-fixtures": "./configuration/fixtures.json",
-    "./track-fixtures": "./track/fixtures.json"
+    "./track-fixtures": "./track/fixtures.json",
+    "./protocol": "./generated/protocol.ts",
+    "./wire": "./protocol/runtime.ts",
+    "./protocol-schema": "./protocol/schema.json",
+    "./validation": "./protocol/validation.ts",
+    "./protocol-fixtures": "./protocol/fixtures.json",
+    "./transfer": "./protocol/transfer.ts"
+  },
+  "scripts": {
+    "generate": "node protocol/generate.mjs --target=ts",
+    "check:generated": "node protocol/generate.mjs --check",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "pnpm check:generated"
   }
 }
