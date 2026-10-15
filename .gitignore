@@ -7,3 +7,5 @@ apps/client/playwright-report/
 .turbo/
 
 .local/
+infra/.env
+infra/certs/

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "date": "2026-10-15",
+  "baselineRevision": "71eb211",
+  "platform": "Docker Desktop 28.0.1, linux/arm64 containers on Apple M2/macOS",
+  "sourceSha256": {
+    ".dockerignore": "2ff4965de0177e6cb542014badf87609b911bd656f613f4567e90cf1ae2bcfb3",
+    "infra/compose.yml": "0be2d2e8c9eaab86e3196d2e31e2b1c19fe4e6c73537a137f226a894892e47fb",
+    "infra/server/Dockerfile": "e8e850729125edff904143f5265bca2c92d7465db6c1c5a490c4719e60ec73ab",
+    "infra/nginx/Dockerfile": "f4616daf761896d3f8e4f00f19478eed29d24f3f5015f1c402c313e863dce727",
+    "infra/client/Dockerfile": "4cbd468c54307bbb1d52f6162e7906b22ef99d29808fcebdbe79981c91e360dd",
+    "infra/server/start.sh": "0a533af536d17f16f7b9f2ed01c1dbd9a17f998b440d237de33f7865e624e8bd",
+    "infra/nginx/render-config.sh": "045a800ffbf32ef3f8eb3f90e335e549b4db3a7ae81b8b44679ef81863d1a3bd",
+    "infra/nginx/start.sh": "c86a0446bbeb1522c0802101b69549a2d19ebe0ce7ad0b806087ba82aa4d7472",
+    "infra/nginx/http.conf.template": "ea7adf01d610c98bc10d744400ea63818ae13c6e6a68799355561ddfc0311517",
+    "infra/nginx/default.conf.template": "dfefe397606a75d47185c3d7ea223574ee1ab74f5d31237836f65317309a0534",
+    "infra/client/nginx.conf": "beabe0ed2d678d9b0e2466f4963003454e7261c390bc9f8e94d6f935cfb8efa2",
+    "infra/up.sh": "a3ec52fc7523b4db0f78e3757aec0c707d240d926f8fab52662c67f775de904c"
+  },
+  "checks": {
+    "composeConfig": "passed",
+    "shellSyntax": "passed",
+    "clientServerNginxBuilds": "passed",
+    "certbotVersion": "5.8.0 verified from pulled container",
+    "httpOnlyBootstrap": "passed without certificate; challenge file served and normal HTTP redirected 308",
+    "nginxTLSConfig": "nginx -t passed",
+    "nativePublicAdmission": "HTTPS admission plus direct UDP 443 HTTP/3 admission passed with ordinary TLS verification using explicit local CA",
+    "twoBrowserScenarios": {
+      "passed": 3,
+      "failed": 0,
+      "retries": 0,
+      "source": "existing apps/client/tests/browser/transport.spec.ts",
+      "browser": "installed Chrome 155.0.8059.79, temporary headless process",
+      "localTestOnly": "--webtransport-developer-mode permits the already-trusted local CA for WebTransport; no global TLS ignore flag or production configuration change",
+      "logs": "/private/tmp/dash29-infra-smoke/browser-final.log"
+    },
+    "certificateRotation": "Passed: nginx served replaced certificate and Go automatically restarted listeners, then native and browser tests passed again"
+  },
+  "images": [
+    "dashdevil-client:latest sha256:71b0b78db9db97936690716c0be672a92f89860b76b86ca7f2676050dc054c5f linux/arm64",
+    "dashdevil-server:latest sha256:49a4441b8b5f414499cd843c4c9ee670729b9af189a74bcf31607a64e3849e4f linux/arm64",
+    "dashdevil-nginx:latest sha256:5dc22c8141b8ecbbba1e61cc01e5ff631689377e65c42c9f954069a441c11370 linux/arm64",
+    "certbot/certbot:v5.8.0 sha256:ee901aeb343b763b55793f2f6503b4be78ca970adcfdc333c2936a15c7489ebb linux/arm64"
+  ],
+  "evidenceDirectory": "/private/tmp/dash29-infra-smoke",
+  "limitations": [
+    "Live public ACME issuance/renewal dry-run requires the VPC hostname and reachable TCP port 80; not attempted locally.",
+    "The local CA cannot establish public-root Chrome acceptance. Browser developer mode was only a diagnostic-process fixture; production uses normal public validation.",
+    "linux/arm64 image builds/runtime tested; linux/amd64 runtime and actual VPC ingress not executed on this host.",
+    "Original plain-local-CA Chrome, forced IPv4 and SPKI-only failed attempts retained before isolating known-root check. Native first probe omitted explicit port; corrected probe passed.",
+    "This deployment runs the existing stationary #29 transport diagnostic; #28 parity and remaining acceptance evidence are unchanged."
+  ]
+}
