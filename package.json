@@ -8,7 +8,7 @@
     "pnpm": "8.15.9"
   },
   "scripts": {
-    "dev": "turbo run dev --filter=@dashdevil/client",
+    "dev": "pnpm --filter @dashdevil/contracts generate && pnpm --filter @dashdevil/client dev",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",

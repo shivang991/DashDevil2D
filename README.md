@@ -12,7 +12,7 @@ pnpm --filter @dashdevil/client exec playwright install chrome ffmpeg
 pnpm test:browser
 ```
 
-`pnpm dev` starts Vite. `pnpm check` runs typechecking, linting, Vitest, native Go vet/tests and production builds through Turborepo. Individual root commands are `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build`. Client-local commands still work from `apps/client`; install dependencies from the workspace root. Preview the production client with `pnpm --filter @dashdevil/client preview`.
+`pnpm dev` generates the client contracts, then starts Vite directly so terminal input remains attached. Keep that terminal open while playing; Ctrl+C stops the server. `pnpm check` runs typechecking, linting, Vitest, native Go vet/tests and production builds through Turborepo. Individual root commands are `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build`. Client-local commands still work from `apps/client`; install dependencies from the workspace root. Preview the production client with `pnpm --filter @dashdevil/client preview`.
 
 | Location | Responsibility |
 | --- | --- |
