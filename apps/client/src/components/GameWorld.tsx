@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ConfigurationOverrides } from "@dashdevil/simulation/config";
-import { GameSession, type UISnapshot } from "./GameSession";
+import { GameSession, type UISnapshot } from "../game/GameSession";
 
 interface GameWorldProps {
   countdown: 5 | 3;

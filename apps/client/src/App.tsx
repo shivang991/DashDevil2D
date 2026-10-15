@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
-import { GameWorld } from "@/game/GameWorld";
+import { GameWorld } from "@/components/GameWorld";
 import { MenuScreen } from "@/screens/MenuScreen";
 
 type Screen = "menu" | "game";
