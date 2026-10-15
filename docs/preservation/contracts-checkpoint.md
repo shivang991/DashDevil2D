@@ -20,8 +20,8 @@ Ticket: [Generate compatible binary contracts and complete-state fixtures](https
 | Target architecture/package ownership | Existing [#24 checkpoint](monorepo-checkpoint.md), plus contract generation ownership/cache outputs and declared workspace consumers. |
 | Immutable validated configuration | Existing [#25 checkpoint](configuration-checkpoint.md), now completed with #27 exact serialization/projection resource gate. Full Go configuration semantics belong to Stage 4/#28. |
 | Discrete seeded tracks and resize-independent contacts | Existing [#26 checkpoint](track-checkpoint.md), shared seed/track fixtures retained. |
-| Generated compatible contracts and complete resource gate | Implementation/targeted tests complete; independent review and final source-frozen checks recorded below. |
-| Long Drive applicable automated preservation | Final uncached workspace check and affected actual Chrome scenarios required below. |
+| Generated compatible contracts and complete resource gate | Passed technical checks and independent review; final source-frozen evidence below. |
+| Long Drive applicable automated preservation | Passed: 218 Vitest checks, native Go suites, generation verification/types/lint/builds, and all 11 actual Chrome scenarios. |
 | Human audiovisual comparison | **Pending**, as recorded at #26. New automated media does not establish the human comparison. |
 | Two-browser real-transport smoke | **Unavailable** until #29 introduces admission/WebSocket/WebTransport endpoints. This prerequisite is not reported as passed. Once introduced it becomes mandatory. |
 | Full Go simulation parity | **Unavailable** until #28; existing Go tests cover seeded generation and protocol/configuration resource compatibility only. |
@@ -31,4 +31,12 @@ Ticket: [Generate compatible binary contracts and complete-state fixtures](https
 
 ## Final verification
 
-Pending source-frozen workspace/browser checks and independent Standards/Spec review. Final results will be recorded before ticket closure.
+Reviewed product source: `976c69db34242e6617247ab8f91a22281d7af84a` (clean worktree). `pnpm check --force` passed **218 Vitest checks**, generated-output verification, typechecking, lint, native Go tests/vet/build and production builds: **15/15 tasks**, zero Turborepo cache reuse. A supplementary native `go test -count=1 ./...` passed both protocol and track suites without test-result caching. Final actual Chrome run passed **11/11 scenarios, zero retries**, with preserved complete manifests/media/audio/traces.
+
+Final browser manifest: `apps/client/test-results/run-2026-10-15T00-15-14.062Z-xxdtyE/manifest.json`. Actual browser Chrome **155.0.8059.79**, Apple M2/8 GB, Darwin 25.5.0 arm64; Node 26.10.0, pnpm 8.15.9, Go 1.26.0. Viewport 1280×900, canvas 606×806; resized and high-speed scenarios retained. Native shell reports macOS 26.5.2; the browser harness reports its recorded Darwin release. Reference-machine equivalence/power settings remain unestablished.
+
+[Independent review](contracts-review.md): Standards **0 outstanding**, Spec **0 outstanding**, after fixing leading-BOM UTF-8 compatibility and invalid movement continuation. Both fixes have shared regression fixtures and retained original red runs. The reviewer independently checked packed bytes, exact datagrams, projection CRC, resource envelope/counts and invalid scenario expectations. Full [structured validation](contracts-validation.json) records revisions, hashes, versions, seeds, environment, logs, original failures and limitations.
+
+Literal exact default resource envelopes: Drag Race **16 objects / 1,278 baseline bytes / 1,358 chunk-frame bytes / 438 coverage-frame bytes**; Road Rage **12 / 1,210 / 1,290 / 370**. Dense enabled random hearts and high-speed/wide-car scenarios have independent shared sizing vectors. Byte totals include complete fixed continuation and immutable context; no consumption-only approximation is used to approve capture.
+
+Agent inspected final countdown and resized pause snapshots. This is static inspection, not owner audiovisual signoff. New human comparison remains pending; **the full Stage 3 gate is not declared passed and Stage 4 remains blocked on that review**. Real transport and full Go gameplay parity remain unavailable until #29/#28. No later-stage network/browser/capacity acceptance is claimed.

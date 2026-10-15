@@ -89,3 +89,7 @@ Technical integration checks pass; **Stage 2 exit is accepted** following the ow
 ## Stage 3 world geometry and track checkpoint (#26)
 
 [Track checkpoint](track-checkpoint.md) records canvas-independent world centers, strict swept contacts, immutable seeded slices with separate consumption, exact time-based spawn anchors and safe retirement. The #26 tunneling correction is now mandatory. Shared version-1 generation fixtures run in both TypeScript and Go; full Go contact parity, generated schema verification and real transport remain owned by #27–#29. Actual Chrome high-speed/resize evidence complements retained Long Drive checks. Full Stage 3 and new human audiovisual comparison remain pending.
+
+## Stage 3 generated binary contracts and exact resource gate (#27)
+
+[Contract checkpoint](contracts-checkpoint.md), [independent review](contracts-review.md) and [structured validation](contracts-validation.json) record schema-driven Go/TypeScript mechanical contracts, shared complete-state/wire/projection/resource fixtures, handwritten validation and atomic assembly. Immutable capture now checks actual continuation/coverage/chunk serialization and signed projection widths for worst supported independent-car windows. All applicable technical checks pass; full Stage 3 still awaits human audiovisual preservation review. Full Go gameplay parity and two-browser real-transport checks remain unavailable until #28/#29.
