@@ -1120,6 +1120,26 @@
         "heldMask": 4
       },
       "hex": "0000001d0f01020304000000050000000600000000070000000800000005010304"
+    },
+    {
+      "name": "leading-BOM",
+      "type": "ProtocolError",
+      "value": {
+        "code": 1,
+        "expectedVersion": 1,
+        "detail": "﻿name"
+      },
+      "hex": "0000000f0301000100000007efbbbf6e616d65"
+    },
+    {
+      "name": "BOM-only",
+      "type": "ProtocolError",
+      "value": {
+        "code": 1,
+        "expectedVersion": 1,
+        "detail": "﻿"
+      },
+      "hex": "0000000b0301000100000003efbbbf"
     }
   ],
   "malformed": [
@@ -1654,6 +1674,916 @@
         "maxProgress": 24000
       },
       "coverageBytes": 2070
+    }
+  ],
+  "semanticInvalid": [
+    {
+      "name": "shift-target-outside-world",
+      "value": {
+        "identity": {
+          "roomId": 16909060,
+          "seatSession": 5,
+          "pairGeneration": 6,
+          "seat": 0
+        },
+        "round": {
+          "roundId": 7,
+          "inputGeneration": 8
+        },
+        "epoch": 4660,
+        "tick": 60,
+        "timeUs": 1000000,
+        "progress": {
+          "authority": 11,
+          "event": 9,
+          "processed1": 5,
+          "processed2": 4,
+          "disposed1": 5,
+          "disposed2": 3
+        },
+        "context": {
+          "configurationVersion": 1,
+          "configurationId": 287454020,
+          "generationVersion": 1,
+          "seed": 1,
+          "mode": 1,
+          "startUs": 3000000,
+          "gameplay": {
+            "accelSpeedMultiplier": 2,
+            "carHeight": 80,
+            "carWidth": 50,
+            "coinSize": 28,
+            "coinWeight": 0,
+            "countdownDuration": 3,
+            "difficultyRampInterval": 0,
+            "emptyWeight": 0,
+            "finishDistance": 24000,
+            "heartExclusionDistance": 200,
+            "heartSize": 28,
+            "heartWeight": 0,
+            "initialClearDistance": 800,
+            "initialSpawnInterval": 0,
+            "invincibleDuration": 0,
+            "laneLerpSpeed": 0,
+            "laneReturnDuration": 0.15,
+            "laneShiftDuration": 0.15,
+            "laneSpacing": 120,
+            "laneSwitchCooldownDuration": 0.15,
+            "maxHealth": 3,
+            "maxRoadSpeed": 400,
+            "minSpawnInterval": 0,
+            "obstacleDamage": 1,
+            "obstacleH": 40,
+            "obstacleW": 48,
+            "obstacleWeight": 1,
+            "playerContactDamage": 0,
+            "reservedHearts": 4,
+            "roadSpeedIncrement": 0,
+            "sliceSpacing": 400,
+            "spawnIntervalDecrement": 0,
+            "speedGrowth": 0,
+            "startingRoadSpeed": 400,
+            "tickRate": 60,
+            "timeLimit": 0
+          },
+          "presentation": {
+            "accelCarOffset": 80,
+            "accelLerpSpeed": 8,
+            "blinkCount": 3,
+            "carBottomMargin": 40,
+            "carTiltLerpSpeed": 12,
+            "carTiltMaxAngle": 1,
+            "correctionSmoothing": 0.1,
+            "gameOverFadeMaxOpacity": 0.75,
+            "gameOverFadeSpeed": 2,
+            "gameOverShakeDuration": 0.5,
+            "gameOverShakeMultiplier": 1.5,
+            "narrowScreenWidth": 320,
+            "roadWidthRatioNarrow": 1.0,
+            "roadWidthRatioNormal": 0.6,
+            "shakeDuration": 0.5,
+            "shakeIntensity": 24
+          },
+          "room": {
+            "idleExpiry": 900,
+            "idleWarning": 60,
+            "reconnectGrace": 15
+          },
+          "connection": {
+            "admissionTicketLifetime": 30,
+            "baselineBytes": 1048576,
+            "clockRequestRate": 2,
+            "clockSamples": 8,
+            "clockSyncInterval": 1,
+            "controlFreshnessExpiry": 1,
+            "controlRefreshInterval": 0.25,
+            "essentialProgressDeadline": 1,
+            "essentialQueueWait": 0.5,
+            "inputBurst": 120,
+            "inputRate": 60,
+            "networkBudgetWindow": 60,
+            "networkBytesPerSecond": 16384,
+            "queueBytes": 262144,
+            "queueMessages": 512,
+            "recoveryRequestRate": 1,
+            "reliableFrameBytes": 65536,
+            "replayHistory": 2,
+            "verificationInterval": 0.1
+          },
+          "operational": {
+            "simulationLagThreshold": 1
+          }
+        },
+        "cars": [
+          {
+            "progress": 100.125,
+            "lateral": -40.25,
+            "normalSpeed": 400,
+            "lane": 0,
+            "departure": 0,
+            "target": 1,
+            "phase": 1,
+            "controls": 3,
+            "effective": 3,
+            "flags": 1,
+            "movementOrigin": -120,
+            "movementTarget": 1000000000,
+            "movementStartUs": 950000,
+            "movementEndUs": 1100000,
+            "nextShiftUs": 1100000,
+            "freshnessUs": 2000000,
+            "protectionUs": 0,
+            "hp": 2,
+            "score": 10,
+            "lastInput": 5,
+            "heldMask": 4,
+            "inputGeneration": 8
+          },
+          {
+            "progress": 20000.5,
+            "lateral": 60,
+            "normalSpeed": 400,
+            "lane": 2,
+            "departure": 2,
+            "target": 1,
+            "phase": 2,
+            "controls": 0,
+            "effective": 0,
+            "flags": 0,
+            "movementOrigin": 40,
+            "movementTarget": 120,
+            "movementStartUs": 980000,
+            "movementEndUs": 1130000,
+            "nextShiftUs": 1130000,
+            "freshnessUs": 0,
+            "protectionUs": 0,
+            "hp": 3,
+            "score": 0,
+            "lastInput": 4,
+            "heldMask": 0,
+            "inputGeneration": 9
+          }
+        ],
+        "contact": {
+          "episode": 3,
+          "flags": 0,
+          "blockedSeat": 0,
+          "latestSeat": 1,
+          "latestControl": 3,
+          "latestSequence": 5,
+          "latestTimeUs": 950000,
+          "latestOrder": 11
+        },
+        "generator": {
+          "randomState": 2398689233,
+          "nextSlice": 60,
+          "nextObject": 10,
+          "cursor": 21600,
+          "nextSpawnUs": 0,
+          "nextDifficultyUs": 0,
+          "reservedCursor": 4
+        },
+        "windows": [
+          {
+            "start": -100,
+            "end": 1500,
+            "firstSlice": 1,
+            "lastSlice": 5,
+            "objects": [
+              {
+                "id": 1,
+                "sliceId": 1,
+                "lane": 0,
+                "flags": 10,
+                "distance": 400
+              },
+              {
+                "id": 2,
+                "sliceId": 2,
+                "lane": 1,
+                "flags": 5,
+                "distance": 800
+              }
+            ]
+          },
+          {
+            "start": 19800,
+            "end": 21400,
+            "firstSlice": 49,
+            "lastSlice": 55,
+            "objects": [
+              {
+                "id": 3,
+                "sliceId": 51,
+                "lane": 2,
+                "flags": 3,
+                "distance": 20400
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "shift-origin-outside-world",
+      "value": {
+        "identity": {
+          "roomId": 16909060,
+          "seatSession": 5,
+          "pairGeneration": 6,
+          "seat": 0
+        },
+        "round": {
+          "roundId": 7,
+          "inputGeneration": 8
+        },
+        "epoch": 4660,
+        "tick": 60,
+        "timeUs": 1000000,
+        "progress": {
+          "authority": 11,
+          "event": 9,
+          "processed1": 5,
+          "processed2": 4,
+          "disposed1": 5,
+          "disposed2": 3
+        },
+        "context": {
+          "configurationVersion": 1,
+          "configurationId": 287454020,
+          "generationVersion": 1,
+          "seed": 1,
+          "mode": 1,
+          "startUs": 3000000,
+          "gameplay": {
+            "accelSpeedMultiplier": 2,
+            "carHeight": 80,
+            "carWidth": 50,
+            "coinSize": 28,
+            "coinWeight": 0,
+            "countdownDuration": 3,
+            "difficultyRampInterval": 0,
+            "emptyWeight": 0,
+            "finishDistance": 24000,
+            "heartExclusionDistance": 200,
+            "heartSize": 28,
+            "heartWeight": 0,
+            "initialClearDistance": 800,
+            "initialSpawnInterval": 0,
+            "invincibleDuration": 0,
+            "laneLerpSpeed": 0,
+            "laneReturnDuration": 0.15,
+            "laneShiftDuration": 0.15,
+            "laneSpacing": 120,
+            "laneSwitchCooldownDuration": 0.15,
+            "maxHealth": 3,
+            "maxRoadSpeed": 400,
+            "minSpawnInterval": 0,
+            "obstacleDamage": 1,
+            "obstacleH": 40,
+            "obstacleW": 48,
+            "obstacleWeight": 1,
+            "playerContactDamage": 0,
+            "reservedHearts": 4,
+            "roadSpeedIncrement": 0,
+            "sliceSpacing": 400,
+            "spawnIntervalDecrement": 0,
+            "speedGrowth": 0,
+            "startingRoadSpeed": 400,
+            "tickRate": 60,
+            "timeLimit": 0
+          },
+          "presentation": {
+            "accelCarOffset": 80,
+            "accelLerpSpeed": 8,
+            "blinkCount": 3,
+            "carBottomMargin": 40,
+            "carTiltLerpSpeed": 12,
+            "carTiltMaxAngle": 1,
+            "correctionSmoothing": 0.1,
+            "gameOverFadeMaxOpacity": 0.75,
+            "gameOverFadeSpeed": 2,
+            "gameOverShakeDuration": 0.5,
+            "gameOverShakeMultiplier": 1.5,
+            "narrowScreenWidth": 320,
+            "roadWidthRatioNarrow": 1.0,
+            "roadWidthRatioNormal": 0.6,
+            "shakeDuration": 0.5,
+            "shakeIntensity": 24
+          },
+          "room": {
+            "idleExpiry": 900,
+            "idleWarning": 60,
+            "reconnectGrace": 15
+          },
+          "connection": {
+            "admissionTicketLifetime": 30,
+            "baselineBytes": 1048576,
+            "clockRequestRate": 2,
+            "clockSamples": 8,
+            "clockSyncInterval": 1,
+            "controlFreshnessExpiry": 1,
+            "controlRefreshInterval": 0.25,
+            "essentialProgressDeadline": 1,
+            "essentialQueueWait": 0.5,
+            "inputBurst": 120,
+            "inputRate": 60,
+            "networkBudgetWindow": 60,
+            "networkBytesPerSecond": 16384,
+            "queueBytes": 262144,
+            "queueMessages": 512,
+            "recoveryRequestRate": 1,
+            "reliableFrameBytes": 65536,
+            "replayHistory": 2,
+            "verificationInterval": 0.1
+          },
+          "operational": {
+            "simulationLagThreshold": 1
+          }
+        },
+        "cars": [
+          {
+            "progress": 100.125,
+            "lateral": -40.25,
+            "normalSpeed": 400,
+            "lane": 0,
+            "departure": 0,
+            "target": 1,
+            "phase": 1,
+            "controls": 3,
+            "effective": 3,
+            "flags": 1,
+            "movementOrigin": -1000000000,
+            "movementTarget": 0,
+            "movementStartUs": 950000,
+            "movementEndUs": 1100000,
+            "nextShiftUs": 1100000,
+            "freshnessUs": 2000000,
+            "protectionUs": 0,
+            "hp": 2,
+            "score": 10,
+            "lastInput": 5,
+            "heldMask": 4,
+            "inputGeneration": 8
+          },
+          {
+            "progress": 20000.5,
+            "lateral": 60,
+            "normalSpeed": 400,
+            "lane": 2,
+            "departure": 2,
+            "target": 1,
+            "phase": 2,
+            "controls": 0,
+            "effective": 0,
+            "flags": 0,
+            "movementOrigin": 40,
+            "movementTarget": 120,
+            "movementStartUs": 980000,
+            "movementEndUs": 1130000,
+            "nextShiftUs": 1130000,
+            "freshnessUs": 0,
+            "protectionUs": 0,
+            "hp": 3,
+            "score": 0,
+            "lastInput": 4,
+            "heldMask": 0,
+            "inputGeneration": 9
+          }
+        ],
+        "contact": {
+          "episode": 3,
+          "flags": 0,
+          "blockedSeat": 0,
+          "latestSeat": 1,
+          "latestControl": 3,
+          "latestSequence": 5,
+          "latestTimeUs": 950000,
+          "latestOrder": 11
+        },
+        "generator": {
+          "randomState": 2398689233,
+          "nextSlice": 60,
+          "nextObject": 10,
+          "cursor": 21600,
+          "nextSpawnUs": 0,
+          "nextDifficultyUs": 0,
+          "reservedCursor": 4
+        },
+        "windows": [
+          {
+            "start": -100,
+            "end": 1500,
+            "firstSlice": 1,
+            "lastSlice": 5,
+            "objects": [
+              {
+                "id": 1,
+                "sliceId": 1,
+                "lane": 0,
+                "flags": 10,
+                "distance": 400
+              },
+              {
+                "id": 2,
+                "sliceId": 2,
+                "lane": 1,
+                "flags": 5,
+                "distance": 800
+              }
+            ]
+          },
+          {
+            "start": 19800,
+            "end": 21400,
+            "firstSlice": 49,
+            "lastSlice": 55,
+            "objects": [
+              {
+                "id": 3,
+                "sliceId": 51,
+                "lane": 2,
+                "flags": 3,
+                "distance": 20400
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "shift-destination-disagrees-with-lane",
+      "value": {
+        "identity": {
+          "roomId": 16909060,
+          "seatSession": 5,
+          "pairGeneration": 6,
+          "seat": 0
+        },
+        "round": {
+          "roundId": 7,
+          "inputGeneration": 8
+        },
+        "epoch": 4660,
+        "tick": 60,
+        "timeUs": 1000000,
+        "progress": {
+          "authority": 11,
+          "event": 9,
+          "processed1": 5,
+          "processed2": 4,
+          "disposed1": 5,
+          "disposed2": 3
+        },
+        "context": {
+          "configurationVersion": 1,
+          "configurationId": 287454020,
+          "generationVersion": 1,
+          "seed": 1,
+          "mode": 1,
+          "startUs": 3000000,
+          "gameplay": {
+            "accelSpeedMultiplier": 2,
+            "carHeight": 80,
+            "carWidth": 50,
+            "coinSize": 28,
+            "coinWeight": 0,
+            "countdownDuration": 3,
+            "difficultyRampInterval": 0,
+            "emptyWeight": 0,
+            "finishDistance": 24000,
+            "heartExclusionDistance": 200,
+            "heartSize": 28,
+            "heartWeight": 0,
+            "initialClearDistance": 800,
+            "initialSpawnInterval": 0,
+            "invincibleDuration": 0,
+            "laneLerpSpeed": 0,
+            "laneReturnDuration": 0.15,
+            "laneShiftDuration": 0.15,
+            "laneSpacing": 120,
+            "laneSwitchCooldownDuration": 0.15,
+            "maxHealth": 3,
+            "maxRoadSpeed": 400,
+            "minSpawnInterval": 0,
+            "obstacleDamage": 1,
+            "obstacleH": 40,
+            "obstacleW": 48,
+            "obstacleWeight": 1,
+            "playerContactDamage": 0,
+            "reservedHearts": 4,
+            "roadSpeedIncrement": 0,
+            "sliceSpacing": 400,
+            "spawnIntervalDecrement": 0,
+            "speedGrowth": 0,
+            "startingRoadSpeed": 400,
+            "tickRate": 60,
+            "timeLimit": 0
+          },
+          "presentation": {
+            "accelCarOffset": 80,
+            "accelLerpSpeed": 8,
+            "blinkCount": 3,
+            "carBottomMargin": 40,
+            "carTiltLerpSpeed": 12,
+            "carTiltMaxAngle": 1,
+            "correctionSmoothing": 0.1,
+            "gameOverFadeMaxOpacity": 0.75,
+            "gameOverFadeSpeed": 2,
+            "gameOverShakeDuration": 0.5,
+            "gameOverShakeMultiplier": 1.5,
+            "narrowScreenWidth": 320,
+            "roadWidthRatioNarrow": 1.0,
+            "roadWidthRatioNormal": 0.6,
+            "shakeDuration": 0.5,
+            "shakeIntensity": 24
+          },
+          "room": {
+            "idleExpiry": 900,
+            "idleWarning": 60,
+            "reconnectGrace": 15
+          },
+          "connection": {
+            "admissionTicketLifetime": 30,
+            "baselineBytes": 1048576,
+            "clockRequestRate": 2,
+            "clockSamples": 8,
+            "clockSyncInterval": 1,
+            "controlFreshnessExpiry": 1,
+            "controlRefreshInterval": 0.25,
+            "essentialProgressDeadline": 1,
+            "essentialQueueWait": 0.5,
+            "inputBurst": 120,
+            "inputRate": 60,
+            "networkBudgetWindow": 60,
+            "networkBytesPerSecond": 16384,
+            "queueBytes": 262144,
+            "queueMessages": 512,
+            "recoveryRequestRate": 1,
+            "reliableFrameBytes": 65536,
+            "replayHistory": 2,
+            "verificationInterval": 0.1
+          },
+          "operational": {
+            "simulationLagThreshold": 1
+          }
+        },
+        "cars": [
+          {
+            "progress": 100.125,
+            "lateral": -40.25,
+            "normalSpeed": 400,
+            "lane": 0,
+            "departure": 0,
+            "target": 1,
+            "phase": 1,
+            "controls": 3,
+            "effective": 3,
+            "flags": 1,
+            "movementOrigin": -120,
+            "movementTarget": 120,
+            "movementStartUs": 950000,
+            "movementEndUs": 1100000,
+            "nextShiftUs": 1100000,
+            "freshnessUs": 2000000,
+            "protectionUs": 0,
+            "hp": 2,
+            "score": 10,
+            "lastInput": 5,
+            "heldMask": 4,
+            "inputGeneration": 8
+          },
+          {
+            "progress": 20000.5,
+            "lateral": 60,
+            "normalSpeed": 400,
+            "lane": 2,
+            "departure": 2,
+            "target": 1,
+            "phase": 2,
+            "controls": 0,
+            "effective": 0,
+            "flags": 0,
+            "movementOrigin": 40,
+            "movementTarget": 120,
+            "movementStartUs": 980000,
+            "movementEndUs": 1130000,
+            "nextShiftUs": 1130000,
+            "freshnessUs": 0,
+            "protectionUs": 0,
+            "hp": 3,
+            "score": 0,
+            "lastInput": 4,
+            "heldMask": 0,
+            "inputGeneration": 9
+          }
+        ],
+        "contact": {
+          "episode": 3,
+          "flags": 0,
+          "blockedSeat": 0,
+          "latestSeat": 1,
+          "latestControl": 3,
+          "latestSequence": 5,
+          "latestTimeUs": 950000,
+          "latestOrder": 11
+        },
+        "generator": {
+          "randomState": 2398689233,
+          "nextSlice": 60,
+          "nextObject": 10,
+          "cursor": 21600,
+          "nextSpawnUs": 0,
+          "nextDifficultyUs": 0,
+          "reservedCursor": 4
+        },
+        "windows": [
+          {
+            "start": -100,
+            "end": 1500,
+            "firstSlice": 1,
+            "lastSlice": 5,
+            "objects": [
+              {
+                "id": 1,
+                "sliceId": 1,
+                "lane": 0,
+                "flags": 10,
+                "distance": 400
+              },
+              {
+                "id": 2,
+                "sliceId": 2,
+                "lane": 1,
+                "flags": 5,
+                "distance": 800
+              }
+            ]
+          },
+          {
+            "start": 19800,
+            "end": 21400,
+            "firstSlice": 49,
+            "lastSlice": 55,
+            "objects": [
+              {
+                "id": 3,
+                "sliceId": 51,
+                "lane": 2,
+                "flags": 3,
+                "distance": 20400
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "return-destination-disagrees-with-departure",
+      "value": {
+        "identity": {
+          "roomId": 16909060,
+          "seatSession": 5,
+          "pairGeneration": 6,
+          "seat": 0
+        },
+        "round": {
+          "roundId": 7,
+          "inputGeneration": 8
+        },
+        "epoch": 4660,
+        "tick": 60,
+        "timeUs": 1000000,
+        "progress": {
+          "authority": 11,
+          "event": 9,
+          "processed1": 5,
+          "processed2": 4,
+          "disposed1": 5,
+          "disposed2": 3
+        },
+        "context": {
+          "configurationVersion": 1,
+          "configurationId": 287454020,
+          "generationVersion": 1,
+          "seed": 1,
+          "mode": 1,
+          "startUs": 3000000,
+          "gameplay": {
+            "accelSpeedMultiplier": 2,
+            "carHeight": 80,
+            "carWidth": 50,
+            "coinSize": 28,
+            "coinWeight": 0,
+            "countdownDuration": 3,
+            "difficultyRampInterval": 0,
+            "emptyWeight": 0,
+            "finishDistance": 24000,
+            "heartExclusionDistance": 200,
+            "heartSize": 28,
+            "heartWeight": 0,
+            "initialClearDistance": 800,
+            "initialSpawnInterval": 0,
+            "invincibleDuration": 0,
+            "laneLerpSpeed": 0,
+            "laneReturnDuration": 0.15,
+            "laneShiftDuration": 0.15,
+            "laneSpacing": 120,
+            "laneSwitchCooldownDuration": 0.15,
+            "maxHealth": 3,
+            "maxRoadSpeed": 400,
+            "minSpawnInterval": 0,
+            "obstacleDamage": 1,
+            "obstacleH": 40,
+            "obstacleW": 48,
+            "obstacleWeight": 1,
+            "playerContactDamage": 0,
+            "reservedHearts": 4,
+            "roadSpeedIncrement": 0,
+            "sliceSpacing": 400,
+            "spawnIntervalDecrement": 0,
+            "speedGrowth": 0,
+            "startingRoadSpeed": 400,
+            "tickRate": 60,
+            "timeLimit": 0
+          },
+          "presentation": {
+            "accelCarOffset": 80,
+            "accelLerpSpeed": 8,
+            "blinkCount": 3,
+            "carBottomMargin": 40,
+            "carTiltLerpSpeed": 12,
+            "carTiltMaxAngle": 1,
+            "correctionSmoothing": 0.1,
+            "gameOverFadeMaxOpacity": 0.75,
+            "gameOverFadeSpeed": 2,
+            "gameOverShakeDuration": 0.5,
+            "gameOverShakeMultiplier": 1.5,
+            "narrowScreenWidth": 320,
+            "roadWidthRatioNarrow": 1.0,
+            "roadWidthRatioNormal": 0.6,
+            "shakeDuration": 0.5,
+            "shakeIntensity": 24
+          },
+          "room": {
+            "idleExpiry": 900,
+            "idleWarning": 60,
+            "reconnectGrace": 15
+          },
+          "connection": {
+            "admissionTicketLifetime": 30,
+            "baselineBytes": 1048576,
+            "clockRequestRate": 2,
+            "clockSamples": 8,
+            "clockSyncInterval": 1,
+            "controlFreshnessExpiry": 1,
+            "controlRefreshInterval": 0.25,
+            "essentialProgressDeadline": 1,
+            "essentialQueueWait": 0.5,
+            "inputBurst": 120,
+            "inputRate": 60,
+            "networkBudgetWindow": 60,
+            "networkBytesPerSecond": 16384,
+            "queueBytes": 262144,
+            "queueMessages": 512,
+            "recoveryRequestRate": 1,
+            "reliableFrameBytes": 65536,
+            "replayHistory": 2,
+            "verificationInterval": 0.1
+          },
+          "operational": {
+            "simulationLagThreshold": 1
+          }
+        },
+        "cars": [
+          {
+            "progress": 100.125,
+            "lateral": -40.25,
+            "normalSpeed": 400,
+            "lane": 0,
+            "departure": 0,
+            "target": 1,
+            "phase": 1,
+            "controls": 3,
+            "effective": 3,
+            "flags": 1,
+            "movementOrigin": -120,
+            "movementTarget": 0,
+            "movementStartUs": 950000,
+            "movementEndUs": 1100000,
+            "nextShiftUs": 1100000,
+            "freshnessUs": 2000000,
+            "protectionUs": 0,
+            "hp": 2,
+            "score": 10,
+            "lastInput": 5,
+            "heldMask": 4,
+            "inputGeneration": 8
+          },
+          {
+            "progress": 20000.5,
+            "lateral": 60,
+            "normalSpeed": 400,
+            "lane": 2,
+            "departure": 2,
+            "target": 1,
+            "phase": 2,
+            "controls": 0,
+            "effective": 0,
+            "flags": 0,
+            "movementOrigin": 40,
+            "movementTarget": 0,
+            "movementStartUs": 980000,
+            "movementEndUs": 1130000,
+            "nextShiftUs": 1130000,
+            "freshnessUs": 0,
+            "protectionUs": 0,
+            "hp": 3,
+            "score": 0,
+            "lastInput": 4,
+            "heldMask": 0,
+            "inputGeneration": 9
+          }
+        ],
+        "contact": {
+          "episode": 3,
+          "flags": 0,
+          "blockedSeat": 0,
+          "latestSeat": 1,
+          "latestControl": 3,
+          "latestSequence": 5,
+          "latestTimeUs": 950000,
+          "latestOrder": 11
+        },
+        "generator": {
+          "randomState": 2398689233,
+          "nextSlice": 60,
+          "nextObject": 10,
+          "cursor": 21600,
+          "nextSpawnUs": 0,
+          "nextDifficultyUs": 0,
+          "reservedCursor": 4
+        },
+        "windows": [
+          {
+            "start": -100,
+            "end": 1500,
+            "firstSlice": 1,
+            "lastSlice": 5,
+            "objects": [
+              {
+                "id": 1,
+                "sliceId": 1,
+                "lane": 0,
+                "flags": 10,
+                "distance": 400
+              },
+              {
+                "id": 2,
+                "sliceId": 2,
+                "lane": 1,
+                "flags": 5,
+                "distance": 800
+              }
+            ]
+          },
+          {
+            "start": 19800,
+            "end": 21400,
+            "firstSlice": 49,
+            "lastSlice": 55,
+            "objects": [
+              {
+                "id": 3,
+                "sliceId": 51,
+                "lane": 2,
+                "flags": 3,
+                "distance": 20400
+              }
+            ]
+          }
+        ]
+      }
     }
   ]
 }

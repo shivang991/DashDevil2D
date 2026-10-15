@@ -89,3 +89,11 @@ for name,mode,overrides in [('drag-defaults','drag-race',{}),('rage-defaults','r
  resources.append(dict(name=name,mode=mode,overrides=overrides,context=ctx,expected=dict(objects=2*random+reserved,baselineBytes=size,chunkBytes=header+min(size,payload),chunks=math.ceil(size/payload),windowLength=window,maxProgress=g['finishDistance'] if mode=='drag-race' else g['maxRoadSpeed']*g['accelSpeedMultiplier']*g['timeLimit']),coverageBytes=coverageBytes))
 result['resources']=resources
 json.dump(result,open('packages/contracts/protocol/fixtures.json','w'),indent=2,ensure_ascii=False);pathlib.Path('packages/contracts/protocol/fixtures.json').open('a').write('\n')
+result=json.load(open('packages/contracts/protocol/fixtures.json'))
+for name,text in [('leading-BOM','\ufeffname'),('BOM-only','\ufeff')]:
+ v=dict(code=1,expectedVersion=1,detail=text);body=bytes([M['ProtocolError']['id']])+encode('ProtocolError',v)
+ result['records'].append(dict(name=name,type='ProtocolError',value=v,hex=(struct.pack('>I',len(body))+body).hex()))
+result['semanticInvalid']=[]
+for name,seat,changes in [('shift-target-outside-world',0,dict(movementTarget=1000000000)),('shift-origin-outside-world',0,dict(movementOrigin=-1000000000)),('shift-destination-disagrees-with-lane',0,dict(movementTarget=120)),('return-destination-disagrees-with-departure',1,dict(movementTarget=0))]:
+ b=copy.deepcopy(baseline);b['cars'][seat].update(changes);result['semanticInvalid'].append(dict(name=name,value=b))
+json.dump(result,open('packages/contracts/protocol/fixtures.json','w'),indent=2,ensure_ascii=False);pathlib.Path('packages/contracts/protocol/fixtures.json').open('a').write('\n')

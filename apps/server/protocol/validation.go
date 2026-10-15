@@ -34,7 +34,7 @@ func ValidateCar(car Car, timeUs uint64, context Context) error {
 	if car.InputGeneration == 0 {
 		return invalid("missing per-seat input generation")
 	}
-	if e := require(float64(car.Hp) <= g.MaxHealth && car.Score%10 == 0 && car.NormalSpeed >= 0 && car.NormalSpeed <= g.MaxRoadSpeed, "invalid HP/score/speed"); e != nil {
+	if e := require(float64(car.Hp) <= g.MaxHealth && car.Score%10 == 0 && car.NormalSpeed >= g.StartingRoadSpeed && car.NormalSpeed <= g.MaxRoadSpeed, "invalid HP/score/speed"); e != nil {
 		return e
 	}
 	if e := require(car.Progress >= 0 && math.Abs(car.Lateral) <= g.LaneSpacing, "car outside world"); e != nil {
@@ -45,6 +45,16 @@ func ValidateCar(car Car, timeUs uint64, context Context) error {
 	}
 	if e := require(car.Phase != 1 || math.Abs(float64(car.Departure)-float64(car.Target)) == 1, "nonadjacent shift"); e != nil {
 		return e
+	}
+
+	if math.Abs(car.MovementOrigin) > g.LaneSpacing || math.Abs(car.MovementTarget) > g.LaneSpacing {
+		return invalid("movement coordinates outside world")
+	}
+	if car.Phase == 1 && (car.MovementOrigin != (float64(car.Departure)-1)*g.LaneSpacing || car.MovementTarget != (float64(car.Target)-1)*g.LaneSpacing) {
+		return invalid("shift destination/origin disagrees with lane")
+	}
+	if car.Phase == 2 && car.MovementTarget != (float64(car.Departure)-1)*g.LaneSpacing {
+		return invalid("return destination disagrees with departure")
 	}
 	if e := require(car.Phase != 2 || (car.Effective != 3 && car.Flags&1 == 0), "return NOS"); e != nil {
 		return e

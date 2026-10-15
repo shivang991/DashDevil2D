@@ -153,3 +153,8 @@ for (const scenario of fixtures.resources) it(`shared exact serialization resour
   const configuration = captureConfiguration(scenario.mode as 'drag-race' | 'road-rage', { gameplay: scenario.overrides });
   expect(configurationResources(configuration)).toEqual(scenario.expected);
 });
+
+for (const scenario of fixtures.semanticInvalid) it(`rejects impossible continuation: ${scenario.name}`, () => {
+  const value = hydrate('Baseline', scenario.value) as Baseline;
+  expect(() => validateBaseline(value, value.context)).toThrow();
+});

@@ -22,10 +22,10 @@ function scalarValid(f: Field, v: unknown): asserts v is number {
 // TextEncoder/TextDecoder are supplied by the browser or Node; shared packages use DOM-free types.
 const utf8 = globalThis as unknown as {
   TextEncoder: new () => { encode(value: string): Uint8Array };
-  TextDecoder: new (encoding: string, options: { fatal: boolean }) => { decode(value: Uint8Array): string };
+  TextDecoder: new (encoding: string, options: { fatal: boolean; ignoreBOM: boolean }) => { decode(value: Uint8Array): string };
 };
 const textEncoder = new utf8.TextEncoder();
-const textDecoder = new utf8.TextDecoder('utf-8', { fatal: true });
+const textDecoder = new utf8.TextDecoder('utf-8', { fatal: true, ignoreBOM: true });
 export function encodeRecord(layouts: Layouts, name: string, value: unknown, limit: number, projection = false): Uint8Array {
   if (!Number.isSafeInteger(limit) || limit < 0 || limit > 0xffffffff) fail('invalid record limit');
   // Grow only up to the caller's negotiated bound, rather than trusting section counts.

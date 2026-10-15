@@ -86,10 +86,13 @@ export function validateProgress(p: Progress): void {
 export function validateCar(car: Car, timeUs: number, context: Context): void {
   const g = context.gameplay;
   requireState(car.inputGeneration > 0, 'missing per-seat input generation');
-  requireState(car.hp <= g.maxHealth && car.score % 10 === 0 && car.normalSpeed >= 0 && car.normalSpeed <= g.maxRoadSpeed, 'invalid HP/score/speed');
+  requireState(car.hp <= g.maxHealth && car.score % 10 === 0 && car.normalSpeed >= g.startingRoadSpeed && car.normalSpeed <= g.maxRoadSpeed, 'invalid HP/score/speed');
   requireState(car.progress >= 0 && Math.abs(car.lateral) <= g.laneSpacing, 'car outside world lanes/progress');
   requireState(car.phase === 0 || (car.movementStartUs <= timeUs && timeUs <= car.movementEndUs && car.movementStartUs < car.movementEndUs), 'invalid movement timing');
   requireState(car.phase !== 1 || Math.abs(car.departure - car.target) === 1, 'shift must target adjacent lane');
+  requireState(Math.abs(car.movementOrigin) <= g.laneSpacing && Math.abs(car.movementTarget) <= g.laneSpacing, 'movement coordinates outside world');
+  requireState(car.phase !== 1 || (car.movementOrigin === (car.departure - 1) * g.laneSpacing && car.movementTarget === (car.target - 1) * g.laneSpacing), 'shift destination/origin disagrees with lane');
+  requireState(car.phase !== 2 || car.movementTarget === (car.departure - 1) * g.laneSpacing, 'return destination disagrees with departure');
   requireState(car.phase !== 2 || (car.effective !== 3 && (car.flags & 1) === 0), 'return cannot enable NOS');
   requireState(car.effective === 0 || car.freshnessUs > timeUs, 'effective controls expired');
   requireState(car.controls === 0 || (car.heldMask & (1 << (car.controls - 1))) !== 0, 'winning control is not held');

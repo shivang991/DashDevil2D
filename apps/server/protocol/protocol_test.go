@@ -14,6 +14,10 @@ type fixture struct {
 	Value           json.RawMessage
 }
 type suite struct {
+	SemanticInvalid []struct {
+		Name  string
+		Value Baseline
+	}
 	Resources []struct {
 		Name     string
 		Context  Context
@@ -322,6 +326,16 @@ func TestSharedResourceVectors(t *testing.T) {
 			}
 			if actual != scenario.Expected {
 				t.Fatalf("resources differ: %+v want %+v", actual, scenario.Expected)
+			}
+		})
+	}
+}
+
+func TestInvalidContinuation(t *testing.T) {
+	for _, scenario := range fixtures(t).SemanticInvalid {
+		t.Run(scenario.Name, func(t *testing.T) {
+			if ValidateBaseline(scenario.Value, scenario.Value.Context) == nil {
+				t.Fatal("impossible movement continuation accepted")
 			}
 		})
 	}
