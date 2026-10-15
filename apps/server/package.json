@@ -7,7 +7,7 @@
   },
   "scripts": {
     "typecheck": "go vet ./...",
-    "test": "go test ./...",
+    "test": "go test -count=1 ./...",
     "build": "go build ./...",
     "generate": "node ../../packages/contracts/protocol/generate.mjs --target=go"
   }

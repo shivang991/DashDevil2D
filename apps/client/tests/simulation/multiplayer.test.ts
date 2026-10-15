@@ -75,12 +75,13 @@ for (const scenario of fixtures.scenarios) {
   }
   expect(events.map(({ car, ...event }) => { if (car) validateCar(car, event.timeUs, configurationContext(captureConfiguration(scenario.mode as 'drag-race' | 'road-rage', scenario.overrides as ConfigurationOverrides<'drag-race' | 'road-rage'>))); return event; })).toEqual(scenario.expected.events);
   const snapshot = game.snapshot();
+  if ('trackDistances' in scenario.expected) expect(snapshot.track.slices.map(slice => slice.distance)).toEqual(scenario.expected.trackDistances);
   for (const [seat, expected] of scenario.expected.cars.entries()) for (const [key, value] of Object.entries(expected)) {
    const actual = snapshot.cars[seat][key as keyof typeof snapshot.cars[0]];
    if (['progress', 'lateral', 'normalSpeed'].includes(key)) expect(Math.abs(actual - value)).toBeLessThanOrEqual(fixtures.precision.absolute + fixtures.precision.relative * Math.abs(value));
    else expect(actual).toBe(value);
   }
-  for (const [key, value] of Object.entries(scenario.expected)) if (!['cars', 'events', 'derivation'].includes(key)) expect(snapshot[key as keyof typeof snapshot]).toEqual(value);
+  for (const [key, value] of Object.entries(scenario.expected)) if (!['cars', 'events', 'derivation', 'trackDistances'].includes(key)) expect(snapshot[key as keyof typeof snapshot]).toEqual(value);
  });
 }
 for (const vector of fixtures.timeVectors) test(`canonical half-up time ${vector.seconds}`, () => expect(canonicalTime(vector.seconds)).toBe(vector.expected));

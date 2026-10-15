@@ -43,7 +43,7 @@ type queued struct {
 
 // Engine is owned by one round coordinator. No method may run concurrently.
 type Engine struct {
-	track      *track.Multiplayer
+	tracks     [2]*track.Multiplayer
 	context    protocol.Context
 	identities [2]protocol.Identity
 	roundID    uint32
@@ -82,7 +82,8 @@ func New(config configuration.Configuration, seed uint32, identities [2]protocol
 		lateral := (float64(lane) - 1) * context.Gameplay.LaneSpacing
 		e.state.Cars[seat] = protocol.Car{Lane: lane, Departure: lane, Target: lane, Lateral: lateral, MovementOrigin: lateral, MovementTarget: lateral, NormalSpeed: context.Gameplay.StartingRoadSpeed, Hp: uint32(context.Gameplay.MaxHealth), InputGeneration: 1}
 	}
-	e.track, _ = track.NewMultiplayer(context)
+	e.tracks[0], _ = track.NewMultiplayer(context)
+	e.tracks[1], _ = track.NewMultiplayer(context)
 	if err := e.updateTrack(); err != nil {
 		return nil, err
 	}
@@ -90,7 +91,22 @@ func New(config configuration.Configuration, seed uint32, identities [2]protocol
 }
 func (e *Engine) Snapshot() State {
 	result := e.state
-	result.Track = e.track.Snapshot()
+	states := [2]track.PlacementState{e.tracks[0].Snapshot(), e.tracks[1].Snapshot()}
+	result.Track = states[0]
+	if states[1].Through > states[0].Through {
+		result.Track = states[1]
+	}
+	slices := map[uint64]track.Slice{}
+	for _, state := range states {
+		for _, slice := range state.Slices {
+			slices[slice.ID] = slice
+		}
+	}
+	result.Track.Slices = []track.Slice{}
+	for _, slice := range slices {
+		result.Track.Slices = append(result.Track.Slices, slice)
+	}
+	sort.Slice(result.Track.Slices, func(i, j int) bool { return result.Track.Slices[i].ID < result.Track.Slices[j].ID })
 	if result.LatestPress != nil {
 		copy := *result.LatestPress
 		result.LatestPress = &copy
@@ -107,7 +123,7 @@ func (e *Engine) Submit(auth protocol.Identity, input protocol.Input) (bool, err
 	}
 	e.tokens[seat]--
 	valid := e.connected[seat] && !e.state.Abandoned && input.Identity == auth && input.Round.RoundId == e.roundID && input.Round.InputGeneration == e.state.Cars[seat].InputGeneration && uint64(input.Sequence) == uint64(e.sequences[seat])+1
-	if _, err := protocol.EncodeInput(input, 65536); err != nil {
+	if err := protocol.ValidateMessage(input, e.context); err != nil {
 		valid = false
 	}
 	if valid {
@@ -119,10 +135,12 @@ func (e *Engine) Submit(auth protocol.Identity, input protocol.Input) (bool, err
 func (e *Engine) updateTrack() error {
 	g := e.context.Gameplay
 	extent := (g.CarHeight + math.Max(g.ObstacleH, math.Max(g.CoinSize, g.HeartSize))) / 2
-	if err := e.track.EnsureThrough(math.Max(e.state.Cars[0].Progress, e.state.Cars[1].Progress) + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent); err != nil {
-		return err
+	for seat, placements := range e.tracks {
+		if err := placements.EnsureThrough(e.state.Cars[seat].Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent); err != nil {
+			return err
+		}
+		placements.RetireBehind(e.state.Cars[seat].Progress - g.CarHeight/2)
 	}
-	e.track.RetireBehind(math.Min(e.state.Cars[0].Progress, e.state.Cars[1].Progress) - g.CarHeight/2)
 	return nil
 }
 func clear(car *protocol.Car) {

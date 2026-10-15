@@ -1,6 +1,7 @@
-import { encodeInput, type Car, type Identity, type Input } from '@dashdevil/contracts/protocol';
+import { type Car, type Context, type Identity, type Input } from '@dashdevil/contracts/protocol';
 import type { Configuration } from './config';
 import { MultiplayerTrack } from './multiplayerTrack';
+import { configurationContext, validateMessage } from '@dashdevil/contracts/validation';
 
 export type MultiplayerConfiguration = Configuration<'drag-race' | 'road-rage'>;
 export interface Observation {
@@ -17,7 +18,8 @@ const sameIdentity = (a: Identity, b: Identity) => a.roomId === b.roomId && a.se
 /** Serialized headless round owner. An adapter supplies its authenticated identity;
  * the payload cannot choose a different seat. All clocks are monotonic elapsed seconds. */
 export class Multiplayer {
- private readonly track: MultiplayerTrack;
+ private readonly context: Context;
+ private readonly tracks: readonly [MultiplayerTrack, MultiplayerTrack];
  private tick = 0;
  private wallTime = 0;
  private abandoned = false;
@@ -33,7 +35,8 @@ export class Multiplayer {
  constructor(private readonly configuration: MultiplayerConfiguration, seed: number, identities: readonly [Identity, Identity], private readonly roundId = 1) {
   if (!Number.isInteger(seed) || seed < 1 || seed > 0xffffffff) throw new Error('Seed must be a nonzero uint32');
   if (!Number.isInteger(roundId) || roundId < 1 || roundId > 0xffffffff || identities.some((identity, seat) => identity.seat !== seat || [identity.roomId, identity.seatSession, identity.pairGeneration].some(v => !Number.isInteger(v) || v < 1 || v > 0xffffffff))) throw new Error('Invalid round/seat identity');
-  this.track = new MultiplayerTrack(configuration, seed);
+  this.context = configurationContext(configuration, seed);
+  this.tracks = [new MultiplayerTrack(configuration, seed), new MultiplayerTrack(configuration, seed)];
   this.identities = [{ ...identities[0] }, { ...identities[1] }];
   this.tokens = [configuration.connection.inputBurst, configuration.connection.inputBurst];
   this.cars = [0, 2].map(lane => ({ progress: 0, lateral: (lane - 1) * configuration.gameplay.laneSpacing,
@@ -50,7 +53,7 @@ export class Multiplayer {
   if (this.tokens[seat] < 1 || this.pending.length >= 2 * this.configuration.connection.inputBurst) throw new Error('Input rate/queue exceeded; recover connection');
   this.tokens[seat]--;
   let valid = this.connected[seat] && !this.abandoned && sameIdentity(identity, input.identity) && input.round.roundId === this.roundId && input.round.inputGeneration === this.cars[seat].inputGeneration && input.sequence === this.sequences[seat] + 1;
-  try { encodeInput(input); } catch { valid = false; }
+  try { validateMessage('Input', input, this.context); } catch { valid = false; }
   if (valid) this.sequences[seat] = input.sequence;
   this.pending.push({ seat, input: { ...input, identity: { ...input.identity }, round: { ...input.round } }, valid });
   return valid;
@@ -58,8 +61,10 @@ export class Multiplayer {
  private updateTrack(): void {
   const g = this.configuration.gameplay;
   const extent = (g.carHeight + Math.max(g.obstacleH, g.coinSize, g.heartSize)) / 2;
-  this.track.ensureThrough(Math.max(...this.cars.map(car => car.progress)) + g.maxRoadSpeed * g.accelSpeedMultiplier + extent);
-  this.track.retireBehind(Math.min(...this.cars.map(car => car.progress)) - g.carHeight / 2);
+  this.tracks.forEach((track, seat) => {
+   track.ensureThrough(this.cars[seat].progress + g.maxRoadSpeed * g.accelSpeedMultiplier + extent);
+   track.retireBehind(this.cars[seat].progress - g.carHeight / 2);
+  });
  }
  private clear(car: Car): void { car.controls = 0; car.effective = 0; car.heldMask = 0; car.flags = 0; car.freshnessUs = 0; }
  disconnect(authenticated: Identity): void {
@@ -162,6 +167,12 @@ export class Multiplayer {
   }
   return events;
  }
- snapshot() { return { tick: this.tick, timeUs: canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.track.snapshot(),
+ private trackState() {
+  const states = this.tracks.map(track => track.snapshot());
+  const leading = states[0].through >= states[1].through ? states[0] : states[1];
+  const slices = new Map(states.flatMap(state => state.slices).map(slice => [slice.id, slice]));
+  return { ...leading, slices: [...slices.values()].sort((a,b) => a.id - b.id) };
+ }
+ snapshot() { return { tick: this.tick, timeUs: canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
   cars: this.cars.map(car => ({ ...car })) as [Car, Car], latestPress: this.latestPress ? { ...this.latestPress } : null }; }
 }

@@ -154,7 +154,13 @@ func TestSharedTimelines(t *testing.T) {
 				}
 			}
 			for key, want := range scenario.Expected {
-				if key != "cars" && key != "events" && key != "derivation" {
+				if key == "trackDistances" {
+					distances := []float64{}
+					for _, slice := range snapshot.Track.Slices {
+						distances = append(distances, slice.Distance)
+					}
+					assertJSON(t, distances, want)
+				} else if key != "cars" && key != "events" && key != "derivation" {
 					var actual any
 					_ = json.Unmarshal(state[key], &actual)
 					assertJSON(t, actual, want)
