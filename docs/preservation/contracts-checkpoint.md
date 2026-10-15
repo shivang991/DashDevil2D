@@ -42,3 +42,7 @@ Literal exact default resource envelopes: Drag Race **16 objects / 1,278 baselin
 Agent inspected final countdown and resized pause snapshots. This is static inspection, not owner audiovisual signoff. New human comparison remains pending; **the full Stage 3 gate is not declared passed and Stage 4 remains blocked on that review**. Real transport and full Go gameplay parity remain unavailable until #29/#28. No later-stage network/browser/capacity acceptance is claimed.
 
 Subsequent owner-requested cleanup removed the one-off fixture authoring script and `.scratch/dashdevil-multiplayer/` planning snapshots. The canonical planning decisions remain in the linked GitHub issues. The structured validation record retains the original script hash as historical evidence of tested revision `976c69d`; it does not assert the script remains in the current checkout. Shared fixtures, schema, codecs and verification checks are retained.
+
+## Owner review confirmation — 2026-10-15
+
+In the #29 implementation chat, the owner answered “yes” when asked whether the pending Stage 3 human audiovisual preservation review had passed. This records the owner’s signoff; it does not represent a new automated capture or agent audiovisual judgement. The Stage 3 human-review blocker is cleared for Stage 4 entry. Stage 4 exit still requires #28 parity and #29 actual transport/browser evidence.

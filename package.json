@@ -16,7 +16,9 @@
     "test:browser": "turbo run test:browser --filter=@dashdevil/client",
     "check": "pnpm check:generated && turbo run typecheck lint test build",
     "generate": "turbo run generate",
-    "check:generated": "pnpm --filter @dashdevil/contracts check:generated"
+    "check:generated": "pnpm --filter @dashdevil/contracts check:generated",
+    "dev:transport": "node apps/client/scripts/transport.mjs",
+    "test:transport": "node apps/client/scripts/transport.mjs --test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

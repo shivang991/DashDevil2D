@@ -5,3 +5,5 @@ prompt.md
 apps/client/test-results/
 apps/client/playwright-report/
 .turbo/
+
+.local/
