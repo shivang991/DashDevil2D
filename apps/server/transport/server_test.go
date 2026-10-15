@@ -74,6 +74,11 @@ func server(t *testing.T) (*transport.Server, *http.Client, *x509.CertPool) {
 }
 func admit(t *testing.T, s *transport.Server, c *http.Client, request p.AdmissionRequest, from string) (int, any) {
 	t.Helper()
+	status, value, _ := admitWithCode(t, s, c, request, from)
+	return status, value
+}
+func admitWithCode(t *testing.T, s *transport.Server, c *http.Client, request p.AdmissionRequest, from string) (int, any, string) {
+	t.Helper()
 	wire, err := p.EncodeMessage(request, 65536)
 	if err != nil {
 		t.Fatal(err)
@@ -97,7 +102,7 @@ func admit(t *testing.T, s *transport.Server, c *http.Client, request p.Admissio
 	if err != nil {
 		t.Fatalf("decode %d: %v %q", response.StatusCode, err, body)
 	}
-	return response.StatusCode, value
+	return response.StatusCode, value, response.Header.Get("X-Room-Code")
 }
 func TestHTTPSAdmissionBindsOpaqueSeatAndReplacementGeneration(t *testing.T) {
 	s, c, _ := server(t)
@@ -376,6 +381,7 @@ func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a 
 			break
 		}
 	}
+	control.SetDeadline(time.Time{})
 	if acknowledge {
 		go func() {
 			for {
@@ -505,5 +511,37 @@ func TestTicketsRejectWrongChannelAndOriginWithoutConsumingValidAdmission(t *tes
 	case <-gameplay.Context().Done():
 	case <-time.After(time.Second):
 		t.Fatal("oversized room frame did not fail pair")
+	}
+}
+
+func TestReservationExpiryNotifiesConnectedGuestAndTransfersHost(t *testing.T) {
+	s, c, roots := server(t)
+	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: 1, Name: "Host"}, origin)
+	a := v.(p.Admission)
+	host, gameplay := initializedPair(t, s, roots, a, true)
+	_, v = admit(t, s, c, p.AdmissionRequest{Operation: 1, Version: 1, Code: code, Name: "Guest"}, origin)
+	guest, _ := initializedPair(t, s, roots, v.(p.Admission), true)
+	host.Close()
+	select {
+	case <-gameplay.Context().Done():
+	case <-time.After(time.Second):
+		t.Fatal("pair did not close")
+	}
+	guest.SetReadDeadline(time.Now().Add(17 * time.Second))
+	for {
+		_, wire, err := guest.ReadMessage()
+		if err != nil {
+			t.Fatalf("guest never received reservation expiry: %v", err)
+		}
+		record, err := p.DecodeMessage(wire, 65536)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if state, ok := record.(p.RoomState); ok && state.Seats[0].Session == 0 {
+			if state.Host != 1 || state.Seats[1].Flags&1 == 0 {
+				t.Fatal("expiry did not preserve connected guest as host")
+			}
+			return
+		}
 	}
 }

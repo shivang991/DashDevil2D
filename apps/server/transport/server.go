@@ -236,7 +236,12 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	}
 	s.mu.Lock()
 	now := time.Now()
-	s.expireLocked(now)
+	changedRooms := s.expireLocked(now)
+	defer func() {
+		for _, r := range changedRooms {
+			s.broadcast(r)
+		}
+	}()
 	var participant *seat
 	switch request.Operation {
 	case 0, 1:
@@ -378,8 +383,10 @@ func (s *Server) consume(key, channel, origin string) (*pair, error) {
 	delete(s.tickets, key)
 	return t.seat.pair, nil
 }
-func (s *Server) expireLocked(now time.Time) {
+func (s *Server) expireLocked(now time.Time) []*room {
+	var changed []*room
 	for code, r := range s.rooms {
+		modified := false
 		for i, seat := range r.seats {
 			if seat != nil && (!seat.deadline.IsZero() && !now.Before(seat.deadline) || !now.Before(r.idle)) {
 				delete(s.credentials, token(seat.credential))
@@ -389,11 +396,15 @@ func (s *Server) expireLocked(now time.Time) {
 					}
 				}
 				r.seats[i] = nil
+				modified = true
 				if seat.pair != nil {
 					go seat.pair.close("reservation expired")
 				}
 				r.revision++
 			}
+		}
+		if modified {
+			changed = append(changed, r)
 		}
 		if r.seats[r.host] == nil {
 			r.host = 1 - r.host
@@ -407,6 +418,7 @@ func (s *Server) expireLocked(now time.Time) {
 			delete(s.tickets, key)
 		}
 	}
+	return changed
 }
 func (s *Server) sweep() {
 	ticker := time.NewTicker(100 * time.Millisecond)
@@ -417,8 +429,11 @@ func (s *Server) sweep() {
 			return
 		case now := <-ticker.C:
 			s.mu.Lock()
-			s.expireLocked(now)
+			changed := s.expireLocked(now)
 			s.mu.Unlock()
+			for _, r := range changed {
+				s.broadcast(r)
+			}
 		}
 	}
 }

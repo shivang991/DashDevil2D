@@ -21,6 +21,8 @@ type pair struct {
 	initialized     bool
 	roomQueue       chan queued
 	queuedBytes     int
+	queuedMessages  int
+	capacity        chan struct{}
 	roomSequence    uint32
 	closed          bool
 	once            sync.Once
@@ -28,7 +30,7 @@ type pair struct {
 }
 
 func newPair(s *Server, seat *seat) *pair {
-	return &pair{server: s, seat: seat, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512)}
+	return &pair{server: s, seat: seat, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), capacity: make(chan struct{}, 1)}
 }
 func (pair *pair) close(reason string) {
 	pair.once.Do(func() {
@@ -78,12 +80,13 @@ func (pair *pair) enqueueRoom(value any) error {
 	if pair.closed {
 		return errors.New("pair closed")
 	}
-	if pair.queuedBytes+len(wire) > 262144 {
+	if pair.queuedBytes+len(wire) > 262144 || pair.queuedMessages >= 512 {
 		return errors.New("room queue overflow")
 	}
 	select {
 	case pair.roomQueue <- queued{wire, time.Now()}:
 		pair.queuedBytes += len(wire)
+		pair.queuedMessages++
 		return nil
 	default:
 		return errors.New("room queue overflow")
@@ -156,15 +159,14 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 			case <-pair.done:
 				return
 			case q := <-pair.roomQueue:
-				pair.mu.Lock()
-				pair.queuedBytes -= len(q.bytes)
-				pair.mu.Unlock()
 				if time.Since(q.at) > 500*time.Millisecond {
 					pair.close("room queue wait")
 					return
 				}
 				ws.SetWriteDeadline(time.Now().Add(500 * time.Millisecond))
-				if err := ws.WriteMessage(websocket.BinaryMessage, q.bytes); err != nil {
+				err := ws.WriteMessage(websocket.BinaryMessage, q.bytes)
+				pair.release(len(q.bytes))
+				if err != nil {
 					pair.close("room write failed")
 					return
 				}
@@ -276,4 +278,31 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	s.mu.Unlock()
 	s.broadcast(r)
 	return nil
+}
+
+// Budget is shared across room, control and authority queues, including writes
+// in flight. Baseline production can wait for a released slot without buffering
+// the complete transfer in the outgoing queue.
+func (pair *pair) reserve(n int) error {
+	pair.mu.Lock()
+	defer pair.mu.Unlock()
+	if pair.closed {
+		return errors.New("pair closed")
+	}
+	if pair.queuedBytes+n > 262144 || pair.queuedMessages >= 512 {
+		return errors.New("essential pair queue overflow")
+	}
+	pair.queuedBytes += n
+	pair.queuedMessages++
+	return nil
+}
+func (pair *pair) release(n int) {
+	pair.mu.Lock()
+	pair.queuedBytes -= n
+	pair.queuedMessages--
+	pair.mu.Unlock()
+	select {
+	case pair.capacity <- struct{}{}:
+	default:
+	}
 }

@@ -83,6 +83,7 @@ func writer(pair *pair, stream interface {
 				w.mu.Lock()
 				w.bytes -= len(item.bytes)
 				w.mu.Unlock()
+				pair.release(len(item.bytes))
 				if err != nil {
 					pair.close("reliable write failed")
 					return
@@ -99,11 +100,12 @@ func (w *streamWriter) send(value any) error {
 	}
 	w.mu.Lock()
 	defer w.mu.Unlock()
-	if w.bytes+len(wire) > 262144 {
-		return errors.New("essential queue bytes exceeded")
+	if err = w.pair.reserve(len(wire)); err != nil {
+		return err
 	}
 	select {
 	case <-w.pair.done:
+		w.pair.release(len(wire))
 		return errors.New("pair closed")
 	default:
 	}
@@ -112,6 +114,7 @@ func (w *streamWriter) send(value any) error {
 		w.bytes += len(wire)
 		return nil
 	default:
+		w.pair.release(len(wire))
 		return errors.New("essential queue count exceeded")
 	}
 }
@@ -449,9 +452,27 @@ func queueBaseline(writer *streamWriter, baseline p.Baseline, transferID uint32)
 	for i := 0; i < count; i++ {
 		start := i * payload
 		end := min(start+payload, len(data))
-		if err = writer.send(p.BaselineChunk{Identity: baseline.Identity, Round: baseline.Round, TransferId: transferID, Epoch: baseline.Epoch, Tick: baseline.Tick, Progress: baseline.Progress, Total: uint32(len(data)), Offset: uint32(start), Index: uint32(i), Count: uint32(count), Data: data[start:end]}); err != nil {
+		if err = writer.sendChunk(p.BaselineChunk{Identity: baseline.Identity, Round: baseline.Round, TransferId: transferID, Epoch: baseline.Epoch, Tick: baseline.Tick, Progress: baseline.Progress, Total: uint32(len(data)), Offset: uint32(start), Index: uint32(i), Count: uint32(count), Data: data[start:end]}); err != nil {
 			return 0, err
 		}
 	}
 	return len(data), nil
+}
+
+func (w *streamWriter) sendChunk(value p.BaselineChunk) error {
+	deadline := time.NewTimer(500 * time.Millisecond)
+	defer deadline.Stop()
+	for {
+		err := w.send(value)
+		if err == nil {
+			return nil
+		}
+		select {
+		case <-w.pair.done:
+			return err
+		case <-deadline.C:
+			return err
+		case <-w.pair.capacity:
+		}
+	}
 }

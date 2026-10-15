@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { createHash } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -34,7 +35,10 @@ function retainEvidence(code) {
   }
   const revision = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).stdout.trim();
   const dirty = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).stdout;
-  fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify({ version: 1, fixture: 'protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls', revision, dirty, node: process.version, platform: process.platform, architecture: process.arch, cpu: os.cpus()[0]?.model, release: os.release(), trust: 'Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass', exitCode: code, originalDirectory: directory }, null, 2));
+  const hashes = Object.fromEntries(['apps/server/go.mod', 'apps/server/go.sum', 'apps/server/transport/diagnostic.json', 'packages/contracts/protocol/fixtures.json', 'packages/contracts/configuration/defaults.json', 'pnpm-lock.yaml'].map(file => [file, createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex')]));
+  const go = spawnSync('go', ['version'], { cwd: serverDirectory, env: process.env, encoding: 'utf8' }).stdout.trim();
+  const pnpm = spawnSync('pnpm', ['--version'], { env: process.env, encoding: 'utf8' }).stdout.trim();
+  fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify({ version: 1, fixture: 'protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls', revision, dirty, hashes, go, pnpm, node: process.version, platform: process.platform, architecture: process.arch, cpu: os.cpus()[0]?.model, release: os.release(), trust: 'Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass', exitCode: code, originalDirectory: directory }, null, 2));
   console.log(`Retained transport evidence: ${output}`);
 }
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { stop(); process.exitCode = 1; });
