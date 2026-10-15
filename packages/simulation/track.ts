@@ -24,10 +24,7 @@ export function draw(track: Track): number {
 /** Exactly two draws per opportunity, including empty cells: lane, then type. */
 export function appendSlice(track: Track, progress: number, config: GameConfig, timeUs: number, random = () => draw(track)): RoadSlice {
   if (!Number.isSafeInteger(track.nextId)) throw new Error('Object identity exhausted');
-  const lane = Math.floor(random() * config.laneCount);
-  const total = config.coinWeight + config.obstacleWeight + config.heartWeight + config.emptyWeight;
-  const selection = random() * total;
-  const cell: Cell = selection < config.coinWeight ? 'coin' : selection < config.coinWeight + config.obstacleWeight ? 'obstacle' : selection < config.coinWeight + config.obstacleWeight + config.heartWeight ? 'heart' : 'empty';
+  const { lane, cell } = selectCell(config, random);
   const size = cell === 'obstacle' ? config.obstacleH : cell === 'heart' ? config.heartSize : config.coinSize;
   const cells: [Cell, Cell, Cell] = ['empty', 'empty', 'empty']; cells[lane] = cell;
   // Original 806px reference view: car center 726, spawn top -objectHeight.
@@ -42,4 +39,13 @@ export function retireSlices(track: Track, behind: number, config: GameConfig): 
   const retired = track.slices.filter(slice => slice.distance + extent < behind);
   track.slices = track.slices.filter(slice => slice.distance + extent >= behind);
   for (const slice of retired) track.consumed.delete(slice.id);
+}
+
+/** Generation-v1 draw order shared by local and multiplayer tracks. */
+export function selectCell(config: Pick<GameConfig, 'coinWeight' | 'obstacleWeight' | 'heartWeight' | 'emptyWeight'>, random: () => number): { lane: number; cell: Cell } {
+  const lane = Math.floor(random() * 3);
+  const total = config.coinWeight + config.obstacleWeight + config.heartWeight + config.emptyWeight;
+  const selection = random() * total;
+  const cell: Cell = selection < config.coinWeight ? 'coin' : selection < config.coinWeight + config.obstacleWeight ? 'obstacle' : selection < config.coinWeight + config.obstacleWeight + config.heartWeight ? 'heart' : 'empty';
+  return { lane, cell };
 }

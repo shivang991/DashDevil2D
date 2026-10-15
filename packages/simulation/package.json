@@ -8,7 +8,9 @@
     "./geometry": "./geometry.ts",
     "./longDrive": "./longDrive.ts",
     "./state": "./state.ts",
-    "./track": "./track.ts"
+    "./track": "./track.ts",
+    "./multiplayer": "./multiplayer.ts",
+    "./multiplayerTrack": "./multiplayerTrack.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

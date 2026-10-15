@@ -1,0 +1,1280 @@
+{
+  "version": 1,
+  "configurationVersion": 1,
+  "generationVersion": 1,
+  "requirements": [
+    "https://github.com/shivang991/DashDevil2D/issues/4#issuecomment-6119328249",
+    "https://github.com/shivang991/DashDevil2D/issues/5#issuecomment-6119616392",
+    "https://github.com/shivang991/DashDevil2D/issues/11#issuecomment-6124322966",
+    "https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6146866917",
+    "https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139"
+  ],
+  "precision": {
+    "absolute": 1e-06,
+    "relative": 1e-12
+  },
+  "scenarios": [
+    {
+      "name": "next-unprocessed tick, no backdating",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "advance": 0.1
+        },
+        {
+          "at": 0.1,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.2
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 6,
+            "timeUs": 100000,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 120,
+            "effective": 3
+          },
+          {
+            "progress": 80
+          }
+        ],
+        "derivation": "0.1*400=40 before receipt; 0.1*800=80 after."
+      }
+    },
+    {
+      "name": "same-time seats ordered before shift",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 1,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 2,
+          "heldMask": 2
+        },
+        {
+          "advance": 0.1
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "shift",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 1,
+            "sequence": 1,
+            "disposition": "accepted"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 40,
+            "lateral": -40,
+            "phase": 1
+          },
+          {
+            "progress": 80
+          }
+        ],
+        "latestPress": {
+          "seat": 1,
+          "control": 3,
+          "sequence": 1,
+          "timeUs": 0,
+          "order": 2
+        },
+        "derivation": "Seat 1 (zero-based 0) precedes seat 2 despite receive order. Shift fraction .1/.15 moves 80 units."
+      }
+    },
+    {
+      "name": "held shifts, no overlap and repeat at completion",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 2,
+          "heldMask": 2
+        },
+        {
+          "advance": 0.3
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "shift",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0
+          },
+          {
+            "type": "shift-end",
+            "tick": 8,
+            "timeUs": 150000,
+            "seat": 0
+          },
+          {
+            "type": "shift",
+            "tick": 9,
+            "timeUs": 150000,
+            "seat": 0
+          },
+          {
+            "type": "shift-end",
+            "tick": 17,
+            "timeUs": 300000,
+            "seat": 0
+          }
+        ],
+        "cars": [
+          {
+            "progress": 120,
+            "lateral": 120,
+            "lane": 2,
+            "phase": 0
+          },
+          {
+            "progress": 120
+          }
+        ],
+        "derivation": "Two 120-unit shifts each last .15s. Tick index 8 ends at .15; next starts index 9."
+      }
+    },
+    {
+      "name": "release preserves shift but never restores older NOS",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.05
+        },
+        {
+          "at": 0.05,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 0,
+          "control": 2,
+          "heldMask": 6
+        },
+        {
+          "advance": 0.1
+        },
+        {
+          "at": 0.1,
+          "seat": 0,
+          "sequence": 3,
+          "intent": 1,
+          "control": 2,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.2
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "input",
+            "tick": 3,
+            "timeUs": 50000,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "accepted"
+          },
+          {
+            "type": "shift",
+            "tick": 3,
+            "timeUs": 50000,
+            "seat": 0
+          },
+          {
+            "type": "input",
+            "tick": 6,
+            "timeUs": 100000,
+            "seat": 0,
+            "sequence": 3,
+            "disposition": "accepted"
+          },
+          {
+            "type": "shift-end",
+            "tick": 11,
+            "timeUs": 200000,
+            "seat": 0
+          }
+        ],
+        "cars": [
+          {
+            "progress": 100,
+            "lateral": 0,
+            "lane": 1,
+            "effective": 0,
+            "heldMask": 4
+          },
+          {
+            "progress": 80
+          }
+        ],
+        "derivation": ".05*800+.15*400=100. Held old boost bit is retained physically; release of winning right clears effective control."
+      }
+    },
+    {
+      "name": "fresh NOS can boost during an existing shift",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 2,
+          "heldMask": 2
+        },
+        {
+          "advance": 0.05
+        },
+        {
+          "at": 0.05,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 6
+        },
+        {
+          "advance": 0.2
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "shift",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0
+          },
+          {
+            "type": "input",
+            "tick": 3,
+            "timeUs": 50000,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "accepted"
+          },
+          {
+            "type": "shift-end",
+            "tick": 8,
+            "timeUs": 150000,
+            "seat": 0
+          }
+        ],
+        "cars": [
+          {
+            "progress": 140,
+            "lane": 1,
+            "effective": 3
+          },
+          {
+            "progress": 80
+          }
+        ],
+        "derivation": ".05*400+.15*800=140; shift is not cancelled."
+      }
+    },
+    {
+      "name": "edge steering cancels NOS and counts once; held repeat ignored",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 0,
+          "control": 1,
+          "heldMask": 5
+        },
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 3,
+          "intent": 0,
+          "control": 1,
+          "heldMask": 5
+        },
+        {
+          "advance": 0.1
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "accepted"
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 3,
+            "disposition": "ignored"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 40,
+            "lateral": -120,
+            "effective": 1
+          },
+          {
+            "progress": 40
+          }
+        ],
+        "latestPress": {
+          "seat": 0,
+          "control": 1,
+          "sequence": 2,
+          "timeUs": 0,
+          "order": 2
+        },
+        "derivation": "Left at left edge has no lateral motion; only fresh press enters history."
+      }
+    },
+    {
+      "name": "expiry inside tick and refresh cannot resurrect",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {
+        "connection": {
+          "controlFreshnessExpiry": 0.31,
+          "controlRefreshInterval": 0.1
+        }
+      },
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.5
+        },
+        {
+          "at": 0.5,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 2,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.6
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "expiry",
+            "tick": 18,
+            "timeUs": 310000,
+            "seat": 0
+          },
+          {
+            "type": "input",
+            "tick": 30,
+            "timeUs": 500000,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "ignored"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 364,
+            "effective": 0
+          },
+          {
+            "progress": 240
+          }
+        ],
+        "derivation": ".31*800+.29*400=364; refresh after expiry is not a press."
+      }
+    },
+    {
+      "name": "refresh extends freshness without history entry",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.25
+        },
+        {
+          "at": 0.25,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 2,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.75
+        },
+        {
+          "advance": 1.2
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "input",
+            "tick": 15,
+            "timeUs": 250000,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "accepted"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 960,
+            "effective": 3,
+            "freshnessUs": 1250000
+          },
+          {
+            "progress": 480
+          }
+        ],
+        "latestPress": {
+          "seat": 0,
+          "control": 3,
+          "sequence": 1,
+          "timeUs": 0,
+          "order": 1
+        },
+        "derivation": "Refresh at .25 moves expiry from 1 to 1.25 seconds."
+      }
+    },
+    {
+      "name": "duplicate stale-round forged-seat and malformed control rejected",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4,
+          "roundId": 2
+        },
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4,
+          "payloadSeat": 1
+        },
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 2,
+          "intent": 0,
+          "control": 4,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.1
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "rejected"
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "rejected"
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "rejected"
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 2,
+            "disposition": "rejected"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 80,
+            "lastInput": 1
+          },
+          {
+            "progress": 40
+          }
+        ],
+        "derivation": "Only the original valid press changes authoritative state; rejected traffic cannot refresh it."
+      }
+    },
+    {
+      "name": "disconnect invalidates queued presses immediately",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "disconnect": 0
+        },
+        {
+          "advance": 0.1
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "release",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0
+          },
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "rejected"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 40,
+            "effective": 0
+          },
+          {
+            "progress": 40
+          }
+        ],
+        "derivation": "A queued press must not reactivate disconnected controls."
+      }
+    },
+    {
+      "name": "short stall processes every tick in order",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.5
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          }
+        ],
+        "cars": [
+          {
+            "progress": 400
+          },
+          {
+            "progress": 200
+          }
+        ],
+        "tick": 30,
+        "derivation": "30 complete ticks, 800*.5 and 400*.5."
+      }
+    },
+    {
+      "name": "threshold equality catches up; strictly excessive lag abandons",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "advance": 1
+        },
+        {
+          "advance": 2.01
+        },
+        {
+          "advance": 3
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "abandoned",
+            "tick": 60,
+            "timeUs": 1000000
+          }
+        ],
+        "cars": [
+          {
+            "progress": 400
+          },
+          {
+            "progress": 400
+          }
+        ],
+        "tick": 60,
+        "abandoned": true,
+        "derivation": "Exactly one second is allowed; 1.01s backlog abandons at last processed boundary, with no winner."
+      }
+    },
+    {
+      "name": "continuous speed growth integrates across cap before boost",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "maxRoadSpeed": 500,
+          "speedGrowth": 200
+        }
+      },
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 3,
+          "heldMask": 4
+        },
+        {
+          "advance": 0.5
+        },
+        {
+          "advance": 1
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "expiry",
+            "tick": 59,
+            "timeUs": 1000000,
+            "seat": 0
+          }
+        ],
+        "cars": [
+          {
+            "progress": 950,
+            "normalSpeed": 500,
+            "effective": 0
+          },
+          {
+            "progress": 475,
+            "normalSpeed": 500
+          }
+        ],
+        "derivation": "Integral first .5s =225, remaining .5s=250; boosted total=950."
+      }
+    },
+    {
+      "name": "slow shift cannot overlap faster repeat",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "laneShiftDuration": 0.3,
+          "laneSwitchCooldownDuration": 0.1
+        }
+      },
+      "steps": [
+        {
+          "at": 0,
+          "seat": 0,
+          "sequence": 1,
+          "intent": 0,
+          "control": 2,
+          "heldMask": 2
+        },
+        {
+          "advance": 0.5
+        }
+      ],
+      "expected": {
+        "events": [
+          {
+            "type": "input",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0,
+            "sequence": 1,
+            "disposition": "accepted"
+          },
+          {
+            "type": "shift",
+            "tick": 0,
+            "timeUs": 0,
+            "seat": 0
+          },
+          {
+            "type": "shift-end",
+            "tick": 17,
+            "timeUs": 300000,
+            "seat": 0
+          },
+          {
+            "type": "shift",
+            "tick": 18,
+            "timeUs": 300000,
+            "seat": 0
+          }
+        ],
+        "cars": [
+          {
+            "progress": 200,
+            "lateral": 80,
+            "phase": 1,
+            "lane": 1
+          },
+          {
+            "progress": 200
+          }
+        ],
+        "derivation": "Repeat waits for .3s completion, second shift at .3, fraction .2/.3 gives lateral 80."
+      }
+    },
+    {
+      "name": "exact second tick boundary has no accumulated clock drift",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {},
+      "steps": [
+        {
+          "advance": 0.5
+        },
+        {
+          "advance": 1
+        }
+      ],
+      "expected": {
+        "events": [],
+        "cars": [
+          {
+            "progress": 400
+          },
+          {
+            "progress": 400
+          }
+        ],
+        "tick": 60,
+        "timeUs": 1000000,
+        "derivation": "Tick 60 is 60/60 exactly one second."
+      }
+    }
+  ],
+  "timeVectors": [
+    {
+      "seconds": 0,
+      "expected": 0
+    },
+    {
+      "seconds": 0.016666666666666666,
+      "expected": 16667
+    },
+    {
+      "seconds": 5e-07,
+      "expected": 1
+    },
+    {
+      "seconds": 10.0020002,
+      "expected": 10002000
+    },
+    {
+      "seconds": 10.0020004,
+      "expected": 10002000
+    },
+    {
+      "seconds": 10.009,
+      "expected": 10009000
+    }
+  ],
+  "geometry": [
+    {
+      "name": "swept horizontal entry",
+      "a0": {
+        "left": -1,
+        "right": 1,
+        "top": -1,
+        "bottom": 1
+      },
+      "a1": {
+        "left": 9,
+        "right": 11,
+        "top": -1,
+        "bottom": 1
+      },
+      "b0": {
+        "left": 4,
+        "right": 6,
+        "top": -1,
+        "bottom": 1
+      },
+      "b1": {
+        "left": 4,
+        "right": 6,
+        "top": -1,
+        "bottom": 1
+      },
+      "expected": 0.3
+    },
+    {
+      "name": "endpoint tangency is not strict overlap",
+      "a0": {
+        "left": -1,
+        "right": 1,
+        "top": -1,
+        "bottom": 1
+      },
+      "a1": {
+        "left": 2,
+        "right": 4,
+        "top": -1,
+        "bottom": 1
+      },
+      "b0": {
+        "left": 4,
+        "right": 6,
+        "top": -1,
+        "bottom": 1
+      },
+      "b1": {
+        "left": 4,
+        "right": 6,
+        "top": -1,
+        "bottom": 1
+      },
+      "expected": null
+    },
+    {
+      "name": "parallel disjoint paths",
+      "a0": {
+        "left": -1,
+        "right": 1,
+        "top": -1,
+        "bottom": 1
+      },
+      "a1": {
+        "left": 9,
+        "right": 11,
+        "top": -1,
+        "bottom": 1
+      },
+      "b0": {
+        "left": -1,
+        "right": 1,
+        "top": 2,
+        "bottom": 4
+      },
+      "b1": {
+        "left": 9,
+        "right": 11,
+        "top": 2,
+        "bottom": 4
+      },
+      "expected": null
+    },
+    {
+      "name": "initial overlap",
+      "a0": {
+        "left": -1,
+        "right": 1,
+        "top": -1,
+        "bottom": 1
+      },
+      "a1": {
+        "left": -1,
+        "right": 1,
+        "top": -1,
+        "bottom": 1
+      },
+      "b0": {
+        "left": 0,
+        "right": 2,
+        "top": -1,
+        "bottom": 1
+      },
+      "b1": {
+        "left": 0,
+        "right": 2,
+        "top": -1,
+        "bottom": 1
+      },
+      "expected": 0
+    },
+    {
+      "name": "touching rectangles may separate",
+      "a0": {
+        "left": -1,
+        "right": 1,
+        "top": -1,
+        "bottom": 1
+      },
+      "a1": {
+        "left": -2,
+        "right": 0,
+        "top": -1,
+        "bottom": 1
+      },
+      "b0": {
+        "left": 1,
+        "right": 3,
+        "top": -1,
+        "bottom": 1
+      },
+      "b1": {
+        "left": 1,
+        "right": 3,
+        "top": -1,
+        "bottom": 1
+      },
+      "expected": null
+    },
+    {
+      "name": "high speed longitudinal path",
+      "a0": {
+        "left": -1,
+        "right": 1,
+        "top": -1,
+        "bottom": 1
+      },
+      "a1": {
+        "left": -1,
+        "right": 1,
+        "top": 999,
+        "bottom": 1001
+      },
+      "b0": {
+        "left": -1,
+        "right": 1,
+        "top": 99,
+        "bottom": 101
+      },
+      "b1": {
+        "left": -1,
+        "right": 1,
+        "top": 99,
+        "bottom": 101
+      },
+      "expected": 0.098
+    }
+  ],
+  "placement": [
+    {
+      "name": "reserved before equal random opportunity; suppressed draws retained",
+      "mode": "drag-race",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 2400,
+          "initialClearDistance": 0,
+          "reservedHearts": 2
+        }
+      },
+      "through": [
+        600,
+        1200
+      ],
+      "expected": {
+        "randomState": 632435482,
+        "nextId": 5,
+        "randomIndex": 4,
+        "heartIndex": 2,
+        "through": 1200,
+        "slices": [
+          {
+            "id": 1,
+            "distance": 400,
+            "timeUs": 0,
+            "cells": [
+              "obstacle",
+              "empty",
+              "empty"
+            ]
+          },
+          {
+            "id": 2,
+            "distance": 800,
+            "timeUs": 0,
+            "cells": [
+              "empty",
+              "heart",
+              "empty"
+            ]
+          },
+          {
+            "id": 3,
+            "distance": 800,
+            "timeUs": 0,
+            "cells": [
+              "empty",
+              "empty",
+              "empty"
+            ]
+          },
+          {
+            "id": 4,
+            "distance": 1200,
+            "timeUs": 0,
+            "cells": [
+              "obstacle",
+              "empty",
+              "empty"
+            ]
+          }
+        ]
+      },
+      "derivation": "Seed-1 draws 1/2 place 400 obstacle; draw 3 selects middle reserved heart at 800; draws 4/5 are suppressed at 800; draw 6 = 745495504 selects left at 1200; draw 7 = 632435482 advances type. No output copied from production."
+    },
+    {
+      "name": "Road Rage default random spacing and incremental prefix",
+      "mode": "road-rage",
+      "seed": 1,
+      "overrides": {},
+      "through": [
+        1200,
+        1600
+      ],
+      "expected": {
+        "randomState": 307599695,
+        "nextId": 3,
+        "randomIndex": 3,
+        "heartIndex": 1,
+        "through": 1600,
+        "slices": [
+          {
+            "id": 1,
+            "distance": 1200,
+            "timeUs": 0,
+            "cells": [
+              "obstacle",
+              "empty",
+              "empty"
+            ]
+          },
+          {
+            "id": 2,
+            "distance": 1600,
+            "timeUs": 0,
+            "cells": [
+              "empty",
+              "obstacle",
+              "empty"
+            ]
+          }
+        ]
+      },
+      "derivation": "First anchor=800+400; draw pairs (270369,67634689) and (2647435461,307599695), lanes 0 and 1."
+    }
+  ]
+}

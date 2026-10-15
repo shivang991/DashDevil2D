@@ -22,7 +22,7 @@ Ticket: [Generate compatible binary contracts and complete-state fixtures](https
 | Discrete seeded tracks and resize-independent contacts | Existing [#26 checkpoint](track-checkpoint.md), shared seed/track fixtures retained. |
 | Generated compatible contracts and complete resource gate | Passed technical checks and independent review; final source-frozen evidence below. |
 | Long Drive applicable automated preservation | Passed: 218 Vitest checks, native Go suites, generation verification/types/lint/builds, and all 11 actual Chrome scenarios. |
-| Human audiovisual comparison | **Pending**, as recorded at #26. New automated media does not establish the human comparison. |
+| Human audiovisual comparison | **Passed by owner review on 2026-10-15 (America/Phoenix)**: “Yes I have reviewed long drive. It looks good to me. Approved.” Approval supplied in the #28 implementation chat; automated media alone did not establish this review. |
 | Two-browser real-transport smoke | **Unavailable** until #29 introduces admission/WebSocket/WebTransport endpoints. This prerequisite is not reported as passed. Once introduced it becomes mandatory. |
 | Full Go simulation parity | **Unavailable** until #28; existing Go tests cover seeded generation and protocol/configuration resource compatibility only. |
 | Supported-release/browser/network/reference-hardware/capacity/manual multiplayer acceptance | Later Stage 4–7 evidence, not established by codec tests or an automation engine. |
@@ -42,3 +42,7 @@ Literal exact default resource envelopes: Drag Race **16 objects / 1,278 baselin
 Agent inspected final countdown and resized pause snapshots. This is static inspection, not owner audiovisual signoff. New human comparison remains pending; **the full Stage 3 gate is not declared passed and Stage 4 remains blocked on that review**. Real transport and full Go gameplay parity remain unavailable until #29/#28. No later-stage network/browser/capacity acceptance is claimed.
 
 Subsequent owner-requested cleanup removed the one-off fixture authoring script and `.scratch/dashdevil-multiplayer/` planning snapshots. The canonical planning decisions remain in the linked GitHub issues. The structured validation record retains the original script hash as historical evidence of tested revision `976c69d`; it does not assert the script remains in the current checkout. Shared fixtures, schema, codecs and verification checks are retained.
+
+## Stage 4 entry cleared by owner
+
+On 2026-10-15 (America/Phoenix), in the #28 implementation chat, the owner confirmed: “Yes I have reviewed long drive. It looks good to me. Approved.” This supplies the previously pending human Long Drive preservation review and clears the recorded Stage 3 entry blocker for #28. Historical pending statements above describe the #27 completion state; they are retained as evidence. This approval does not establish later multiplayer or transport acceptance.
