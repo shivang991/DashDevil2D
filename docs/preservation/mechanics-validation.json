@@ -210,5 +210,29 @@
     "contactsReturnsObjectsOutcomes": "later gameplay slices; no parity claim",
     "fullAcceptance": "later supported-browser/network/reference-hardware/capacity/manual multiplayer evidence"
   },
-  "visualInspection": "Agent inspected diagnostic screenshot; baseline audiovisual owner approval clears Stage3, but no manual multiplayer/timing acceptance is claimed."
+  "visualInspection": "Agent inspected diagnostic screenshot; baseline audiovisual owner approval clears Stage3, but no manual multiplayer/timing acceptance is claimed.",
+  "supplementalOwnerBrowserChecks": {
+    "reportedDate": "2026-10-15",
+    "timezone": "America/Phoenix",
+    "scope": "Long Drive manual behavior, visuals and audio",
+    "source": "Owner confirmation in #28 implementation chat",
+    "browsers": [
+      {
+        "name": "Safari",
+        "version": "latest available at time of testing, as reported by owner",
+        "exactVersion": null,
+        "result": "passed; no visual or audio issues reported"
+      },
+      {
+        "name": "Firefox",
+        "version": "latest available at time of testing, as reported by owner",
+        "exactVersion": null,
+        "result": "passed; no visual or audio issues reported"
+      }
+    ],
+    "recordings": null,
+    "testedRevision": null,
+    "environment": "not recorded",
+    "acceptanceScope": "Supplemental manual Long Drive evidence; complete supported-release matrix and multiplayer transport remain unestablished."
+  }
 }

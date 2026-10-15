@@ -51,3 +51,7 @@ Tests used installed pinned Go 1.26.0 via its cached binary path, `GOTOOLCHAIN=l
 Actual browser: Chrome **155.0.8059.79**; Apple M2/8 GB, Darwin 25.5.0 arm64; Node 26.10.0, pnpm 8.15.9, Go 1.26.0. Viewport 1280×900, Long Drive canvas 606×806, with resized scenarios. Reference-hardware equivalence and power settings remain unestablished. Static agent inspection confirmed the diagnostic canvas and recognizable Long Drive countdown; this does not establish new manual multiplayer or screen-visible performance acceptance.
 
 #28's implemented-mechanics scope is complete. The **combined Stage 4 gate remains incomplete until #29 passes actual supported-browser transport checks**; no later-stage gameplay or acceptance claim is made.
+
+## Supplemental owner browser checks
+
+On 2026-10-15 (America/Phoenix), the owner reported manually testing Long Drive in Safari and Firefox, using the latest available versions of both at the time of testing. The owner confirmed correct behavior with no visual or audio issues in either browser. Exact version numbers, recordings, tested revision and test environment were not captured. This is owner-reported manual Long Drive evidence; it does not establish the complete supported-release matrix or multiplayer transport acceptance.
