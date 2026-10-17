@@ -3,3 +3,5 @@
 Run workspace installation and checks from the repository root; see [the workspace README](../../README.md).
 
 From this directory, `pnpm dev`, `pnpm typecheck`, `pnpm build`, `pnpm lint`, `pnpm test` and `pnpm test:browser` operate on the client. Browser runs retain separate evidence directories under `test-results/`. Simulation comes from `@dashdevil/simulation`, a source-exporting headless workspace package.
+
+For multiplayer entry, lobby and countdown, run `pnpm dev:transport` from the root and open the printed HTTPS application URL in two browsers. Trusted development HTTPS requires the documented mkcert setup. Long Drive also remains available through `pnpm dev`. `pnpm test:rooms` runs the mandatory secure two-browser room checks; `pnpm test:transport` retains the separate stationary transport diagnostic.

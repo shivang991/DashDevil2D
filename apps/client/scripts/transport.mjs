@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const test = process.argv.includes('--test');
 const rooms = process.argv.includes('--rooms');
+const diagnostic = process.argv.includes('--diagnostic') || test && !rooms;
 const directory = test ? fs.mkdtempSync(path.join(os.tmpdir(), 'dashdevil-transport-')) : path.join(root, '.local/transport');
 fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
 const serverDirectory = path.join(root, 'apps/server');
@@ -44,11 +45,11 @@ function retainEvidence(code) {
 }
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { stop(); process.exitCode = 1; });
 const serverLog = fs.openSync(path.join(directory, 'server.log'), 'a', 0o600);
-const server = spawn(path.join(directory, 'diagnostic-server'), [...(test && !rooms ? ['--diagnostic'] : []), '--cert', httpsCert, '--key', httpsKey, '--quic-cert', path.join(directory, 'webtransport.pem'), '--quic-key', path.join(directory, 'webtransport-key.pem')], { cwd: root, stdio: ['ignore', serverLog, serverLog] });
+const server = spawn(path.join(directory, 'diagnostic-server'), [...(diagnostic ? ['--diagnostic'] : []), '--cert', httpsCert, '--key', httpsKey, '--quic-cert', path.join(directory, 'webtransport.pem'), '--quic-key', path.join(directory, 'webtransport-key.pem')], { cwd: root, stdio: ['ignore', serverLog, serverLog] });
 children.push(server);
 const env = { ...process.env, DASHDEVIL_ROOM_TESTS: rooms ? '1' : '', DASHDEVIL_TRANSPORT_CONFIG: configPath, DASHDEVIL_HTTPS_CERT: httpsCert, DASHDEVIL_HTTPS_KEY: httpsKey };
 console.log(`Transport evidence directory: ${directory}`);
-console.log(`HTTPS diagnostic page: https://127.0.0.1:4173/transport.html; certificate expires ${config.expires}`);
+console.log(`HTTPS ${diagnostic ? 'diagnostic page' : 'private rooms'}: https://127.0.0.1:4173/${diagnostic ? 'transport.html' : ''}; certificate expires ${config.expires}`);
 if (test) {
   const command = spawn('pnpm', ['exec', 'playwright', 'test', '-c', 'playwright.transport.config.ts'], { cwd: path.join(root, 'apps/client'), env, stdio: 'inherit' });
   children.push(command);

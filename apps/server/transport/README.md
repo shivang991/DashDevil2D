@@ -1,4 +1,12 @@
-# Stage 4 secure transport diagnostic
+# Secure private rooms and transport diagnostic
+
+The default server now runs [#30 private rooms](../../../docs/preservation/rooms-checkpoint.md): React entry/lobby, host-only mode/start, confirmed readiness, focus/visibility safety commands, paired baseline installation and a three-second server countdown ending at authoritative round zero. Gameplay movement starts with #31. `RoomReply` confirms each sequenced command; `RoomPulse` is a bounded application heartbeat and never advances a simulation tick. New rounds use fresh seed, identity/input generations and acknowledged baseline epochs. Hidden tabs, leave and paired loss cancel countdown; blur alone clears readiness without cancelling it.
+
+Run `pnpm dev:transport` and open [the main application](https://127.0.0.1:4173/) in two browsers. `pnpm test:rooms` runs the five mandatory actual-Chrome room scenarios through the real secure transports and retains independent evidence runs. The owner confirmed Stage 4 verification complete on 2026-10-16; see the linked checkpoint for that later entry authorization. Historical Stage 4 evidence limitations below remain intact.
+
+For the retained stationary diagnostic, use `pnpm dev:transport --diagnostic` or pass `--diagnostic` to the Go executable. `pnpm test:transport` selects that mode automatically and remains mandatory alongside `pnpm test:rooms` and the workspace/preservation checks.
+
+## Retained Stage 4 diagnostic
 
 Issue [#29](https://github.com/shivang991/DashDevil2D/issues/29). This is a real network diagnostic, using the shared protocol v1 codecs and a frozen continuation derived from the independently reviewed #27 fixture. It does not start multiplayer rounds or supply a gameplay fallback. Gameplay authority/parity belongs to #28; complete lobby/countdown/play/results belong to later stages.
 
@@ -15,12 +23,12 @@ Reliable frames are bounded before allocation (64 KiB), baselines at 1 MiB, a sh
 Use the pinned Node/pnpm/Go versions. Install `mkcert` and establish its local development CA with `mkcert -install`. Then, from the root:
 
 ```sh
-pnpm dev:transport
+pnpm dev:transport --diagnostic
 ```
 
-Open [the diagnostic page](https://127.0.0.1:4173/transport.html) in two separate tabs. Vite serves trusted HTTPS on 4173; Fiber HTTPS/WebSockets and HTTP/3 UDP share 8443. The explicit allowed website origin includes port 4173. `mkcert` supplies the HTTPS certificate; WebTransport uses a separate ECDSA P-256 certificate, valid for 13 days plus a one-hour NotBefore margin (under 14 days), authenticated by its SHA-256 fingerprint. Keys are kept in ignored `.local/transport` with private permissions. Each startup renews the WebTransport certificate if less than two days remain, and atomically updates its public fingerprint configuration. `pnpm dev:transport --renew` forces rotation and restarts the listeners. Restart long-running development sessions before expiry. No machine trust store is modified by our commands; `mkcert -install` is an explicit local prerequisite.
+Open [the diagnostic page](https://127.0.0.1:4173/transport.html) in two separate tabs. Vite serves trusted HTTPS on 4173; Fiber HTTPS/WebSockets and HTTP/3 UDP share 8443. The explicit allowed website origin includes port 4173. `mkcert` supplies the HTTPS certificate; WebTransport uses a separate ECDSA P-256 certificate, valid for 13 days plus a one-hour NotBefore margin (under 14 days), authenticated by its SHA-256 fingerprint. Keys are kept in ignored `.local/transport` with private permissions. Each startup renews the WebTransport certificate if less than two days remain, and atomically updates its public fingerprint configuration. `pnpm dev:transport --diagnostic --renew` forces rotation and restarts the listeners. Restart long-running development sessions before expiry. No machine trust store is modified by our commands; `mkcert -install` is an explicit local prerequisite.
 
-For production, build the client and invoke `go run ./cmd/diagnostic --address :443 --origin https://your-host --cert trusted.pem --key private.pem --static ../client/dist` from this module. Supply real TCP **and UDP** ingress. Omit development QUIC certificate flags: both listeners use normal trusted certificates. The production client uses normal certificate validation and receives no development hash configuration. A listener failure terminates the process; a restart starts empty. This diagnostic is not a complete multiplayer production service.
+For production, build the client and invoke `go run ./cmd/diagnostic --diagnostic --address :443 --origin https://your-host --cert trusted.pem --key private.pem --static ../client/dist` from this module. Supply real TCP **and UDP** ingress. Omit development QUIC certificate flags: both listeners use normal trusted certificates. The production client uses normal certificate validation and receives no development hash configuration. A listener failure terminates the process; a restart starts empty. This diagnostic is not a complete multiplayer production service.
 
 ## Verification and limitations
 
