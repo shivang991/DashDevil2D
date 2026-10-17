@@ -1,0 +1,5 @@
+--- FAIL: TestRoomHostChangesModeAndClearsBothReadyStatuses (0.00s)
+    rooms_test.go:23: listen tcp 127.0.0.1:0: bind: operation not permitted
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	0.635s
+FAIL

@@ -1,0 +1,75 @@
+
+> dashdevil@ check /Users/shivang/Desktop/programs/test/claude-code-test
+> pnpm check:generated && turbo run typecheck lint test build "--force" "--env-mode=loose"
+
+
+> dashdevil@ check:generated /Users/shivang/Desktop/programs/test/claude-code-test
+> pnpm --filter @dashdevil/contracts check:generated
+
+
+> @dashdevil/contracts@0.0.0 check:generated /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+> node protocol/generate.mjs --check
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running typecheck, lint, test, build in 4 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache bypass, force executing 16b804184fdc48bb
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:test: cache bypass, force executing 776c6a70f21b14c0
+@dashdevil/contracts:typecheck: cache bypass, force executing 129a9c474418e6e7
+@dashdevil/server:generate: cache bypass, force executing fd2d0b6a51286995
+@dashdevil/contracts:lint: cache bypass, force executing b11873bf8b8c66a5
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/server:generate: 
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > pnpm check:generated
+@dashdevil/contracts:test: 
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:lint: > @dashdevil/contracts@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:lint: > eslint .
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 check:generated /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > node protocol/generate.mjs --check
+@dashdevil/contracts:test: 
+@dashdevil/simulation:typecheck: cache bypass, force executing 760933f7f67631e3
+@dashdevil/server:typecheck: cache bypass, force executing 5262c8bd1476a6c6
+@dashdevil/server:test: cache bypass, force executing 75ba1500afc09875
+@dashdevil/simulation:lint: cache bypass, force executing 8ea0d342120597ee
+@dashdevil/server:typecheck: 
+@dashdevil/server:typecheck: > @dashdevil/server@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:typecheck: > go vet ./...
+@dashdevil/server:typecheck: 
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:lint: 
+@dashdevil/simulation:lint: > @dashdevil/simulation@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:lint: > eslint .
+@dashdevil/simulation:lint: 
+@dashdevil/server:test: 
+@dashdevil/server:test: > @dashdevil/server@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:test: > go test -count=1 ./...
+@dashdevil/server:test: 
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server	[no test files]
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server/cmd/devcert	[no test files]
+@dashdevil/server:build: cache bypass, force executing a39666d4a9cbf7cf
+ WARNING  error creating log file: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+  x Internal errors encountered: error with cache: Failed to replay logs:
+  | Cannot write logs: Permission denied (os error 13)
+
+ ELIFECYCLE  Command failed with exit code 1.

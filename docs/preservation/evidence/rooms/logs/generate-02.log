@@ -1,0 +1,25 @@
+
+> dashdevil@ generate /Users/shivang/Desktop/programs/test/claude-code-test
+> turbo run generate
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running generate in 4 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache miss, executing a6ff2db82055eadd
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/server:generate: cache miss, executing 57f065abfaa37154
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/server:generate: 
+
+ Tasks:    2 successful, 2 total
+Cached:    0 cached, 2 total
+  Time:    476ms 
+

@@ -1,0 +1,172 @@
+
+> @dashdevil/client@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> eslint .
+
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx
+  64:46  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:64:46
+  62 |       {!inRoom ? <>
+  63 |         <p>Create a private room or join a friend.</p>
+> 64 |         <button className={button} disabled={!connection.current || pending} onClick={() => void connection.current?.connect(0, '', mode)}>Create Room</button>
+     |                                              ^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  65 |         <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (/^\d{4}$/.test(code) && !pending) void connection.current?.connect(1, code); }}>
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />                                                                                                                               react-hooks/refs
+  64:46  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:64:46
+  62 |       {!inRoom ? <>
+  63 |         <p>Create a private room or join a friend.</p>
+> 64 |         <button className={button} disabled={!connection.current || pending} onClick={() => void connection.current?.connect(0, '', mode)}>Create Room</button>
+     |                                              ^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  65 |         <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (/^\d{4}$/.test(code) && !pending) void connection.current?.connect(1, code); }}>
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />                                                                                                                               react-hooks/refs
+  64:46  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:64:46
+  62 |       {!inRoom ? <>
+  63 |         <p>Create a private room or join a friend.</p>
+> 64 |         <button className={button} disabled={!connection.current || pending} onClick={() => void connection.current?.connect(0, '', mode)}>Create Room</button>
+     |                                              ^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  65 |         <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (/^\d{4}$/.test(code) && !pending) void connection.current?.connect(1, code); }}>
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />                                                                                                                               react-hooks/refs
+  64:46  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:64:46
+  62 |       {!inRoom ? <>
+  63 |         <p>Create a private room or join a friend.</p>
+> 64 |         <button className={button} disabled={!connection.current || pending} onClick={() => void connection.current?.connect(0, '', mode)}>Create Room</button>
+     |                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  65 |         <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (/^\d{4}$/.test(code) && !pending) void connection.current?.connect(1, code); }}>
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />                                                                                                                    react-hooks/refs
+  64:47  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:64:47
+  62 |       {!inRoom ? <>
+  63 |         <p>Create a private room or join a friend.</p>
+> 64 |         <button className={button} disabled={!connection.current || pending} onClick={() => void connection.current?.connect(0, '', mode)}>Create Room</button>
+     |                                               ^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  65 |         <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); if (/^\d{4}$/.test(code) && !pending) void connection.current?.connect(1, code); }}>
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+
+To initialize a ref only once, check that the ref is null with the pattern `if (ref.current == null) { ref.current = ... }`  react-hooks/refs
+  68:48  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:48
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                ^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>                                                                                                                                                                           react-hooks/refs
+  68:48  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:48
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                ^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>                                                                                                                                                                           react-hooks/refs
+  68:48  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:48
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                ^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>                                                                                                                                                                           react-hooks/refs
+  68:48  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:48
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>                                                                                                                                                                react-hooks/refs
+  68:48  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:48
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>                                                                                                                                                                react-hooks/refs
+  68:48  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:48
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>                                                                                                                                                                react-hooks/refs
+  68:48  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:48
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>                                                                                                                                       react-hooks/refs
+  68:49  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:68:49
+  66 |           <label htmlFor="room-code">Room code</label>
+  67 |           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
+> 68 |           <button className={button} disabled={!connection.current || pending || !/^\d{4}$/.test(code)}>Join Room</button>
+     |                                                 ^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  69 |         </form>
+  70 |         <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+  71 |         <button className={button} onClick={onBack}>Back</button>
+
+To initialize a ref only once, check that the ref is null with the pattern `if (ref.current == null) { ref.current = ... }`                                              react-hooks/refs
+
+✖ 13 problems (13 errors, 0 warnings)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 lint: `eslint .`
+Exit status 1

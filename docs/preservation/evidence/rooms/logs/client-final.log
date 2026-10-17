@@ -1,0 +1,13 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+
+ Test Files  10 passed (10)
+      Tests  261 passed (261)
+   Start at  18:34:08
+   Duration  1.36s (environment 69%, tests 23%, import 5%, transform 2%, worker 1%)
+

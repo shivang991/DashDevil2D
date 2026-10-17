@@ -1,0 +1,11 @@
+2026/10/16 18:21:30 INFO baseline_installed room=1 seat=0 generation=1 bytes=1057 duration_us=133
+2026/10/16 18:21:30 INFO baseline_installed room=1 seat=1 generation=1 bytes=1057 duration_us=167
+2026/10/16 18:21:30 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/16 18:21:30 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/16 18:21:30 INFO pair_closed room=1 seat=1 generation=1 reason="server shutdown"
+2026/10/16 18:21:30 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+--- FAIL: TestRoomCountdownDisconnectCancelsAndRequiresFreshReadiness (0.01s)
+    rooms_test.go:73: room rejected: round start is unavailable
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	0.641s
+FAIL

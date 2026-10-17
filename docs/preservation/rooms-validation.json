@@ -1,0 +1,265 @@
+{
+  "version": 1,
+  "date": "2026-10-16",
+  "timezone": "America/Phoenix",
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/30",
+  "baselineRevision": "ef3f0d8",
+  "finalSourceRevision": "ff695beeff95297ff6d9fedb9cfe7c726d73d6f8",
+  "cleanAtSecureBrowserRuns": true,
+  "ownerStage4EntryConfirmation": {
+    "source": "User message in implementation chat",
+    "quote": "stage 4 verification is completed."
+  },
+  "approvedTestSeams": [
+    "Authenticated room commands through real paired transports",
+    "React UI in two actual Chrome contexts"
+  ],
+  "versions": {
+    "protocol": 1,
+    "configuration": 1,
+    "wireFixtures": 1,
+    "trackGeneration": 1,
+    "preservationFixtures": 3,
+    "evidence": 1,
+    "node": "26.10.0",
+    "pnpm": "8.15.9",
+    "go": "1.26.0",
+    "chrome": "155.0.8059.80"
+  },
+  "inputSha256": {
+    ".github/workflows/preservation.yml": "a1ff34e3ad2530ec84dbf649116c89e92b3a07738ae9ca29885c2b1ea9880a41",
+    "apps/client/README.md": "e8b36d60b8b26e028b1403ac02bbf3d6062886c1fc10c70a04499b6dc485229d",
+    "apps/client/playwright.config.ts": "9eeca7c23a88a28352607e5e84286d6ef17b1998c5268d142f6c87335a991758",
+    "apps/client/playwright.transport.config.ts": "e5a7e1c7eefcfa193f4716f93f3ae32ba2279cb0b7c0e7c47e6956f830e64d36",
+    "apps/client/scripts/transport.mjs": "93ea06e12f031070510961eadc091a232cd7a69efae97e3f650964341a5c9197",
+    "apps/client/src/App.tsx": "6df11710954494b85b2523cee4e01fa52367c0f4813238217390c84e9b6b3db5",
+    "apps/client/src/screens/MenuScreen.tsx": "7a1563985612b3c2aa787123d4613ae45a99ddf590ea3c47d1d0567e4a0e596a",
+    "apps/client/src/screens/MultiplayerScreen.tsx": "54b1f86afda467c399603242f500292e1b53591c4d144d27fc3858a7a249c430",
+    "apps/client/src/transport/PairedConnection.ts": "20b4acfca2b3f0fde5d508d9d21103b1b3cca475a371b9553c4753af6b904208",
+    "apps/client/src/transport/diagnostic.ts": "c96c1f5050fabb667d861efdf97709f8bf3b9366754a7a3bc03b33bfde5946af",
+    "apps/client/src/transport/localName.ts": "2340f13fca54793238b4d818a961b305b1f296fc8bea5322bf84f47c4cca824d",
+    "apps/client/tests/browser/rooms.spec.ts": "aa2caec2cba8bce459b8e01c2be4a608dcd4e7860e4ed0537810fac60db4267d",
+    "apps/server/README.md": "d5286190733e1891262d6b45c5604b7b62f10dd4f1d2df7fbdf2f2414b97a96b",
+    "apps/server/cmd/diagnostic/main.go": "f7b3dba2b8d9a37ec6776e6fb671e8de5eef223123fac2d33cc0024ab6511705",
+    "apps/server/protocol/generated.go": "1d823ecbe54603664b8b214f2259fe6015ccf4eb3edf8fcfffccc1006e05b469",
+    "apps/server/transport/README.md": "384b05de7af621d2e34ee2a999adc466a2624e49316983636fd9955a3c82bc6e",
+    "apps/server/transport/gameplay.go": "be64160cd27b5dc3e7a3cdb01582f9eca5bf93b2d1412baeac3cf76967d2f1af",
+    "apps/server/transport/pair.go": "781f055d87caadc5aecd7ae903d897bc9dfa0111c7bef278d8d3041c736e30b0",
+    "apps/server/transport/room_gameplay.go": "c72748f3961b18e75308fda47d0449197719a933004ebe30bf1b8c942bf1c94b",
+    "apps/server/transport/rooms.go": "b0014bd59245539184712f67593c67dcc5227f819cbd1fca260255c5b4337fbf",
+    "apps/server/transport/rooms_test.go": "8eda9665e44943d20b69fe4d17c0add261be3bd3c8b72c615fd85088878faa50",
+    "apps/server/transport/server.go": "9fbdccba937e8841e2dcb2ee952193c3a4483e384da5f2331903459348b58f70",
+    "apps/server/transport/server_test.go": "ae718c8944eee7ae84d098c0688603a61ed8fa7b8c9fec760cd69f5cb92f757f",
+    "docs/preservation/rooms-checkpoint.md": "1f49f9be9fe5a2c228e10392153096fda30108d40fbe5820bdf62a0766c74d8b",
+    "package.json": "f1c21b9c8046e7b18c8578613df0de6be88cbe7e570e012965b5f71db1768768",
+    "packages/contracts/generated/protocol.ts": "1e8f05e284d79e91ad7628eb886172a4e99f9960813b30d05aee35b8ec9be02b",
+    "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+    "packages/contracts/protocol/generate.mjs": "31e18ae5c4275cd3c3a84114cd8dbc7701dbd908d549a8c7fec3a5eaa993a779",
+    "packages/contracts/protocol/schema.json": "0859dbac2ced7d283d91fa1cdf509f1e7f6134feaa7dd9333ede93f196fc5381"
+  },
+  "checks": {
+    "workspace": {
+      "command": "pnpm check --force --env-mode=loose",
+      "passed": true,
+      "tasks": 15,
+      "cacheHits": 0,
+      "vitest": 261,
+      "nativeTransportSeconds": 34.109,
+      "sourceRevision": "0e6f667",
+      "log": "evidence/rooms/logs/check-final-02.log",
+      "note": "Later notice/copy changes rechecked with complete client typecheck/lint/Vitest/build at 201d2b6. No later Go or schema changes."
+    },
+    "finalClient": {
+      "commands": [
+        "pnpm --filter @dashdevil/client typecheck",
+        "pnpm --filter @dashdevil/client lint",
+        "pnpm --filter @dashdevil/client test",
+        "pnpm --filter @dashdevil/client build"
+      ],
+      "passed": true,
+      "sourceRevision": "201d2b6",
+      "vitest": 261,
+      "logs": [
+        "types-final.log",
+        "lint-final.log",
+        "client-final.log",
+        "build-final.log"
+      ]
+    },
+    "nativeRoomRace": {
+      "command": "go test -race ./transport -run TestRoom -count=1",
+      "passed": true,
+      "seconds": 2.206,
+      "log": "evidence/rooms/logs/room-race-01.log",
+      "note": "Seed helper extraction was the only later Go change; all native tests/vet/build passed afterward."
+    },
+    "rooms": {
+      "command": "pnpm test:rooms",
+      "passed": true,
+      "scenarios": 5,
+      "retries": 0,
+      "sourceRevision": "ff695beeff95297ff6d9fedb9cfe7c726d73d6f8",
+      "log": "evidence/rooms/logs/rooms-final-02.log",
+      "manifest": "evidence/rooms/rooms-manifest.json"
+    },
+    "transport": {
+      "command": "pnpm test:transport",
+      "passed": true,
+      "scenarios": 3,
+      "retries": 0,
+      "sourceRevision": "ff695beeff95297ff6d9fedb9cfe7c726d73d6f8",
+      "log": "evidence/rooms/logs/transport-final-03.log",
+      "manifest": "evidence/rooms/transport-manifest.json"
+    },
+    "preservation": {
+      "command": "pnpm test:browser --env-mode=loose",
+      "passed": true,
+      "scenarios": 12,
+      "retries": 0,
+      "sourceRevision": "5f08714",
+      "log": "evidence/rooms/logs/preservation-final-04.log",
+      "manifest": "evidence/rooms/preservation-manifest.json",
+      "note": "No later product changes; only the room screenshot wait changed in ff695be."
+    },
+    "independentReview": {
+      "standardsOutstanding": 0,
+      "specOutstanding": 0,
+      "report": "rooms-review.md",
+      "resolved": [
+        "P2 mutating action pending cleared by unrelated RoomState",
+        "optional duplicated track seed construction"
+      ]
+    }
+  },
+  "roundZeroExample": {
+    "seed": 540855767,
+    "roundId": 3,
+    "startUs": 6334961,
+    "timeUs": 0,
+    "progress": [
+      0,
+      0
+    ],
+    "lanes": [
+      0,
+      2
+    ],
+    "controls": [
+      0,
+      0
+    ],
+    "evidence": [
+      "evidence/rooms/room-seat-0.json",
+      "evidence/rooms/room-seat-1.json"
+    ]
+  },
+  "environment": {
+    "node": "v26.10.0",
+    "go": "go version go1.26.0 darwin/arm64",
+    "pnpm": "8.15.9",
+    "platform": "darwin",
+    "architecture": "arm64",
+    "cpu": "Apple M2",
+    "release": "25.5.0",
+    "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+    "browserVersionSource": "Installed Chrome --version and channel chrome",
+    "network": "loopback, no impairment",
+    "viewport": "1280x720 room screenshots; 1280x900 Long Drive baseline",
+    "referenceHardwareEquivalence": "not established"
+  },
+  "visualInspection": {
+    "by": "agent",
+    "files": [
+      "evidence/rooms/lobby.png",
+      "evidence/rooms/countdown.png",
+      "evidence/rooms/room-seat-0.png"
+    ],
+    "observations": "Names/You/host, four-digit code, connection/mode/readiness, large visible 3, Leave and synchronized zero screen inspected. Original too-early lobby capture identified and corrected with a visibility wait. No human multiplayer acceptance inferred."
+  },
+  "failureRetention": {
+    "logs": "evidence/rooms/logs",
+    "originalPreservationFailure": "evidence/rooms/preservation-original-failure-manifest.json",
+    "notes": [
+      "Initial native mode/start failures preceded implementation.",
+      "Sandbox loopback and Git index restrictions required approved execution; invocation/path mistakes retained.",
+      "Stale root-owned Turborepo logs and build assets blocked checks; logs copied before removal, old dist retained at /private/tmp/dash30-prior-dist.",
+      "Diagnostic admission query initially bypassed existing network-failure interception; restored original diagnostic URL, then all three scenarios passed.",
+      "Independent pending-state regression failed red then passed after the fix.",
+      "Original Long Drive audio-unavailable failure involved unexpected page navigation and a second Vite connection; cause not established. The unchanged full source-frozen suite passed subsequently. Original manifest/screenshot/error context retained; complete trace/video remain in original browser run directory.",
+      "Every browser attempt retained in a separate timestamped test-results directory; no automatic retries."
+    ]
+  },
+  "limits": [
+    "Visibility scenario explicitly injects a platform event; physical background scheduling not established.",
+    "New evidence does not establish full supported browser/OS/trust-store/network/capacity/reference-hardware/two-person manual acceptance.",
+    "Owner-confirmed completed Stage 4 entry is separate from new automated evidence.",
+    "This slice ends at authoritative zero; #31 supplies driving. A complete playable Stage 5 path and full multiplayer acceptance are not claimed."
+  ],
+  "artifactSha256": {
+    "evidence/rooms/rooms-manifest.json": "0feeab1cdfcc3cf0ee106af94a21d235837143e775fe868b0d4624d5c593b402",
+    "evidence/rooms/lobby.png": "42ad22570fd4fe0bff0e175c2e1a0f380284e4006ae29ad4b6d76e2cd623d754",
+    "evidence/rooms/room-seat-1.json": "159658f80c63d08a70e6660f352be2fbeb45b56795ea94eeb7e67115a3ca1258",
+    "evidence/rooms/room-seat-0.json": "da0effaff67cca23e8f3a45b8e62f0516d55667d79791dfc375ca68e02e4a25f",
+    "evidence/rooms/standards-followup.md": "d5152639a8da8c15275d3d323c97196cac77f9c4259850d8f21738de1abadfb5",
+    "evidence/rooms/room-seat-1.png": "3d7960af3087948611269af6fdcbeafab7fc409964ae50079d6e7f30ae21e8b7",
+    "evidence/rooms/room-seat-0.png": "f63a2bb5140631fe80bc258c063916d7bbd99febc8895b46efb621ca8edb72e5",
+    "evidence/rooms/standards-review.md": "8135c3323744dc4d0da839624c87f18dffc094f4725f8e1c565ec3f8ccdd8ea4",
+    "evidence/rooms/preservation-manifest.json": "6a2212800b39703c244b0f61f83ec480850fb3284701fa9a5be38ba3607900ab",
+    "evidence/rooms/countdown.png": "6b54c0ef31ffc4bc1d603b5c9052e830d36e11d185a254cfb3bd1b50510582d4",
+    "evidence/rooms/preservation-original-failure-manifest.json": "7c6bbaa1cbb1c13258cdfbdbf64ae7cfb744d31d7e5271537258036d128fa5aa",
+    "evidence/rooms/spec-followup.md": "48f1260404fc11771cb2f5c502429e21ceaf1309fc52a126a8c6061a60314791",
+    "evidence/rooms/recovery-identities.json": "01fb62688f8df6067cf0fb4457c42babd6c833ab2d8e79f2b1bc0f4687c10f7e",
+    "evidence/rooms/preservation-original-test-failed-1.png": "7ef4a5ed4c7923519fd01669b3a6bb2d0aff1e4c4d8885f12ef3bcecb518147d",
+    "evidence/rooms/preservation-original-error-context.md": "86d0e1ab07e66f2eff893269a90c2407348e2be42eff6798b68a418ccb683ad2",
+    "evidence/rooms/spec-review.md": "9d8c29fb87db4b4cba0a30382d64194b7740dcb01d2df2e17bf7d842db982ad5",
+    "evidence/rooms/transport-manifest.json": "292a9d8733f8c698a17c99e1181ea775b7bdc8453de76b7c46f810912049d0b3",
+    "evidence/rooms/logs/lint-04.log": "e6b963cc7540475fca71ae596d5bd50f07e21aa4acce99a85685ed942ce57e3e",
+    "evidence/rooms/logs/protocol-01.log": "986d0b23f6ba1fcfbc731b0bd009bc9681d56c33185f5fb4c161deaa02d1c0d3",
+    "evidence/rooms/logs/rooms-final.log": "48c1206e36f66d91adbe54aa19fc9406dafe6b56502345c4a97548ee32f051fa",
+    "evidence/rooms/logs/mode-red-02.log": "256443345f18a0572339bb170b55854c8ab5885744389bee3ee0c52695cd11ee",
+    "evidence/rooms/logs/lint-02.log": "e6b963cc7540475fca71ae596d5bd50f07e21aa4acce99a85685ed942ce57e3e",
+    "evidence/rooms/logs/prior-server-turbo-build.log": "466ea46534984e2bef5bc7a1f34c63a85931db61d853ae3c3614e01dd9b4eee2",
+    "evidence/rooms/logs/lint-03.log": "e6b963cc7540475fca71ae596d5bd50f07e21aa4acce99a85685ed942ce57e3e",
+    "evidence/rooms/logs/mode-red-03.log": "e1cab67dbf28e543b4a6fb57d2d95bf64d6f62a9f0a9eccb3e366d4f85a4ddb9",
+    "evidence/rooms/logs/mode-red.log": "62195a0e1f670fdb513d4bf15f241a470c59fff41a393d398bdc80f7b2afa53d",
+    "evidence/rooms/logs/lint-01.log": "68a9a2ee14a94a9b159676487133cb519e96601d9fa2b468361b883e87104794",
+    "evidence/rooms/logs/browser-red-01.log": "f36eb19c4a31c28837f3a9456ccdd5f97b5d56c2706a6e4aa938c95a4e4de224",
+    "evidence/rooms/logs/client-final.log": "c3e62d4c6c3460b9ec9c0112d334ad4d578d49aedf1f11cbe870642bbd8687a6",
+    "evidence/rooms/logs/types-final.log": "087a3940e2523b60a30cc3c33b013a2f2ab003db88a0ebfec80dd5b345bf1516",
+    "evidence/rooms/logs/preservation-final-04.log": "f05f203577d0c373b1f8917df9b4f3d4e18d9375f44c3951507fc495e8d7afe0",
+    "evidence/rooms/logs/types-05.log": "087a3940e2523b60a30cc3c33b013a2f2ab003db88a0ebfec80dd5b345bf1516",
+    "evidence/rooms/logs/types-04.log": "087a3940e2523b60a30cc3c33b013a2f2ab003db88a0ebfec80dd5b345bf1516",
+    "evidence/rooms/logs/browser-green-04.log": "0eeaf35d64a8a4d89978313f7ef2e71e6fdc0bbe41f69c4ffc8a32365286c847",
+    "evidence/rooms/logs/types-06.log": "087a3940e2523b60a30cc3c33b013a2f2ab003db88a0ebfec80dd5b345bf1516",
+    "evidence/rooms/logs/countdown-green-01.log": "412de685a35e09a6e757ad532afcf186936b9c288deac386068a4c8142a08241",
+    "evidence/rooms/logs/preservation-final-02.log": "6554ab46d71ebfc95973ee7589d9c7ec0ccab4b0d6bcc96f734faca175fab096",
+    "evidence/rooms/logs/types-03.log": "087a3940e2523b60a30cc3c33b013a2f2ab003db88a0ebfec80dd5b345bf1516",
+    "evidence/rooms/logs/browser-green-01.log": "eef589fe94a1c3d2e241f9e13aaafdb6c0c81511d25982489082f99082a6d5bc",
+    "evidence/rooms/logs/types-02.log": "087a3940e2523b60a30cc3c33b013a2f2ab003db88a0ebfec80dd5b345bf1516",
+    "evidence/rooms/logs/preservation-final-03.log": "58d7886f49266f0497b5a182397809e62a39f5635b8584610a08b84b0547e160",
+    "evidence/rooms/logs/review-pending-green.log": "88c77754458f37a05b197504ea994bc99be535fbba4616bb8d644cd65977cab0",
+    "evidence/rooms/logs/preservation-final-01.log": "1584ba842ec7ff7abf3e2609416d44c516f789bc6ad19e13c9379df84a9e8c99",
+    "evidence/rooms/logs/browser-green-02.log": "d06f07d125ce39478cafc2e9ac04cac19142bca31875875a5a80a3865d3cbefb",
+    "evidence/rooms/logs/browser-green-03.log": "ad37aafb19fa56d3e710c15e072f768c5a6c022e40b313f25227c81203859e50",
+    "evidence/rooms/logs/types-01.log": "087a3940e2523b60a30cc3c33b013a2f2ab003db88a0ebfec80dd5b345bf1516",
+    "evidence/rooms/logs/build-final.log": "84a2e8edb55207ade345849b8aa3d6d7d3af24427f6a4f890ba98ff637a51dcc",
+    "evidence/rooms/logs/review-pending-red.log": "a53c3fbee3df808620e305b88f421e1d88aa2bf634e3285eae1370f9a5bb817e",
+    "evidence/rooms/logs/vet-02.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "evidence/rooms/logs/mode-green.log": "fa7110dd14d2d0217f72713968c95a7bb994f438b5f77b5ca825c99afeeeca4e",
+    "evidence/rooms/logs/prior-turbo-build.log": "399e21adf83182427de49557dbc41278575f16b575a686254a70e4ada0dcbe61",
+    "evidence/rooms/logs/vet-01.log": "13adacf098f219f367ad798135bbe631f9c3df5ce2a48435dc1e3707ae1c4ed2",
+    "evidence/rooms/logs/generate-02.log": "f1601290b0d7895a5b362abacbfaaeab7b73cf1f0e08628b0fbdc436126f48d6",
+    "evidence/rooms/logs/generate-03.log": "863dd38000edfd363a5d24fc8e010516652891e1a47fded595b26fce3e970a2d",
+    "evidence/rooms/logs/room-green-02.log": "442251c2429f1614ea72a9d5c1ef3c977c8acc2430bc7072825af976b3ed8eb6",
+    "evidence/rooms/logs/lint-final.log": "e6b963cc7540475fca71ae596d5bd50f07e21aa4acce99a85685ed942ce57e3e",
+    "evidence/rooms/logs/rooms-final-02.log": "b64a8132974de9858fe6d8278878377dee24ffd3cbb0557938219080e68a40ee",
+    "evidence/rooms/logs/transport-final-01.log": "8c87610f1bb9180e87ad05e9596d7c4476eca2401e27c83f097b55d884083816",
+    "evidence/rooms/logs/transport-final-02.log": "5856d77df18bf5a96debf446e851e0a53018b42b05b333c646eb04d6428ed3b2",
+    "evidence/rooms/logs/countdown-red.log": "7b00ec1c7448f82238822ce4d0aef39370ba4a182e0e5246ff05f074ae3dc89f",
+    "evidence/rooms/logs/transport-final-03.log": "cf182ecba9786db1673900c5abc1195363764f1b830dc3614f1b8d6cf76403c9",
+    "evidence/rooms/logs/generate.log": "65b6acd022b1c07613ffe60608dec9247af5be5e6a9d99de66c2806b165bd3e4",
+    "evidence/rooms/logs/check-final-02.log": "e366b06c92a2f114881898680102a0c2edb76b1db2f49e6598dd3bb56e98a683",
+    "evidence/rooms/logs/room-race-01.log": "019d4689237365e7416261290a5f250b5efaf923b6bdc7b07464adc5e6da53dc",
+    "evidence/rooms/logs/check-final-01.log": "3f07780501d8cf149ff9010d5e5ab92e49a1ec313a2ff1e7c7a97aaa45a76d3b"
+  }
+}

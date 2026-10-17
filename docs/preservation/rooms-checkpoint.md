@@ -28,4 +28,20 @@ Sources: [lifecycle](https://github.com/shivang991/DashDevil2D/issues/8#issuecom
 
 The visibility browser scenario uses an explicitly labelled platform-event fixture; it does not establish real OS background scheduling. Browser automation uses installed actual Chrome and process-scoped local HTTPS/SPKI and WebTransport certificate pins. Current/previous release, OS trust stores, physical background/focus behavior, network impairments, reference-hardware performance, capacity, and two-person manual multiplayer acceptance are not newly established by this run. Owner-reported completed Stage 4 verification is separate from this slice's automated evidence. No Long Drive defect correction is authorized or introduced.
 
-Final commands, independent scenario review, revisions, versions, hashes, seeds, environments, logs and visual inspection will be recorded after source review.
+## Final verification
+
+Final clean source revision: `ff695beeff95297ff6d9fedb9cfe7c726d73d6f8`. The full workspace check passed **15/15 tasks, zero cache reuse**, including generated-output verification, types, lint, **261 Vitest tests**, native Go tests/vet and production builds. After the small final notice/copy change, complete client typecheck/lint/Vitest/build passed again. The native room cases also passed the Go race detector. Exact tested revisions per command are retained in [structured validation](rooms-validation.json).
+
+Final actual Chrome **155.0.8059.80**, Node **26.10.0**, pnpm **8.15.9**, Go **1.26.0**, Apple M2/macOS arm64 (Darwin 25.5.0):
+
+- **5/5 secure room browser scenarios**, zero retries: two-seat exact shared zero and hidden-event cancellation/re-readiness; literal leading-zero binary admission; denied-storage name fallback; host mode reset/reload recovery/leave confirmation; delayed command reply with unrelated room broadcasts.
+- **3/3 retained transport browser scenarios**, zero retries: real streams/datagrams/baseline correction, same-seat paired loss/recovery/replacement, unsupported-browser and network-failure distinction.
+- **12/12 existing Long Drive/mechanics browser scenarios**, zero retries in the final source-frozen run, including optional-audio failure, countdown/pause/focus/input, score/HP/resize and actual presentation/audio recording. No Long Drive gameplay code was changed.
+
+[Independent two-axis review](rooms-review.md) has **0 outstanding Standards and 0 outstanding Spec findings**. The P2 pending-confirmation defect was reproduced red through an intercepted real server reply, fixed, and verified green. Literal wire vectors and round-zero expectations were independently checked.
+
+[Retained evidence](evidence/rooms/rooms-manifest.json) includes clean source revisions, runtime/config/fixture versions, hashes, seeds, per-seat identities/state, screenshots and logs. The agent visually inspected the lobby, a correctly synchronized large `3` countdown, and both participants' shared-zero screen. This is agent visual inspection, not a new two-person human acceptance claim.
+
+All original failures remain: initial native red/path/sandbox failures, stale root-owned build/cache artifacts, the diagnostic URL interception regression, the pending-confirmation review regression, and the original Long Drive audio-unavailable run. That preservation failure included unexpected navigation back to the menu and a second Vite connection; its cause was not established. The unchanged full frozen suite then passed. Its original [failure manifest](evidence/rooms/preservation-original-failure-manifest.json), screenshot/error context and all command logs are retained alongside subsequent passing evidence; full original trace/video remain in the timestamped test-results directory. No assertion was relaxed or scenario excluded to obtain the passing preservation run.
+
+#30's rooms/readiness/countdown/authoritative-zero scope is complete. The full playable Stage 5 path continues in #31 and subsequent tickets; full multiplayer/browser/network/manual acceptance remains outside this slice.

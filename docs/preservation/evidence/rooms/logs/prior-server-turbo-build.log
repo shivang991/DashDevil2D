@@ -1,0 +1,5 @@
+
+
+> @dashdevil/server@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+> go build -buildvcs=false ./...
+

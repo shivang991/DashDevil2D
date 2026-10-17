@@ -1,0 +1,23 @@
+
+> dashdevil@ test:rooms /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --rooms
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-3a5w6P/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-3a5w6P
+HTTPS diagnostic page: https://127.0.0.1:4173/transport.html; certificate expires 2026-10-30T01:28:13Z
+[WebServer] (node:57509) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:57510) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:57510) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 3 tests using 1 worker
+
+(node:57517) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/rooms.spec.ts:3:1 › two React participants adopt host mode, ready and share a physics-free countdown and round zero (5.2s)
+  ✓  2 tests/browser/rooms.spec.ts:60:1 › four-digit entry retains leading zeros and shows admission errors beside the native form (557ms)
+  ✓  3 tests/browser/rooms.spec.ts:78:1 › storage denial retains one local name across entry, admission and return (575ms)
+
+  3 passed (8.7s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T01-28-23.601Z

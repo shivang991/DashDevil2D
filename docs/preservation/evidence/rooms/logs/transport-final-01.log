@@ -1,0 +1,63 @@
+
+> dashdevil@ test:transport /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-QLYmAX/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-QLYmAX
+HTTPS diagnostic page: https://127.0.0.1:4173/transport.html; certificate expires 2026-10-30T01:30:21Z
+[WebServer] (node:58272) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:58273) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:58273) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 3 tests using 1 worker
+
+(node:58329) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/transport.spec.ts:3:1 › two admitted browser seats verify real streams/datagrams and recover either lost channel (4.4s)
+  ✓  2 tests/browser/transport.spec.ts:53:1 › missing WebTransport features produce Browser unsupported (1.7s)
+  ✘  3 tests/browser/transport.spec.ts:60:1 › an admission/network failure is Unable to connect on a supported browser (5.7s)
+
+
+  1) tests/browser/transport.spec.ts:60:1 › an admission/network failure is Unable to connect on a supported browser 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('status')
+    Expected substring: "Unable to connect"
+    Received string:    "Connected"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toContainText" getByTestId('status') with timeout 5000ms
+      - waiting for getByTestId('status')
+        2 × locator resolved to <p role="status" data-testid="status">Connecting</p>
+          - unexpected value "Connecting"
+        12 × locator resolved to <p role="status" data-testid="status">Connected</p>
+           - unexpected value "Connected"
+
+
+      62 |   await page.goto(`${baseURL}/transport.html`);
+      63 |   await page.getByRole('button', { name: 'Create diagnostic room', exact: true }).click();
+    > 64 |   await expect(page.getByTestId('status')).toContainText('Unable to connect');
+         |                                            ^
+      65 | });
+      66 |
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/transport.spec.ts:64:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-QLYmAX/browser-1792200624141/transport-an-admission-net-ad59d-nect-on-a-supported-browser/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-QLYmAX/browser-1792200624141/transport-an-admission-net-ad59d-nect-on-a-supported-browser/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-QLYmAX/browser-1792200624141/transport-an-admission-net-ad59d-nect-on-a-supported-browser/error-context.md
+
+  1 failed
+    tests/browser/transport.spec.ts:60:1 › an admission/network failure is Unable to connect on a supported browser 
+  2 passed (14.5s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T01-30-37.436Z
+ ELIFECYCLE  Command failed with exit code 1.

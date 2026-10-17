@@ -1,0 +1,11 @@
+2026/10/16 18:20:59 INFO baseline_installed room=1 seat=0 generation=1 bytes=1057 duration_us=203
+2026/10/16 18:20:59 INFO baseline_installed room=1 seat=1 generation=1 bytes=1057 duration_us=123
+2026/10/16 18:20:59 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/16 18:20:59 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/16 18:20:59 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/16 18:20:59 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+--- FAIL: TestRoomHostChangesModeAndClearsBothReadyStatuses (0.01s)
+    rooms_test.go:35: room rejected: diagnostic readiness requires initialized pair; round start is unavailable
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	0.350s
+FAIL

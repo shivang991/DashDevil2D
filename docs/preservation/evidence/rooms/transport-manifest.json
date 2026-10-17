@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "fixture": "protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+  "revision": "ff695beeff95297ff6d9fedb9cfe7c726d73d6f8",
+  "dirty": "",
+  "hashes": {
+    "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+    "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+    "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+    "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "go": "go version go1.26.0 darwin/arm64",
+  "pnpm": "8.15.9",
+  "node": "v26.10.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "cpu": "Apple M2",
+  "release": "25.5.0",
+  "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+  "exitCode": 0,
+  "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-fdXhuu"
+}

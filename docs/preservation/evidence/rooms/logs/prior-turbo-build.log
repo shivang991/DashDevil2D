@@ -1,0 +1,27 @@
+
+
+> @dashdevil/client@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> pnpm typecheck && vite build
+
+
+> @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> tsc -b
+
+[36mvite v7.3.1 [32mbuilding client environment for production...[36m[39m
+(node:66139) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[2K[1Gtransforming (1) [2msrc/main.tsx[22m[2K[1Gtransforming (15) [2m../../node_modules/.pnpm/react@19.2.4/node_modules/react/jsx-runtime.js[22m[2K[1Gtransforming (18) [2m../../node_modules/.pnpm/lucide-react@0.575.0_react@19.2.4/node_modules/lucide-react/dist/e[2K[1Gtransforming (1045) [2m../../node_modules/.pnpm/lucide-react@0.575.0_react@19.2.4/node_modules/lucide-react/dist[2K[1Gtransforming (1720) [2m../../packages/contracts/generated/protocol.ts[22m[2K[1G[32m✓[39m 1751 modules transformed.
+[2K[1Grendering chunks (1)...[2K[1Grendering chunks (2)...[2K[1Grendering chunks (3)...[2K[1G[2K[1Gcomputing gzip size (0)...[2K[1Gcomputing gzip size (1)...[2K[1Gcomputing gzip size (2)...[2K[1Gcomputing gzip size (3)...[2K[1Gcomputing gzip size (4)...[2K[1Gcomputing gzip size (5)...[2K[1Gcomputing gzip size (6)...[2K[1Gcomputing gzip size (7)...[2K[1G[2mdist/[22m[32mindex.html                                                [39m[1m[2m  0.53 kB[22m[1m[22m[2m │ gzip:  0.32 kB[22m
+[2mdist/[22m[32mtransport.html                                            [39m[1m[2m  1.92 kB[22m[1m[22m[2m │ gzip:  0.87 kB[22m
+[2mdist/[22m[2massets/[22m[32mbruno-ace-sc-latin-ext-400-normal-BKRTx50S.woff    [39m[1m[2m  8.01 kB[22m[1m[22m
+[2mdist/[22m[2massets/[22m[32mbitcount-ink-latin-ext-wght-normal-BKihR4CZ.woff2  [39m[1m[2m  8.87 kB[22m[1m[22m
+[2mdist/[22m[2massets/[22m[32mbruno-ace-sc-latin-ext-400-normal-DoFJSI0R.woff2   [39m[1m[2m  9.30 kB[22m[1m[22m
+[2mdist/[22m[2massets/[22m[32mbitcount-ink-latin-wght-normal-BudczbaH.woff2      [39m[1m[2m 10.30 kB[22m[1m[22m
+[2mdist/[22m[2massets/[22m[32mbruno-ace-sc-latin-400-normal-Dh0jW_6n.woff        [39m[1m[2m 13.91 kB[22m[1m[22m
+[2mdist/[22m[2massets/[22m[32mbruno-ace-sc-latin-400-normal-D7DxpFcE.woff2       [39m[1m[2m 15.51 kB[22m[1m[22m
+[2mdist/[22m[2massets/[22m[35mtransport-CMJqIDQr.css                             [39m[1m[2m  0.70 kB[22m[1m[22m[2m │ gzip:  0.42 kB[22m
+[2mdist/[22m[2massets/[22m[35mmain-Bt1jXUvE.css                                  [39m[1m[2m 25.69 kB[22m[1m[22m[2m │ gzip:  5.51 kB[22m
+[2mdist/[22m[2massets/[22m[36mtransport-CuX8g-bx.js                              [39m[1m[2m 16.28 kB[22m[1m[22m[2m │ gzip:  5.43 kB[22m
+[2mdist/[22m[2massets/[22m[36mvalidation-DoytszYd.js                             [39m[1m[2m 28.34 kB[22m[1m[22m[2m │ gzip:  8.22 kB[22m
+[2mdist/[22m[2massets/[22m[36mmain-DeSMzAvw.js                                   [39m[1m[2m234.78 kB[22m[1m[22m[2m │ gzip: 73.71 kB[22m
+[32m✓ built in 985ms[39m

@@ -1,0 +1,57 @@
+
+> dashdevil@ test:rooms /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --rooms
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qw1tCY/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qw1tCY
+HTTPS diagnostic page: https://127.0.0.1:4173/transport.html; certificate expires 2026-10-30T01:24:07Z
+[WebServer] (node:56434) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:56435) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:56435) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 1 test using 1 worker
+
+(node:56442) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/rooms.spec.ts:3:1 › two React participants adopt host mode, ready and share a physics-free countdown and round zero (6.5s)
+
+
+  1) tests/browser/rooms.spec.ts:3:1 › two React participants adopt host mode, ready and share a physics-free countdown and round zero 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('Same Driver', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText('Same Driver', { exact: true }) with timeout 5000ms
+      - waiting for getByText('Same Driver', { exact: true })
+
+
+       8 |       await page.addInitScript(() => localStorage.setItem('dashdevil-local-name', 'Same Driver'));
+       9 |       await page.goto('/');
+    > 10 |       await expect(page.getByText('Same Driver', { exact: true })).toBeVisible();
+         |                                                                    ^
+      11 |     }
+      12 |     await pages[0].getByRole('button', { name: /Road Rage/ }).click();
+      13 |     await pages[0].getByRole('button', { name: 'Create Room', exact: true }).click();
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/rooms.spec.ts:10:68
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qw1tCY/browser-1792200251140/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qw1tCY/browser-1792200251140/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qw1tCY/browser-1792200251140/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/error-context.md
+
+  1 failed
+    tests/browser/rooms.spec.ts:3:1 › two React participants adopt host mode, ready and share a physics-free countdown and round zero 
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T01-24-19.907Z
+ ELIFECYCLE  Command failed with exit code 1.

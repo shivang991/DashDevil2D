@@ -1,0 +1,76 @@
+
+> dashdevil@ test:browser /Users/shivang/Desktop/programs/test/claude-code-test
+> turbo run test:browser --filter=@dashdevil/client "--env-mode=loose"
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client
+   • Running test:browser in 1 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache miss, executing f3a20ff46ccee999
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:typecheck: cache miss, executing 4ed4475834aac5ac
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/simulation:typecheck: cache miss, executing 01cb92c810acbcb0
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/client:typecheck: cache miss, executing 07aa0a807e8f9d4b
+@dashdevil/simulation:build: cache miss, executing f63b7592dcb4aa3e
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > pnpm typecheck
+@dashdevil/simulation:build: 
+@dashdevil/client:typecheck: 
+@dashdevil/client:typecheck: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:typecheck: > tsc -b
+@dashdevil/client:typecheck: 
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > tsc -p tsconfig.json
+@dashdevil/simulation:build: 
+@dashdevil/client:build: cache miss, executing 9b0022c52af890dc
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > pnpm typecheck && vite build
+@dashdevil/client:build: 
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > tsc -b
+@dashdevil/client:build: 
+@dashdevil/client:build: vite v7.3.1 building client environment for production...
+@dashdevil/client:build: (node:59605) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@dashdevil/client:build: (Use `node --trace-deprecation ...` to show where the warning was created)
+@dashdevil/client:build: transforming...
+@dashdevil/client:build: ✓ 1753 modules transformed.
+@dashdevil/client:build: ✗ Build failed in 1.37s
+@dashdevil/client:build: error during build:
+@dashdevil/client:build: [vite:prepare-out-dir] ENOTEMPTY, Directory not empty: '/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/dist/assets'
+@dashdevil/client:build:     at Object.rmSync (node:fs:1589:18)
+@dashdevil/client:build:     at emptyDir (file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:2167:11)
+@dashdevil/client:build:     at prepareOutDir (file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:33325:55)
+@dashdevil/client:build:     at Object.handler (file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:33315:6)
+@dashdevil/client:build:     at Object.handler (file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/vite@7.3.1_@types+node@24.11.0_tsx@4.23.15/node_modules/vite/dist/node/chunks/config.js:33743:13)
+@dashdevil/client:build:     at file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/rollup@4.59.0/node_modules/rollup/dist/es/shared/node-entry.js:22571:40
+@dashdevil/client:build:     at async Promise.all (index 0)
+@dashdevil/client:build:     at async PluginDriver.hookParallel (file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/rollup@4.59.0/node_modules/rollup/dist/es/shared/node-entry.js:22481:9)
+@dashdevil/client:build:     at async Bundle.generate (file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/rollup@4.59.0/node_modules/rollup/dist/es/shared/node-entry.js:20603:13)
+@dashdevil/client:build:     at async file:///Users/shivang/Desktop/programs/test/claude-code-test/node_modules/.pnpm/rollup@4.59.0/node_modules/rollup/dist/es/shared/node-entry.js:23558:27
+@dashdevil/client:build:  ELIFECYCLE  Command failed with exit code 1.
+ ERROR  @dashdevil/client#build: command (/Users/shivang/Desktop/programs/test/claude-code-test/apps/client) /Users/shivang/Library/pnpm/.tools/@pnpm+exe/8.15.9/bin/pnpm run build exited (1)
+
+ Tasks:    5 successful, 6 total
+Cached:    0 cached, 6 total
+  Time:    7.425s 
+Failed:    @dashdevil/client#build
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

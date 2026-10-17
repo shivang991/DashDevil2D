@@ -1,0 +1,45 @@
+
+> dashdevil@ test:browser /Users/shivang/Desktop/programs/test/claude-code-test
+> turbo run test:browser --filter=@dashdevil/client "--env-mode=loose"
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client
+   • Running test:browser in 1 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache miss, executing ee2df2c917270533
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:typecheck: cache miss, executing fbe4c4be1a3d3bd6
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/simulation:typecheck: cache miss, executing 85893ccc849786e5
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:build: cache miss, executing abba2ed48c89389c
+@dashdevil/client:typecheck: cache miss, executing 4e000b789f52ad81
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > pnpm typecheck
+@dashdevil/simulation:build: 
+@dashdevil/client:typecheck: 
+@dashdevil/client:typecheck: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:typecheck: > tsc -b
+@dashdevil/client:typecheck: 
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > tsc -p tsconfig.json
+@dashdevil/simulation:build: 
+@dashdevil/client:build: cache miss, executing 837984852dc8d616
+ WARNING  error creating log file: Os { code: 13, kind: PermissionDenied, message: "Permission denied" }
+  x Internal errors encountered: error with cache: Failed to replay logs:
+  | Cannot write logs: Permission denied (os error 13)
+
+ ELIFECYCLE  Command failed with exit code 1.
