@@ -1,0 +1,94 @@
+
+> dashdevil@ test:finality /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --finality
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T19:34:21Z
+[WebServer] (node:20704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:20705) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:20705) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:20712) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/finality.spec.ts:5:31 › outcome precedes old room state and a recovery baseline (seat 0) (13.2s)
+(node:20758) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 tests/browser/finality.spec.ts:5:31 › outcome precedes old room state and a recovery baseline (seat 1) (12.0s)
+
+
+  1) tests/browser/finality.spec.ts:5:31 › outcome precedes old room state and a recovery baseline (seat 0) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Round result' })
+    Expected: visible
+    Timeout: 1200ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Round result' }) with timeout 1200ms
+      - waiting for getByRole('heading', { name: 'Round result' })
+
+
+      65 |     await pages[delayed].reload();
+      66 |     await pages[delayed].getByRole('button', { name: /Drag Race/ }).click();
+    > 67 |     await expect(pages[delayed].getByRole('heading', { name: 'Round result' })).toBeVisible({ timeout: 1200 });
+         |                                                                                 ^
+      68 |     const before = JSON.parse((await pages[delayed].getByTestId('room-evidence').textContent())!);
+      69 |     expect(before.baselineBytes).toBe(0);
+      70 |     await expect.poll(async () => JSON.parse((await pages[delayed].getByTestId('room-evidence').textContent())!).baselineBytes).toBeGreaterThan(0);
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/finality.spec.ts:67:81
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g/browser-1792265664631/finality-outcome-precedes--1f7cb-a-recovery-baseline-seat-0-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g/browser-1792265664631/finality-outcome-precedes--1f7cb-a-recovery-baseline-seat-0-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g/browser-1792265664631/finality-outcome-precedes--1f7cb-a-recovery-baseline-seat-0-/error-context.md
+
+  2) tests/browser/finality.spec.ts:5:31 › outcome precedes old room state and a recovery baseline (seat 1) 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Round result' })
+    Expected: visible
+    Timeout: 1200ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Round result' }) with timeout 1200ms
+      - waiting for getByRole('heading', { name: 'Round result' })
+
+
+      65 |     await pages[delayed].reload();
+      66 |     await pages[delayed].getByRole('button', { name: /Drag Race/ }).click();
+    > 67 |     await expect(pages[delayed].getByRole('heading', { name: 'Round result' })).toBeVisible({ timeout: 1200 });
+         |                                                                                 ^
+      68 |     const before = JSON.parse((await pages[delayed].getByTestId('room-evidence').textContent())!);
+      69 |     expect(before.baselineBytes).toBe(0);
+      70 |     await expect.poll(async () => JSON.parse((await pages[delayed].getByTestId('room-evidence').textContent())!).baselineBytes).toBeGreaterThan(0);
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/finality.spec.ts:67:81
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g/browser-1792265680188/finality-outcome-precedes--d1801-a-recovery-baseline-seat-1-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g/browser-1792265680188/finality-outcome-precedes--d1801-a-recovery-baseline-seat-1-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iZML1g/browser-1792265680188/finality-outcome-precedes--d1801-a-recovery-baseline-seat-1-/error-context.md
+
+  2 failed
+    tests/browser/finality.spec.ts:5:31 › outcome precedes old room state and a recovery baseline (seat 0) 
+    tests/browser/finality.spec.ts:5:31 › outcome precedes old room state and a recovery baseline (seat 1) 
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T19-34-53.204Z
+ ELIFECYCLE  Command failed with exit code 1.

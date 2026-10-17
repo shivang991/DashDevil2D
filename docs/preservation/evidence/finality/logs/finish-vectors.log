@@ -1,0 +1,57 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/race.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (34 tests | 2 failed) 74ms
+   × shared finish: adjacent canonical microseconds select seat one 4ms
+   × shared finish: halfway crossing rounds upward 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts > shared finish: adjacent canonical microseconds select seat one
+AssertionError: expected 359.9996 to be close to 360, received difference is 0.0004000000000132786, but expected 5e-7
+ ❯ tests/session/race.test.ts:54:44
+     52|   game.advanceTo(1);
+     53|   expect(game.snapshot().finish).toEqual({ tick: scenario.tick, timeUs…
+     54|   expect(game.snapshot().cars[0].progress).toBeCloseTo(360, 6);
+       |                                            ^
+     55|   expect(game.snapshot().cars[0].lateral).toBeCloseTo(scenario.lateral…
+     56|   const final = game.snapshot(); game.advanceTo(2); expect(game.snapsh…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/session/race.test.ts > shared finish: halfway crossing rounds upward
+AssertionError: expected { tick: 2, timeUs: 25000, result: +0 } to deeply equal { tick: 2, timeUs: 25001, result: +0 }
+
+- Expected
++ Received
+
+  {
+    "result": 0,
+    "tick": 2,
+-   "timeUs": 25001,
++   "timeUs": 25000,
+  }
+
+ ❯ tests/session/race.test.ts:53:34
+     51|   game.restore(b.cars, 0);
+     52|   game.advanceTo(1);
+     53|   expect(game.snapshot().finish).toEqual({ tick: scenario.tick, timeUs…
+       |                                  ^
+     54|   expect(game.snapshot().cars[0].progress).toBeCloseTo(360, 6);
+     55|   expect(game.snapshot().cars[0].lateral).toBeCloseTo(scenario.lateral…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 32 passed (34)
+   Start at  12:30:52
+   Duration  277ms (tests 64%, transform 20%, import 14%, worker 2%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/race.test.ts"`
+Exit status 1

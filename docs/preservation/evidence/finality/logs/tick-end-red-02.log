@@ -1,0 +1,38 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/simulation/objects.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/simulation/objects.test.ts (17 tests | 1 failed) 29ms
+   × fatal contact at exact tick endpoint is not deferred 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/objects.test.ts > fatal contact at exact tick endpoint is not deferred
+AssertionError: expected [ 1, 3 ] to deeply equal [ +0, 3 ]
+
+- Expected
++ Received
+
+  [
+-   0,
++   1,
+    3,
+  ]
+
+ ❯ tests/simulation/objects.test.ts:14:51
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 16 passed (17)
+   Start at  12:36:48
+   Duration  177ms (tests 43%, transform 32%, import 21%, worker 4%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/simulation/objects.test.ts"`
+Exit status 1

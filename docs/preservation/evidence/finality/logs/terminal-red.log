@@ -1,0 +1,59 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/race.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (29 tests | 1 failed) 44ms
+   × terminal simulation state is immutable after disconnect and late input 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts > terminal simulation state is immutable after disconnect and late input
+AssertionError: expected { finish: { tick: 27, …(2) }, …(8) } to deeply equal { finish: { tick: 27, …(2) }, …(8) }
+
+- Expected
++ Received
+
+@@ -1,15 +1,15 @@
+  {
+    "abandoned": false,
+    "cars": [
+      {
+-       "controls": 3,
++       "controls": 0,
+        "departure": 0,
+-       "effective": 3,
+-       "flags": 1,
+-       "freshnessUs": 1000000,
+-       "heldMask": 4,
++       "effective": 0,
++       "flags": 0,
++       "freshnessUs": 0,
++       "heldMask": 0,
+        "hp": 3,
+        "inputGeneration": 1,
+        "lane": 0,
+        "lastInput": 1,
+        "lateral": -120,
+
+ ❯ tests/session/race.test.ts:290:27
+    288|   expect(game.submit(b.identity, { identity: b.identity, round: b.roun…
+    289|   expect(game.advanceTo(2)).toEqual([]);
+    290|   expect(game.snapshot()).toEqual(final);
+       |                           ^
+    291| });
+    292|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 28 passed (29)
+   Start at  12:30:21
+   Duration  253ms (transform 44%, tests 40%, import 14%, worker 2%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/race.test.ts"`
+Exit status 1

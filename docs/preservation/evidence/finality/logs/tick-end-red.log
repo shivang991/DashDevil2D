@@ -1,0 +1,57 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/simulation/objects.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/simulation/objects.test.ts (17 tests | 2 failed) 18ms
+   × both zero HP takes precedence over both finish crossings 4ms
+   × fatal contact at exact tick endpoint precedes finish 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/objects.test.ts > both zero HP takes precedence over both finish crossings
+AssertionError: expected [ 1, 1 ] to deeply equal [ +0, +0 ]
+
+- Expected
++ Received
+
+  [
+-   0,
+-   0,
++   1,
++   1,
+  ]
+
+ ❯ tests/simulation/objects.test.ts:14:51
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/simulation/objects.test.ts > fatal contact at exact tick endpoint precedes finish
+AssertionError: expected [ 1, 3 ] to deeply equal [ +0, 3 ]
+
+- Expected
++ Received
+
+  [
+-   0,
++   1,
+    3,
+  ]
+
+ ❯ tests/simulation/objects.test.ts:14:51
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 15 passed (17)
+   Start at  12:36:23
+   Duration  173ms (tests 33%, transform 33%, import 28%, worker 5%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/simulation/objects.test.ts"`
+Exit status 1

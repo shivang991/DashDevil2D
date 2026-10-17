@@ -1,0 +1,28 @@
+{"actual":{"tick":2,"timeUs":16667,"result":0},"expected":{"tick":2,"timeUs":16667,"result":2},"seed":1,"crossingsUs":[16666.6,16666.8],"tickBoundaryUs":16666.666666666668}
+node:internal/modules/run_main:111
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:
++ actual - expected
+
+  {
++   result: 0,
+-   result: 2,
+    tick: 2,
+    timeUs: 16667
+  }
+
+    at file:///Users/shivang/Desktop/programs/test/claude-code-test/docs/preservation/evidence/finality/cross-tick-probe.mjs:15:8
+    at ModuleJob.run (node:internal/modules/esm/module_job:569:25)
+    at async node:internal/modules/esm/loader:650:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: { tick: 2, timeUs: 16667, result: 0 },
+  expected: { tick: 2, timeUs: 16667, result: 2 },
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v26.10.0

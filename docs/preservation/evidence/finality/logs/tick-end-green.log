@@ -1,0 +1,13 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/simulation/objects.test.ts" "tests/session/race.test.ts" "tests/simulation/contacts.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+
+ Test Files  3 passed (3)
+      Tests  67 passed (67)
+   Start at  12:36:58
+   Duration  234ms (transform 49%, tests 33%, import 15%, worker 2%)
+
