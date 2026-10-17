@@ -884,7 +884,7 @@ export const layouts = {
     {
       "name": "command",
       "type": "u8",
-      "max": 3
+      "max": 4
     },
     {
       "name": "mode",
@@ -1386,6 +1386,48 @@ export const layouts = {
       "type": "Window",
       "array": 2
     }
+  ],
+  "RoomReply": [
+    {
+      "name": "identity",
+      "type": "Identity"
+    },
+    {
+      "name": "sequence",
+      "type": "u32"
+    },
+    {
+      "name": "revision",
+      "type": "u32"
+    },
+    {
+      "name": "accepted",
+      "type": "u8",
+      "max": 1
+    },
+    {
+      "name": "detail",
+      "type": "string",
+      "max": 512
+    }
+  ],
+  "RoomPulse": [
+    {
+      "name": "identity",
+      "type": "Identity"
+    },
+    {
+      "name": "sequence",
+      "type": "u32"
+    },
+    {
+      "name": "round",
+      "type": "Round"
+    },
+    {
+      "name": "serverUs",
+      "type": "us"
+    }
   ]
 } as const;
 export interface Identity {
@@ -1851,6 +1893,23 @@ export interface Coverage {
 }
 export function encodeCoverage(value: Coverage, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'Coverage', value, limit); }
 export function decodeCoverage(bytes: Uint8Array, limit = 1048576): Coverage { return decodeRecord(layouts, 'Coverage', bytes, limit) as Coverage; }
+export interface RoomReply {
+  identity: Identity;
+  sequence: number;
+  revision: number;
+  accepted: number;
+  detail: string;
+}
+export function encodeRoomReply(value: RoomReply, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'RoomReply', value, limit); }
+export function decodeRoomReply(bytes: Uint8Array, limit = 1048576): RoomReply { return decodeRecord(layouts, 'RoomReply', bytes, limit) as RoomReply; }
+export interface RoomPulse {
+  identity: Identity;
+  sequence: number;
+  round: Round;
+  serverUs: number;
+}
+export function encodeRoomPulse(value: RoomPulse, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'RoomPulse', value, limit); }
+export function decodeRoomPulse(bytes: Uint8Array, limit = 1048576): RoomPulse { return decodeRecord(layouts, 'RoomPulse', bytes, limit) as RoomPulse; }
 export const messageTypes = {
   "AdmissionRequest": {
     "id": 1,
@@ -1931,6 +1990,14 @@ export const messageTypes = {
   "Coverage": {
     "id": 20,
     "channel": "authority"
+  },
+  "RoomReply": {
+    "id": 21,
+    "channel": "room"
+  },
+  "RoomPulse": {
+    "id": 22,
+    "channel": "authority"
   }
 } as const;
 export interface Messages {
@@ -1954,6 +2021,8 @@ export interface Messages {
   Barrier: Barrier;
   BaselineChunk: BaselineChunk;
   Coverage: Coverage;
+  RoomReply: RoomReply;
+  RoomPulse: RoomPulse;
 }
 export function encodeMessage<K extends keyof Messages>(type: K, value: Messages[K], limit = 65536): Uint8Array { return encodeFrame(layouts, type, messageTypes[type].id, value, limit); }
 export function decodeMessage(bytes: Uint8Array, limit = 65536): { [K in keyof Messages]: { type: K; value: Messages[K] } }[keyof Messages] { return decodeFrame(layouts, messageTypes, bytes, limit) as ReturnType<typeof decodeMessage>; }

@@ -5,7 +5,8 @@
   "seed": 1,
   "requirements": [
     "https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562",
-    "https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6171130505"
+    "https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6171130505",
+    "Stage 5 room replies use explicit sequence/revision/acceptance; focus command 4 carries visible/focused state; RoomPulse is application liveness distinct from gameplay tick/time. Literal big-endian vectors independently authored with Python struct, not the production codec."
   ],
   "records": [
     {
@@ -1140,6 +1141,77 @@
         "detail": "﻿"
       },
       "hex": "0000000b0301000100000003efbbbf"
+    },
+    {
+      "name": "RoomReply accepted",
+      "type": "RoomReply",
+      "value": {
+        "identity": {
+          "roomId": 1,
+          "seatSession": 2,
+          "pairGeneration": 3,
+          "seat": 1
+        },
+        "sequence": 7,
+        "revision": 9,
+        "accepted": 1,
+        "detail": ""
+      },
+      "hex": "0000001b150000000100000002000000030100000007000000090100000000"
+    },
+    {
+      "name": "RoomReply rejected",
+      "type": "RoomReply",
+      "value": {
+        "identity": {
+          "roomId": 1,
+          "seatSession": 2,
+          "pairGeneration": 3,
+          "seat": 1
+        },
+        "sequence": 8,
+        "revision": 9,
+        "accepted": 0,
+        "detail": "Host only"
+      },
+      "hex": "00000024150000000100000002000000030100000008000000090000000009486f7374206f6e6c79"
+    },
+    {
+      "name": "RoomPulse",
+      "type": "RoomPulse",
+      "value": {
+        "identity": {
+          "roomId": 1,
+          "seatSession": 2,
+          "pairGeneration": 3,
+          "seat": 1
+        },
+        "sequence": 5,
+        "round": {
+          "roundId": 2,
+          "inputGeneration": 4
+        },
+        "serverUs": 3000000
+      },
+      "hex": "00000022160000000100000002000000030100000005000000020000000400000000002dc6c0"
+    },
+    {
+      "name": "RoomCommand hidden",
+      "type": "RoomCommand",
+      "value": {
+        "identity": {
+          "roomId": 1,
+          "seatSession": 2,
+          "pairGeneration": 3,
+          "seat": 1
+        },
+        "sequence": 10,
+        "revision": 9,
+        "command": 4,
+        "mode": 0,
+        "ready": 0
+      },
+      "hex": "0000001906000000010000000200000003010000000a00000009040000"
     }
   ],
   "malformed": [

@@ -159,7 +159,11 @@ func (s *Server) gameplay(w http.ResponseWriter, r *http.Request) {
 	pair.gameplay = session
 	pair.mu.Unlock()
 	defer pair.close("gameplay channel lost")
-	err = pair.runGameplay(session)
+	if s.config.Diagnostic {
+		err = pair.runGameplay(session)
+	} else {
+		err = pair.runRoomGameplay(session)
+	}
 	if err != nil {
 		pair.close(err.Error())
 		s.config.Logger.Info("gameplay_failure", "room", pair.identity.RoomId, "seat", pair.identity.Seat, "generation", pair.identity.PairGeneration, "reason", err.Error())

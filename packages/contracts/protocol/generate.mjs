@@ -23,6 +23,7 @@ ts += `export function encodeMessage<K extends keyof Messages>(type: K, value: M
 ts += `export function decodeMessage(bytes: Uint8Array, limit = 65536): { [K in keyof Messages]: { type: K; value: Messages[K] } }[keyof Messages] { return decodeFrame(layouts, messageTypes, bytes, limit) as ReturnType<typeof decodeMessage>; }\n`;
 ts += `export function projectBaseline(value: Baseline): Uint8Array { return projectRecord(layouts, 'Projection', { round: value.round, configurationId: value.context.configurationId, generationVersion: value.context.generationVersion, seed: value.context.seed, tick: value.tick, timeUs: value.timeUs, progress: value.progress, cars: value.cars, contact: value.contact, generator: value.generator, windows: value.windows }); }\n`;
 let go = '// Code generated from protocol/schema.json; DO NOT EDIT.\npackage protocol\n\n';
+go += `const DefaultConfigurationJSON = ${JSON.stringify(readFileSync(new URL('../configuration/defaults.json', import.meta.url), 'utf8'))}\n`;
 go += `const ProtocolVersion uint16 = ${schema.version}\n`;
 go += 'var layouts = map[string][]field{\n';
 for (const [name, fields] of Object.entries(schema.types)) go += `"${name}": {${fields.map(f => `{Name: "${title(f.name)}", Type: "${f.type}", Array: ${f.array ?? 0}, Fixed: ${f.fixed ?? false}, Max: ${f.max ?? 0}, Mask: ${f.mask ?? 0}, Projection: ${f.projection ?? false}, Bits: ${f.bits ?? 0}}`).join(',')}},\n`;

@@ -2,12 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
 import { GameWorld } from "@/components/GameWorld";
+import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
 
-type Screen = "menu" | "game";
+type Screen = "menu" | "game" | "multiplayer";
 
 function App() {
   const hasStarted = useRef(false);
+  const [mode, setMode] = useState<1 | 2>(1);
   const [countdown, setCountdown] = useState<5 | 3>(5);
   const [screen, setScreen] = useState<Screen>("menu");
   const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
@@ -26,8 +28,8 @@ function App() {
   return (
     <>
       {screen === "menu" ? (
-        <MenuScreen onStartGame={() => { gameAudio.unlock(); setCountdown(hasStarted.current ? 3 : 5); hasStarted.current = true; setScreen("game"); }} />
-      ) : (
+        <MenuScreen onMultiplayer={mode => { setMode(mode); setScreen("multiplayer"); }} onStartGame={() => { gameAudio.unlock(); setCountdown(hasStarted.current ? 3 : 5); hasStarted.current = true; setScreen("game"); }} />
+      ) : screen === "multiplayer" ? <MultiplayerScreen mode={mode} onBack={() => setScreen("menu")} /> : (
         <GameWorld countdown={countdown} onBack={() => setScreen("menu")} />
       )}
       <button

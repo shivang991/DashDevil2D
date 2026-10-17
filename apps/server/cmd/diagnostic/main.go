@@ -18,6 +18,7 @@ func main() {
 	flag.StringVar(&c.QUICCertificate, "quic-cert", "", "optional separate development WebTransport certificate PEM")
 	flag.StringVar(&c.QUICKey, "quic-key", "", "WebTransport private key PEM")
 	flag.StringVar(&c.StaticDirectory, "static", "", "built client directory (production)")
+	flag.BoolVar(&c.Diagnostic, "diagnostic", false, "stationary Stage 4 diagnostic instead of product rooms")
 	flag.Parse()
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	server, err := transport.New(c)

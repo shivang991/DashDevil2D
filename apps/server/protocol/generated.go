@@ -1,6 +1,7 @@
 // Code generated from protocol/schema.json; DO NOT EDIT.
 package protocol
 
+const DefaultConfigurationJSON = "{\n  \"version\": 1,\n  \"units\": {\n    \"distance\": \"world units\",\n    \"speed\": \"world units/second\",\n    \"duration\": \"seconds\",\n    \"rate\": \"inverse seconds\",\n    \"tickRate\": \"Hz\",\n    \"size\": \"bytes\"\n  },\n  \"fixed\": {\n    \"laneCount\": 3,\n    \"coinScore\": 10,\n    \"heartHealing\": 1,\n    \"predictionHorizon\": 1,\n    \"verificationDatagramBytes\": 10\n  },\n  \"gameplay\": {\n    \"long-drive\": {\n      \"maxHealth\": 2,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 10,\n      \"invincibleDuration\": 2.0,\n      \"laneLerpSpeed\": 10,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"minSpawnInterval\": 0.35,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"difficultyRampInterval\": 1,\n      \"roadSpeedIncrement\": 15,\n      \"maxRoadSpeed\": 900,\n      \"spawnIntervalDecrement\": 0.03,\n      \"startingRoadSpeed\": 400,\n      \"initialSpawnInterval\": 1,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 55,\n      \"coinWeight\": 45,\n      \"heartWeight\": 0\n    },\n    \"drag-race\": {\n      \"maxHealth\": 3,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 2,\n      \"invincibleDuration\": 0,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"maxRoadSpeed\": 400,\n      \"startingRoadSpeed\": 400,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 1,\n      \"coinWeight\": 0,\n      \"heartWeight\": 0,\n      \"tickRate\": 60,\n      \"speedGrowth\": 0,\n      \"laneShiftDuration\": 0.15,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"laneReturnDuration\": 0.15,\n      \"sliceSpacing\": 400,\n      \"initialClearDistance\": 800,\n      \"countdownDuration\": 3,\n      \"finishDistance\": 24000,\n      \"reservedHearts\": 4,\n      \"heartExclusionDistance\": 200\n    },\n    \"road-rage\": {\n      \"maxHealth\": 3,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 2,\n      \"invincibleDuration\": 2,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"maxRoadSpeed\": 400,\n      \"startingRoadSpeed\": 400,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 1,\n      \"coinWeight\": 0,\n      \"heartWeight\": 0,\n      \"tickRate\": 60,\n      \"speedGrowth\": 0,\n      \"laneShiftDuration\": 0.15,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"laneReturnDuration\": 0.15,\n      \"sliceSpacing\": 400,\n      \"initialClearDistance\": 800,\n      \"countdownDuration\": 3,\n      \"playerContactDamage\": 1,\n      \"timeLimit\": 120\n    }\n  },\n  \"presentation\": {\n    \"carBottomMargin\": 40,\n    \"accelCarOffset\": 80,\n    \"accelLerpSpeed\": 8,\n    \"blinkCount\": 3,\n    \"shakeDuration\": 0.5,\n    \"shakeIntensity\": 24,\n    \"narrowScreenWidth\": 320,\n    \"roadWidthRatioNarrow\": 1.0,\n    \"roadWidthRatioNormal\": 0.6,\n    \"carTiltMaxAngle\": 1,\n    \"carTiltLerpSpeed\": 12,\n    \"gameOverFadeMaxOpacity\": 0.75,\n    \"gameOverShakeMultiplier\": 1.5,\n    \"gameOverShakeDuration\": 0.5,\n    \"gameOverFadeSpeed\": 2,\n    \"correctionSmoothing\": 0.1\n  },\n  \"room\": {\n    \"reconnectGrace\": 15,\n    \"idleExpiry\": 900,\n    \"idleWarning\": 60\n  },\n  \"connection\": {\n    \"verificationInterval\": 0.1,\n    \"controlRefreshInterval\": 0.25,\n    \"controlFreshnessExpiry\": 1,\n    \"replayHistory\": 2,\n    \"clockSyncInterval\": 1,\n    \"clockSamples\": 8,\n    \"reliableFrameBytes\": 65536,\n    \"baselineBytes\": 1048576,\n    \"queueBytes\": 262144,\n    \"queueMessages\": 512,\n    \"essentialQueueWait\": 0.5,\n    \"essentialProgressDeadline\": 1,\n    \"inputRate\": 60,\n    \"inputBurst\": 120,\n    \"clockRequestRate\": 2,\n    \"recoveryRequestRate\": 1,\n    \"admissionTicketLifetime\": 30,\n    \"networkBytesPerSecond\": 16384,\n    \"networkBudgetWindow\": 60\n  },\n  \"operational\": {\n    \"simulationLagThreshold\": 1\n  }\n}\n"
 const ProtocolVersion uint16 = 1
 
 var layouts = map[string][]field{
@@ -26,7 +27,7 @@ var layouts = map[string][]field{
 	"ProtocolError":      {{Name: "Code", Type: "u8", Array: 0, Fixed: false, Max: 15, Mask: 0, Projection: false, Bits: 0}, {Name: "ExpectedVersion", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Detail", Type: "string", Array: 0, Fixed: false, Max: 512, Mask: 0, Projection: false, Bits: 0}},
 	"RoomInitialization": {{Name: "Version", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"RoomState":          {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Mode", Type: "u8", Array: 0, Fixed: false, Max: 2, Mask: 0, Projection: false, Bits: 0}, {Name: "Phase", Type: "u8", Array: 0, Fixed: false, Max: 3, Mask: 0, Projection: false, Bits: 0}, {Name: "Host", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}, {Name: "Seats", Type: "Seat", Array: 2, Fixed: true, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "RoundId", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "StartUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "IdleWarningUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "IdleExpiryUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
-	"RoomCommand":        {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Sequence", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Command", Type: "u8", Array: 0, Fixed: false, Max: 3, Mask: 0, Projection: false, Bits: 0}, {Name: "Mode", Type: "u8", Array: 0, Fixed: false, Max: 2, Mask: 0, Projection: false, Bits: 0}, {Name: "Ready", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}},
+	"RoomCommand":        {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Sequence", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Command", Type: "u8", Array: 0, Fixed: false, Max: 4, Mask: 0, Projection: false, Bits: 0}, {Name: "Mode", Type: "u8", Array: 0, Fixed: false, Max: 2, Mask: 0, Projection: false, Bits: 0}, {Name: "Ready", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}},
 	"Handshake":          {{Name: "Version", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "DatagramBytes", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"Initialization":     {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Context", Type: "Context", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"Ready":              {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "TransferId", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Epoch", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Progress", Type: "Progress", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
@@ -43,6 +44,8 @@ var layouts = map[string][]field{
 	"Verification":       {{Name: "Epoch", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Tick", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Crc", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"Projection":         {{Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "ConfigurationId", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "GenerationVersion", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Seed", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Tick", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "TimeUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Progress", Type: "Progress", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Cars", Type: "Car", Array: 2, Fixed: true, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Contact", Type: "Contact", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Generator", Type: "Generator", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Windows", Type: "Window", Array: 2, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"Coverage":           {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Authority", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Tick", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "TimeUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Progress", Type: "Progress", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Generator", Type: "Generator", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Windows", Type: "Window", Array: 2, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
+	"RoomReply":          {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Sequence", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Accepted", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}, {Name: "Detail", Type: "string", Array: 0, Fixed: false, Max: 512, Mask: 0, Projection: false, Bits: 0}},
+	"RoomPulse":          {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Sequence", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "ServerUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 }
 
 type Identity struct {
@@ -817,6 +820,39 @@ func DecodeCoverage(bytes []byte, limit int) (Coverage, error) {
 	err := decodeRecord("Coverage", bytes, &value, limit)
 	return value, err
 }
+
+type RoomReply struct {
+	Identity Identity `json:"identity"`
+	Sequence uint32   `json:"sequence"`
+	Revision uint32   `json:"revision"`
+	Accepted uint8    `json:"accepted"`
+	Detail   string   `json:"detail"`
+}
+
+func EncodeRoomReply(value RoomReply, limit int) ([]byte, error) {
+	return encodeRecord("RoomReply", value, limit, false)
+}
+func DecodeRoomReply(bytes []byte, limit int) (RoomReply, error) {
+	var value RoomReply
+	err := decodeRecord("RoomReply", bytes, &value, limit)
+	return value, err
+}
+
+type RoomPulse struct {
+	Identity Identity `json:"identity"`
+	Sequence uint32   `json:"sequence"`
+	Round    Round    `json:"round"`
+	ServerUs uint64   `json:"serverUs"`
+}
+
+func EncodeRoomPulse(value RoomPulse, limit int) ([]byte, error) {
+	return encodeRecord("RoomPulse", value, limit, false)
+}
+func DecodeRoomPulse(bytes []byte, limit int) (RoomPulse, error) {
+	var value RoomPulse
+	err := decodeRecord("RoomPulse", bytes, &value, limit)
+	return value, err
+}
 func ProjectBaseline(value Baseline) ([]byte, error) {
 	return encodeRecord("Projection", Projection{Round: value.Round, ConfigurationId: value.Context.ConfigurationId, GenerationVersion: value.Context.GenerationVersion, Seed: value.Context.Seed, Tick: value.Tick, TimeUs: value.TimeUs, Progress: value.Progress, Cars: value.Cars, Contact: value.Contact, Generator: value.Generator, Windows: value.Windows}, 1048576, true)
 }
@@ -862,6 +898,10 @@ func EncodeMessage(value any, limit int) ([]byte, error) {
 		return encodeFrame("BaselineChunk", 19, v, limit)
 	case Coverage:
 		return encodeFrame("Coverage", 20, v, limit)
+	case RoomReply:
+		return encodeFrame("RoomReply", 21, v, limit)
+	case RoomPulse:
+		return encodeFrame("RoomPulse", 22, v, limit)
 	default:
 		return nil, invalid("unknown message type")
 	}
@@ -912,6 +952,10 @@ func DecodeMessage(bytes []byte, limit int) (any, error) {
 		return DecodeBaselineChunk(body[1:], limit)
 	case 20:
 		return DecodeCoverage(body[1:], limit)
+	case 21:
+		return DecodeRoomReply(body[1:], limit)
+	case 22:
+		return DecodeRoomPulse(body[1:], limit)
 	default:
 		return nil, invalid("unknown message type")
 	}

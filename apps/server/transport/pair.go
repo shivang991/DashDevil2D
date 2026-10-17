@@ -3,9 +3,14 @@ package transport
 import (
 	"errors"
 	"fmt"
+
+	"crypto/rand"
+	"encoding/binary"
 	"github.com/gofiber/contrib/websocket"
 	wt "github.com/quic-go/webtransport-go"
+	"github.com/shivang991/DashDevil2D/apps/server/configuration"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	"math"
 	"sync"
 	"time"
 )
@@ -27,10 +32,11 @@ type pair struct {
 	closed          bool
 	once            sync.Once
 	done            chan struct{}
+	rounds          chan struct{}
 }
 
 func newPair(s *Server, seat *seat) *pair {
-	return &pair{server: s, seat: seat, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), capacity: make(chan struct{}, 1)}
+	return &pair{server: s, seat: seat, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), rounds: make(chan struct{}, 1), capacity: make(chan struct{}, 1)}
 }
 func (pair *pair) close(reason string) {
 	pair.once.Do(func() {
@@ -45,6 +51,7 @@ func (pair *pair) close(reason string) {
 			if pair.seat.deadline.IsZero() {
 				pair.seat.deadline = time.Now().Add(15 * time.Second)
 			}
+			s.cancelCountdownLocked(pair.seat.room)
 			pair.seat.connected = false
 			for _, other := range pair.seat.room.seats {
 				if other != nil {
@@ -55,6 +62,7 @@ func (pair *pair) close(reason string) {
 		}
 		s.mu.Unlock()
 		if ws != nil {
+			_ = ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(4001, reason), time.Now().Add(500*time.Millisecond))
 			ws.Close()
 		}
 		if game != nil {
@@ -102,8 +110,10 @@ func (s *Server) broadcast(r *room) {
 		if participant == nil || participant.pair == nil {
 			continue
 		}
-		state := p.RoomState{Identity: participant.pair.identity, Revision: r.revision, Mode: 1, Host: r.host, RoundId: 1, IdleExpiryUs: s.nowUs() + uint64(max(time.Until(r.idle).Microseconds(), 0))}
-		state.IdleWarningUs = state.IdleExpiryUs - 60000000
+		state := p.RoomState{Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: s.nowUs() + uint64(max(time.Until(r.idle).Microseconds(), 0))}
+		if state.IdleExpiryUs >= 60000000 {
+			state.IdleWarningUs = state.IdleExpiryUs - 60000000
+		}
 		for i, seat := range r.seats {
 			if seat == nil {
 				continue
@@ -213,8 +223,16 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 			s.broadcast(pair.seat.room)
 			pair.connectIfReady()
 		case p.RoomCommand:
-			if err = pair.roomCommand(value); err != nil {
-				pair.enqueueRoom(p.ProtocolError{Code: 3, ExpectedVersion: 1, Detail: err.Error()})
+			err = pair.roomCommand(value)
+			s.mu.Lock()
+			revision := pair.seat.room.revision
+			s.mu.Unlock()
+			reply := p.RoomReply{Identity: pair.identity, Sequence: value.Sequence, Revision: revision, Accepted: 1}
+			if err != nil {
+				reply.Accepted = 0
+				reply.Detail = err.Error()
+			}
+			if pair.enqueueRoom(reply) != nil {
 				return
 			}
 		default:
@@ -248,14 +266,20 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	s.mu.Lock()
 	participant := pair.seat
 	r := participant.room
-	if participant.pair != pair || participant.room.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence {
+	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence {
 		s.mu.Unlock()
 		return fmt.Errorf("stale room command")
 	}
 	pair.roomSequence = command.Sequence
 	if command.Command == 3 {
+		s.cancelCountdownLocked(r)
 		delete(s.credentials, token(participant.credential))
 		r.seats[participant.index] = nil
+		for _, other := range r.seats {
+			if other != nil {
+				other.ready = false
+			}
+		}
 		if r.host == participant.index {
 			r.host = 1 - r.host
 		}
@@ -268,13 +292,101 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		s.broadcast(r)
 		return nil
 	}
-	if !participant.connected || command.Revision != r.revision || command.Command != 1 {
+	// Focus-loss and unready are safety actions: apply even against an older revision.
+	safety := command.Command == 4 || command.Command == 1 && command.Ready == 0
+	if !participant.connected || (!safety && command.Revision != r.revision) {
 		s.mu.Unlock()
-		return fmt.Errorf("diagnostic readiness requires initialized pair; round start is unavailable")
+		return fmt.Errorf("Room changed; try again")
 	}
-	participant.ready = command.Ready == 1
+	switch command.Command {
+	case 0:
+		if r.phase != 0 || participant.index != r.host || (command.Mode != 1 && command.Mode != 2) {
+			s.mu.Unlock()
+			return fmt.Errorf("Only host may select a mode in the lobby")
+		}
+		if r.mode != command.Mode {
+			mode := "drag-race"
+			if command.Mode == 2 {
+				mode = "road-rage"
+			}
+			definition := []byte(p.DefaultConfigurationJSON)
+			config, e := configuration.Capture(definition, mode, nil)
+			if e != nil {
+				s.mu.Unlock()
+				return e
+			}
+			r.settings = config
+			r.mode = command.Mode
+			for _, other := range r.seats {
+				if other != nil {
+					other.ready = false
+				}
+			}
+		}
+	case 1:
+		if r.phase != 0 || command.Ready == 1 && !participant.focused {
+			s.mu.Unlock()
+			return fmt.Errorf("Ready requires a focused, visible lobby")
+		}
+		participant.ready = command.Ready == 1
+	case 2:
+		if r.phase != 0 || participant.index != r.host {
+			s.mu.Unlock()
+			return fmt.Errorf("Only host may start from the lobby")
+		}
+		for _, other := range r.seats {
+			if other == nil || !other.connected || !other.ready || !other.focused {
+				s.mu.Unlock()
+				return fmt.Errorf("Two connected, focused, ready players required")
+			}
+		}
+		if r.roundID == math.MaxUint32 || r.seats[0].inputGeneration == math.MaxUint32 || r.seats[1].inputGeneration == math.MaxUint32 {
+			s.mu.Unlock()
+			return fmt.Errorf("Round counter exhausted")
+		}
+		var seed [4]byte
+		if _, err := rand.Read(seed[:]); err != nil {
+			s.mu.Unlock()
+			return err
+		}
+		r.seed = binary.BigEndian.Uint32(seed[:])
+		if r.seed == 0 {
+			r.seed = 1
+		}
+		for _, seat := range r.seats {
+			seat.inputGeneration++
+		}
+		r.roundID++
+		r.phase = 1
+		r.startUs = s.nowUs() + uint64(r.settings.Value("gameplay", "countdownDuration")*1e6)
+		if e := s.prepareRoundLocked(r); e != nil {
+			s.cancelCountdownLocked(r)
+			s.mu.Unlock()
+			return e
+		}
+		for _, other := range r.seats {
+			other.installedRound = 0
+			select {
+			case other.pair.rounds <- struct{}{}:
+			default:
+			}
+		}
+	case 4:
+		participant.focused = command.Ready == 1
+		if !participant.focused {
+			participant.ready = false
+			if command.Mode == 0 {
+				s.cancelCountdownLocked(r)
+			}
+		}
+	default:
+		s.mu.Unlock()
+		return fmt.Errorf("Unknown room command")
+	}
 	r.revision++
-	r.idle = time.Now().Add(15 * time.Minute)
+	if command.Command <= 2 {
+		r.idle = time.Now().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
+	}
 	s.mu.Unlock()
 	s.broadcast(r)
 	return nil

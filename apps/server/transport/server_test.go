@@ -60,9 +60,12 @@ func localCertificate(t *testing.T) (string, string, *x509.CertPool) {
 	return certPath, keyPath, roots
 }
 func server(t *testing.T) (*transport.Server, *http.Client, *x509.CertPool) {
+	return serverMode(t, true)
+}
+func serverMode(t *testing.T, diagnostic bool) (*transport.Server, *http.Client, *x509.CertPool) {
 	t.Helper()
 	cert, key, roots := localCertificate(t)
-	s, err := transport.New(transport.Config{Address: "127.0.0.1:0", Origin: origin, Certificate: cert, Key: key})
+	s, err := transport.New(transport.Config{Address: "127.0.0.1:0", Origin: origin, Certificate: cert, Key: key, Diagnostic: diagnostic})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -385,9 +388,28 @@ func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a 
 	if acknowledge {
 		go func() {
 			for {
+				if _, e := readTestFrame(control); e != nil {
+					return
+				}
+			}
+		}()
+		go func() {
+			for {
 				record, e := readTestFrame(authority)
 				if e != nil {
 					return
+				}
+				if pulse, ok := record.(p.RoomPulse); ok {
+					wire, _ := p.EncodeMessage(pulse, 65536)
+					if _, e = control.Write(wire); e != nil {
+						return
+					}
+				}
+				if chunk, ok := record.(p.BaselineChunk); ok {
+					wire, _ := p.EncodeMessage(p.Ready{Identity: a.Identity, Round: chunk.Round, TransferId: chunk.TransferId, Epoch: chunk.Epoch, Progress: chunk.Progress}, 65536)
+					if _, e = control.Write(wire); e != nil {
+						return
+					}
 				}
 				if barrier, ok := record.(p.Barrier); ok {
 					wire, e := p.EncodeMessage(p.AuthorityAck{Identity: a.Identity, Round: initialization.Round, Epoch: barrier.Epoch, Tick: barrier.Tick, Progress: barrier.Progress}, 65536)

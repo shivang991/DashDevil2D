@@ -18,7 +18,8 @@
     "generate": "turbo run generate",
     "check:generated": "pnpm --filter @dashdevil/contracts check:generated",
     "dev:transport": "node apps/client/scripts/transport.mjs",
-    "test:transport": "node apps/client/scripts/transport.mjs --test"
+    "test:transport": "node apps/client/scripts/transport.mjs --test",
+    "test:rooms": "node apps/client/scripts/transport.mjs --test --rooms"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

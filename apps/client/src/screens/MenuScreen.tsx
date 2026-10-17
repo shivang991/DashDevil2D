@@ -1,7 +1,9 @@
+import { localName } from '@/transport/localName';
 import { ArrowRight } from "lucide-react";
 
 interface MenuScreenProps {
   onStartGame: () => void;
+  onMultiplayer: (mode: 1 | 2) => void;
 }
 
 interface MenuItemProps {
@@ -39,7 +41,7 @@ function MenuItem({ title, subtitle, onClick, disabled, comingSoon }: MenuItemPr
   );
 }
 
-export function MenuScreen({ onStartGame }: MenuScreenProps) {
+export function MenuScreen({ onStartGame, onMultiplayer }: MenuScreenProps) {
   return (
     <div className="flex items-center justify-center w-screen h-screen bg-neutral-950 overflow-hidden">
       <div className="flex flex-col w-[320px] sm:w-96 gap-6 p-6">
@@ -48,6 +50,7 @@ export function MenuScreen({ onStartGame }: MenuScreenProps) {
           <h1 className="text-white text-xl tracking-wide">Branding</h1>
         </div>
 
+        <p className="text-neutral-400 text-sm">{localName()}</p>
         {/* Menu items */}
         <div className="flex flex-col gap-3">
           <MenuItem
@@ -55,11 +58,11 @@ export function MenuScreen({ onStartGame }: MenuScreenProps) {
             subtitle="Single player runner"
             onClick={onStartGame}
           />
+          <MenuItem title="Drag Race" subtitle="Private two-player race" onClick={() => onMultiplayer(1)} />
           <MenuItem
             title="Road Rage"
             subtitle="Multiplayer aggressive run"
-            disabled
-            comingSoon
+            onClick={() => onMultiplayer(2)}
           />
         </div>
       </div>

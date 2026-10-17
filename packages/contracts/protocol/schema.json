@@ -886,7 +886,7 @@
       {
         "name": "command",
         "type": "u8",
-        "max": 3
+        "max": 4
       },
       {
         "name": "mode",
@@ -1388,6 +1388,48 @@
         "type": "Window",
         "array": 2
       }
+    ],
+    "RoomReply": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "sequence",
+        "type": "u32"
+      },
+      {
+        "name": "revision",
+        "type": "u32"
+      },
+      {
+        "name": "accepted",
+        "type": "u8",
+        "max": 1
+      },
+      {
+        "name": "detail",
+        "type": "string",
+        "max": 512
+      }
+    ],
+    "RoomPulse": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "sequence",
+        "type": "u32"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "serverUs",
+        "type": "us"
+      }
     ]
   },
   "messages": {
@@ -1470,6 +1512,14 @@
     "Coverage": {
       "id": 20,
       "channel": "authority"
+    },
+    "RoomReply": {
+      "id": 21,
+      "channel": "room"
+    },
+    "RoomPulse": {
+      "id": 22,
+      "channel": "authority"
     }
   },
   "enums": {
@@ -1528,7 +1578,8 @@
       "select-mode",
       "ready",
       "start",
-      "leave"
+      "leave",
+      "focus"
     ],
     "outcomeResult": [
       "player1-win",

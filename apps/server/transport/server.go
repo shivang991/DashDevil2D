@@ -6,8 +6,11 @@ import (
 	"crypto/rand"
 	"crypto/tls"
 	"encoding/base64"
+	"encoding/binary"
+
 	"errors"
 	"fmt"
+	"github.com/shivang991/DashDevil2D/apps/server/configuration"
 	"log/slog"
 	"math"
 	"math/big"
@@ -33,6 +36,7 @@ const frameLimit = 65536
 type Config struct {
 	Address, Origin, Certificate, Key, QUICCertificate, QUICKey, StaticDirectory string
 	Logger                                                                       *slog.Logger
+	Diagnostic                                                                   bool
 }
 type Server struct {
 	config       Config
@@ -51,11 +55,19 @@ type Server struct {
 	errors       chan error
 }
 type room struct {
+	phase    uint8
+	roundID  uint32
+	startUs  uint64
+	seed     uint32
+	zero     *p.Baseline
+	settings configuration.Configuration
+
 	id       uint32
 	code     string
 	seats    [2]*seat
 	revision uint32
 	host     uint8
+	mode     uint8
 	idle     time.Time
 }
 type seat struct {
@@ -68,6 +80,9 @@ type seat struct {
 	pair             *pair
 	deadline         time.Time
 	connected, ready bool
+	focused          bool
+	installedRound   uint32
+	inputGeneration  uint32
 }
 type ticket struct {
 	seat            *seat
@@ -281,7 +296,35 @@ func (s *Server) admission(c *fiber.Ctx) error {
 				return s.failure(c, 503, 2, "Identity exhausted")
 			}
 			s.nextID++
-			r = &room{id: s.nextID, code: code, revision: 1, idle: now.Add(15 * time.Minute)}
+			r = &room{id: s.nextID, code: code, revision: 1, mode: 1, idle: now.Add(15 * time.Minute)}
+			mode := uint8(1)
+			if c.Query("mode") == "2" {
+				mode = 2
+			} else if c.Query("mode") != "" && c.Query("mode") != "1" {
+				s.mu.Unlock()
+				return s.failure(c, 400, 2, "Invalid mode")
+			}
+			r.mode = mode
+			r.roundID = 1
+			var seed [4]byte
+			if _, e := rand.Read(seed[:]); e != nil {
+				s.mu.Unlock()
+				return s.failure(c, 503, 2, "Unable to connect")
+			}
+			r.seed = binary.BigEndian.Uint32(seed[:])
+			if r.seed == 0 {
+				r.seed = 1
+			}
+			modeName := "drag-race"
+			if mode == 2 {
+				modeName = "road-rage"
+			}
+			definition := []byte(p.DefaultConfigurationJSON)
+			r.settings, err = configuration.Capture(definition, modeName, nil)
+			if err != nil {
+				s.mu.Unlock()
+				return s.failure(c, 503, 2, "Invalid configuration")
+			}
 			s.rooms[code] = r
 		} else {
 			if len(request.Code) != 4 {
@@ -300,6 +343,10 @@ func (s *Server) admission(c *fiber.Ctx) error {
 				return s.failure(c, 404, 5, "Room not found")
 			}
 		}
+		if r.phase == 1 || r.phase == 2 {
+			s.mu.Unlock()
+			return s.failure(c, 409, 6, "Round in progress")
+		}
 		index := uint8(0)
 		if r.seats[0] != nil {
 			index = 1
@@ -313,7 +360,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			return s.failure(c, 503, 2, "Identity exhausted")
 		}
 		s.nextID++
-		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, credential: credential, deadline: now.Add(15 * time.Second)}
+		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(15 * time.Second)}
 		r.seats[index] = participant
 		r.idle = now.Add(15 * time.Minute)
 		s.credentials[token(credential)] = participant
@@ -331,7 +378,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		s.mu.Unlock()
 		return s.failure(c, 400, 2, "Invalid admission")
 	}
-	if participant.generation == math.MaxUint32 {
+	if participant.generation == math.MaxUint32 || participant.inputGeneration == math.MaxUint32 {
 		s.mu.Unlock()
 		return s.failure(c, 409, 2, "Connection generation exhausted")
 	}
@@ -340,6 +387,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	if participant.deadline.IsZero() {
 		participant.deadline = now.Add(15 * time.Second)
 	}
+	s.cancelCountdownLocked(participant.room)
 	participant.connected = false
 	participant.ready = false
 	for _, other := range participant.room.seats {
@@ -348,6 +396,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		}
 	}
 	participant.generation++
+	participant.inputGeneration++
 	pair := newPair(s, participant)
 	participant.pair = pair
 	for key, t := range s.tickets {
@@ -388,7 +437,7 @@ func (s *Server) expireLocked(now time.Time) []*room {
 	for code, r := range s.rooms {
 		modified := false
 		for i, seat := range r.seats {
-			if seat != nil && (!seat.deadline.IsZero() && !now.Before(seat.deadline) || !now.Before(r.idle)) {
+			if seat != nil && (!seat.deadline.IsZero() && !now.Before(seat.deadline) || ((r.phase == 0 || r.phase == 3) && !now.Before(r.idle))) {
 				delete(s.credentials, token(seat.credential))
 				for k, t := range s.tickets {
 					if t.seat == seat {
@@ -396,6 +445,7 @@ func (s *Server) expireLocked(now time.Time) []*room {
 					}
 				}
 				r.seats[i] = nil
+				s.cancelCountdownLocked(r)
 				modified = true
 				if seat.pair != nil {
 					go seat.pair.close("reservation expired")
@@ -430,6 +480,7 @@ func (s *Server) sweep() {
 		case now := <-ticker.C:
 			s.mu.Lock()
 			changed := s.expireLocked(now)
+			changed = append(changed, s.advanceCountdownsLocked()...)
 			s.mu.Unlock()
 			for _, r := range changed {
 				s.broadcast(r)
