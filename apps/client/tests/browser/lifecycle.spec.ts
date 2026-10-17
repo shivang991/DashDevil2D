@@ -6,6 +6,8 @@ test('default course: native menu controls, recovered authority, shared results 
   const contexts = await Promise.all([browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } }), browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } })]);
   const pages = await Promise.all(contexts.map(context => context.newPage()));
   const records: unknown[] = [];
+  const pageErrors: string[] = [];
+  for (const page of pages) page.on('pageerror', error => pageErrors.push(error.message));
   try {
     // Retain a handle only to the native transport boundary, never a product setter.
     await pages[1].addInitScript(() => {
@@ -106,7 +108,9 @@ test('default course: native menu controls, recovered authority, shared results 
     const again = await Promise.all(pages.map(async page => JSON.parse((await page.getByTestId('outcome-evidence').textContent())!)));
     expect(again[0].roundId).toBe(rematch[0].roundId); expect(again[0].cars).toEqual(again[1].cars); expect(again[0].timeUs).toBe(again[1].timeUs);
     records.push({ again, states: await Promise.all(pages.map(read)), environments: await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, viewport: [innerWidth, innerHeight] })))) });
+    expect(pageErrors).toEqual([]);
   } finally {
+    records.push({ pageErrors });
     await info.attach('lifecycle.json', { body: JSON.stringify(records), contentType: 'application/json' });
     await Promise.all(contexts.map(context => context.close()));
   }
@@ -117,6 +121,8 @@ test('suspension restores a fresh generation; forfeit survives reload and replac
   const contexts = await Promise.all([browser.newContext({ baseURL }), browser.newContext({ baseURL }), browser.newContext({ baseURL })]);
   const pages = await Promise.all(contexts.map(context => context.newPage()));
   const records: unknown[] = [];
+  const pageErrors: string[] = [];
+  for (const page of pages) page.on('pageerror', error => pageErrors.push(error.message));
   try {
     await pages[0].addInitScript(() => {
       const Native = window.WebTransport;
@@ -190,7 +196,9 @@ test('suspension restores a fresh generation; forfeit survives reload and replac
     await expect(pages[0].getByRole('button', { name: 'Start round' })).toBeDisabled();
     records.push({ outcome, recoveredOutcome, final: await Promise.all([pages[0], pages[2]].map(read)) });
     await info.attach('replacement-lobby.png', { body: await pages[2].screenshot({ fullPage: true }), contentType: 'image/png' });
+    expect(pageErrors).toEqual([]);
   } finally {
+    records.push({ pageErrors });
     await info.attach('suspension-forfeit.json', { body: JSON.stringify(records), contentType: 'application/json' });
     await Promise.all(contexts.map(context => context.close()));
   }
