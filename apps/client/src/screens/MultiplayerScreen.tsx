@@ -88,7 +88,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
         </>}
         <button className={button} onClick={() => { connection.current?.releaseControls(); if (countdown || active) setConfirmLeave(true); else leave(); }}>Leave</button>
         {(countdown || active) && <p className="text-sm text-neutral-400">Round time: <span data-testid="round-time">{state?.timeUs ?? 0}</span></p>}
-        <details><summary className="cursor-pointer text-sm text-neutral-400">Connection details</summary><pre className="text-xs overflow-auto" data-testid="room-evidence">{JSON.stringify({ roundId: state?.roundId, startUs: state?.startUs, timeUs: state?.timeUs, seed: state?.seed, cars: state?.cars, identity: state?.identity, roomRevision: room!.revision, diagnostics: state?.diagnostics, verified: state?.verified, errors: state?.errors, baselineBytes: state?.baselineBytes }, null, 2)}</pre></details>
+        <details><summary className="cursor-pointer text-sm text-neutral-400">Connection details</summary><pre className="text-xs overflow-auto" data-testid="room-evidence">{JSON.stringify({ roundId: state?.roundId, startUs: state?.startUs, timeUs: state?.timeUs, seed: state?.seed, context: state?.context, objects: state?.objects, cars: state?.cars, identity: state?.identity, roomRevision: room!.revision, diagnostics: state?.diagnostics, verified: state?.verified, errors: state?.errors, baselineBytes: state?.baselineBytes }, null, 2)}</pre></details>
       </>}
       {state?.pending && <p role="status">{state.pending}…</p>}
       {state?.notice && <p role="alert">{state.notice}</p>}

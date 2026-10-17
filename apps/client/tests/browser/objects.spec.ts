@@ -29,12 +29,15 @@ test(hearts ? 'two actual browsers contend for reserved hearts and confirm finis
         const page = pages[seat], lane = seat === 0 ? 0 : 2;
         if (lane !== heart.lane) {
           const key = heart.lane > lane ? 'ArrowRight' : 'ArrowLeft';
-          await page.getByRole('img', { name: 'Multiplayer race' }).focus(); await page.keyboard.down(key);
-          await expect.poll(async () => (await read(page)).cars?.[seat].lane, { intervals: [20], timeout: 1500 }).toBe(heart.lane);
-          await page.keyboard.up(key);
+          await page.getByRole('img', { name: 'Multiplayer race' }).focus();
+          for (let step = lane; step !== heart.lane;) {
+            step += heart.lane > step ? 1 : -1;
+            await page.keyboard.press(key);
+            await expect.poll(async () => { const car = (await read(page)).cars?.[seat]; return car?.phase === 0 ? car.lane : -1; }, { intervals: [20], timeout: 1500 }).toBe(step);
+          }
         }
       }
-      await expect.poll(async () => (await read(pages[0])).objects?.find(object => object.id === heart.id)?.flags, { timeout: 4000 }).toBe(7);
+      await expect.poll(async () => (await read(pages[0])).objects?.find(object => object.id === heart.id)?.flags, { intervals: [20], timeout: 4000 }).toBe(7);
       const collected = await Promise.all(pages.map(read)); observations.push(collected);
       expect(collected[0].cars?.map(car => car.hp)).toEqual([3, 3]);
       await info.attach('shared-heart.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
