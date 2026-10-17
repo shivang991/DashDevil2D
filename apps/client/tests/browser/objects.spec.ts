@@ -37,11 +37,15 @@ test(hearts ? 'two actual browsers contend for reserved hearts and confirm finis
           }
         }
       }
+      await expect.poll(async () => (await read(pages[0])).cars?.[0].progress ?? 0, { intervals: [20] }).toBeGreaterThanOrEqual(600);
+      await info.attach('reserved-heart-visible.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
       await expect.poll(async () => (await read(pages[0])).objects?.find(object => object.id === heart.id)?.flags, { intervals: [20], timeout: 4000 }).toBe(7);
       const collected = await Promise.all(pages.map(read)); observations.push(collected);
       expect(collected[0].cars?.map(car => car.hp)).toEqual([3, 3]);
       await info.attach('shared-heart.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
     } else {
+      await expect.poll(async () => (await read(pages[0])).cars?.[0].progress ?? 0, { intervals: [20] }).toBeGreaterThanOrEqual(1000);
+      await info.attach('default-obstacle-visible.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
       await expect.poll(async () => (await read(pages[0])).cars?.some(car => car.hp < 3), { timeout: 20000 }).toBe(true);
       observations.push(await Promise.all(pages.map(read)));
       await info.attach('default-course-hit.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
