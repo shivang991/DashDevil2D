@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "implementationRevision": "e1ab0b3",
+  "startingRevision": "ed23fe4c98fbbea7c5b72acc2b4fac4aac2690e8",
+  "fixtureVersion": 1,
+  "precision": {
+    "absolute": 1e-06,
+    "relative": 1e-12
+  },
+  "scenarios": [
+    {
+      "leader": 0,
+      "seed": 1918875810,
+      "identities": [
+        {
+          "roomId": 1,
+          "seatSession": 2,
+          "pairGeneration": 1,
+          "seat": 0
+        },
+        {
+          "roomId": 1,
+          "seatSession": 3,
+          "pairGeneration": 1,
+          "seat": 1
+        }
+      ],
+      "observationCounts": [
+        684,
+        684
+      ],
+      "strictOverlapObservations": [],
+      "resultByClient": [
+        1,
+        1
+      ],
+      "finishTimeUsByClient": [
+        6989583,
+        6989583
+      ],
+      "hpByClient": [
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "width": 1280,
+          "height": 900
+        }
+      ],
+      "rawEvidence": "apps/client/test-results/contacts-implementation/extracts/seat-0-contacts.json",
+      "sha256": "53bc2a239318b1a83c29ce40369027c8a9ace75979fa777fdcb777eec9c96c47"
+    },
+    {
+      "leader": 1,
+      "seed": 2719985779,
+      "identities": [
+        {
+          "roomId": 4,
+          "seatSession": 5,
+          "pairGeneration": 1,
+          "seat": 0
+        },
+        {
+          "roomId": 4,
+          "seatSession": 6,
+          "pairGeneration": 1,
+          "seat": 1
+        }
+      ],
+      "observationCounts": [
+        706,
+        708
+      ],
+      "strictOverlapObservations": [],
+      "resultByClient": [
+        0,
+        0
+      ],
+      "finishTimeUsByClient": [
+        6947917,
+        6947917
+      ],
+      "hpByClient": [
+        [
+          3,
+          3
+        ],
+        [
+          3,
+          3
+        ]
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "width": 1280,
+          "height": 900
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "width": 1280,
+          "height": 900
+        }
+      ],
+      "rawEvidence": "apps/client/test-results/contacts-implementation/extracts/seat-1-contacts.json",
+      "sha256": "48acc355861f951e3abbca8e2c44da83eed783be28930db077ba04d317118e1b"
+    }
+  ],
+  "fixtureSha256": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+  "configurationSha256": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d"
+}

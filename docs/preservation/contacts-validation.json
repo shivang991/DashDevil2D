@@ -1,0 +1,280 @@
+{
+  "version": 1,
+  "date": "2026-10-17",
+  "timezone": "America/Phoenix",
+  "implementationRevision": "e1ab0b3",
+  "reviews": {
+    "standards": "contacts-review.md#standards",
+    "spec": "contacts-review.md#spec"
+  },
+  "workspace": {
+    "tasksPassed": 15,
+    "cachedTasks": 0,
+    "vitestPassed": 302,
+    "go": "vet, tests, build; all packages passed",
+    "generated": "passed"
+  },
+  "runs": {
+    "workspace": {
+      "log": "apps/client/test-results/contacts-implementation/logs/check-final.log",
+      "sha256": "6f9e013facbd14aff9fe63eecceefcf67cac33d0f8d6594a3f3cd74d3e4daee9"
+    },
+    "contacts": {
+      "log": "apps/client/test-results/contacts-implementation/logs/contacts-final.log",
+      "sha256": "1ad950acf40689f572a3c6ec5793125a06d077d4eebd1efa65d10904683fce82",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T06-27-35.456Z",
+      "manifest": {
+        "version": 1,
+        "fixture": "validated infra/contacts-track.json; swept returns, overtaking and persistent tailgating",
+        "revision": "ed23fe4c98fbbea7c5b72acc2b4fac4aac2690e8",
+        "dirty": " M .github/workflows/preservation.yml\n M apps/client/playwright.config.ts\n M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/tests/browser/objects.spec.ts\n M apps/client/tests/simulation/multiplayer.test.ts\n M apps/server/simulation/objects.go\n M apps/server/simulation/simulation.go\n M apps/server/transport/race.go\n M package.json\n M packages/simulation/multiplayer.ts\n?? apps/client/tests/browser/contacts.spec.ts\n?? apps/client/tests/simulation/contacts.test.ts\n?? apps/server/simulation/contacts.go\n?? apps/server/simulation/contacts_test.go\n?? docs/preservation/evidence/contacts/\n?? infra/contacts-track.json\n?? packages/contracts/race/contacts.json\n",
+        "hashes": {
+          "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+          "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+          "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+          "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+          "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+          "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+          "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+          "infra/contacts-track.json": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d",
+          "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+          "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+          "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+          "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+        },
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+        "exitCode": 0,
+        "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-HB2Puv"
+      }
+    },
+    "hearts": {
+      "log": "apps/client/test-results/contacts-implementation/logs/hearts-final.log",
+      "sha256": "cf227e557fb5d1197154f64c37e4f71f44020739bdf2e63db3c3b4db09da6d94",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T06-27-51.073Z",
+      "manifest": {
+        "version": 1,
+        "fixture": "validated infra/hearts-track.json; reserved heart contention and confirmed finish",
+        "revision": "e1ab0b34edb7824704a893d7e6e127d536e157d6",
+        "dirty": "?? docs/preservation/evidence/contacts/browser-first.log\n?? docs/preservation/evidence/contacts/check-final.log\n?? docs/preservation/evidence/contacts/check-first.log\n?? docs/preservation/evidence/contacts/contacts-final.log\n?? docs/preservation/evidence/contacts/hearts-final.log\n?? docs/preservation/evidence/contacts/typecheck.log\n",
+        "hashes": {
+          "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+          "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+          "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+          "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+          "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+          "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+          "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+          "infra/contacts-track.json": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d",
+          "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+          "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+          "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+          "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+        },
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+        "exitCode": 0,
+        "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sByBrA"
+      }
+    },
+    "race-original": {
+      "log": "apps/client/test-results/contacts-implementation/logs/race-final.log",
+      "sha256": "57b3d4718362bfbf09724243115cc303ddd649d5d2aaf5dd34986035d26ad959",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T06-28-24.242Z",
+      "manifest": {
+        "version": 1,
+        "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+        "revision": "e1ab0b34edb7824704a893d7e6e127d536e157d6",
+        "dirty": "?? docs/preservation/evidence/contacts/browser-first.log\n?? docs/preservation/evidence/contacts/check-final.log\n?? docs/preservation/evidence/contacts/check-first.log\n?? docs/preservation/evidence/contacts/contacts-final.log\n?? docs/preservation/evidence/contacts/hearts-final.log\n?? docs/preservation/evidence/contacts/race-final.log\n?? docs/preservation/evidence/contacts/typecheck.log\n",
+        "hashes": {
+          "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+          "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+          "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+          "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+          "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+          "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+          "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+          "infra/contacts-track.json": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d",
+          "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+          "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+          "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+          "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+        },
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+        "exitCode": 1,
+        "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-BSbKzn"
+      }
+    },
+    "race-retry": {
+      "log": "apps/client/test-results/contacts-implementation/logs/race-retry.log",
+      "sha256": "a971c782ce4ca9dff0ca0f8423acbb22614e9e59087a3e7db4c06e65dc809fd9",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T11-39-07.000Z",
+      "manifest": {
+        "version": 1,
+        "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+        "revision": "e1ab0b34edb7824704a893d7e6e127d536e157d6",
+        "dirty": " M docs/preservation/contacts-checkpoint.md\n M docs/preservation/evidence/contacts/attempts.md\n D docs/preservation/evidence/contacts/boundary-red.log\n?? docs/preservation/evidence/contacts/fixture-review.md\n?? docs/preservation/evidence/contacts/spec-review.md\n?? docs/preservation/evidence/contacts/standards-review.md\n",
+        "hashes": {
+          "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+          "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+          "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+          "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+          "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+          "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+          "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+          "infra/contacts-track.json": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d",
+          "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+          "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+          "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+          "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+        },
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+        "exitCode": 0,
+        "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-VYAYo0"
+      }
+    },
+    "objects": {
+      "log": "apps/client/test-results/contacts-implementation/logs/objects-final.log",
+      "sha256": "956c74b5a336f7f36ecdd54a17ddbbc353e3401716f728306395da74795426b7",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T11-39-42.035Z",
+      "manifest": {
+        "version": 1,
+        "fixture": "shipped default Drag Race configuration; random server seed; obstacles and HP elimination",
+        "revision": "e1ab0b34edb7824704a893d7e6e127d536e157d6",
+        "dirty": " M docs/preservation/contacts-checkpoint.md\n M docs/preservation/evidence/contacts/attempts.md\n D docs/preservation/evidence/contacts/boundary-red.log\n?? docs/preservation/evidence/contacts/fixture-review.md\n?? docs/preservation/evidence/contacts/spec-review.md\n?? docs/preservation/evidence/contacts/standards-review.md\n",
+        "hashes": {
+          "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+          "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+          "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+          "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+          "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+          "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+          "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+          "infra/contacts-track.json": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d",
+          "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+          "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+          "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+          "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+        },
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+        "exitCode": 0,
+        "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-Yos9Mu"
+      }
+    },
+    "rooms": {
+      "log": "apps/client/test-results/contacts-implementation/logs/rooms-final.log",
+      "sha256": "8cda6ae56b889351ee48f539ebc2e80c8bc1037e4e91de2ce536b49a70511050",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T11-39-56.461Z",
+      "manifest": {
+        "version": 1,
+        "fixture": "React private rooms; random server seed; round zero and released controls",
+        "revision": "e1ab0b34edb7824704a893d7e6e127d536e157d6",
+        "dirty": " M docs/preservation/contacts-checkpoint.md\n M docs/preservation/evidence/contacts/attempts.md\n D docs/preservation/evidence/contacts/boundary-red.log\n?? docs/preservation/evidence/contacts/fixture-review.md\n?? docs/preservation/evidence/contacts/spec-review.md\n?? docs/preservation/evidence/contacts/standards-review.md\n",
+        "hashes": {
+          "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+          "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+          "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+          "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+          "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+          "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+          "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+          "infra/contacts-track.json": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d",
+          "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+          "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+          "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+          "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+        },
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+        "exitCode": 0,
+        "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-iwJ7Qg"
+      }
+    },
+    "transport": {
+      "log": "apps/client/test-results/contacts-implementation/logs/transport-final.log",
+      "sha256": "e779e5a0b8509771b031ab92564801ef02c80aecdabdcec29357f4d70e1d258b",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T11-40-05.599Z",
+      "manifest": {
+        "version": 1,
+        "fixture": "protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+        "revision": "e1ab0b34edb7824704a893d7e6e127d536e157d6",
+        "dirty": " M docs/preservation/contacts-checkpoint.md\n M docs/preservation/evidence/contacts/attempts.md\n D docs/preservation/evidence/contacts/boundary-red.log\n?? docs/preservation/evidence/contacts/fixture-review.md\n?? docs/preservation/evidence/contacts/spec-review.md\n?? docs/preservation/evidence/contacts/standards-review.md\n",
+        "hashes": {
+          "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+          "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+          "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+          "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+          "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+          "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+          "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+          "infra/contacts-track.json": "a90f6452446880f620e69ece31e8505785899494963c4c933901ade0d081ce2d",
+          "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+          "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+          "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+          "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+        },
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+        "exitCode": 0,
+        "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-DIJUUP"
+      }
+    },
+    "preservation": {
+      "log": "apps/client/test-results/contacts-implementation/logs/browser-final.log",
+      "sha256": "ce5375ab9b2bfbbfd88c86facad869b17d12c4b324d4d2bb1b2be6d7bbdd4a36",
+      "manifest": "apps/client/test-results/run-2026-10-17T11-40-13.218Z-2syZeG/manifest.json",
+      "manifestSha256": "0fa495ac333f5d1ce555b132cccf1a9a7ef23b3bc38d91aaaeed420ea982aaa0",
+      "scenariosPassed": 12,
+      "taskCount": 7,
+      "cacheReuse": 0
+    }
+  },
+  "pending": [],
+  "acceptanceScope": "Stage 5 issue #33 contact slice only; not Stage 5 exit or full multiplayer acceptance",
+  "scopeComplete": true
+}
