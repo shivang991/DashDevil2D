@@ -13,7 +13,7 @@ export interface PairedState {
   status: string; code: string; identity?: Identity; connectedSeats: number;
   verified: number; barriers: number; clockSamples: number; clockOffsetUs: number;
   context?: Context; outcome?: Outcome;
-  diagnostics: { corrections?: RaceSession['diagnostics']; recoveryRequests?: number; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
+  diagnostics: { corrections?: RaceSession['diagnostics']; reliableSentBytes?: number; reliableReceivedBytes?: number; verificationReceivedBytes?: number; recoveryRequests?: number; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
   objects?: Baseline['windows'][number]['objects'];
   room?: RoomState; pending?: string; notice?: string; roundId?: number; startUs?: number; timeUs?: number; cars?: Baseline['cars']; seed?: number; positions: string; errors: string[]; baselineBytes: number; recoveryMs?: number;
 }
@@ -178,6 +178,7 @@ export class PairedConnection {
     const writer = input ? this.inputs : this.control;
     if (!writer) throw new Error('Reliable writer unavailable');
     const bytes = encodeMessage(type, value);
+    this.state.diagnostics.reliableSentBytes = (this.state.diagnostics.reliableSentBytes ?? 0) + bytes.length;
     if (this.queuedBytes + bytes.length > 262144 || this.queuedMessages >= 512) throw new Error('Reliable queue overflow');
     this.queuedBytes += bytes.length; this.queuedMessages++;
     let timeout: ReturnType<typeof setTimeout> | undefined;
@@ -191,6 +192,7 @@ export class PairedConnection {
       const { value, done } = await reader.read();
       if (generation !== this.generation) return;
       if (done) { frames.finish(); throw new Error(`${channel} stream ended`); }
+      this.state.diagnostics.reliableReceivedBytes = (this.state.diagnostics.reliableReceivedBytes ?? 0) + value.length;
       for (const frame of frames.push(value)) await this.record(decodeMessage(frame), channel, generation);
     } } finally { reader.releaseLock(); }
   }
@@ -367,6 +369,7 @@ export class PairedConnection {
     const reader = gameplay.datagrams.readable.getReader();
     try { for (;;) {
       const { done, value } = await reader.read(); if (done || generation !== this.generation) return;
+      this.state.diagnostics.verificationReceivedBytes = (this.state.diagnostics.verificationReceivedBytes ?? 0) + value.length;
       if (value.length !== 10) continue;
       const verification = decodeVerification(value);
       if (this.state.outcome) continue;
@@ -392,7 +395,11 @@ export class PairedConnection {
   recordResultCommit() {
     if (this.state.outcome && this.context && this.state.diagnostics.resultCommitDelayEstimateUs === undefined) this.state.diagnostics.resultCommitDelayEstimateUs = nowUs() + this.state.clockOffsetUs - this.context.startUs - this.state.outcome.timeUs;
   }
-  frame() { return this.race?.frame(this.estimatedRoundUs(), (performance.now() - this.lastUsable) * 1000); }
+  frame() {
+    const frame = this.race?.frame(this.estimatedRoundUs(), (performance.now() - this.lastUsable) * 1000);
+    if (frame?.needsRecovery) this.requestBaseline();
+    return frame;
+  }
   input(intent: 0 | 1, control: number) {
     if (!this.baseline || !this.admission || !this.race || (this.state.room?.phase !== 2 && this.state.room?.phase !== 3) || this.state.status !== 'Connected' || this.state.outcome || !this.focused || this.hidden) return;
     const mask = 1 << (control - 1);

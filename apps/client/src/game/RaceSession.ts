@@ -13,17 +13,19 @@ export class RaceSession {
   private feedback: string[] = [];
   private baseline: Baseline;
   private configuration: MultiplayerConfiguration;
+  private readonly nowUs: () => number;
   private pending: { input: Input; timeUs: number }[] = [];
   private outcome?: Outcome;
   private lastAuthorityUs: number;
   private lastFrameUs: number;
   private rendered?: { progress: number; lateral: number }[];
-  private correction?: { baseline: Baseline; pending: { input: Input; timeUs: number }[] };
+  private correction?: { baseline: Baseline; pending: { input: Input; timeUs: number }[]; receivedUs: number };
   private offset?: { progress: number; lateral: number }[];
   private snapCorrection = false;
   private settleStartUs = 0;
   private settleEndUs = 0;
-  constructor(baseline: Baseline) {
+  constructor(baseline: Baseline, nowUs = () => performance.now() * 1000) {
+    this.nowUs = nowUs;
     this.baseline = structuredClone(baseline);
     const c = baseline.context;
     const mode = c.mode === 1 ? 'drag-race' : 'road-rage';
@@ -48,7 +50,7 @@ export class RaceSession {
     this.lastAuthorityUs = baseline.timeUs;
   }
   private beforeCorrection() {
-    if (this.rendered && !this.correction) this.correction = { baseline: this.snapshot(), pending: structuredClone(this.pending) };
+    if (this.rendered && !this.correction) this.correction = { baseline: this.snapshot(), pending: structuredClone(this.pending), receivedUs: this.nowUs() };
   }
   private engine(baseline = this.baseline) {
     const ids = [0, 1].map(seat => ({ ...baseline.identity, seat })) as [Baseline['identity'], Baseline['identity']];
@@ -136,15 +138,16 @@ export class RaceSession {
     }
   }
   frame(estimatedUs: number, authorityAgeUs: number) {
-    if (this.outcome) return { feedback: [] as string[], objects: this.baseline.windows.flatMap(window => window.objects), renderedCars: this.outcome.cars.map(c => ({ ...c })), cars: this.outcome.cars.map((c, seat) => ({ ...this.baseline.cars[seat], ...c, effective: 0, controls: 0, heldMask: 0, flags: 0 })) as Car[], timeUs: this.outcome.timeUs, outcome: this.outcome, awaiting: false, stale: false };
+    if (this.outcome) return { feedback: [] as string[], objects: this.baseline.windows.flatMap(window => window.objects), renderedCars: this.outcome.cars.map(c => ({ ...c })), cars: this.outcome.cars.map((c, seat) => ({ ...this.baseline.cars[seat], ...c, effective: 0, controls: 0, heldMask: 0, flags: 0 })) as Car[], timeUs: this.outcome.timeUs, outcome: this.outcome, awaiting: false, stale: false, needsRecovery: false };
     const stale = authorityAgeUs >= 1000000 || estimatedUs - this.lastAuthorityUs > 1000000;
     const target = Math.max(this.baseline.timeUs, this.lastFrameUs, Math.min(estimatedUs, this.lastAuthorityUs + 1000000));
+    this.completeSettling(target);
     if (this.correction) {
       const previous = this.predict(target, false, this.correction.baseline, this.correction.pending);
       const repaired = this.predict(target, false);
       const remaining = this.remainingOffset(target);
       const delta = repaired.renderedCars.map((car, seat) => ({ progress: previous.renderedCars[seat].progress - car.progress, lateral: previous.renderedCars[seat].lateral - car.lateral }));
-      const offset = repaired.renderedCars.map((car, seat) => ({ progress: previous.renderedCars[seat].progress - car.progress + (this.offset?.[seat].progress ?? 0) * remaining, lateral: previous.renderedCars[seat].lateral - car.lateral + (this.offset?.[seat].lateral ?? 0) * remaining }));
+      const offset = delta.map((change, seat) => ({ progress: change.progress + (this.offset?.[seat].progress ?? 0) * remaining, lateral: change.lateral + (this.offset?.[seat].lateral ?? 0) * remaining }));
       const g = this.configuration.gameplay;
       const snap = this.snapCorrection || offset.some(o => Math.abs(o.progress) > g.carHeight || Math.abs(o.lateral) > g.laneSpacing) || repaired.cars.some(c => c.phase === 2) ||
         (Math.abs(repaired.renderedCars[0].progress - repaired.renderedCars[1].progress) <= g.carHeight && Math.abs(repaired.renderedCars[0].lateral - repaired.renderedCars[1].lateral) <= g.carWidth);
@@ -157,7 +160,7 @@ export class RaceSession {
           if (Math.abs(o.progress) > g.carHeight * .25 || Math.abs(o.lateral) > g.laneSpacing * .1) d.abrupt++;
           if (snap) d.snaps++;
         });
-        if (this.settlingSince === undefined) this.settlingSince = target;
+        if (this.settlingSince === undefined) this.settlingSince = this.correction.receivedUs;
       }
       if (snap) { this.offset = undefined; this.settlingSince = undefined; }
       else {
@@ -173,13 +176,16 @@ export class RaceSession {
     const remaining = this.remainingOffset(target);
     const renderedCars = state.renderedCars.map((car, seat) => ({ progress: car.progress + (this.offset?.[seat].progress ?? 0) * remaining, lateral: car.lateral + (this.offset?.[seat].lateral ?? 0) * remaining }));
     this.rendered = renderedCars;
+    this.completeSettling(target);
+    const feedback = this.feedback; this.feedback = [];
+    return { feedback, objects: state.objects, renderedCars, cars: state.cars, timeUs: state.timeUs, outcome: undefined as Outcome | undefined, needsRecovery: state.needsRecovery,
+      awaiting: this.baseline.context.mode === 1 && state.cars.some(c => c.hp === 0 || c.progress + this.configuration.gameplay.carHeight / 2 >= this.baseline.context.gameplay.finishDistance), stale };
+  }
+  private completeSettling(target: number) {
     if (this.settlingSince !== undefined && target >= this.settleEndUs) {
-      for (const d of this.diagnostics) d.maxSettlingUs = Math.max(d.maxSettlingUs, this.settleEndUs - this.settlingSince);
+      for (const d of this.diagnostics) d.maxSettlingUs = Math.max(d.maxSettlingUs, this.nowUs() - this.settlingSince);
       this.settlingSince = undefined;
     }
-    const feedback = this.feedback; this.feedback = [];
-    return { feedback, objects: state.objects, renderedCars, cars: state.cars, timeUs: state.timeUs, outcome: undefined as Outcome | undefined,
-      awaiting: this.baseline.context.mode === 1 && state.cars.some(c => c.hp === 0 || c.progress + this.configuration.gameplay.carHeight / 2 >= this.baseline.context.gameplay.finishDistance), stale };
   }
   private remainingOffset(target: number) {
     return Math.max(0, Math.min(1, (this.settleEndUs - target) / (this.settleEndUs - this.settleStartUs || 1)));
@@ -187,7 +193,23 @@ export class RaceSession {
   private predict(target: number, observe: boolean, baseline = this.baseline, inputs = this.pending) {
     const { game, ids } = this.engine(baseline);
     const rate = this.configuration.gameplay.tickRate;
-    const advance = (us: number) => { const tick = Math.floor(us * rate / 1e6); while (game.snapshot().tick < tick) { const events = game.advanceTo(Math.min(tick, game.snapshot().tick + 30) / rate, true); for (const event of events) if (observe && event.objects) this.observeObjects(event.objects); } };
+    const g = this.configuration.gameplay;
+    const extent = (g.carHeight + Math.max(g.obstacleH, g.coinSize, g.heartSize)) / 2;
+    let needsRecovery = false;
+    const covered = (cars: readonly Car[]) => cars.every(car => baseline.windows.some(window => window.start <= car.progress - extent && window.end >= car.progress + extent));
+    const step = (publish = observe) => {
+      const previous = game.snapshot();
+      const events = game.advanceTo((previous.tick + 1) / rate, true);
+      if (!covered(game.snapshot().cars)) {
+        game.restore(previous.cars, previous.tick, previous.objects, previous.timeUs);
+        needsRecovery = true; return;
+      }
+      if (publish) for (const event of events) if (event.objects) this.observeObjects(event.objects);
+    };
+    const advance = (us: number) => {
+      const tick = Math.floor(us * rate / 1e6);
+      while (!needsRecovery && game.snapshot().tick < tick) step();
+    };
     for (const pending of inputs) {
       if (pending.timeUs > target) break;
       advance(pending.timeUs);
@@ -200,10 +222,10 @@ export class RaceSession {
     }
     advance(target);
     const state = game.snapshot();
-    game.advanceTo((state.tick + 1) / rate, true);
+    if (!needsRecovery) step(false);
     const next = game.snapshot();
     const fraction = Math.max(0, Math.min(1, target * rate / 1e6 - state.tick));
     const renderedCars = state.cars.map((car, seat) => ({ progress: car.progress + (next.cars[seat].progress - car.progress) * fraction, lateral: car.lateral + (next.cars[seat].lateral - car.lateral) * fraction }));
-    return { ...state, renderedCars };
+    return { ...state, renderedCars, needsRecovery };
   }
 }

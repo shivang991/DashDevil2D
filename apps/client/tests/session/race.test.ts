@@ -223,12 +223,13 @@ test('fresh-generation recovery drops pending controls and presentation offsets'
 });
 
 test('correction diagnostics measure abrupt corrections and settling without counting normal movement', () => {
-  const b = baseline(), race = new RaceSession(b);
+  let nowUs = 100000;
+  const b = baseline(), race = new RaceSession(b, () => nowUs);
   race.frame(100000, 0);
   const corrected = structuredClone(b); corrected.epoch++;
   corrected.tick = 6; corrected.timeUs = 100000;
   corrected.cars.forEach(car => { car.progress = 48; });
-  race.install(corrected); race.frame(100000, 0); race.frame(200000, 0);
+  race.install(corrected); race.frame(100000, 0); nowUs = 200000; race.frame(200000, 0);
   expect(race.diagnostics[0]).toMatchObject({ corrections: 1, abrupt: 0, snaps: 0, maxSettlingUs: 100000 });
 });
 
@@ -237,4 +238,26 @@ test('incomplete replacement track coverage cannot partially mutate authority', 
   expect(() => race.coverage({ identity: b.identity, round: b.round, authority: 0, tick: 0, timeUs: 0, progress: b.progress, generator: b.generator,
     windows: [{ ...b.windows[0], end: 50 }] })).toThrow(/coverage/);
   expect(race.snapshot()).toEqual(b);
+});
+
+test('separate correction windows measure their own settling time', () => {
+  let nowUs = 100000;
+  const b = baseline(), race = new RaceSession(b, () => nowUs);
+  race.frame(100000, 0);
+  const corrected = structuredClone(b); corrected.epoch++;
+  corrected.tick = 6; corrected.timeUs = 100000;
+  corrected.cars.forEach(car => { car.progress = 48; });
+  race.install(corrected); race.frame(100000, 0);
+  corrected.epoch++; corrected.tick = 18; corrected.timeUs = 300000;
+  corrected.cars.forEach(car => { car.progress = 136; });
+  nowUs = 300000; race.install(corrected); race.frame(300000, 0); nowUs = 400000; race.frame(400000, 0);
+  expect(race.diagnostics[0].maxSettlingUs).toBe(200000);
+});
+
+test('prediction stops at known track bounds and requests recovery', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.advanceAuthority(720); // 12s / 4800 units: old windows remain unchanged.
+  const frame = race.frame(13000000, 0);
+  expect(frame.needsRecovery).toBe(true);
+  expect(frame.cars[0].progress).toBeLessThan(5000);
 });
