@@ -57,17 +57,18 @@ type Server struct {
 	errors       chan error
 }
 type room struct {
-	engine   *simulation.Engine
-	history  []raceRecord
-	outcome  *p.Outcome
-	primed   [2]bool
-	inputs   [2]map[uint32]p.Input
-	phase    uint8
-	roundID  uint32
-	startUs  uint64
-	seed     uint32
-	zero     *p.Baseline
-	settings configuration.Configuration
+	engine          *simulation.Engine
+	history         []raceRecord
+	outcome         *p.Outcome
+	outcomeSessions [2]uint32
+	primed          [2]bool
+	inputs          [2]map[uint32]p.Input
+	phase           uint8
+	roundID         uint32
+	startUs         uint64
+	seed            uint32
+	zero            *p.Baseline
+	settings        configuration.Configuration
 
 	id       uint32
 	code     string
@@ -381,6 +382,14 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		}
 		s.nextID++
 		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(15 * time.Second)}
+		if r.phase == 3 {
+			r.phase = 0
+		}
+		for _, other := range r.seats {
+			if other != nil {
+				other.ready = false
+			}
+		}
 		r.seats[index] = participant
 		r.idle = now.Add(15 * time.Minute)
 		s.credentials[token(credential)] = participant

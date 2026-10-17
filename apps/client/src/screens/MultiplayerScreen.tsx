@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { PairedConnection, type ConnectionOptions, type PairedState } from '@/transport/PairedConnection';
+import { RoundResult } from '@/components/RoundResult';
 import { RaceView } from '@/components/RaceView';
 import { localName } from '@/transport/localName';
 
@@ -13,6 +14,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
   const [error, setError] = useState('');
   const [code, setCode] = useState('');
   const [copy, setCopy] = useState('Copy');
+  const [dismissedResult, setDismissedResult] = useState<number>();
   const [confirmLeave, setConfirmLeave] = useState(false);
   const cancelLeave = useRef<HTMLButtonElement>(null);
   const [clock, setClock] = useState(0);
@@ -33,7 +35,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
           ? await fetch('/__transport-config').then(response => { if (!response.ok) throw new Error('Start pnpm dev:transport for secure multiplayer'); return response.json() as Promise<ConnectionOptions>; })
           : { server: location.origin };
         if (disposed) return;
-        const client = new PairedConnection(options, setState);
+        const client = new PairedConnection(options, next => { setState(next); if (next.outcome) setConfirmLeave(false); });
         connection.current = client; setClient(client); setState({ ...client.state }); focus();
         if (client.hasCredential) await client.connect(2);
       } catch (failure) { if (!disposed) setError(String(failure instanceof Error ? failure.message : failure)); }
@@ -80,13 +82,18 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
           <span>{seat.session ? `${seat.name}${index === local ? ' (You)' : ''}` : 'Waiting for player'}</span>
           {seat.session > 0 && <p className="text-sm text-neutral-400">{index === room!.host ? 'Host · ' : ''}{seat.flags & 1 ? 'Connected' : 'Reconnecting'} · {seat.flags & 2 ? 'Ready' : 'Not ready'}</p>}
         </li>)}</ul>}
-        {countdown ? <div className="text-center py-8"><p className="text-7xl" data-testid="countdown" aria-live="polite">{remaining}</p><p>{installed ? 'Get ready!' : 'Preparing round…'}</p></div> : race && client && state ? <RaceView connection={client} state={state} suspended={confirmLeave} onLeave={() => { connection.current?.releaseControls(); setConfirmLeave(true); }} /> : active ? <p>{installed ? 'Players synchronized.' : 'Synchronizing…'}</p> : <>
+        {countdown ? <div className="text-center py-8"><p className="text-7xl" data-testid="countdown" aria-live="polite">{remaining}</p><p>{installed ? 'Get ready!' : 'Preparing round…'}</p></div> : race && client && state ? <RaceView connection={client} state={state} suspended={confirmLeave || state.status !== 'Connected'} onLeave={() => { connection.current?.releaseControls(); setConfirmLeave(true); }} /> : active ? <p>{installed ? 'Players synchronized.' : 'Synchronizing…'}</p> : <>
           {host && <label className="flex flex-col gap-2">Multiplayer mode<select className="rounded-lg bg-neutral-900 border border-neutral-600 p-3" value={room!.mode} disabled={!eligible} onChange={event => connection.current?.command(0, Number(event.target.value), 0, 'Changing mode')}><option value={1}>Drag Race</option><option value={2}>Road Rage</option></select></label>}
           <button className={button} disabled={!eligible || document.hidden || !document.hasFocus()} onClick={() => connection.current?.command(1, room!.mode, room!.seats[local].flags & 2 ? 0 : 1, 'Confirming readiness')}>{room!.seats[local].flags & 2 ? 'Cancel ready' : 'Ready'}</button>
           {host && <><button className={button} disabled={!canStart} onClick={() => connection.current?.command(2, room!.mode, 0, 'Starting round')}>Start round</button>{!canStart && <p className="text-sm text-neutral-400">Start requires two connected, initialized, focused and ready players.</p>}</>}
           {room!.idleWarningUs > 0 && clock + (state?.clockOffsetUs ?? 0) >= room!.idleWarningUs && <p role="alert">This room expires in less than one minute without activity.</p>}
         </>}
-        <button className={button} onClick={() => { connection.current?.releaseControls(); if (countdown || active) setConfirmLeave(true); else leave(); }}>Leave</button>
+        {room!.phase === 0 && state?.outcome && dismissedResult !== state.outcome.roundId && <>
+          <RoundResult outcome={state.outcome} local={local} />
+          <button className={button} onClick={() => setDismissedResult(state.outcome!.roundId)}>Dismiss result</button>
+        </>}
+        {state?.outcome && room!.phase === 3 && <button className={button} disabled={!eligible} onClick={() => connection.current?.command(5, room!.mode, 0, 'Returning to lobby')}>Return to Lobby</button>}
+        <button className={button} onClick={() => { connection.current?.releaseControls(); if ((countdown || active) && !state?.outcome) setConfirmLeave(true); else leave(); }}>Leave</button>
         {(countdown || active) && <p className="text-sm text-neutral-400">Round time: <span data-testid="round-time">{state?.timeUs ?? 0}</span></p>}
         <details><summary className="cursor-pointer text-sm text-neutral-400">Connection details</summary><pre className="text-xs overflow-auto" data-testid="room-evidence">{JSON.stringify({ roundId: state?.roundId, startUs: state?.startUs, timeUs: state?.timeUs, seed: state?.seed, context: state?.context, objects: state?.objects, cars: state?.cars, identity: state?.identity, roomRevision: room!.revision, diagnostics: state?.diagnostics, verified: state?.verified, errors: state?.errors, baselineBytes: state?.baselineBytes }, null, 2)}</pre></details>
       </>}

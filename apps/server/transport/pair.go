@@ -379,6 +379,19 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			default:
 			}
 		}
+	case 5:
+		if r.phase != 3 {
+			s.mu.Unlock()
+			return fmt.Errorf("Return to Lobby requires a finalized round")
+		}
+		// Keep the terminal state available to reserved seats recovering in the
+		// lobby. A new round replaces it atomically in prepareRoundLocked.
+		r.phase = 0
+		for _, other := range r.seats {
+			if other != nil {
+				other.ready = false
+			}
+		}
 	case 4:
 		participant.focused = command.Ready == 1
 		if !participant.focused {

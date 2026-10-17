@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { RoundResult } from './RoundResult';
 import { gameAudio } from '@/lib/gameAudio';
 import type { PairedConnection, PairedState } from '@/transport/PairedConnection';
 
@@ -23,7 +24,7 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
       if (event.repeat || pressed.current.has(event.code)) return;
       pressed.current.add(event.code);
       if (suspended || state.outcome) return;
-      if (event.key === 'Escape' || (event.code === 'Space' && !interactive(event.target))) {
+      if (event.key === 'Escape' && (menu || !interactive(event.target)) || (event.code === 'Space' && !interactive(event.target))) {
         event.preventDefault(); connection.releaseControls(); setMenu(value => !value); return;
       }
       const control = controlFor(event.key);
@@ -38,7 +39,10 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
     window.addEventListener('keydown', down); window.addEventListener('keyup', up); window.addEventListener('blur', release); document.addEventListener('visibilitychange', release);
     return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); window.removeEventListener('blur', release); document.removeEventListener('visibilitychange', release); };
   }, [connection, menu, suspended, state.outcome]);
-  useEffect(() => { if (!menu) canvas.current?.focus(); }, [menu]);
+  useEffect(() => {
+    connection.releaseControls();
+    if (!menu && !suspended && !state.outcome && state.status === 'Connected') canvas.current?.focus();
+  }, [connection, menu, suspended, state.outcome, state.status]);
   useEffect(() => {
     let handle = 0, lastHud = 0;
     const draw = (time: number) => {
@@ -94,11 +98,12 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
     <p role="status" data-testid="object-feedback">{feedback}</p>
     <p data-testid="nos-status">{frame?.cars[local].effective === 3 ? 'NOS active' : 'NOS ready'}</p>
     {frame?.awaiting && !outcome && <p role="status">Awaiting confirmation</p>}
-    {frame?.stale && !outcome && <p role="alert">Reconnecting—round continues.</p>}
+    {!((state.room?.seats[1 - local]?.flags ?? 0) & 1) && !outcome && <p role="status">Opponent disconnected—round continues.</p>}
+    {(frame?.stale || state.status !== 'Connected') && !outcome && <p role="alert">Reconnecting—round continues.</p>}
     <canvas ref={canvas} width={560} height={440} tabIndex={0} role="img" aria-label="Multiplayer race" className="w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400" onBlur={() => { pressed.current.clear(); connection.releaseControls(); }} />
     <p className="text-sm text-neutral-400">← / A and → / D steer · ↑ / W holds NOS · Space / Escape opens menu</p>
     <button className={button} onClick={() => { connection.releaseControls(); setMenu(true); }}>Race menu</button>
     {menu && !outcome && <div role="dialog" aria-label="Race menu" className="absolute inset-x-4 top-1/3 bg-neutral-950/95 border border-neutral-600 rounded-xl p-5 flex flex-col gap-3"><p>The round continues.</p><button autoFocus className={button} onClick={() => setMenu(false)}>Resume</button><button className={button} onClick={() => { gameAudio.setEnabled(muted); setMuted(!muted); }}>{muted ? 'Unmute' : 'Mute'}</button><button className={button} onClick={onLeave}>Leave</button></div>}
-    {outcome && <div role="status" className="rounded-xl border border-red-400 bg-neutral-900 p-5"><h2 className="text-xl">Round result</h2><p>{outcome.result === 3 ? 'Round abandoned' : outcome.result === 2 ? 'Tie' : outcome.result === local ? 'You won!' : 'You lost'}</p><p>Server confirmed · {(outcome.timeUs / 1e6).toFixed(3)} s</p><details><summary>Result details</summary><pre data-testid="outcome-evidence" className="text-xs overflow-auto">{JSON.stringify(outcome)}</pre></details></div>}
+    {outcome && <RoundResult outcome={outcome} local={local} />}
   </div>;
 }

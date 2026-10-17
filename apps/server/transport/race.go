@@ -5,6 +5,7 @@ import (
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"github.com/shivang991/DashDevil2D/apps/server/simulation"
 	"math"
+	"time"
 )
 
 type raceRecord struct {
@@ -28,6 +29,12 @@ func (s *Server) finalizeRaceLocked(r *room, result, reason uint8, tick uint32, 
 	for seat, car := range b.Cars {
 		outcome.Cars[seat] = p.FinalCar{Progress: car.Progress, Lateral: car.Lateral, Hp: car.Hp, Score: car.Score}
 	}
+	for i, seat := range r.seats {
+		if seat != nil {
+			r.outcomeSessions[i] = seat.session
+		}
+	}
+	r.idle = time.Now().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
 	r.outcome = &outcome
 	r.phase = 3
 	r.revision++

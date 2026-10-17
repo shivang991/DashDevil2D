@@ -1212,6 +1212,24 @@
         "ready": 0
       },
       "hex": "0000001906000000010000000200000003010000000a00000009040000"
+    },
+    {
+      "name": "RoomCommand return to lobby",
+      "type": "RoomCommand",
+      "value": {
+        "identity": {
+          "roomId": 16909060,
+          "seatSession": 5,
+          "pairGeneration": 6,
+          "seat": 0
+        },
+        "sequence": 5,
+        "revision": 0,
+        "command": 5,
+        "mode": 1,
+        "ready": 0
+      },
+      "hex": "0000001906010203040000000500000006000000000500000000050100"
     }
   ],
   "malformed": [

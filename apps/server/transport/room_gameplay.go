@@ -201,7 +201,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 					lastAck = time.Now()
 				}
 			case p.Recovery:
-				if record.channel != "control" || value.Identity != pair.identity || value.Round != baseline.Round || !installed || time.Since(lastRecovery) < time.Second {
+				if record.channel != "control" || value.Identity != pair.identity || value.Round != baseline.Round || !installed || time.Since(lastRecovery) < time.Duration(float64(time.Second)/baseline.Context.Connection.RecoveryRequestRate) {
 					return errors.New("invalid recovery")
 				}
 				lastRecovery = time.Now()
@@ -239,7 +239,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 			s.mu.Lock()
 			r := pair.seat.room
 			var outcome *p.Outcome
-			if r.outcome != nil {
+			if r.outcome != nil && r.outcomeSessions[pair.identity.Seat] == pair.identity.SeatSession {
 				copy := *r.outcome
 				copy.Identity = pair.identity
 				outcome = &copy

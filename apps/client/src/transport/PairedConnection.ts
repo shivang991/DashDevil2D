@@ -65,6 +65,8 @@ export class PairedConnection {
   private initialRound?: number;
   private earlyChunks: Messages['BaselineChunk'][] = [];
   private recoveryOutstanding = false;
+  private recoveryRequestTimer?: ReturnType<typeof setTimeout>;
+  private lastRecoveryRequest = -Infinity;
   private onChange: (state: PairedState) => void;
   constructor(options: ConnectionOptions, onChange: (state: PairedState) => void) {
     this.options = options; this.onChange = onChange;
@@ -87,7 +89,8 @@ export class PairedConnection {
     }
   }
   private teardown() {
-    this.generation++; this.race = undefined; this.heldMask = 0; this.winningControl = 0;
+    this.generation++; this.lastUsable = 0; this.race = undefined; this.heldMask = 0; this.winningControl = 0;
+    clearTimeout(this.recoveryRequestTimer); this.recoveryRequestTimer = undefined; this.lastRecoveryRequest = -Infinity;
     clearTimeout(this.recoveryTimer); this.pendingCommands.forEach(command => clearTimeout(command.timeout)); this.pendingCommands.clear(); this.timerStarted = false;
     this.timers.forEach(clearInterval); this.timers = [];
     this.socket?.close(); this.gameplay?.close(); this.socket = undefined; this.gameplay = undefined;
@@ -98,7 +101,10 @@ export class PairedConnection {
   async connect(operation: 0 | 1 | 2, code = '', mode: 1 | 2 = 1): Promise<void> {
     this.teardown(); this.terminal = false;
     const generation = this.generation;
-    this.state = { ...emptyState(), code, errors: this.state.errors, pending: operation === 0 ? 'Creating room' : operation === 1 ? 'Joining room' : 'Recovering room' }; this.initialRound = undefined; this.pulseSequence = 0; this.publish();
+    // Keep the last view visible and frozen while an authenticated seat recovers.
+    // Input remains barred until the new pair has installed current authority.
+    const retained = operation === 2 ? this.state : undefined;
+    this.state = { ...emptyState(), ...retained, code: retained?.code ?? code, errors: this.state.errors, pending: operation === 0 ? 'Creating room' : operation === 1 ? 'Joining room' : 'Recovering room' }; this.initialRound = undefined; this.pulseSequence = 0; this.publish();
     if (typeof globalThis.WebTransport !== 'function' || !('createUnidirectionalStream' in WebTransport.prototype) || !('datagrams' in WebTransport.prototype)) {
       this.state.pending = undefined; this.state.status = 'Browser unsupported'; this.publish(); return;
     }
@@ -242,6 +248,7 @@ export class PairedConnection {
         const wasInitialized = this.timerStarted;
         const baseline = this.transfer.accept(message.value); this.state.baselineBytes += message.value.data.length;
         if (!baseline) break;
+        clearTimeout(this.recoveryRequestTimer); this.recoveryRequestTimer = undefined;
         this.baseline = baseline; this.transfer = undefined; this.recoveryOutstanding = false; this.verification = new RaceVerification(baseline.epoch, baseline.context.gameplay.tickRate, baseline.context.connection.replayHistory); this.lastUsable = performance.now();
         (this.state.diagnostics.baselineEpochs ??= []).push(baseline.epoch);
         this.state.positions = baseline.cars.map(car => car.progress).join(', ');
@@ -379,7 +386,22 @@ export class PairedConnection {
   }
   requestBaseline() {
     const baseline = this.baseline;
-    if (!baseline || this.recoveryOutstanding) return;
+    if (!baseline || this.recoveryOutstanding || this.state.outcome) return;
+    // Coalesce across epochs too: a second repaired epoch may already disagree
+    // while the server's request-rate window is still closed.
+    const interval = 1000 / baseline.context.connection.recoveryRequestRate + 10;
+    const wait = interval - (performance.now() - this.lastRecoveryRequest);
+    if (wait > 0) {
+      if (!this.recoveryRequestTimer) {
+        const generation = this.generation;
+        this.recoveryRequestTimer = setTimeout(() => {
+          this.recoveryRequestTimer = undefined;
+          if (generation === this.generation) this.requestBaseline();
+        }, wait);
+      }
+      return;
+    }
+    this.lastRecoveryRequest = performance.now();
     this.recoveryOutstanding = true;
     this.state.diagnostics.recoveryRequests = (this.state.diagnostics.recoveryRequests ?? 0) + 1;
     (this.state.diagnostics.recoveryEpochs ??= []).push(baseline.epoch);
@@ -420,11 +442,16 @@ export class PairedConnection {
   }
   get hasCredential() { return this.credential().length === 32; }
   focus(focused: boolean, hidden: boolean) {
+    const restoring = focused && !hidden && (!this.focused || this.hidden);
     if (!focused || hidden) this.releaseControls();
     this.focused = focused; this.hidden = hidden;
+    if (restoring && !this.options.diagnostic && this.state.room?.phase === 2 && !this.state.outcome) {
+      this.fail(new Error('Restoring current authority after suspension'), this.generation);
+      return;
+    }
     if (!this.options.diagnostic && this.state.status === 'Connected') this.command(4, hidden ? 0 : 1, focused && !hidden ? 1 : 0, 'Focus');
   }
-  command(command: 0 | 1 | 2 | 3 | 4, mode = 1, ready = 0, label = 'Updating room') {
+  command(command: 0 | 1 | 2 | 3 | 4 | 5, mode = 1, ready = 0, label = 'Updating room') {
     if (!this.admission || this.socket?.readyState !== WebSocket.OPEN) return;
     if (command !== 4 && this.state.pending) return;
     if (this.roomSequence >= 0xffffffff) { this.fail(new Error('Room counter exhausted'), this.generation); return; }

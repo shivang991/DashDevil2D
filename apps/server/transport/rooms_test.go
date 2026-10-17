@@ -137,3 +137,21 @@ func TestRoomRejectsGuestAuthorityAndHiddenReadinessWithoutDroppingPair(t *testi
 		t.Fatal("focused participant could not ready after rejection")
 	}
 }
+
+func TestReturnToLobbyRejectsUnfinishedRoundWithoutDroppingPair(t *testing.T) {
+	s, c, roots := serverMode(t, false)
+	_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: 1, Name: "Host"}, origin)
+	a := v.(p.Admission)
+	host, _ := initializedPair(t, s, roots, a, true)
+	roomSend(t, host, a, 1, p.RoomState{}, 4, 1, 1)
+	state := roomState(t, host, func(r p.RoomState) bool { return r.Seats[0].Flags&1 != 0 })
+	roomSend(t, host, a, 2, state, 5, 1, 0)
+	reply := roomReply(t, host, 2)
+	if reply.Accepted != 0 || reply.Detail != "Return to Lobby requires a finalized round" {
+		t.Fatalf("unfinished return accepted or wrong rejection: %+v", reply)
+	}
+	roomSend(t, host, a, 3, state, 1, 1, 1)
+	if reply := roomReply(t, host, 3); reply.Accepted != 1 {
+		t.Fatalf("rejection dropped usable pair: %+v", reply)
+	}
+}

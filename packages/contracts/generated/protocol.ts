@@ -884,7 +884,7 @@ export const layouts = {
     {
       "name": "command",
       "type": "u8",
-      "max": 4
+      "max": 5
     },
     {
       "name": "mode",
