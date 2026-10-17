@@ -293,16 +293,16 @@ export class PairedConnection {
         break;
       }
       case 'Event': {
-        if (channel !== 'authority' || !this.race || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId) throw new Error('Event context mismatch');
         if (this.state.outcome) break;
+        if (channel !== 'authority' || !this.race || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId) throw new Error('Event context mismatch');
         validateMessage('Event', message.value, this.context!);
         if (message.value.authority <= this.baseline.progress.authority) break;
         if (message.value.authority !== this.baseline.progress.authority + 1) throw new Error('Authority event gap');
         this.race.event(message.value); this.baseline = this.race.snapshot(); this.lastUsable = performance.now(); break;
       }
       case 'Coverage': {
-        if (channel !== 'authority' || !this.race || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId) throw new Error('Coverage context mismatch');
         if (this.state.outcome) break;
+        if (channel !== 'authority' || !this.race || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId) throw new Error('Coverage context mismatch');
         validateMessage('Coverage', message.value, this.context!);
         if (!sameProgress(message.value.progress, this.baseline.progress)) throw new Error('Coverage history unavailable');
         this.race.coverage(message.value); this.baseline = this.race.snapshot(); break;

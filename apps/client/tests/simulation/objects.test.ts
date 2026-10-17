@@ -13,6 +13,13 @@ for (const scenario of fixtures.scenarios) test(scenario.name, () => {
   game.snapshot().cars.forEach((car, seat) => expect(Math.abs(car.progress - scenario.expected.progress[seat])).toBeLessThanOrEqual(fixtures.precision.absolute + fixtures.precision.relative * Math.abs(scenario.expected.progress[seat])));
   expect(game.snapshot().cars.map(car => car.hp)).toEqual(scenario.expected.hp);
   expect(game.snapshot().cars.map(car => car.score)).toEqual(scenario.expected.score);
-  if ('finish' in scenario.expected) expect(game.snapshot().finish).toEqual(scenario.expected.finish);
+  if ('finish' in scenario.expected) {
+    expect(game.snapshot().finish).toEqual(scenario.expected.finish);
+    expect(game.snapshot().reason).toBe(scenario.expected.hp.includes(0) ? 1 : 0);
+    const final = game.snapshot();
+    game.disconnect(ids[0]);
+    expect(game.advanceTo(scenario.advance + 2)).toEqual([]);
+    expect(game.snapshot()).toEqual(final);
+  }
   expect(events.map(event => ({ timeUs: event.timeUs, objects: event.objects }))).toEqual(scenario.expected.events);
 });

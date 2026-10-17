@@ -276,14 +276,15 @@ func TestSharedFinishContinuations(t *testing.T) {
 	}
 	var fixture struct {
 		Scenarios []struct {
-			Name     string
-			Progress [2]float64
-			Phase    uint8
-			Nos      bool
-			TimeUs   uint64
-			Tick     uint32
-			Result   uint8
-			Lateral  float64
+			Name      string
+			Progress  [2]float64
+			Phase     uint8
+			Nos       bool
+			TimeUs    uint64
+			Tick      uint32
+			Result    uint8
+			Lateral   float64
+			Position0 *float64
 		}
 	}
 	if err = json.Unmarshal(data, &fixture); err != nil {
@@ -328,8 +329,17 @@ func TestSharedFinishContinuations(t *testing.T) {
 			}
 			state := game.Snapshot()
 			expected := &Finish{Tick: scenario.Tick, TimeUs: scenario.TimeUs, Result: scenario.Result}
-			if !reflect.DeepEqual(state.Finish, expected) || math.Abs(state.Cars[0].Progress-360) > 1e-6 || math.Abs(state.Cars[0].Lateral-scenario.Lateral) > 1e-6 {
+			position0 := 360.0
+			if scenario.Position0 != nil {
+				position0 = *scenario.Position0
+			}
+			if !reflect.DeepEqual(state.Finish, expected) || math.Abs(state.Cars[0].Progress-position0) > 1e-6 || math.Abs(state.Cars[0].Lateral-scenario.Lateral) > 1e-6 {
 				t.Fatalf("got %+v cars %+v; want %+v lateral %v", state.Finish, state.Cars, expected, scenario.Lateral)
+			}
+			game.Disconnect(ids[0])
+			accepted, err := game.Submit(ids[0], protocol.Input{Identity: ids[0], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: 1, Intent: 0, Control: 3, HeldMask: 4})
+			if err != nil || accepted {
+				t.Fatalf("terminal input accepted: %v %v", accepted, err)
 			}
 			game.AdvanceTo(2)
 			if !reflect.DeepEqual(state, game.Snapshot()) {

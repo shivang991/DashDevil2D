@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "precision": {
     "absolute": 1e-06,
     "relative": 1e-12
@@ -695,6 +695,313 @@
         }
       },
       "derivation": "Car shifts middle to left at800units/s, entering first obstacle lateral bounds at -71, t=.08875. Front reaches finish450 at center410 from374.5 at400units/s at identical88750us. Damage precedes finish: fatal loses to survivor; nonfatal finishes first."
+    },
+    {
+      "name": "full HP heart caps before simultaneous damage",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 2400,
+          "initialClearDistance": 0,
+          "reservedHearts": 2,
+          "sliceSpacing": 397,
+          "heartExclusionDistance": 0,
+          "heartSize": 52
+        }
+      },
+      "cars": [
+        {
+          "progress": 732,
+          "lateral": 0,
+          "lane": 1,
+          "hp": 3
+        },
+        {
+          "progress": 0
+        }
+      ],
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          2,
+          3
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "events": [
+          {
+            "timeUs": 5000,
+            "objects": [
+              {
+                "id": 8,
+                "sliceId": 2,
+                "lane": 1,
+                "distance": 794,
+                "flags": 10
+              },
+              {
+                "id": 11,
+                "sliceId": 3,
+                "lane": 1,
+                "distance": 800,
+                "flags": 7
+              }
+            ]
+          }
+        ],
+        "progress": [
+          752,
+          20
+        ]
+      },
+      "derivation": "Same independently derived 5000us contacts as healing case: heal3 capped3, then damage1 gives2; heart spent.",
+      "tick": 0
+    },
+    {
+      "name": "distinct simultaneous fatal obstacles clamp before finality",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "initialClearDistance": 0,
+          "reservedHearts": 0,
+          "sliceSpacing": 20
+        }
+      },
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 40,
+          "hp": 1
+        },
+        {
+          "progress": 0
+        }
+      ],
+      "advance": 0.016666666666666666,
+      "expected": {
+        "hp": [
+          0,
+          3
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "progress": [
+          40,
+          0
+        ],
+        "events": [
+          {
+            "timeUs": 0,
+            "objects": [
+              {
+                "id": 4,
+                "sliceId": 1,
+                "lane": 0,
+                "distance": 20,
+                "flags": 10
+              },
+              {
+                "id": 13,
+                "sliceId": 4,
+                "lane": 0,
+                "distance": 80,
+                "flags": 10
+              }
+            ]
+          }
+        ],
+        "finish": {
+          "tick": 0,
+          "timeUs": 0,
+          "result": 1
+        }
+      },
+      "derivation": "Both distinct left obstacles overlap at time zero; sum2 against HP1 clamps0 before any movement. Seat1 wins; both interactions spent."
+    },
+    {
+      "name": "survivor finishes while opponent takes simultaneous fatal damage",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 450,
+          "initialClearDistance": 0,
+          "reservedHearts": 0
+        }
+      },
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 374.5,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 0,
+          "phase": 1,
+          "movementOrigin": 0,
+          "movementTarget": -120,
+          "movementStartUs": 0,
+          "movementEndUs": 150000,
+          "hp": 1
+        },
+        {
+          "progress": 374.5
+        }
+      ],
+      "advance": 0.1,
+      "expected": {
+        "hp": [
+          0,
+          3
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "progress": [
+          410,
+          410
+        ],
+        "events": [
+          {
+            "timeUs": 88750,
+            "objects": [
+              {
+                "id": 4,
+                "sliceId": 1,
+                "lane": 0,
+                "distance": 400,
+                "flags": 10
+              }
+            ]
+          }
+        ],
+        "finish": {
+          "tick": 6,
+          "timeUs": 88750,
+          "result": 1
+        }
+      },
+      "derivation": "The shifting seat0 takes its fatal hit at88750us. Seat1 stays in right lane, reaches center410 and finish450 at the same88750us; wins by elimination precedence."
+    },
+    {
+      "name": "both zero HP takes precedence over both finish crossings",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 450,
+          "initialClearDistance": 0,
+          "reservedHearts": 0
+        }
+      },
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 410,
+          "hp": 1
+        },
+        {
+          "progress": 410,
+          "hp": 1,
+          "lateral": -120,
+          "lane": 0
+        }
+      ],
+      "advance": 0.016666666666666666,
+      "expected": {
+        "hp": [
+          0,
+          0
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "progress": [
+          410,
+          410
+        ],
+        "events": [
+          {
+            "timeUs": 0,
+            "objects": [
+              {
+                "id": 4,
+                "sliceId": 1,
+                "lane": 0,
+                "distance": 400,
+                "flags": 26
+              }
+            ]
+          }
+        ],
+        "finish": {
+          "tick": 0,
+          "timeUs": 0,
+          "result": 2
+        }
+      },
+      "derivation": "At time zero both fronts reach450 while both centers410 overlap left obstacle400 (extent60). Each loses its last HP, obstacle spends both seats, tie by elimination before finish."
+    },
+    {
+      "name": "fatal contact at exact tick endpoint is not deferred",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 450,
+          "initialClearDistance": 0,
+          "reservedHearts": 0,
+          "tickRate": 64
+        }
+      },
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 333.75,
+          "hp": 1
+        },
+        {
+          "progress": 0
+        }
+      ],
+      "advance": 0.015625,
+      "expected": {
+        "hp": [
+          0,
+          3
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "progress": [
+          340,
+          6.25
+        ],
+        "events": [
+          {
+            "timeUs": 15625,
+            "objects": [
+              {
+                "id": 4,
+                "sliceId": 1,
+                "lane": 0,
+                "distance": 400,
+                "flags": 10
+              }
+            ]
+          }
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 15625,
+          "result": 1
+        }
+      },
+      "derivation": "At64Hz tick1 is exactly0.015625s. 333.75+400/64=340: center340 reaches obstacle400 minus extent60 at15625us. Damage removes lastHP at the endpoint; the later finish450 cannot occur."
     }
   ]
 }

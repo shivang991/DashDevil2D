@@ -67,10 +67,12 @@ func (e *Engine) objectContacts(start, end float64) []objectContact {
 			center := (float64(object.Lane) - 1) * g.LaneSpacing
 			multiplier := e.multiplier(seat)
 			progress := func(at float64) float64 { return car.Progress + forwardDistance(g, start, at-start)*multiplier }
-			if progress(end) <= object.Distance-forwardExtent || car.Progress >= object.Distance+forwardExtent {
+			if progress(end) < object.Distance-forwardExtent || car.Progress >= object.Distance+forwardExtent {
 				continue
 			}
-			entry, exit := start, end
+			// An entry at the tick endpoint counts if its true exit is later.
+			// Equal entry/exit remains a tangency, not an overlap.
+			entry, exit := start, math.Inf(1)
 			if car.Progress <= object.Distance-forwardExtent {
 				low, high := start, end
 				for n := 0; n < 52; n++ {
@@ -109,7 +111,7 @@ func (e *Engine) objectContacts(start, end float64) []objectContact {
 				entry = math.Max(entry, math.Min(a, b))
 				exit = math.Min(exit, math.Max(a, b))
 			}
-			if entry < exit {
+			if entry <= end && entry < exit {
 				timeUs, _ := CanonicalTime(entry)
 				contacts = append(contacts, objectContact{object, uint8(seat), timeUs})
 			}

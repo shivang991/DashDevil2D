@@ -48,9 +48,10 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
   useEffect(() => { if (confirmLeave) cancelLeave.current?.focus(); }, [confirmLeave]);
 
   const leave = () => { connection.current?.leave(); setConfirmLeave(false); };
-  const countdown = room?.phase === 1;
+  const finalized = Boolean(state?.outcome && state.outcome.roundId === room?.roundId);
+  const countdown = room?.phase === 1 && !finalized;
   const active = room?.phase === 2;
-  const race = (active || room?.phase === 3) && room?.mode === 1;
+  const race = (active || room?.phase === 3 || finalized && room?.phase !== 0) && room?.mode === 1;
   const installed = room && state?.roundId === room.roundId && state?.startUs === room.startUs;
   const remaining = room ? Math.max(1, Math.min(3, Math.ceil((room.startUs - (clock + (state?.clockOffsetUs ?? 0))) / 1e6))) : 3;
   const inRoom = Boolean(room && state?.identity && state.status !== 'Disconnected');

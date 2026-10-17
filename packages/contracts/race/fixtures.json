@@ -1,13 +1,151 @@
 {
-  "version": 1,
+  "version": 2,
   "configuration": "infra/clear-track.json with finishDistance 400",
   "expectations": "Worked examples: front edge = center + 40; normal 400 units/s; NOS 800 units/s; lateral speed 800 units/s. Event timestamps use half-up microseconds.",
   "scenarios": [
-    { "name": "abreast normal finish ties at front edge", "progress": [0, 0], "phase": 0, "nos": false, "timeUs": 900000, "tick": 54, "result": 2, "lateral": -120 },
-    { "name": "NOS wins before normal opponent", "progress": [0, 0], "phase": 0, "nos": true, "timeUs": 450000, "tick": 27, "result": 0, "lateral": -120 },
-    { "name": "finish during outbound shift", "progress": [350, 0], "phase": 1, "nos": false, "timeUs": 25000, "tick": 2, "result": 0, "lateral": -100 },
-    { "name": "finish during return", "progress": [350, 0], "phase": 2, "nos": false, "timeUs": 25000, "tick": 2, "result": 0, "lateral": -53.33333333333333 },
-    { "name": "different crossings inside same tick are not a tie", "progress": [350, 349.9], "phase": 0, "nos": false, "timeUs": 25000, "tick": 2, "result": 0, "lateral": -120 },
-    { "name": "submicrosecond crossings share canonical time", "progress": [350, 349.99992], "phase": 0, "nos": false, "timeUs": 25000, "tick": 2, "result": 2, "lateral": -120 }
+    {
+      "name": "abreast normal finish ties at front edge",
+      "progress": [
+        0,
+        0
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 900000,
+      "tick": 54,
+      "result": 2,
+      "lateral": -120
+    },
+    {
+      "name": "NOS wins before normal opponent",
+      "progress": [
+        0,
+        0
+      ],
+      "phase": 0,
+      "nos": true,
+      "timeUs": 450000,
+      "tick": 27,
+      "result": 0,
+      "lateral": -120
+    },
+    {
+      "name": "finish during outbound shift",
+      "progress": [
+        350,
+        0
+      ],
+      "phase": 1,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 0,
+      "lateral": -100
+    },
+    {
+      "name": "finish during return",
+      "progress": [
+        350,
+        0
+      ],
+      "phase": 2,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 0,
+      "lateral": -53.33333333333333
+    },
+    {
+      "name": "different crossings inside same tick are not a tie",
+      "progress": [
+        350,
+        349.9
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 0,
+      "lateral": -120
+    },
+    {
+      "name": "submicrosecond crossings share canonical time",
+      "progress": [
+        350,
+        349.99992
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 2,
+      "lateral": -120
+    },
+    {
+      "name": "adjacent canonical microseconds select seat zero",
+      "progress": [
+        350,
+        349.9996
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 0,
+      "lateral": -120
+    },
+    {
+      "name": "adjacent canonical microseconds select seat one",
+      "progress": [
+        349.9996,
+        350
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 1,
+      "lateral": -120,
+      "position0": 359.9996
+    },
+    {
+      "name": "above halfway crossing rounds upward",
+      "progress": [
+        349.99976,
+        0
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 25001,
+      "tick": 2,
+      "result": 0,
+      "lateral": -120
+    },
+    {
+      "name": "just below halfway crossing rounds downward",
+      "progress": [
+        349.9998004,
+        0
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 0,
+      "lateral": -120
+    },
+    {
+      "name": "rounded equal finishes are independent of seat iteration",
+      "progress": [
+        349.99992,
+        350
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 25000,
+      "tick": 2,
+      "result": 2,
+      "lateral": -120
+    }
   ]
 }

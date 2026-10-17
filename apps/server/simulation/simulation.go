@@ -131,7 +131,7 @@ func (e *Engine) Snapshot() State {
 }
 func (e *Engine) Submit(auth protocol.Identity, input protocol.Input) (bool, error) {
 	seat := auth.Seat
-	if seat > 1 || e.identities[seat] != auth {
+	if seat > 1 || e.identities[seat] != auth || e.state.Finish != nil || e.state.Abandoned {
 		return false, nil
 	}
 	if e.tokens[seat] < 1 || len(e.pending) >= int(2*e.context.Connection.InputBurst) {
@@ -173,7 +173,7 @@ func (e *Engine) event(kind string, seat uint8, timeUs uint64) Observation {
 }
 func (e *Engine) Disconnect(auth protocol.Identity) {
 	seat := auth.Seat
-	if seat > 1 || e.identities[seat] != auth || e.state.Abandoned {
+	if seat > 1 || e.identities[seat] != auth || e.state.Abandoned || e.state.Finish != nil {
 		return
 	}
 	e.connected[seat] = false

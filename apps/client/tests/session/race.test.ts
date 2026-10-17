@@ -51,7 +51,7 @@ for (const scenario of fixtures.scenarios) test(`shared finish: ${scenario.name}
   game.restore(b.cars, 0);
   game.advanceTo(1);
   expect(game.snapshot().finish).toEqual({ tick: scenario.tick, timeUs: scenario.timeUs, result: scenario.result });
-  expect(game.snapshot().cars[0].progress).toBeCloseTo(360, 6);
+  expect(game.snapshot().cars[0].progress).toBeCloseTo('position0' in scenario ? scenario.position0! : 360, 6);
   expect(game.snapshot().cars[0].lateral).toBeCloseTo(scenario.lateral, 6);
   const final = game.snapshot(); game.advanceTo(2); expect(game.snapshot()).toEqual(final);
 });
@@ -275,4 +275,35 @@ test('smoothing snaps when repaired cars would visually pass through each other'
   const frame = race.frame(100000, 0);
   expect(frame.renderedCars[0].lateral).toBe(0);
   expect(frame.renderedCars[1].lateral).toBe(-120);
+});
+
+
+test('terminal simulation state is immutable after disconnect and late input', () => {
+  const b = baseline(), game = new Multiplayer(captureConfiguration('drag-race', { gameplay: { finishDistance: 400, initialClearDistance: 0, reservedHearts: 0, obstacleWeight: 0, emptyWeight: 1 } }), 1, [b.identity, { ...b.identity, seat: 1 }]);
+  game.submit(b.identity, { identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 3, heldMask: 4 });
+  game.advanceTo(.5);
+  const final = game.snapshot();
+  expect(final.finish).toEqual({ tick: 27, timeUs: 450000, result: 0 });
+  game.disconnect(b.identity);
+  expect(game.submit(b.identity, { identity: b.identity, round: b.round, sequence: 2, intent: 1, control: 0, heldMask: 0 })).toBe(false);
+  expect(game.advanceTo(2)).toEqual([]);
+  expect(game.snapshot()).toEqual(final);
+});
+
+test('predicted fatal damage remains provisional and authority can repair it', () => {
+  const b = baseline();
+  b.cars[0].hp = 1;
+  b.windows[0].firstSlice = 1; b.windows[0].lastSlice = 1;
+  b.windows[0].objects = [{ id: 4, sliceId: 1, lane: 0, flags: 2, distance: 62 }];
+  b.generator.nextSlice = 2; b.generator.nextObject = 7;
+  const race = new RaceSession(b);
+  const provisional = race.frame(50000, 0);
+  expect(provisional).toMatchObject({ awaiting: true, outcome: undefined });
+  expect(provisional.cars[0].hp).toBe(0);
+  expect(race.frame(100000, 0).cars[0].progress).toBeCloseTo(40, 6);
+  const repaired = structuredClone(b); repaired.epoch++;
+  repaired.windows[0].objects[0].flags = 10;
+  race.install(repaired);
+  expect(race.frame(150000, 0).cars[0].hp).toBe(1);
+  expect(race.frame(150000, 0).outcome).toBeUndefined();
 });

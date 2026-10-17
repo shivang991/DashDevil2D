@@ -57,7 +57,7 @@ export class Multiplayer {
  }
  submit(authenticated: Identity, input: Input): boolean {
   const seat = authenticated.seat, identity = this.identities[seat];
-  if (!identity || !sameIdentity(identity, authenticated)) return false;
+  if (!identity || !sameIdentity(identity, authenticated) || this.finish || this.abandoned) return false;
   if (this.tokens[seat] < 1 || this.pending.length >= 2 * this.configuration.connection.inputBurst) throw new Error('Input rate/queue exceeded; recover connection');
   this.tokens[seat]--;
   let valid = this.connected[seat] && !this.abandoned && sameIdentity(identity, input.identity) && input.round.roundId === this.roundId && input.round.inputGeneration === this.cars[seat].inputGeneration && input.sequence === this.sequences[seat] + 1;
@@ -87,7 +87,7 @@ export class Multiplayer {
  private clear(car: Car): void { car.controls = 0; car.effective = 0; car.heldMask = 0; car.flags = 0; car.freshnessUs = 0; }
  disconnect(authenticated: Identity): void {
   const identity = this.identities[authenticated.seat];
-  if (!identity || !sameIdentity(identity, authenticated) || this.abandoned) return;
+  if (!identity || !sameIdentity(identity, authenticated) || this.abandoned || this.finish) return;
   this.connected[authenticated.seat] = false;
   this.clear(this.cars[authenticated.seat]);
   for (const queued of this.pending) if (queued.seat === authenticated.seat) queued.valid = false;
@@ -306,8 +306,10 @@ export class Multiplayer {
    const center = (object.lane - 1) * g.laneSpacing;
    const multiplier = this.multiplier(this.cars.indexOf(car));
    const progress = (at: number) => car.progress + this.forwardDistance(start, at - start) * multiplier;
-   if (progress(end) <= object.distance - forwardExtent || car.progress >= object.distance + forwardExtent) continue;
-   let entry = start, exit = end;
+   if (progress(end) < object.distance - forwardExtent || car.progress >= object.distance + forwardExtent) continue;
+   // Keep the true exit unconstrained: entry exactly at the tick end counts,
+   // while an entry coinciding with a separating exit remains a tangency.
+   let entry = start, exit = Infinity;
    if (car.progress <= object.distance - forwardExtent) {
     let low = start, high = end;
     for (let n = 0; n < 52; n++) { const middle = low + (high - low) / 2; if (progress(middle) <= object.distance - forwardExtent) low = middle; else high = middle; }
@@ -325,7 +327,7 @@ export class Multiplayer {
     const b = start + (center + lateralExtent - car.lateral) / speed;
     entry = Math.max(entry, Math.min(a, b)); exit = Math.min(exit, Math.max(a, b));
    }
-   if (entry < exit) contacts.push({ object, seat, timeUs: canonicalTime(entry) });
+   if (entry <= end && entry < exit) contacts.push({ object, seat, timeUs: canonicalTime(entry) });
   }
   return contacts.sort((a,b) => a.timeUs - b.timeUs || a.object.id - b.object.id || a.seat - b.seat);
  }

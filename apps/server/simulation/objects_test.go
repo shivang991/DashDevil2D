@@ -73,9 +73,24 @@ func TestSharedObjects(t *testing.T) {
 				}
 			}
 			if scenario.Expected.Finish != nil {
-				actual := game.Snapshot().Finish
+				state := game.Snapshot()
+				actual := state.Finish
 				if actual == nil || actual.Tick != scenario.Expected.Finish.Tick || actual.TimeUs != scenario.Expected.Finish.TimeUs || actual.Result != scenario.Expected.Finish.Result {
 					t.Fatalf("finish %#v expected %#v", actual, scenario.Expected.Finish)
+				}
+				reason := uint8(0)
+				for _, hp := range scenario.Expected.Hp {
+					if hp == 0 {
+						reason = 1
+					}
+				}
+				if actual.Reason != reason {
+					t.Fatalf("terminal reason %d expected %d", actual.Reason, reason)
+				}
+				game.Disconnect(ids[0])
+				later, err := game.AdvanceTo(scenario.Advance + 2)
+				if err != nil || len(later) != 0 || !reflect.DeepEqual(state, game.Snapshot()) {
+					t.Fatalf("terminal state changed: %v %v", later, err)
 				}
 			}
 			actual := []expectedEvent{}
