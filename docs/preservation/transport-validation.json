@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "date": "2026-10-15",
+  "timezone": "America/Phoenix",
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/29",
+  "baselineRevision": "0a384877b9182491d98a22b83f9688abdcf0a76a",
+  "testedRevision": "ecad595129a9abbce0faa94be61bfc25672dce7b",
+  "sourceFrozen": true,
+  "worktreeCleanAtTest": true,
+  "ownerStage3HumanReviewConfirmation": {
+    "date": "2026-10-15",
+    "source": "Implementation chat: owner answered yes when asked if Stage 3 human audiovisual preservation review had passed.",
+    "record": "docs/preservation/contracts-checkpoint.md"
+  },
+  "versions": {
+    "protocol": 1,
+    "configuration": 1,
+    "track": 1,
+    "browserPreservationFixtures": 3,
+    "diagnosticFixture": 1,
+    "node": "26.10.0",
+    "pnpm": "8.15.9",
+    "go": "1.26.0",
+    "webtransport-go": "0.13.0",
+    "quic-go": "0.62.0",
+    "fiber": "2.52.9"
+  },
+  "inputSha256": {
+    "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+    "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+    "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+    "packages/contracts/protocol/fixtures.json": "fd588b56cd72743f6bb779bd8e51af74135fdeea654bc87457dabc4300ba244d",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "checks": {
+    "workspace": {
+      "command": "pnpm check --force --env-mode=loose",
+      "passed": true,
+      "tasks": 15,
+      "turboCacheHits": 0,
+      "vitest": 218,
+      "nativeTransportTests": 8,
+      "log": "/private/tmp/dashdevil-stage4-evidence/transport/dash29-check-final-01.log"
+    },
+    "nativeRace": {
+      "command": "go test -race ./transport",
+      "passed": true,
+      "seconds": 35.707,
+      "log": "/private/tmp/dashdevil-stage4-evidence/transport/dash29-expiry-green.log",
+      "note": "Run on identical Go product/test source before ecad595 commit; final full native suite passed again at the clean tested revision."
+    },
+    "transportBrowser": {
+      "command": "pnpm test:transport",
+      "passed": true,
+      "scenarios": 3,
+      "retries": 0,
+      "contextsInPairedScenario": 2,
+      "browser": "Google Chrome 155.0.8059.79",
+      "channel": "installed chrome, headless",
+      "manifest": "apps/client/test-results/transport-2026-10-15T07-28-39.371Z/manifest.json",
+      "manifestSha256": "f5dc7b2f36ba0f2cc57a3cc64f8759e00dde7a07f54e96dedf35174b8e51b9c1",
+      "copiedEvidence": "/private/tmp/dashdevil-stage4-evidence/transport/transport-final",
+      "log": "/private/tmp/dashdevil-stage4-evidence/transport/dash29-transport-final-01.log"
+    },
+    "preservationBrowser": {
+      "command": "pnpm test:browser --env-mode=loose",
+      "passed": true,
+      "scenarios": 11,
+      "retries": 0,
+      "manifest": "apps/client/test-results/run-2026-10-15T07-28-59.676Z-8vB98m/manifest.json",
+      "manifestSha256": "6f89035e988a87b177ccbc66d6f167aac20a40e66c49d706f77315d442c11faa",
+      "copiedEvidence": "/private/tmp/dashdevil-stage4-evidence/transport/preservation-final",
+      "log": "/private/tmp/dashdevil-stage4-evidence/transport/dash29-preservation-final-01.log"
+    },
+    "certificateRenewal": {
+      "passed": true,
+      "curve": "P-256",
+      "validityHours": 313,
+      "hashBytes": 32,
+      "retainedUntilRenewal": true,
+      "forcedRotation": true,
+      "trustStoreModified": false,
+      "log": "/private/tmp/dashdevil-stage4-evidence/transport/dash29-certificate-renewal.log"
+    },
+    "independentReview": {
+      "standardsOutstanding": 0,
+      "specOutstanding": 0,
+      "resolved": [
+        "P2 reservation expiry did not notify surviving room/host revision"
+      ],
+      "report": "docs/preservation/transport-review.md"
+    }
+  },
+  "diagnostic": {
+    "seed": 1,
+    "positions": [
+      100.125,
+      20000.5
+    ],
+    "baselineBytes": 1057,
+    "bytesAfterOneCorrection": 2114,
+    "movement": "stationary fixture, no gameplay parity claim",
+    "verificationDatagramBytes": 10,
+    "expectedValues": "independently reviewed from existing #27 complete-continuation fixture"
+  },
+  "environment": {
+    "cpu": "Apple M2",
+    "platform": "darwin",
+    "release": "25.5.0",
+    "architecture": "arm64",
+    "browser": "155.0.8059.79",
+    "browserVersionSource": "Installed Chrome --version, also used by Playwright channel chrome",
+    "httpsTrust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+    "network": "local loopback; no impairment",
+    "referenceHardwareEquivalence": "not established"
+  },
+  "visualInspection": "Agent inspected final seat-1 connected-state screenshot (same seat session, generation 5, 2 connected seats, 4 verified datagrams, matching fixture positions). Existing Long Drive audiovisual owner signoff authorizes Stage 4 entry; no new human multiplayer/browser-matrix acceptance is asserted.",
+  "failureRetention": {
+    "directory": "/private/tmp/dashdevil-stage4-evidence/transport",
+    "logSha256": {
+      "dash29-certificate-renewal.log": "e8c32a670467ec9a58a1613a2c2f61efde5020df1dbec1c841cdb4c5c0406de0",
+      "dash29-admission-04.log": "e993e78332e614dc877afacada8fd84574217b7838f42fb325c56d35735d2446",
+      "dash29-admission-05.log": "175217950be838a15f6722528e288e4a48f20d1e5454d392d94e73412d43f443",
+      "dash29-red-quic.log": "133001314e7a569a220fad273e9201b35070cc215835f0a218fa278fa4684853",
+      "dash29-room-green.log": "a616fa73c705badac3edcca03139e4531595e5d538db3bcae8fa9d09a9ff83c4",
+      "dash29-red-room-02.log": "de09a331efd702857ba23469d6f395c7e3a60ccaa14ee0b7057620fe3c9599d2",
+      "dash29-red-expiry-notification-02.log": "b8a2f97ab3c67a8d2f309f70fb3ab562fab56c4425bc6d76a99b2ab9a22caa39",
+      "dash29-types-01.log": "01bf35de77e25a9df5f41fd0d3de6954b080adf486463da493520776f1a8807a",
+      "dash29-admission-03.log": "f718031b71a6eb82bab59b71d6f3fe40fc7744ce7bfb810d8499a7ac0b9e304c",
+      "dash29-red-admission-02.log": "0bfa0b466e67aee8cc48b942166fca97f7a2351200cec7accb91fff0f82e540a",
+      "dash29-red-correction.log": "1685df7e426e6ecf5eb9e09d5eb1e9dd1bb682fdddb8f5a8506cc4c660d24a29",
+      "dash29-correction-green.log": "b27cc6116b8d16488f464640800942bcb39a0501fcda26f48f807169fde3415e",
+      "dash29-expiry-green.log": "154b3734e66e465607150dce71a0670f14aa657cc8726969528fac96438024a8",
+      "dash29-browser-03.log": "fa9d039e6a6e43a39820e2d72375cf3aad8c260bb32dea9265eca33e1b2af56e",
+      "dash29-browser-02.log": "c11f64e9b30b308cf4f1c3b08baacc34e77bb2a8f5407e124de8941f3ada8ba0",
+      "dash29-red-room.log": "f9ed9117dd22869cb3ab5124ef89e18cbd012d6230f1cdaedb6286f7817adb34",
+      "dash29-preservation-final-01.log": "6bcb61af8c4d55d17eb11eaf7b66b48e0f25ba50e29d404fe86dfcfbe3c592e2",
+      "dash29-browser-04.log": "6d6b974d5db5d04860923d0dc2e5dbd91cfda7135d509357fa015307c947baec",
+      "dash29-pair-02.log": "e5c10798e5208ad1d8c2deef24d547332765691413c6d7cceba1b9d64329483f",
+      "dash29-red-expiry-notification.log": "b355ba2cbc51b3cb09b9a0cca970125623c6f16b26c0784bd82dec241ac644d4",
+      "dash29-pair-01.log": "0cea7790b846981d2e29b101de4c88587c10a54933247d08b3e5ddef63634513",
+      "dash29-client-types.log": "9dbb63a057d98f478ef29b3b2c1b286160aa2715c6490d9958599da1211a23c9",
+      "dash29-check-final-01.log": "69e05789b0322dadb8e8c31841a2fab138e99b3744dbb37c27885af3305f32f7",
+      "dash29-lint-01.log": "e2647163c79ba65be87ed6e055708fbb0bc132d7bd6682acf6be98a79345e9d9",
+      "dash29-red-admission.log": "b8d6f2229c50f414ba294b3d36f10873a9a538db474c1a0082b469726868e883",
+      "dash29-red-browser.log": "4742821f03c0e223663dff6a2e1abde1beab806cb4e565944b4fddb5b4233525",
+      "dash29-client-types-03.log": "9dbb63a057d98f478ef29b3b2c1b286160aa2715c6490d9958599da1211a23c9",
+      "dash29-transport-final-01.log": "1b2f62a049286e3abae38dddd5b95dd974fff3e33e1fc5ad11df77907fe6f933",
+      "dash29-quic-02.log": "38be15c5daab5385663f961971d6644a3ba876a65d84b7125a4caa346e2f94f4",
+      "dash29-client-types-02.log": "9dbb63a057d98f478ef29b3b2c1b286160aa2715c6490d9958599da1211a23c9"
+    },
+    "notes": [
+      "Original red/missing-interface and tool invocation failures retained.",
+      "Sandbox loopback/default Go-cache denials retained; writable module/cache paths and approved loopback runs used for actual checks.",
+      "Native QUIC missing ALPN and Chrome insufficient HTTP/3 stream limits retained through fixes.",
+      "Initial browser invocation missing base URL retained.",
+      "Expiry regression first had a test handshake deadline error; corrected clean red and passing race regression both retained.",
+      "Browser network traces disabled to avoid retaining bearer credentials; sanitized per-seat state and screenshots are embedded in the JSON report and extracted alongside it.",
+      "Video covers default-context error scenarios; the main two-context scenario retains per-seat screenshots/state."
+    ]
+  },
+  "stage4": {
+    "implementation": "secure paired diagnostic transport implemented and reviewed",
+    "exit": "incomplete",
+    "progressionToStage5": "blocked"
+  },
+  "unavailable": {
+    "goGameplayParity": "#28 absent; shared Stage 4 exit requires independently reviewed parity.",
+    "supportedBrowserReleaseMatrix": "Only installed actual Chrome on this macOS host exercised. Current/previous Chrome, Edge, Firefox and Safari across applicable Windows/macOS not established.",
+    "trustedLocalHTTPS": "mkcert unavailable in this environment; tooling supplies trusted setup workflow but OS trust/interoperability was not executed. Automated Chrome uses a process-scoped SPKI trust pin plus independent WebTransport SHA-256 pin.",
+    "networkAndManualAcceptance": "Impairment profiles, actual QUIC/UDP/IP network byte totals, reference hardware/capacity and human multiplayer evidence not established.",
+    "largeTransferScheduler": "The small diagnostic fixture does not exercise >256KiB transfer scheduling; bounds are implemented/reviewed, not claimed as measured acceptance."
+  }
+}

@@ -1,0 +1,13 @@
+server {
+    listen 80;
+    server_name ${PUBLIC_HOST};
+    access_log off;
+    error_log /var/log/nginx/error.log crit;
+    location ^~ /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+        try_files $uri =404;
+    }
+    location / {
+        return 308 https://${PUBLIC_HOST}$request_uri;
+    }
+}

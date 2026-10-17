@@ -1,0 +1,17 @@
+.git
+**/node_modules
+**/.turbo
+**/dist
+**/test-results
+**/playwright-report
+.local
+**/.env
+**/.env.*
+!**/.env.example
+infra/certs
+**/*.pem
+**/*.key
+**/.DS_Store
+.agents
+.claude
+.codex
