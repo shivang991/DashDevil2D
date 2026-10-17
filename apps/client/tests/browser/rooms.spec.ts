@@ -16,6 +16,7 @@ test('two React participants adopt host mode, ready and share a physics-free cou
     expect(code).toMatch(/^\d{4}$/);
     await pages[1].getByRole('button', { name: /Drag Race/ }).click();
     await pages[1].getByLabel('Room code').fill(code);
+    await expect(pages[1].getByRole('button', { name: 'Join Room', exact: true })).toBeEnabled();
     await pages[1].getByLabel('Room code').press('Enter');
     await expect(pages[1].getByTestId('connection-state')).toHaveText('Connected');
     await expect(pages[1].getByTestId('selected-mode')).toHaveText('Road Rage');
@@ -75,6 +76,7 @@ test('four-digit entry retains leading zeros and shows admission errors beside t
   await page.goto('/');
   await page.getByRole('button', { name: /Drag Race/ }).click();
   await page.getByLabel('Room code').fill('0042');
+  await expect(page.getByRole('button', { name: 'Join Room', exact: true })).toBeEnabled();
   await page.getByLabel('Room code').press('Enter');
   await expect(page.getByRole('alert').first()).toContainText('Room not found');
   await expect(page.getByLabel('Room code')).toHaveValue('0042');
