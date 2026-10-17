@@ -337,3 +337,20 @@ test('ordered boundary authority reconstructs both cars before the grouped objec
   expect(race.snapshot().cars[1].progress).toBeCloseTo(6.666666666666667, 6);
   expect(race.snapshot().cars[0].hp).toBe(1);
 });
+
+test('canonical group sample preserves the blocked segment before lateral clearance', () => {
+  const b = baseline();
+  const game = new Multiplayer(captureConfiguration('drag-race', { gameplay: { finishDistance: 450, initialClearDistance: 0, reservedHearts: 0, obstacleWeight: 1, emptyWeight: 0, coinWeight: 0, heartWeight: 0 } }), 1, [b.identity, { ...b.identity, seat: 1 }]);
+  const cars = game.snapshot().cars;
+  Object.assign(cars[0], { progress: 333.33304, hp: 1, controls: 3, effective: 3, heldMask: 4, flags: 1, freshnessUs: 1000000 });
+  const origin = -70 / (1 - .0166668 / .15);
+  Object.assign(cars[1], { progress: 343.33304, lateral: origin, lane: 1, departure: 1, target: 1, phase: 2, movementOrigin: origin, movementTarget: 0, movementStartUs: 0, movementEndUs: 150000 });
+  game.restore(cars, 0);
+  game.advanceTo(.05);
+  const state = game.snapshot();
+  expect(state.finish).toEqual({ tick: 2, timeUs: 16667, result: 1 });
+  // Seed1 obstacle400: follower is blocked at400/s until clearance16666.8us,
+  // then uses800/s to enter at16667.1us. Sample tick1 precedes clearance.
+  expect(state.cars[0].progress).toBeCloseTo(333.33304 + 400 / 60, 6);
+  expect(state.cars.map(car => car.hp)).toEqual([0, 2]);
+});

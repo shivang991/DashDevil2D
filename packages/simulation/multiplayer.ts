@@ -23,6 +23,7 @@ export class Multiplayer {
  private represented?: readonly ObjectState[];
  private continuationUs?: number;
  private rawTime = 0;
+ private segments: { start: number; end: number; cars: [Car, Car]; multipliers: number[] }[] = [];
  private group?: { timeUs: number; sampleTime: number; contacts: { object: ObjectState; seat: number; timeUs: number }[]; finishMask: number; sample?: [Car, Car] };
  private heldEvents: Observation[] = [];
  private committed?: ReturnType<Multiplayer['currentSnapshot']>;
@@ -76,6 +77,7 @@ export class Multiplayer {
   this.represented = objects?.map(object => ({ ...object })); this.continuationUs = timeUs === canonicalTime(tick / this.configuration.gameplay.tickRate) ? undefined : timeUs;
   this.consumption = new Map((objects ?? []).map(object => [object.id, object.flags & 28]));
   if (!Number.isSafeInteger(tick) || tick < 0 || cars.length !== 2) throw new Error('Invalid continuation');
+  this.segments = [];
   this.tick = tick; this.wallTime = tick / this.configuration.gameplay.tickRate; this.rawTime = this.continuationUs === undefined ? this.wallTime : timeUs / 1e6;
   this.pending = []; this.releases = []; this.abandoned = false; this.finish = undefined; this.group = undefined; this.heldEvents = []; this.committed = undefined; this.frozen = undefined;
   cars.forEach((car, seat) => { this.cars[seat] = { ...car }; this.sequences[seat] = car.lastInput; this.connected[seat] = true; });
@@ -151,6 +153,10 @@ export class Multiplayer {
  get pendingGroup() { return this.committed !== undefined; }
  private move(start: number, end: number): void {
   const g = this.configuration.gameplay, multipliers = this.cars.map((_, seat) => this.multiplier(seat));
+  // A newly discovered group can sample an earlier piece of this microsecond.
+  this.segments = this.segments.filter(segment => segment.end >= start - .000002);
+  if (this.segments.length >= 1024) throw new Error('Physical segment history exceeded');
+  this.segments.push({ start, end, cars: this.cars.map(car => ({ ...car })) as [Car, Car], multipliers });
   for (const [seat, car] of this.cars.entries()) {
    car.progress += this.forwardDistance(start, end - start) * multipliers[seat];
    car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * end);
@@ -186,7 +192,7 @@ export class Multiplayer {
     this.tick = checkpoint.tick;
    }
    this.abandoned = true; this.pending = []; this.group = undefined; this.committed = undefined; this.cars.forEach(car => this.clear(car));
-   if (checkpoint) this.frozen = { ...structuredClone(checkpoint), abandoned: true, cars: this.cars.map(car => ({ ...car })) as [Car, Car] };
+   if (checkpoint) this.frozen = { ...this.copySnapshot(checkpoint), abandoned: true, cars: this.cars.map(car => ({ ...car })) as [Car, Car] };
    return [{ type: 'abandoned', tick: this.tick, timeUs: checkpoint?.timeUs ?? canonicalTime(this.tick / g.tickRate) }];
   }
   while ((this.tick + 1) / g.tickRate <= seconds) {
@@ -221,10 +227,12 @@ export class Multiplayer {
      // Sampling does not round or replace the raw integration boundaries.
      if (!group.sample && group.sampleTime > time) next = Math.min(next, group.sampleTime);
      if (!group.sample && group.sampleTime <= time) {
-      const sample = this.cars.map(car => ({ ...car })) as [Car, Car];
-      const elapsed = time - group.sampleTime;
+      const segment = this.segments.find(segment => segment.start <= group.sampleTime && segment.end >= group.sampleTime);
+      const sample = (segment?.cars ?? this.cars).map(car => ({ ...car })) as [Car, Car];
+      const sampleStart = segment?.start ?? time;
+      const elapsed = group.sampleTime - sampleStart;
       sample.forEach((car, seat) => {
-       car.progress -= this.forwardDistance(group.sampleTime, elapsed) * this.multiplier(seat);
+       car.progress += this.forwardDistance(sampleStart, elapsed) * (segment?.multipliers[seat] ?? this.multiplier(seat));
        car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * group.sampleTime);
        if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * Math.max(0, Math.min(1, (group.sampleTime * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs)));
       });
@@ -263,7 +271,7 @@ export class Multiplayer {
    this.updateTrack();
    this.tick++;
    if (this.group) {
-    this.committed ??= structuredClone(before);
+    this.committed ??= this.copySnapshot(before);
     withheldStart ??= eventStart;
    }
   }
@@ -413,7 +421,11 @@ export class Multiplayer {
  }
  /** Uncommitted prediction view; never send it as an authoritative checkpoint. */
  preview() { return this.currentSnapshot(); }
- snapshot() { return structuredClone(this.frozen ?? this.committed ?? this.currentSnapshot()); }
+ snapshot() { return this.copySnapshot(this.frozen ?? this.committed ?? this.currentSnapshot()); }
+ private copySnapshot(state: ReturnType<Multiplayer['currentSnapshot']>) {
+  return { ...state, finish: state.finish ? { ...state.finish } : undefined, cars: state.cars.map(car => ({ ...car })) as [Car, Car], objects: state.objects.map(object => ({ ...object })), latestPress: state.latestPress ? { ...state.latestPress } : null,
+   track: { ...state.track, slices: state.track.slices.map(slice => ({ ...slice, cells: [...slice.cells] as typeof slice.cells })) } };
+ }
  private currentSnapshot() { return { finish: this.finish ? { tick: this.finish.tick, timeUs: this.finish.timeUs, result: this.finish.result } : undefined, reason: this.finish?.reason, objects: this.objects(), tick: this.tick, timeUs: this.finish?.timeUs ?? this.continuationUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
   cars: this.cars.map(car => ({ ...car })) as [Car, Car], latestPress: this.latestPress ? { ...this.latestPress } : null }; }
 }
