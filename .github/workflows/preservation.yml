@@ -24,6 +24,8 @@ jobs:
       - run: pnpm test:transport
       - run: pnpm test:rooms
       - run: pnpm test:race
+      - run: pnpm test:objects
+      - run: pnpm test:hearts
       - uses: actions/upload-artifact@v4
         if: always()
         with:

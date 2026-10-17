@@ -1,0 +1,4 @@
+# github.com/shivang991/DashDevil2D/apps/server/simulation [github.com/shivang991/DashDevil2D/apps/server/simulation.test]
+simulation/objects_test.go:28:90: event.Objects undefined (type Observation has no field or method Objects)
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation [build failed]
+FAIL

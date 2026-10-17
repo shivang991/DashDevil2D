@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "fixture": "shipped default Drag Race configuration; random server seed; obstacles and HP elimination",
+  "revision": "bb64af2a33c6922983ec5da313866fe22b6a8459",
+  "dirty": "?? docs/preservation/evidence/objects/\n",
+  "hashes": {
+    "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+    "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+    "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+    "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+    "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+    "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+    "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+    "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "go": "go version go1.26.0 darwin/arm64",
+  "pnpm": "8.15.9",
+  "node": "v26.10.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "cpu": "Apple M2",
+  "release": "25.5.0",
+  "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+  "exitCode": 0,
+  "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-QxHktJ"
+}

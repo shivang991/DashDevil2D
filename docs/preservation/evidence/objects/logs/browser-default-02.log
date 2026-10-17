@@ -1,0 +1,50 @@
+
+> dashdevil@ test:objects /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --objects
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-55IAhT/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-55IAhT
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T06:06:11Z
+[WebServer] (node:77357) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:77358) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:77358) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 1 test using 1 worker
+
+(node:77366) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/objects.spec.ts:5:1 › two actual browsers survive shipped default objects until HP elimination (5.1s)
+
+
+  1) tests/browser/objects.spec.ts:5:1 › two actual browsers survive shipped default objects until HP elimination 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 24000
+    Received: undefined
+
+      19 |     for (const page of pages) await expect(page.getByRole('img', { name: 'Multiplayer race' })).toBeVisible();
+      20 |     const initial = await read(pages[0]);
+    > 21 |     expect(initial.context?.gameplay.finishDistance).toBe(hearts ? 2400 : 24000);
+         |                                                      ^
+      22 |     expect(initial.context?.gameplay.reservedHearts).toBe(hearts ? 2 : 4);
+      23 |     if (hearts) {
+      24 |       // Steer both cars into the first server-published reserved heart lane. No
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/objects.spec.ts:21:54
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-55IAhT/browser-1792217173944/objects-two-actual-browser-c5265-bjects-until-HP-elimination/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-55IAhT/browser-1792217173944/objects-two-actual-browser-c5265-bjects-until-HP-elimination/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-55IAhT/browser-1792217173944/objects-two-actual-browser-c5265-bjects-until-HP-elimination/error-context.md
+
+  1 failed
+    tests/browser/objects.spec.ts:5:1 › two actual browsers survive shipped default objects until HP elimination 
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T06-06-20.925Z
+ ELIFECYCLE  Command failed with exit code 1.

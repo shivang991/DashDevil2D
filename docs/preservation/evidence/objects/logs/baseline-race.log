@@ -1,0 +1,64 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-SRIl18/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-SRIl18
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T05:59:07Z
+[WebServer] (node:74290) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74291) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:74291) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 3 tests using 1 worker
+
+(node:74299) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/race.spec.ts:3:60 › two actual browsers drive and confirm one finish (clean) (7.2s)
+(node:74785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 tests/browser/race.spec.ts:3:60 › two actual browsers drive and confirm one finish (delayed) (10.6s)
+  ✓  3 tests/browser/race.spec.ts:3:60 › two actual browsers drive and confirm one finish (recovering) (9.4s)
+
+
+  1) tests/browser/race.spec.ts:3:60 › two actual browsers drive and confirm one finish (clean) ────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Drag Race', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Drag Race', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Drag Race', exact: true })
+        - waiting for navigation to finish...
+        - navigated to "https://127.0.0.1:4173/"
+
+
+      70 |     await pages[0].getByRole('button', { name: 'Start round' }).click();
+      71 |     for (const page of pages) { await expect(page.getByTestId('countdown')).toBeVisible(); await page.keyboard.press('ArrowUp'); }
+    > 72 |     for (const page of pages) await expect(page.getByRole('heading', { name: 'Drag Race', exact: true })).toBeVisible();
+         |                                                                                                           ^
+      73 |     const canvas = pages[0].getByRole('img', { name: 'Multiplayer race' });
+      74 |     await expect(canvas).toBeVisible(); await canvas.focus();
+      75 |     await pages[0].keyboard.down('ArrowUp');
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:72:107
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-SRIl18/browser-1792216750610/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-SRIl18/browser-1792216750610/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-SRIl18/browser-1792216750610/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/error-context.md
+
+  1 failed
+    tests/browser/race.spec.ts:3:60 › two actual browsers drive and confirm one finish (clean) ─────
+  2 passed (32.6s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T05-59-41.968Z
+ ELIFECYCLE  Command failed with exit code 1.

@@ -1,0 +1,47 @@
+
+> dashdevil@ typecheck /Users/shivang/Desktop/programs/test/claude-code-test
+> turbo run typecheck
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running typecheck in 4 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache miss, executing cb0db6d4158e347c
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/server:generate: cache miss, executing 8e2f9e145bdaa66d
+@dashdevil/contracts:typecheck: cache miss, executing 3245c708bf38a551
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/server:generate: 
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/simulation:typecheck: cache miss, executing 1630d3f65e13b60b
+@dashdevil/server:typecheck: cache miss, executing c847d09f974e9b26
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/server:typecheck: 
+@dashdevil/server:typecheck: > @dashdevil/server@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:typecheck: > go vet ./...
+@dashdevil/server:typecheck: 
+@dashdevil/server:typecheck: transport/race.go:6:2: open /Users/shivang/Library/Caches/go-build/df/dfa3777c40ba787a0250a9a935674d5d0d07e051ccbf0e12abd2352b8f27108e-d: operation not permitted
+@dashdevil/server:typecheck: pattern ./...: open /Users/shivang/Library/Caches/go-build/df/dfa3777c40ba787a0250a9a935674d5d0d07e051ccbf0e12abd2352b8f27108e-d: operation not permitted
+@dashdevil/server:typecheck:  ELIFECYCLE  Command failed with exit code 1.
+ ERROR  @dashdevil/server#typecheck: command (/Users/shivang/Desktop/programs/test/claude-code-test/apps/server) /Users/shivang/Library/pnpm/.tools/@pnpm+exe/8.15.9/bin/pnpm run typecheck exited (1)
+
+ Tasks:    3 successful, 5 total
+Cached:    0 cached, 5 total
+  Time:    1.307s 
+Failed:    @dashdevil/server#typecheck
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

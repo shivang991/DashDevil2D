@@ -1,0 +1,38 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (12 tests | 1 failed) 18ms
+   × predicted pickup feedback is delivered once across frame replay and confirmation 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts > predicted pickup feedback is delivered once across frame replay and confirmation
+AssertionError: expected undefined to deeply equal [ 'Heart consumed' ]
+
+- Expected:
+[
+  "Heart consumed",
+]
+
++ Received:
+undefined
+
+ ❯ tests/session/race.test.ts:88:41
+     86|   b.windows[0].firstSlice = 1; b.windows[0].lastSlice = 1; b.generator…
+     87|   const race = new RaceSession(b);
+     88|   expect(race.frame(25000, 0).feedback).toEqual(['Heart consumed']);
+       |                                         ^
+     89|   expect(race.frame(25000, 0).feedback).toEqual([]);
+     90|   const state = race.frame(25000, 0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 11 passed (12)
+   Start at  23:03:15
+   Duration  154ms (transform 43%, tests 32%, import 22%, worker 3%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/session/race.test.ts

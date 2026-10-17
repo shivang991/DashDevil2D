@@ -1,0 +1,53 @@
+
+> dashdevil@ test:hearts /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --hearts
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EuT477/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EuT477
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T06:07:55Z
+[WebServer] (node:78546) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:78547) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:78547) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 1 test using 1 worker
+
+(node:78556) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/objects.spec.ts:5:1 › two actual browsers contend for reserved hearts and confirm finish (9.6s)
+
+
+  1) tests/browser/objects.spec.ts:5:1 › two actual browsers contend for reserved hearts and confirm finish 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: 7
+    Received: undefined
+
+    Call Log:
+    - Timeout 4000ms exceeded while waiting on the predicate
+
+      35 |         }
+      36 |       }
+    > 37 |       await expect.poll(async () => (await read(pages[0])).objects?.find(object => object.id === heart.id)?.flags, { timeout: 4000 }).toBe(7);
+         |                                                                                                                                       ^
+      38 |       const collected = await Promise.all(pages.map(read)); observations.push(collected);
+      39 |       expect(collected[0].cars?.map(car => car.hp)).toEqual([3, 3]);
+      40 |       await info.attach('shared-heart.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/objects.spec.ts:37:135
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EuT477/browser-1792217278574/objects-two-actual-browser-980d7-d-hearts-and-confirm-finish/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EuT477/browser-1792217278574/objects-two-actual-browser-980d7-d-hearts-and-confirm-finish/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EuT477/browser-1792217278574/objects-two-actual-browser-980d7-d-hearts-and-confirm-finish/error-context.md
+
+  1 failed
+    tests/browser/objects.spec.ts:5:1 › two actual browsers contend for reserved hearts and confirm finish 
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T06-08-10.057Z
+ ELIFECYCLE  Command failed with exit code 1.

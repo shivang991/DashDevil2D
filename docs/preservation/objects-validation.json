@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/32",
+  "date": "2026-10-16",
+  "timezone": "America/Phoenix",
+  "baseline": "8f64dfeaad762039ea410b5cc54186a14d72f9d9",
+  "gameplayRevision": "f8d1d5c",
+  "browserSourceRevision": "bb64af2",
+  "preservationRoutingRevision": "ab1f814",
+  "fixtureVersions": {
+    "objects": 1,
+    "race": 1,
+    "protocol": 1,
+    "configuration": 1,
+    "generation": 1,
+    "preservationCapture": 3
+  },
+  "continuousTolerance": {
+    "absolute": 1e-06,
+    "relative": 1e-12
+  },
+  "exact": [
+    "canonical event times",
+    "decisions",
+    "object identities",
+    "consumption flags",
+    "existing generated wire compatibility fixtures"
+  ],
+  "hashes": {
+    "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+    "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+    "packages/contracts/simulation/fixtures.json": "5baeca7e456cb5d70e44757f0281f8f8eec83e3715e82ee053ac144759034b04",
+    "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "infra/hearts-track.json": "e824ea0983361235a414fb755bf83d18ebaf9eb39e21543c4b7f04c030b15b90",
+    "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+    "apps/client/playwright.config.ts": "041f2ee4097a1dbdf1d2e9a05aee9f8ac88d40054c09e02119c6bd4fcb1c10cf",
+    ".github/workflows/preservation.yml": "fa377e4026a5408273068839a44346112c6c86437ee526958eb2712e1bcfe259"
+  },
+  "commands": [
+    {
+      "command": "pnpm test:objects",
+      "exitCode": 0,
+      "revision": "bb64af2a33c6922983ec5da313866fe22b6a8459"
+    },
+    {
+      "command": "pnpm test:hearts",
+      "exitCode": 0,
+      "revision": "bb64af2a33c6922983ec5da313866fe22b6a8459"
+    },
+    {
+      "command": "pnpm test:race",
+      "exitCode": 0,
+      "revision": "bb64af2a33c6922983ec5da313866fe22b6a8459"
+    },
+    {
+      "command": "pnpm test:rooms",
+      "exitCode": 0,
+      "revision": "bb64af2a33c6922983ec5da313866fe22b6a8459"
+    },
+    {
+      "command": "pnpm test:transport",
+      "exitCode": 0,
+      "revision": "bb64af2a33c6922983ec5da313866fe22b6a8459"
+    },
+    {
+      "command": "pnpm check --force --env-mode=loose",
+      "exitCode": 0,
+      "revision": "ab1f8141752db6366766a3e4a08264e1e4944eae",
+      "log": "evidence/objects/logs/check-final-02.log"
+    },
+    {
+      "command": "pnpm test:browser",
+      "exitCode": 0,
+      "revision": "ab1f8141752db6366766a3e4a08264e1e4944eae",
+      "log": "evidence/objects/logs/browser-final-02.log",
+      "originalDirectory": "apps/client/test-results/run-2026-10-17T06-14-01.533Z-QeMXnw"
+    }
+  ],
+  "results": {
+    "workspaceTasks": 15,
+    "cacheReuse": 0,
+    "vitest": 287,
+    "sharedObjectScenarios": 12,
+    "defaultBrowser": 1,
+    "heartsBrowser": 1,
+    "raceBrowser": 3,
+    "roomsBrowser": 5,
+    "transportBrowser": 3,
+    "preservationBrowser": 12,
+    "finalBrowserRetries": 0,
+    "standardsHardBreaches": 0,
+    "standardsOptionalP3": 1,
+    "specUnresolved": 0
+  },
+  "environment": {
+    "objects": [
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "hearts": [
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "width": 1280,
+        "height": 900
+      },
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "width": 1280,
+        "height": 900
+      }
+    ],
+    "transportManifest": "evidence/objects/objects-final-manifest.json",
+    "preservationManifest": "evidence/objects/preservation-final-manifest.json",
+    "powerSettings": "not established"
+  },
+  "evidence": {
+    "checkpoint": "objects-checkpoint.md",
+    "reviews": "objects-review.md",
+    "attemptIndex": "evidence/objects/browser-attempts.json",
+    "defaultObservations": "evidence/objects/objects-final-objects.json",
+    "heartObservations": "evidence/objects/hearts-final-objects.json",
+    "screenshots": [
+      "evidence/objects/objects-final-default-obstacle-visible.png",
+      "evidence/objects/objects-final-default-course-hit.png",
+      "evidence/objects/hearts-final-reserved-heart-visible.png",
+      "evidence/objects/hearts-final-shared-heart.png",
+      "evidence/objects/objects-final-result-0.png",
+      "evidence/objects/objects-final-result-1.png"
+    ]
+  },
+  "acceptanceLimits": [
+    "Stage5 exit remains with #33-#35",
+    "supported current/previous browser/OS matrix",
+    "reference client performance/physical screen-visible measurements",
+    "network impairment and capacity matrix",
+    "two-person manual playtests/full Stage7 acceptance"
+  ],
+  "preservation": "No Long Drive gameplay changes or newly authorized corrections; all12 retained scenarios pass."
+}
