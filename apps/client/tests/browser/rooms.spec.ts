@@ -21,11 +21,13 @@ test('two React participants adopt host mode, ready and share a physics-free cou
     await expect(pages[1].getByTestId('selected-mode')).toHaveText('Road Rage');
     for (const page of pages) await expect(page.getByText('Same Driver (You)', { exact: true })).toBeVisible();
     await expect(pages[1].getByLabel('Multiplayer mode')).toHaveCount(0);
+    await info.attach('lobby.png', { body: await pages[0].screenshot(), contentType: 'image/png' });
     await pages[0].getByRole('button', { name: 'Ready', exact: true }).click();
     await pages[1].getByRole('button', { name: 'Ready', exact: true }).click();
     await expect(pages[0].getByRole('button', { name: 'Start round' })).toBeEnabled();
     await pages[0].getByRole('button', { name: 'Start round' }).click();
     await expect(pages[1].getByTestId('countdown')).toBeVisible();
+    await info.attach('countdown.png', { body: await pages[0].screenshot(), contentType: 'image/png' });
     // Platform visibility fixture: real UI and transport handling; this is not
     // evidence of OS/browser background-tab scheduling or supported-release coverage.
     await pages[1].evaluate(() => { Object.defineProperty(document, 'hidden', { configurable: true, value: true }); document.dispatchEvent(new Event('visibilitychange')); });
@@ -43,7 +45,10 @@ test('two React participants adopt host mode, ready and share a physics-free cou
       await page.keyboard.press('ArrowUp');
       await expect(page.getByTestId('round-time')).toHaveText('0');
     }
-    for (const page of pages) await expect(page.getByRole('heading', { name: 'Round ready' })).toBeVisible();
+    for (const page of pages) {
+      await expect(page.getByRole('heading', { name: 'Round ready' })).toBeVisible();
+      await expect(page.getByText('Countdown cancelled. Both players must ready again.')).toHaveCount(0);
+    }
     const evidence = await Promise.all(pages.map(page => page.getByTestId('room-evidence').textContent().then(value => JSON.parse(value!))));
     expect(evidence[0].startUs).toBe(evidence[1].startUs);
     expect(evidence[0].roundId).toBe(evidence[1].roundId);

@@ -343,6 +343,7 @@ export class PairedConnection {
     clearTimeout(pending.timeout); this.pendingCommands.delete(value.sequence);
     if (pending.label !== 'Focus') this.state.pending = undefined;
     if (!value.accepted) this.state.notice = value.detail;
+    else if (pending.label !== 'Focus') this.state.notice = undefined;
     this.publish();
   }
   dispose() { this.terminal = true; this.teardown(); }
