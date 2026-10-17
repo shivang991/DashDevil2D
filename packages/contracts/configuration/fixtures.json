@@ -1,0 +1,412 @@
+{
+  "version": 1,
+  "requirements": [
+    "https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6146866917"
+  ],
+  "valid": [
+    {
+      "name": "long-drive defaults",
+      "mode": "long-drive",
+      "overrides": {},
+      "expected": {
+        "maxHealth": 2,
+        "startingRoadSpeed": 400,
+        "maxRoadSpeed": 900,
+        "initialSpawnInterval": 1,
+        "minSpawnInterval": 0.35,
+        "coinWeight": 45
+      }
+    },
+    {
+      "name": "drag defaults",
+      "mode": "drag-race",
+      "overrides": {},
+      "expected": {
+        "maxHealth": 3,
+        "accelSpeedMultiplier": 2,
+        "invincibleDuration": 0,
+        "finishDistance": 24000,
+        "reservedHearts": 4
+      }
+    },
+    {
+      "name": "rage defaults",
+      "mode": "road-rage",
+      "overrides": {},
+      "expected": {
+        "timeLimit": 120,
+        "playerContactDamage": 1,
+        "invincibleDuration": 2
+      }
+    },
+    {
+      "name": "zero disables effects and damage",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "obstacleDamage": 0,
+          "invincibleDuration": 0,
+          "roadSpeedIncrement": 0,
+          "spawnIntervalDecrement": 0
+        },
+        "presentation": {
+          "blinkCount": 0,
+          "shakeDuration": 0,
+          "shakeIntensity": 0,
+          "gameOverShakeDuration": 0,
+          "gameOverFadeMaxOpacity": 0,
+          "gameOverFadeSpeed": 0
+        }
+      },
+      "expected": {
+        "obstacleDamage": 0,
+        "invincibleDuration": 0
+      }
+    },
+    {
+      "name": "no reserved hearts",
+      "mode": "drag-race",
+      "overrides": {
+        "gameplay": {
+          "reservedHearts": 0,
+          "heartExclusionDistance": 0
+        }
+      },
+      "expected": {
+        "reservedHearts": 0
+      }
+    },
+    {
+      "name": "positive shift slower than repeat allowed",
+      "mode": "road-rage",
+      "overrides": {
+        "gameplay": {
+          "laneShiftDuration": 0.3,
+          "laneSwitchCooldownDuration": 0.1
+        }
+      },
+      "expected": {
+        "laneShiftDuration": 0.3
+      }
+    }
+  ],
+  "invalid": [
+    {
+      "name": "gameplay.maxHealth {'maxHealth': 0}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "maxHealth": 0
+        }
+      },
+      "error": "gameplay.maxHealth"
+    },
+    {
+      "name": "gameplay.maxHealth {'maxHealth': 1.5}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "maxHealth": 1.5
+        }
+      },
+      "error": "gameplay.maxHealth"
+    },
+    {
+      "name": "gameplay.obstacleDamage {'obstacleDamage': -1}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "obstacleDamage": -1
+        }
+      },
+      "error": "gameplay.obstacleDamage"
+    },
+    {
+      "name": "gameplay.carWidth {'carWidth': 0}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "carWidth": 0
+        }
+      },
+      "error": "gameplay.carWidth"
+    },
+    {
+      "name": "gameplay.laneSpacing {'carWidth': 120}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "carWidth": 120
+        }
+      },
+      "error": "gameplay.laneSpacing"
+    },
+    {
+      "name": "gameplay.laneSpacing {'laneSpacing': 48}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "laneSpacing": 48
+        }
+      },
+      "error": "gameplay.laneSpacing"
+    },
+    {
+      "name": "gameplay.accelSpeedMultiplier {'accelSpeedMultiplier': 0.99}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "accelSpeedMultiplier": 0.99
+        }
+      },
+      "error": "gameplay.accelSpeedMultiplier"
+    },
+    {
+      "name": "gameplay.maxRoadSpeed {'startingRoadSpeed': 901}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "startingRoadSpeed": 901
+        }
+      },
+      "error": "gameplay.maxRoadSpeed"
+    },
+    {
+      "name": "gameplay.minSpawnInterval {'initialSpawnInterval': 0.3}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "initialSpawnInterval": 0.3
+        }
+      },
+      "error": "gameplay.minSpawnInterval"
+    },
+    {
+      "name": "gameplay.difficultyRampInterval {'difficultyRampInterval': 0}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "difficultyRampInterval": 0
+        }
+      },
+      "error": "gameplay.difficultyRampInterval"
+    },
+    {
+      "name": "gameplay.weights {'emptyWeight': 0, 'obstacleWeight': 0, 'coinWeight': 0, 'heartWeight': 0}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "emptyWeight": 0,
+          "obstacleWeight": 0,
+          "coinWeight": 0,
+          "heartWeight": 0
+        }
+      },
+      "error": "gameplay.weights"
+    },
+    {
+      "name": "gameplay.heartWeight {'heartWeight': -1}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "heartWeight": -1
+        }
+      },
+      "error": "gameplay.heartWeight"
+    },
+    {
+      "name": "gameplay.laneCount {'laneCount': 4}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "laneCount": 4
+        }
+      },
+      "error": "gameplay.laneCount"
+    },
+    {
+      "name": "gameplay.maxHealth {'maxHealth': None}",
+      "mode": "long-drive",
+      "overrides": {
+        "gameplay": {
+          "maxHealth": null
+        }
+      },
+      "error": "gameplay.maxHealth"
+    },
+    {
+      "name": "presentation.roadWidthRatioNormal {'roadWidthRatioNormal': 1.01}",
+      "mode": "long-drive",
+      "overrides": {
+        "presentation": {
+          "roadWidthRatioNormal": 1.01
+        }
+      },
+      "error": "presentation.roadWidthRatioNormal"
+    },
+    {
+      "name": "presentation.blinkCount {'blinkCount': 0.5}",
+      "mode": "long-drive",
+      "overrides": {
+        "presentation": {
+          "blinkCount": 0.5
+        }
+      },
+      "error": "presentation.blinkCount"
+    },
+    {
+      "name": "room.idleWarning {'idleWarning': 900}",
+      "mode": "long-drive",
+      "overrides": {
+        "room": {
+          "idleWarning": 900
+        }
+      },
+      "error": "room.idleWarning"
+    },
+    {
+      "name": "connection.verificationInterval {'verificationInterval': 0.251}",
+      "mode": "long-drive",
+      "overrides": {
+        "connection": {
+          "verificationInterval": 0.251
+        }
+      },
+      "error": "connection.verificationInterval"
+    },
+    {
+      "name": "connection.controlRefreshInterval {'controlRefreshInterval': 0.34}",
+      "mode": "long-drive",
+      "overrides": {
+        "connection": {
+          "controlRefreshInterval": 0.34
+        }
+      },
+      "error": "connection.controlRefreshInterval"
+    },
+    {
+      "name": "connection.replayHistory {'replayHistory': 1}",
+      "mode": "long-drive",
+      "overrides": {
+        "connection": {
+          "replayHistory": 1
+        }
+      },
+      "error": "connection.replayHistory"
+    },
+    {
+      "name": "connection.reliableFrameBytes {'reliableFrameBytes': 262145}",
+      "mode": "long-drive",
+      "overrides": {
+        "connection": {
+          "reliableFrameBytes": 262145
+        }
+      },
+      "error": "connection.reliableFrameBytes"
+    },
+    {
+      "name": "connection.essentialQueueWait {'essentialQueueWait': 1.1}",
+      "mode": "long-drive",
+      "overrides": {
+        "connection": {
+          "essentialQueueWait": 1.1
+        }
+      },
+      "error": "connection.essentialQueueWait"
+    },
+    {
+      "name": "connection.inputRate {'inputRate': 3}",
+      "mode": "long-drive",
+      "overrides": {
+        "connection": {
+          "inputRate": 3
+        }
+      },
+      "error": "connection.inputRate"
+    },
+    {
+      "name": "connection.clockRequestRate {'clockRequestRate': 0.5}",
+      "mode": "long-drive",
+      "overrides": {
+        "connection": {
+          "clockRequestRate": 0.5
+        }
+      },
+      "error": "connection.clockRequestRate"
+    },
+    {
+      "name": "operational.simulationLagThreshold {'simulationLagThreshold': 0}",
+      "mode": "long-drive",
+      "overrides": {
+        "operational": {
+          "simulationLagThreshold": 0
+        }
+      },
+      "error": "operational.simulationLagThreshold"
+    },
+    {
+      "name": "drag-race gameplay.invincibleDuration",
+      "mode": "drag-race",
+      "overrides": {
+        "gameplay": {
+          "invincibleDuration": 1
+        }
+      },
+      "error": "gameplay.invincibleDuration"
+    },
+    {
+      "name": "drag-race gameplay.finishDistance",
+      "mode": "drag-race",
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 800
+        }
+      },
+      "error": "gameplay.finishDistance"
+    },
+    {
+      "name": "drag-race gameplay.reservedHearts",
+      "mode": "drag-race",
+      "overrides": {
+        "gameplay": {
+          "reservedHearts": 4,
+          "heartSize": 119,
+          "finishDistance": 900
+        }
+      },
+      "error": "gameplay.reservedHearts"
+    },
+    {
+      "name": "drag-race gameplay.reservedHearts",
+      "mode": "drag-race",
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 1000,
+          "initialClearDistance": 0,
+          "reservedHearts": 40
+        }
+      },
+      "error": "gameplay.reservedHearts"
+    },
+    {
+      "name": "road-rage gameplay.tickRate",
+      "mode": "road-rage",
+      "overrides": {
+        "gameplay": {
+          "tickRate": 0
+        }
+      },
+      "error": "gameplay.tickRate"
+    },
+    {
+      "name": "road-rage gameplay.timeLimit",
+      "mode": "road-rage",
+      "overrides": {
+        "gameplay": {
+          "timeLimit": 1000000000.0
+        }
+      },
+      "error": "gameplay.timeLimit"
+    }
+  ]
+}

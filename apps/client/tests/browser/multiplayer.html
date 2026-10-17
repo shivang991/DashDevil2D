@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="UTF-8"><title>Multiplayer mechanics diagnostic</title></head>
+<body><canvas width="606" height="806" aria-label="Multiplayer diagnostic"></canvas><pre id="state"></pre>
+<script type="module">
+import { captureConfiguration } from '@dashdevil/simulation/config';
+import { Multiplayer } from '@dashdevil/simulation/multiplayer';
+const identities = [{ roomId: 1, seatSession: 11, pairGeneration: 1, seat: 0 }, { roomId: 1, seatSession: 22, pairGeneration: 1, seat: 1 }];
+window.diagnostic = new Multiplayer(captureConfiguration('drag-race'), 1, identities);
+window.independent = new Multiplayer(captureConfiguration('road-rage'), 2, identities);
+window.command = (sequence, intent, control, heldMask) => window.diagnostic.submit(identities[0], { identity: identities[0], round: { roundId: 1, inputGeneration: 1 }, sequence, intent, control, heldMask });
+window.advance = time => {
+ const events = window.diagnostic.advanceTo(time);
+ const state = window.diagnostic.snapshot();
+ document.getElementById('state').textContent = JSON.stringify(state);
+ const ctx = document.querySelector('canvas').getContext('2d');
+ ctx.fillStyle = '#20232b'; ctx.fillRect(0, 0, 606, 806);
+ for (const [seat, car] of state.cars.entries()) { ctx.fillStyle = seat === 0 ? '#f90' : '#0bf'; ctx.fillRect(303 + car.lateral - 25, 686 - car.progress, 50, 80); }
+ return { events, state };
+};
+window.advance(0);
+</script></body></html>

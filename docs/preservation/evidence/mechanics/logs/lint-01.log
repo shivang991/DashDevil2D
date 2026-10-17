@@ -1,0 +1,55 @@
+
+> dashdevil@ lint /Users/shivang/.codex/worktrees/6b7b/claude-code-test
+> turbo run lint
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running lint in 4 packages
+   • Remote caching disabled, using shared worktree cache
+
+@dashdevil/contracts:generate: cache miss, executing 8f8f37dea9b87ec1
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/server:generate: cache miss, executing cc3550a23fa8e91a
+@dashdevil/contracts:lint: cache miss, executing 15b9e51fe6930f67
+@dashdevil/contracts:typecheck: cache miss, executing 956c81082b10d1af
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:lint: > @dashdevil/contracts@0.0.0 lint /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/contracts
+@dashdevil/contracts:lint: > eslint .
+@dashdevil/contracts:lint: 
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/server
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/server:generate: 
+ WARNING  IO error: Operation not permitted (os error 1)
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/simulation:typecheck: cache miss, executing 23ec084cdc9d9392
+@dashdevil/simulation:lint: cache miss, executing 479131176a9bed37
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:lint: 
+@dashdevil/simulation:lint: > @dashdevil/simulation@0.0.0 lint /Users/shivang/.codex/worktrees/6b7b/claude-code-test/packages/simulation
+@dashdevil/simulation:lint: > eslint .
+@dashdevil/simulation:lint: 
+ WARNING  IO error: Operation not permitted (os error 1)
+@dashdevil/client:lint: cache miss, executing 47f2500f9274299e
+@dashdevil/client:lint: 
+@dashdevil/client:lint: > @dashdevil/client@0.0.0 lint /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+@dashdevil/client:lint: > eslint .
+@dashdevil/client:lint: 
+ WARNING  IO error: Operation not permitted (os error 1)
+
+ Tasks:    7 successful, 7 total
+Cached:    0 cached, 7 total
+  Time:    3.116s 
+

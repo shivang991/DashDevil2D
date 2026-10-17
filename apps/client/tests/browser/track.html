@@ -1,0 +1,12 @@
+<!doctype html>
+<html><head><meta charset="UTF-8"><title>Seeded Long Drive track fixture</title></head>
+<body><div id="root"></div><script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { GameWorld } from '/src/components/GameWorld.tsx';
+import '/src/index.css';
+// Production session/renderer/HUD; deterministic developer capture only.
+const coin = new URL(location.href).searchParams.has('coin');
+const configuration = coin ? undefined : { gameplay: { maxHealth: 4, coinWeight: 0, obstacleWeight: 1, heartWeight: 1, roadSpeedIncrement: 0, spawnIntervalDecrement: 0 } };
+createRoot(document.getElementById('root')).render(React.createElement(GameWorld, { countdown: 3, seed: coin ? 5408 : 5410, configuration }));
+</script></body></html>

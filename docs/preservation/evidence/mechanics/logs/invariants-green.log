@@ -1,0 +1,9 @@
+
+ RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+
+
+ Test Files  1 passed (1)
+      Tests  37 passed (37)
+   Start at  00:15:19
+   Duration  170ms (transform 45%, tests 33%, import 19%, worker 3%)
+

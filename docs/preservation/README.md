@@ -14,18 +14,16 @@ The [original artifact manifest](evidence/manifest.json), [environment](evidence
 
 ## Run checks and capture new evidence
 
-From `client`, using Node 26 and pnpm 8.15.9:
+From the workspace root, using Node 26.10.0, pnpm 8.15.9 and Go 1.26.0:
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm test
-pnpm build
-pnpm lint
-pnpm exec playwright install chrome ffmpeg
+pnpm check
+pnpm --filter @dashdevil/client exec playwright install chrome ffmpeg
 pnpm test:browser
 ```
 
-Every browser invocation writes to a unique ignored `client/test-results/run-<UTC timestamp>-<random suffix>/`. Each scenario has its own `evidence/`; videos, screenshots and traces remain in the same run tree. The final manifest hashes actual output bytes and records the **tested** Git revision, dirty-worktree status/diff hash, fixture/configuration hashes and input snapshots, environment and run outcome. `baselineReference` is the comparison target, never a substitute for `testedRevision`. Repeated Playwright config evaluation shares that invocation's directory; the reporter finalizes against the resolved output after videos/traces close. CI uploads `client/test-results`; it does not upload or rewrite the committed baseline archive.
+Every browser invocation writes to a unique ignored `apps/client/test-results/run-<UTC timestamp>-<random suffix>/`. Each scenario has its own `evidence/`; videos, screenshots and traces remain in the same run tree. The final manifest hashes actual output bytes and records the **tested** Git revision, dirty-worktree status/diff hash, fixture/configuration hashes and input snapshots, environment and run outcome. `baselineReference` is the comparison target, never a substitute for `testedRevision`. Repeated Playwright config evaluation shares that invocation's directory; the reporter finalizes against the resolved output after videos/traces close. CI uploads `apps/client/test-results`; it does not upload or rewrite the committed baseline archive.
 
 Keep complete failed and successful run folders/CI artifacts for handoff; never replace an earlier run. Routine captures must not be copied over `docs/preservation/evidence`. Future logs stay in ignored run folders or CI artifacts, not commits.
 
@@ -44,7 +42,7 @@ The archived Stage 1 behavioral fixture version 1 mounted the original context/i
 | Countdown/GO/lane/coin/damage/gameover/pause/resume/engine/boost/release audio, mute/unlock/optional audio | Actual parallel Web Audio sink recordings and public mute/persistence/unavailable-AudioContext checks. Controlled document.hidden output has RMS 0; native tab suspension is unproven; owner audiovisual review passed on 2026-10-14. |
 | Failed evidence and retries | Compact failure/retry JSON plus useful original failed PNGs; raw diagnostics removed at user request. Future complete diagnostics stay in ignored run folders. |
 
-Vitest, build/typecheck/lint and applicable Long Drive browser checks remain mandatory. Stage 1 recorded 41 passing checks/eight authorized defect characterizations and four Chrome scenarios. The current Stage 2 candidate records **84 passing checks**, one #26 collision characterization and seven Chrome scenarios (see checkpoints below). CI runs introduced checks on PRs. Go tests, shared Go/TS compatibility fixtures, generated-output checks and two-browser real-transport smoke are **unavailable** because their server/contracts/transport components do not yet exist; introduce them as mandatory when available. No full browser matrix, reference performance or multiplayer/capacity acceptance is claimed. The owner’s baseline review pass does not establish the later two-person multiplayer playtest gate.
+Vitest, build/typecheck/lint and applicable Long Drive browser checks remain mandatory. Stage 1 recorded 41 passing checks/eight authorized defect characterizations and four Chrome scenarios. The current Stage 2 candidate records **84 passing checks**, one #26 collision characterization and seven Chrome scenarios (see checkpoints below). CI runs introduced checks on PRs. Native Go vet/test/build checks now run against the #24 scaffold (no Go gameplay tests yet). Shared seeded-track generation fixtures now run in Go and TypeScript for #26. Wire compatibility/generated-output checks and two-browser real-transport smoke remain **unavailable** until #27–#29 introduce their prerequisites; introduce them as mandatory when available. No full browser matrix, reference performance or multiplayer/capacity acceptance is claimed. The owner’s baseline review pass does not establish the later two-person multiplayer playtest gate.
 
 ## Corrections become mandatory in their owning slice
 
@@ -83,3 +81,15 @@ Event `observedAt` is explicitly a local step observation boundary, not canonica
 Complete runs, hashes, original failed focus-boundary assertion, focused retry, final clean retry, videos/screenshots/audio and final command logs are preserved outside Git in `/private/tmp/dashdevil-stage2-evidence/integration/`. The initial focus fixture sampled exactly one second at an initial RAF boundary; its countdown sample now occurs at 1.1 seconds. Separate session checks still enforce literal five/three-second deadlines at 30/60/120 FPS. Review fixes rebase accepted reset/restart clocks without delaying ignored commands; simulation-owned reset restores current viewport/base, fresh grass and countdown, preserves event identities and emits the first countdown cue once. Accepted restart applies synchronously so an earlier zero-elapsed RAF cannot lose it. The intermediate review capture unexpectedly reloaded during a watched test-file edit (Vite reconnect in trace); it is retained alongside the final seven-case retry run without concurrent writes. Original baseline archive is unchanged. Controlled blur/focus/visibility events in actual Chrome do not establish native OS tab suspension.
 
 Technical integration checks pass; **Stage 2 exit is accepted** following the owner’s **“looks good”** reply on 2026-10-14 to the requested comparison of the updated preview, Stage 2 playthrough/audio and accepted baseline. Reviewer environment and detailed observations were not supplied. This completes #23; work on #24 is deferred at the owner’s request. Go tests, shared Go/TypeScript fixtures, generated-output checks and two-browser real-transport smoke remain unavailable until server/contracts/transport exist; supported-release matrix and reference-hardware acceptance remain unestablished.
+
+## Stage 3 workspace move (#24)
+
+[Migration checkpoint](monorepo-checkpoint.md) records the move to `apps/client`, native `apps/server` scaffolding, workspace dependency boundaries, orchestration and applicable preservation checks. Historical checkpoint paths remain unchanged as provenance of their tested revisions. #24 alone does not satisfy the complete Stage 3 gate; #25–#27 still own validated configuration, discrete tracks/world geometry and generated contracts.
+
+## Stage 3 world geometry and track checkpoint (#26)
+
+[Track checkpoint](track-checkpoint.md) records canvas-independent world centers, strict swept contacts, immutable seeded slices with separate consumption, exact time-based spawn anchors and safe retirement. The #26 tunneling correction is now mandatory. Shared version-1 generation fixtures run in both TypeScript and Go; full Go contact parity, generated schema verification and real transport remain owned by #27–#29. Actual Chrome high-speed/resize evidence complements retained Long Drive checks. Full Stage 3 and new human audiovisual comparison remain pending.
+
+## Stage 3 generated binary contracts and exact resource gate (#27)
+
+[Contract checkpoint](contracts-checkpoint.md), [independent review](contracts-review.md) and [structured validation](contracts-validation.json) record schema-driven Go/TypeScript mechanical contracts, shared complete-state/wire/projection/resource fixtures, handwritten validation and atomic assembly. Immutable capture now checks actual continuation/coverage/chunk serialization and signed projection widths for worst supported independent-car windows. All applicable technical checks pass; full Stage 3 still awaits human audiovisual preservation review. Full Go gameplay parity and two-browser real-transport checks remain unavailable until #28/#29.

@@ -1,0 +1,4 @@
+# github.com/shivang991/DashDevil2D/apps/server/configuration [github.com/shivang991/DashDevil2D/apps/server/configuration.test]
+configuration/configuration.go:27:32: cannot use c.version (variable of type uint16) as uint32 value in assignment
+FAIL	github.com/shivang991/DashDevil2D/apps/server/configuration [build failed]
+FAIL

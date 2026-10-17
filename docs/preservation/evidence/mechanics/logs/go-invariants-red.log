@@ -1,0 +1,6 @@
+--- FAIL: TestCaptureOwnershipAndMalformedSettings (0.00s)
+    configuration_test.go:72: malformed settings accepted  null 
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/configuration	0.549s
+ok  	github.com/shivang991/DashDevil2D/apps/server/simulation	0.994s
+FAIL

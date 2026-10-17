@@ -1,0 +1,107 @@
+{
+  "$schema": "https://turborepo.dev/schema.json",
+  "globalDependencies": [
+    ".node-version",
+    ".go-version",
+    ".npmrc",
+    "pnpm-workspace.yaml",
+    "pnpm-lock.yaml",
+    "eslint.config.js",
+    "packages/contracts/**",
+    "packages/simulation/config.ts",
+    "apps/server/go.mod",
+    "apps/server/go.sum"
+  ],
+  "globalEnv": [
+    "PRESERVATION_ENFORCE",
+    "GOTOOLCHAIN",
+    "GOOS",
+    "GOARCH",
+    "CGO_ENABLED"
+  ],
+  "tasks": {
+    "generate": {
+      "dependsOn": [
+        "^generate"
+      ],
+      "outputs": [
+        "generated/**"
+      ]
+    },
+    "typecheck": {
+      "dependsOn": [
+        "generate",
+        "^generate",
+        "^typecheck"
+      ],
+      "outputs": []
+    },
+    "lint": {
+      "dependsOn": [
+        "generate",
+        "^generate",
+        "^typecheck"
+      ],
+      "outputs": []
+    },
+    "test": {
+      "dependsOn": [
+        "generate",
+        "^generate",
+        "^typecheck"
+      ],
+      "cache": false
+    },
+    "build": {
+      "dependsOn": [
+        "generate",
+        "^generate",
+        "^build",
+        "typecheck"
+      ],
+      "outputs": [
+        "dist/**"
+      ]
+    },
+    "@dashdevil/server#build": {
+      "outputs": [],
+      "dependsOn": [
+        "generate",
+        "^generate",
+        "^build",
+        "typecheck"
+      ]
+    },
+    "dev": {
+      "dependsOn": [
+        "generate",
+        "^generate"
+      ],
+      "persistent": true,
+      "cache": false
+    },
+    "test:browser": {
+      "dependsOn": [
+        "build"
+      ],
+      "cache": false
+    },
+    "@dashdevil/simulation#build": {
+      "outputs": [],
+      "dependsOn": [
+        "generate",
+        "^generate",
+        "^build",
+        "typecheck"
+      ]
+    },
+    "@dashdevil/server#generate": {
+      "dependsOn": [
+        "^generate"
+      ],
+      "outputs": [
+        "protocol/generated.go"
+      ]
+    }
+  }
+}

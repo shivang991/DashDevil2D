@@ -1,0 +1,5 @@
+# github.com/shivang991/DashDevil2D/apps/server/configuration [github.com/shivang991/DashDevil2D/apps/server/configuration.test]
+configuration/configuration_test.go:14:70: undefined: Capture
+configuration/configuration_test.go:15:72: undefined: Capture
+FAIL	github.com/shivang991/DashDevil2D/apps/server/configuration [build failed]
+FAIL

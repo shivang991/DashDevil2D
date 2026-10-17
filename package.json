@@ -1,0 +1,31 @@
+{
+  "name": "dashdevil",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@8.15.9",
+  "engines": {
+    "node": "26.10.0",
+    "pnpm": "8.15.9"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @dashdevil/contracts generate && pnpm --filter @dashdevil/client dev",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "build": "turbo run build",
+    "test:browser": "turbo run test:browser --filter=@dashdevil/client",
+    "check": "pnpm check:generated && turbo run typecheck lint test build",
+    "generate": "turbo run generate",
+    "check:generated": "pnpm --filter @dashdevil/contracts check:generated"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "typescript-eslint": "^8.48.0",
+    "typescript": "~5.9.3",
+    "turbo": "2.8.19"
+  }
+}

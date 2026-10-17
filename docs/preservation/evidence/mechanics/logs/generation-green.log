@@ -1,0 +1,48 @@
+
+ RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (6 tests | 1 failed) 11ms
+   × multiplayer seeded placement reserves hearts and suppresses nearby obstacles without moving anchors 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > multiplayer seeded placement reserves hearts and suppresses nearby obstacles without moving anchors
+AssertionError: expected [ Array(4) ] to deeply equal [ Array(4) ]
+
+- Expected
++ Received
+
+@@ -29,12 +29,12 @@
+      "id": 3,
+      "timeUs": 0,
+    },
+    {
+      "cells": [
+-       "empty",
+        "obstacle",
++       "empty",
+        "empty",
+      ],
+      "distance": 1200,
+      "id": 4,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:51:34
+     49|  const track = new MultiplayerTrack(captureConfiguration('drag-race', …
+     50|  track.ensureThrough(1200);
+     51|  expect(track.snapshot().slices).toEqual([
+       |                                  ^
+     52|   { id: 1, distance: 400, timeUs: 0, cells: ['obstacle', 'empty', 'emp…
+     53|   { id: 2, distance: 800, timeUs: 0, cells: ['empty', 'heart', 'empty'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 17 passed (18)
+   Start at  00:08:00
+   Duration  222ms (transform 58%, tests 24%, import 15%, worker 3%)
+
+undefined
+/Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/multiplayer.test.ts tests/simulation/track.test.ts

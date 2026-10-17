@@ -1,0 +1,204 @@
+{
+  "version": 1,
+  "date": "2026-10-14",
+  "timezone": "America/Phoenix",
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/27",
+  "baselineRevision": "3c609c91e8c7d883c446d9a71eb4051680bfae48",
+  "testedRevision": "976c69db34242e6617247ab8f91a22281d7af84a",
+  "branch": "codex/dashdevil-multiplayer-integration",
+  "sourceFrozen": true,
+  "worktreeCleanAtTest": true,
+  "versions": {
+    "schema": 1,
+    "wireFixtures": 1,
+    "configuration": 1,
+    "configurationFixtures": 1,
+    "trackFixtures": 1,
+    "browserFixtures": 3,
+    "node": "26.10.0",
+    "pnpm": "8.15.9",
+    "go": "1.26.0"
+  },
+  "inputSha256": {
+    "packages/contracts/protocol/schema.json": "03986f76e89aab83e383b0877065e0f8b2634b5e68bdfc2b24c681fc1033d8db",
+    "packages/contracts/protocol/fixtures.json": "fd588b56cd72743f6bb779bd8e51af74135fdeea654bc87457dabc4300ba244d",
+    "packages/contracts/protocol/fixture-reference.py": "7979acc61dd257d569bb5b20f375ead86912d333653528e5ce2add74fe8049f4",
+    "packages/contracts/generated/protocol.ts": "6d107235090f8be3a2eef0fb38235d4b851851261ee3065112bd437ddfdb9ba2",
+    "apps/server/protocol/generated.go": "7f9f02c70ff0ba5f8ef2eb2d2f58b030867446c25b0787ee13d06a37608dbfc6",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "packages/contracts/configuration/fixtures.json": "9fc533e0f6886b55a737fab4636277002fa4843a12cd81191bc788f9a75d1e03",
+    "packages/contracts/track/fixtures.json": "46bf10ec02aa1e364ee3676fb9612febe36cae279c782fb0737abc9faadae66e",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "checks": {
+    "workspace": {
+      "command": "pnpm check --force",
+      "passed": true,
+      "vitest": 218,
+      "tasks": 15,
+      "turboCacheHits": 0,
+      "log": "/private/tmp/dashdevil-stage3-evidence/contracts/check-final-01.log"
+    },
+    "uncachedNativeGo": {
+      "command": "GOCACHE=/private/tmp/dashdevil-go-cache go test -count=1 ./...",
+      "passed": true,
+      "packages": [
+        "protocol",
+        "track"
+      ],
+      "log": "/private/tmp/dashdevil-stage3-evidence/contracts/go-final-uncached.log"
+    },
+    "browser": {
+      "command": "pnpm test:browser",
+      "passed": true,
+      "scenarios": 11,
+      "retries": 0,
+      "manifest": "apps/client/test-results/run-2026-10-15T00-15-14.062Z-xxdtyE/manifest.json",
+      "manifestSha256": "c2c1874438fee0667dfc2fb68775152f66306bebb8620d42ed29a6900885886a",
+      "log": "/private/tmp/dashdevil-stage3-evidence/contracts/browser-final-02.log"
+    },
+    "staleOutputProbe": {
+      "passed": true,
+      "log": "/private/tmp/dashdevil-stage3-evidence/contracts/stale-probe.log"
+    },
+    "independentReview": {
+      "standardsOutstanding": 0,
+      "specOutstanding": 0,
+      "resolved": [
+        "P1 leading UTF-8 BOM preservation",
+        "P2 impossible movement continuation"
+      ],
+      "report": "docs/preservation/contracts-review.md"
+    }
+  },
+  "environment": {
+    "randomSeed": 21,
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "canvas": {
+      "width": 606,
+      "height": 806,
+      "css": {
+        "width": 606,
+        "height": 806
+      }
+    },
+    "browser": "155.0.8059.79",
+    "platform": "darwin",
+    "release": "25.5.0",
+    "architecture": "arm64",
+    "memoryBytes": 8589934592,
+    "cpu": "Apple M2",
+    "humanReview": "pending",
+    "audioAudition": "pending",
+    "powerSettings": "unrecorded",
+    "referenceHardwareEquivalence": "not established"
+  },
+  "seeds": {
+    "wireAndResource": 1,
+    "track": 1,
+    "browser": [
+      21,
+      5408,
+      5410
+    ]
+  },
+  "resourceVectors": [
+    {
+      "name": "drag-defaults",
+      "objects": 16,
+      "baselineBytes": 1278,
+      "chunkBytes": 1358,
+      "chunks": 1,
+      "windowLength": 1320,
+      "maxProgress": 24000,
+      "coverageBytes": 438
+    },
+    {
+      "name": "rage-defaults",
+      "objects": 12,
+      "baselineBytes": 1210,
+      "chunkBytes": 1290,
+      "chunks": 1,
+      "windowLength": 1320,
+      "maxProgress": 96000,
+      "coverageBytes": 370
+    },
+    {
+      "name": "dense-random-hearts",
+      "objects": 1846,
+      "baselineBytes": 32388,
+      "chunkBytes": 32468,
+      "chunks": 1,
+      "windowLength": 921,
+      "maxProgress": 96000,
+      "coverageBytes": 31548
+    },
+    {
+      "name": "fast-wide-cars",
+      "objects": 112,
+      "baselineBytes": 2910,
+      "chunkBytes": 2990,
+      "chunks": 1,
+      "windowLength": 20520,
+      "maxProgress": 24000,
+      "coverageBytes": 2070
+    }
+  ],
+  "failureRetention": {
+    "directory": "/private/tmp/dashdevil-stage3-evidence/contracts",
+    "logs": {
+      "browser-01.log": "b8e7f2c2895a8a121ede16062f7da59bb51f1de1705bd914f8d9a3e27d3b5a8e",
+      "browser-final-02.log": "3b633a9510499996e5c13a4087b61ca3aadbd872fb5b210e03ddc90e88a5ddca",
+      "check-final-01.log": "8db9c98e28d950a55a35662180b6ba1407b20f47c7c22973951b07b37d873d3e",
+      "continuation-03.log": "0b95fe91853258e66b4963af98bf3238c3132bd78bda2f119b7ee12f2b7d5336",
+      "frame-duration-02.log": "43727bda97debe250fb656c85f6f6518810229edffcd3b5431bf522854d2bf97",
+      "go-continuation-03.log": "88be573cc5bee7b30918d80102ede6ce0f035304481b6aee866bfadeb825a37b",
+      "go-final-uncached.log": "5693c7cf19221a2d83837eadf0e8fd37891f730fccc5af466b23bdb63fe96eaa",
+      "go-packing-01.log": "41532e0175b1f16461a735652e819fd8dc03926adf20032d3c4a6477ab3ea4bc",
+      "go-resource-vectors-01.log": "625f5363a006f9835bd6c0a64bb0de1ba6fdf5f44d81c40394cbafc7985bd66e",
+      "go-review-02.log": "ca6eb488be746a483acbe4dce076c2eac76bda7b0c8ca180a4d3dfc07871762b",
+      "go-semantics-02.log": "758899295b4671950edb286e67b87c4b3f60a97a1610318dc9c60eabfc2f0a79",
+      "go-wire-01.log": "bae71ff91c817626b2d39827314c02c3a99e3bcb5adbb4050b35cfa8aea4f748",
+      "go-wire-02.log": "caa962d2080cb875040e90ad48ba6e2089ce44eb054bdd62893bfcd31cc0ad2b",
+      "lint-02.log": "8189faed0465b2a3a6e61c7babd9095ba78c1c16d817a65633dcdefe62a02103",
+      "message-semantics-02.log": "8a6815390c149f87a86f2a3efb88d66abb1ebf8515fa3b2d8abb9fa719eec5ca",
+      "packing-01.log": "dadafceff6ae2beda5d85c8d0debd7effb9557b556fd0f50c088071d27c6ab64",
+      "red-frame-duration-01.log": "b0e46b6e8d7d0c74d18a5056fe1eb2a81faa8a1fd1377bf08981333c9e4aac6c",
+      "red-go-semantics-01.log": "a3d170f87974f554f1c7bf04ccd50e94c8cf2058cf0d283275a9bfedbb7e034d",
+      "red-message-semantics-01.log": "620470c75e0a02d6a2eb31b8056c2589cdfe157aa98c02b65ba471337fb76353",
+      "red-resources-01.log": "cee2927fb43a337bdfc0509912b4a8639690562f3437d29bd6a7c19075c47b87",
+      "red-review-01.log": "bf0cda6740cd2dad0147e3e8d1ece98fdd69b54448a2ac03093cfa63b5e7f306",
+      "red-transfer-01.log": "2fadde66eef6f06724b40564783380e28a82007f5990f25dbebd75ab9c6e0b55",
+      "resource-vectors-01.log": "7f94054f766e839e834b3315031c062960c818b10a0fe47432fbb9da88c08b1b",
+      "resources-02.log": "c8904882937c9beabd2f6ac7a246325039fccf5e9c6db35a215ca22a4ff60ccd",
+      "review-02.log": "d646cf794e238cd43b7304949684a61b4dda3a901db24b9bf0b686d88ae28016",
+      "stale-probe.log": "28636f992863416aed4613325156a69c1b07ec97a92545cd02d931ba217c76ce",
+      "transfer-02.log": "8c60e89e20fde6411b59cb604026a1234ccc6cdd350acff131ba82f61b8e314c",
+      "typecheck-01.log": "e806b3b0e8e34148410f892e815846ee6a13a416c3c1553ac09ac648f29124df",
+      "typecheck-02.log": "12b6784003bb408b9e600fea0e691956b30eee7dff161e835b75250605c3c43e",
+      "wire-01.log": "270bb70ef43ee4cac837b576574cc5f8a420a23b8881897d759d32ae7e666a40",
+      "wire-02.log": "0819e23ff3f8f494a48895e40804a8ae3b55e2b002f8161f07e0b1ca40a69223"
+    },
+    "notes": [
+      "Original missing-interface red runs retained.",
+      "Sandbox Go-cache/typecheck denials retained; full gate passed with approved cache access.",
+      "Malformed input fixture offset corrected after held-mask field addition; failing run retained.",
+      "BOM and movement-target regressions were red before repair; both languages now pass.",
+      "Initial passing browser run at 95d6908 retained alongside final source-frozen run."
+    ]
+  },
+  "stage3": {
+    "technicalChecks": "passed",
+    "humanAudiovisualReview": "pending",
+    "progressionToStage4": "blocked until applicable human preservation review passes"
+  },
+  "unavailable": {
+    "fullGoGameplayParity": "#28 prerequisite",
+    "twoBrowserRealTransport": "#29 endpoints prerequisite",
+    "fullAcceptanceMatrix": "later-stage actual release/network/reference-hardware/capacity/manual evidence"
+  },
+  "visualInspection": "Agent inspected final countdown and resized pause snapshots; this is not owner audiovisual signoff."
+}

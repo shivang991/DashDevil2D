@@ -1,0 +1,14 @@
+{
+  "name": "@dashdevil/server",
+  "private": true,
+  "version": "0.0.0",
+  "dependencies": {
+    "@dashdevil/contracts": "workspace:*"
+  },
+  "scripts": {
+    "typecheck": "go vet ./...",
+    "test": "go test -count=1 ./...",
+    "build": "go build ./...",
+    "generate": "node ../../packages/contracts/protocol/generate.mjs --target=go"
+  }
+}

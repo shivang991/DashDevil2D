@@ -1,0 +1,238 @@
+{
+  "version": 1,
+  "date": "2026-10-15",
+  "timezone": "America/Phoenix",
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/28",
+  "baselineRevision": "0a384877b9182491d98a22b83f9688abdcf0a76a",
+  "testedRevision": "445395276ca7706fed4c178785edf7a40a102269",
+  "branch": "codex/shared-multiplayer-mechanics",
+  "sourceFrozen": true,
+  "worktreeCleanAtFinalTestStart": true,
+  "entryApproval": {
+    "stage": 3,
+    "humanLongDriveReview": "passed",
+    "source": "Owner in #28 implementation chat",
+    "quote": "Yes I have reviewed long drive. It looks good to me. Approved."
+  },
+  "versions": {
+    "configuration": 1,
+    "simulationFixtures": 1,
+    "trackGeneration": 1,
+    "protocol": 1,
+    "node": "26.10.0",
+    "pnpm": "8.15.9",
+    "go": "1.26.0"
+  },
+  "inputSha256": {
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "packages/contracts/configuration/fixtures.json": "9fc533e0f6886b55a737fab4636277002fa4843a12cd81191bc788f9a75d1e03",
+    "packages/contracts/simulation/fixtures.json": "5baeca7e456cb5d70e44757f0281f8f8eec83e3715e82ee053ac144759034b04",
+    "packages/contracts/track/fixtures.json": "46bf10ec02aa1e364ee3676fb9612febe36cae279c782fb0737abc9faadae66e",
+    "packages/contracts/protocol/fixtures.json": "fd588b56cd72743f6bb779bd8e51af74135fdeea654bc87457dabc4300ba244d",
+    "packages/simulation/multiplayer.ts": "23c7a94fa6a11f25fb70087b31d3b858711535d9a756f106ac64152348071d9d",
+    "packages/simulation/multiplayerTrack.ts": "5c6a6539783e2d2fed01f659156449e1eb4563cbc0e0ea6feb728b01bc571091",
+    "packages/simulation/track.ts": "b6036c5499bd1d89c7f36d92f49da4a031920cdb1108fff426a8e77d9e83b9a0",
+    "apps/server/simulation/simulation.go": "d1dd842f2e5e5230036d8526ab6d1e579dc15395bd887de9cc4db8edacfb35b4",
+    "apps/server/simulation/geometry.go": "f00964132c262afcfa0df3a4ee8d924b0f97e606d7cd6894ff745e80b1677dce",
+    "apps/server/configuration/configuration.go": "76eceb38def05d3e279fffc9619693ec5bc0f2bb25a0320c7f02c3ecbc3f31cf",
+    "apps/server/track/multiplayer.go": "0714bc76ab9542b1bbd0b5ac0a86533707f71bbb0f4c1c3bbda24d2ea6fa31b9",
+    "apps/server/track/track.go": "75cb5f1162a0f90a036ee75b214ac8d322ab8ffe8df99b55b4815213ba192ba4",
+    "apps/server/package.json": "93c8de8cf5e4b006044caa265e3e8f130bdd3631022d73a05e1d6145447e1560",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "checks": {
+    "workspace": {
+      "command": "PATH=<cached Go 1.26.0 bin>:$PATH GOTOOLCHAIN=local GOCACHE=/private/tmp/dashdevil-go-cache pnpm check --force --env-mode=loose",
+      "passed": true,
+      "vitestTests": 257,
+      "multiplayerVitestTests": 39,
+      "tasks": 15,
+      "turboCacheHits": 0,
+      "nativeGoTestResultCaching": false,
+      "goPackages": [
+        "configuration",
+        "protocol",
+        "simulation",
+        "track"
+      ],
+      "log": "docs/preservation/evidence/mechanics/logs/check-final-01.log"
+    },
+    "browser": {
+      "command": "PATH=<cached Go 1.26.0 bin>:$PATH GOTOOLCHAIN=local GOCACHE=/private/tmp/dashdevil-go-cache pnpm test:browser --env-mode=loose",
+      "passed": true,
+      "scenarios": 12,
+      "retries": 0,
+      "fullArtifacts": "apps/client/test-results/run-2026-10-15T07-24-20.343Z-5AsYaj",
+      "manifest": "docs/preservation/evidence/mechanics/browser-final-manifest.json",
+      "manifestSha256": "146a0f7416b72b1e932aa0b2896f248c6da7da8e1d85162f333651638cc43616",
+      "log": "docs/preservation/evidence/mechanics/logs/browser-final-02.log"
+    },
+    "independentReview": {
+      "standardsOutstanding": 0,
+      "specOutstanding": 0,
+      "report": "docs/preservation/mechanics-review.md",
+      "resolved": [
+        "P2 semantic validation before input sequence admission"
+      ],
+      "refinements": [
+        "Avoid deferred player contact in shift fixtures",
+        "Independent car placement windows omit large separation gap",
+        "Disable native Go test-result caching for external fixtures"
+      ]
+    }
+  },
+  "referenceScenarios": {
+    "timelines": 17,
+    "canonicalTimeVectors": 6,
+    "sweptGeometryVectors": 6,
+    "seededPlacementScenarios": 2,
+    "positionTolerance": {
+      "absolute": 1e-06,
+      "relative": 1e-12
+    },
+    "exact": [
+      "dispositions",
+      "event decisions",
+      "event ordering",
+      "canonical microseconds",
+      "lane and control state",
+      "identity",
+      "seed words",
+      "generated cells"
+    ]
+  },
+  "seeds": {
+    "simulation": 1,
+    "placement": 1,
+    "independentScheduleProbe": 991,
+    "browserMultiplayer": [
+      1,
+      2
+    ],
+    "longDrive": [
+      21,
+      5408,
+      5410
+    ]
+  },
+  "environment": {
+    "node": "v26.10.0",
+    "platform": "darwin",
+    "release": "25.5.0",
+    "architecture": "arm64",
+    "cpu": "Apple M2",
+    "memoryBytes": 8589934592,
+    "go": "go1.26.0 darwin/arm64",
+    "browser": "155.0.8059.79",
+    "viewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "longDriveCanvas": {
+      "width": 606,
+      "height": 806
+    },
+    "multiplayerDiagnosticCanvas": {
+      "width": 606,
+      "height": 806
+    },
+    "powerSettings": "unrecorded",
+    "referenceHardwareEquivalence": "not established"
+  },
+  "failureRetention": {
+    "directory": "docs/preservation/evidence/mechanics/logs",
+    "sha256": {
+      "browser-01.log": "bae7a5052279efb09bc1bb24d89fb27bf58b7ce5ee25aa3d6a0f13e36a137060",
+      "browser-final-02.log": "5bdff2138c5390e904268d498fd0ee9e60e07f248aa79d7bcb3f3fb48720c784",
+      "check-final-01.log": "ed282a7a6e42a87d21c520285000cfc62ee69bd6c01eaf1d7f1ef0424939a6d8",
+      "config-green-02.log": "5edd1ac2506c15a9133c56d952c54927c636d0680646ee0e55f11f98140512d5",
+      "config-green-03.log": "2c3d987dff1506b55f84a528da89b26dbc28345309f135f70597672a4332dde8",
+      "config-green.log": "f7ae7083cb8e87d235e0f39398ee501883d558fa68e46d9e70283d61061a793a",
+      "config-red-02.log": "9e015572b27eda32ec82ebb428f0477fa45a85ea11b549d93fea1aa61fce3d2b",
+      "config-red.log": "14f3ab9e8b114dad75be1799c69b353e466adc060173ec4bc48da9a5ac1d5ec5",
+      "controls-green-02.log": "9abf7e2da006267d665f8b243418ff3b565d1d7b2204393c9563107265660bf5",
+      "controls-green.log": "5352ad18831e9c8375218ebd22dab8a5f9ff0f5c14ab3bd7c267fcc1ea66b850",
+      "controls-red.log": "702822a54018e8901573547277a6726e4f93a8e0356e7fada58a90fea93707bc",
+      "event-continuation-01.log": "9758fd66269126eecf63a51b33a259566f14df21c86f91603f91186bc0d5573f",
+      "fixtures-02.log": "df09577d56df0108fa0970b3757b62c7ab56935059a4bb8765e1d7a5c2e943f0",
+      "generation-green-02.log": "9538e7b3f716829552a3a991e102ed6ca92bba70370eb723d4ec50b56e6d2907",
+      "generation-green.log": "d7b6bbb11271469532874d7eb7fd8412c755fb52ec99c98f3d9e6270c8ce7c6d",
+      "generation-red.log": "2b47797cc49d848390144ec8026caa25190d005c69e324a6cef5f2840c4866ba",
+      "go-event-continuation-01.log": "d807c1d53beca1b220b72eec9a7ed6c32af1c41db750807e0b97be441a794bc9",
+      "go-fixtures-02.log": "43ea8911883d1cc926292265fdfb4124c89af28c2d9dc6c9668ec2d08385dbab",
+      "go-generation-green.log": "9783003d119d6de46853b1f7c0461e7ff500a2dbad47e9d81495fc742e9944be",
+      "go-invariants-green.log": "72f5f83405899844b4904392baf0fa27245b25e196947211c7a98a72bca48a60",
+      "go-invariants-red.log": "ae637dddb347ada3b7d89fe0c25e8f500937cbd116acc8a6fb42e997ce3013af",
+      "go-movement-green.log": "216bb4b6c4ce3f8a69754d31cb72ef8acf1ac6ebf79f313f595e8e720fc2abf8",
+      "go-movement-red.log": "62f811794d6b281067f0e82558fa0bfd2af5eb783e01ea23c23a77732b85323d",
+      "go-review-all-green.log": "33da0fe2922ba46538d0fce21b3970a78b32defd66b0e89bc0701a14fa8dea61",
+      "go-review-semantic-green.log": "747559072db281ea37edb6cc693f91ac83c18af6200af7b0a511ce7b87c6166c",
+      "go-review-semantic-red-02.log": "0506fe10370e529feb3cdbe8ce0a1df915c343f8d9e48b8279cdaa5d3a2871a7",
+      "go-review-semantic-red-03.log": "d4f4d58c105604854dc69677d344a45af3b8ca89f3cf2a592f34665d902791e0",
+      "go-review-semantic-red.log": "63257c0b6bd3287daea8d17db878d6eb4150c399351a13191f3206cf0a97233f",
+      "go-timelines-01.log": "8f98bc33b1e199c0235fe74f8c83e60093b1e55d6e3453947efd3366ee272663",
+      "go-windows-green.log": "747559072db281ea37edb6cc693f91ac83c18af6200af7b0a511ce7b87c6166c",
+      "invariants-01.log": "14fdaaee7adc610d6905aaa811d2d2adee4ebabd7e39c4e145277d49b8917dc6",
+      "invariants-green.log": "d77b52bf7b3c4208887298778cebca3c6fc75976f8446837dcd3ac94186c3739",
+      "lint-01.log": "7a70ff86e1f1283c2bd6b29595dedd5f60930f8ee812bf44dc7ed3fedd627b7c",
+      "movement-green.log": "3a4071a83665538b4f86a67214c25b67950eff6a1965d09d0acb472a9c8501cc",
+      "movement-red.log": "2433b61a3986f15be85c9233d9c1fd0183c2732e0b0a95c18d3ff4892069850e",
+      "review-all-green.log": "b0648b8c0c3d9009c2027a5ad0d5fb9ad2c19c176eecc3db06490d0e94abbe6a",
+      "review-semantic-green.log": "9cde50499406d0c2afe22bc1e49627c41952f405f7bc5ee77a60d2a2c0c04e63",
+      "review-semantic-red.log": "311217b3e15100d0a6b476a08bc8d9cb7d3ee92e663c8a1de776158b76a3934e",
+      "timelines-01.log": "a7b2814bd114aed895b32835fe983d8452273fad17459198dd0fb59e2f72d3eb",
+      "typecheck-01.log": "cfb0e1efc5babc9cafee6504c9306d35ec09a9e9fd701097978f7a5e3c3b6593",
+      "typecheck-02.log": "c4ebbb67c1101d7055674ad438fc8506f7cb4e555945319341cf82a8d35381cb",
+      "typecheck-03.log": "a29def07c6b53882f6b373e5828f24dadea98b800ed480fa936b366fdf9b09bd",
+      "typecheck-04.log": "cfb0e1efc5babc9cafee6504c9306d35ec09a9e9fd701097978f7a5e3c3b6593",
+      "typecheck-05.log": "cfb0e1efc5babc9cafee6504c9306d35ec09a9e9fd701097978f7a5e3c3b6593",
+      "windows-green.log": "584cfe3fdfa8235a97ecb6ba6e1f499203aa942224deeb2b2d4f35d0ba3e63c8",
+      "windows-red.log": "8c3e6df29e9d9b82e94267bfecc7673c968f69f8f3446a83599f02d7e0286bc0"
+    },
+    "notes": [
+      "Original missing-interface TDD red runs retained.",
+      "Initial config-test path error and compile/type errors retained.",
+      "Whitespace-wrapped null accepted by Go was red before repair.",
+      "Exact floating-point position assertion and one hand-authored seed lane were corrected from independent equations/seed draws; original failures retained.",
+      "Initial root typecheck could not write Go default cache; subsequent run used writable temp cache and env-mode=loose.",
+      "Go toolchain proxy lookup failed under restricted network; final runs invoke installed pinned Go 1.26.0 with GOTOOLCHAIN=local.",
+      "A cached native Go run did not re-read changed external fixture; actual uncached red is go-review-semantic-red-03.log. Workspace native tests now use -count=1.",
+      "Original input semantic-validation failure and whole-gap placement-retention failure retained alongside green retries.",
+      "First browser pass had dirty product-source hashes retained in original run; final browser run started at clean reviewed revision4453952."
+    ]
+  },
+  "stage4": {
+    "mechanicsImplementation": "passed",
+    "combinedExitGate": "not passed until #29 actual transport evidence"
+  },
+  "unavailable": {
+    "twoBrowserRealTransport": "#29 listeners/admission/certificates prerequisite",
+    "contactsReturnsObjectsOutcomes": "later gameplay slices; no parity claim",
+    "fullAcceptance": "later supported-browser/network/reference-hardware/capacity/manual multiplayer evidence"
+  },
+  "visualInspection": "Agent inspected diagnostic screenshot; baseline audiovisual owner approval clears Stage3, but no manual multiplayer/timing acceptance is claimed.",
+  "supplementalOwnerBrowserChecks": {
+    "reportedDate": "2026-10-15",
+    "timezone": "America/Phoenix",
+    "scope": "Long Drive manual behavior, visuals and audio",
+    "source": "Owner confirmation in #28 implementation chat",
+    "browsers": [
+      {
+        "name": "Safari",
+        "version": "latest available at time of testing, as reported by owner",
+        "exactVersion": null,
+        "result": "passed; no visual or audio issues reported"
+      },
+      {
+        "name": "Firefox",
+        "version": "latest available at time of testing, as reported by owner",
+        "exactVersion": null,
+        "result": "passed; no visual or audio issues reported"
+      }
+    ],
+    "recordings": null,
+    "testedRevision": null,
+    "environment": "not recorded",
+    "acceptanceScope": "Supplemental manual Long Drive evidence; complete supported-release matrix and multiplayer transport remain unestablished."
+  }
+}

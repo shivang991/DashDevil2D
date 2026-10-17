@@ -1,0 +1,102 @@
+
+ RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (5 tests | 4 failed) 9ms
+   × held steering shifts at constant speed and repeats only after completion 2ms
+   × freshness expiry splits a tick, refresh cannot reactivate expired NOS 2ms
+   × disconnect releases held NOS immediately without cancelling an in-flight shift 1ms
+   × overload abandons without skipping forward or revising final state 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > held steering shifts at constant speed and repeats only after completion
+AssertionError: expected -120 to be close to -40, received difference is 80, but expected 5e-10
+ ❯ tests/simulation/multiplayer.test.ts:21:42
+     19|  game.submit(identity, { ...input, control: 2, heldMask: 2 });
+     20|  game.advanceTo(.1);
+     21|  expect(game.snapshot().cars[0].lateral).toBeCloseTo(-40, 9);
+       |                                          ^
+     22|  game.advanceTo(.3);
+     23|  expect(game.snapshot().cars[0]).toMatchObject({ lane: 2, phase: 0, la…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > freshness expiry splits a tick, refresh cannot reactivate expired NOS
+AssertionError: expected [ { type: 'input', tick: +0, …(4) } ] to deep equally contain { type: 'expiry', tick: 18, …(2) }
+
+- Expected:
+{
+  "seat": 0,
+  "tick": 18,
+  "timeUs": 310000,
+  "type": "expiry",
+}
+
++ Received:
+[
+  {
+    "disposition": "accepted",
+    "seat": 0,
+    "sequence": 1,
+    "tick": 0,
+    "timeUs": 0,
+    "type": "input",
+  },
+]
+
+ ❯ tests/simulation/multiplayer.test.ts:29:17
+     27|  game.submit(identity, input);
+     28|  const events = game.advanceTo(.5);
+     29|  expect(events).toContainEqual({ type: 'expiry', tick: 18, timeUs: 310…
+       |                 ^
+     30|  expect(game.snapshot().cars[0].progress).toBeCloseTo(324, 9);
+     31|  game.submit(identity, { ...input, sequence: 2, intent: 2 });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > disconnect releases held NOS immediately without cancelling an in-flight shift
+TypeError: game.disconnect is not a function
+ ❯ tests/simulation/multiplayer.test.ts:37:55
+     35| test('disconnect releases held NOS immediately without cancelling an i…
+     36|  const game = new Multiplayer(captureConfiguration('drag-race'), 1, [i…
+     37|  game.submit(identity, input);game.advanceTo(.1);game.disconnect(ident…
+       |                                                       ^
+     38|  expect(game.snapshot().cars[0]).toMatchObject({ effective: 0, progres…
+     39| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > overload abandons without skipping forward or revising final state
+AssertionError: expected [] to deeply equal [ { type: 'abandoned', …(2) } ]
+
+- Expected
++ Received
+
+- [
+-   {
+-     "tick": 0,
+-     "timeUs": 0,
+-     "type": "abandoned",
+-   },
+- ]
++ []
+
+ ❯ tests/simulation/multiplayer.test.ts:42:31
+     40| test('overload abandons without skipping forward or revising final sta…
+     41|  const game = new Multiplayer(captureConfiguration('drag-race'), 1, [i…
+     42|  expect(game.advanceTo(1.01)).toEqual([{ type: 'abandoned', tick: 0, t…
+       |                               ^
+     43|  expect(game.snapshot()).toMatchObject({ tick: 0, abandoned: true });
+     44|  expect(game.advanceTo(2)).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 1 passed (5)
+   Start at  00:04:35
+   Duration  171ms (transform 55%, import 21%, tests 20%, worker 4%)
+
+undefined
+/Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/multiplayer.test.ts

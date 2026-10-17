@@ -1,0 +1,49 @@
+
+ RUN  v5.0.4 /Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (39 tests | 1 failed) 27ms
+   × widely separated cars retain placement only in their independent reachable windows 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > widely separated cars retain placement only in their independent reachable windows
+AssertionError: expected [ 4000, 4400, 4800, 5200, 5600, …(8) ] to deeply equal [ 4000, 4400, 4800, 8000, 8400, 8800 ]
+
+- Expected
++ Received
+
+  [
+    4000,
+    4400,
+    4800,
++   5200,
++   5600,
++   6000,
++   6400,
++   6800,
++   7200,
++   7600,
+    8000,
+    8400,
+    8800,
+  ]
+
+ ❯ tests/simulation/multiplayer.test.ts:125:58
+    123|  expect(state.cars[0].progress).toBeCloseTo(8000, 6);
+    124|  expect(state.cars[1].progress).toBeCloseTo(4000, 6);
+    125|  expect(state.track.slices.map(slice => slice.distance)).toEqual([4000…
+       |                                                          ^
+    126| });
+    127|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 38 passed (39)
+   Start at  00:21:39
+   Duration  181ms (transform 45%, tests 36%, import 16%, worker 3%)
+
+undefined
+/Users/shivang/.codex/worktrees/6b7b/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/multiplayer.test.ts

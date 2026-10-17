@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "generationVersion": 1,
+  "decisions": [
+    "https://github.com/shivang991/DashDevil2D/issues/5#issuecomment-6119616392",
+    "https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562"
+  ],
+  "seed": 1,
+  "words": [270369, 67634689, 2647435461, 307599695, 2398689233],
+  "opportunities": [
+    { "progress": 400, "timeUs": 1000000, "id": 1, "distance": 1140, "cells": ["coin", "empty", "empty"] },
+    { "progress": 802.55, "timeUs": 1970000, "id": 2, "distance": 1542.55, "cells": ["empty", "coin", "empty"] }
+  ],
+  "precision": { "absolute": 0.000001, "relative": 1e-12 },
+  "derivation": "Published owner-reviewed seed-1 words; lane=floor(word/2^32*3), type coin below .45. First progress=400*1; second=400+415*.97. Coin anchor=progress+726+14. Identities and microseconds exact; distance uses the agreed tolerance."
+}

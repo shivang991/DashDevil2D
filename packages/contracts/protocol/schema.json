@@ -1,0 +1,1584 @@
+{
+  "version": 1,
+  "byteOrder": "big-endian",
+  "timestampMax": 9007199254740991,
+  "projection": "signed-int64; floor(position*1024+0.5); exact-JS-integer subset",
+  "types": {
+    "Identity": [
+      {
+        "name": "roomId",
+        "type": "u32"
+      },
+      {
+        "name": "seatSession",
+        "type": "u32"
+      },
+      {
+        "name": "pairGeneration",
+        "type": "u32"
+      },
+      {
+        "name": "seat",
+        "type": "u8",
+        "max": 1
+      }
+    ],
+    "Round": [
+      {
+        "name": "roundId",
+        "type": "u32"
+      },
+      {
+        "name": "inputGeneration",
+        "type": "u32"
+      }
+    ],
+    "Progress": [
+      {
+        "name": "authority",
+        "type": "u32"
+      },
+      {
+        "name": "event",
+        "type": "u32"
+      },
+      {
+        "name": "processed1",
+        "type": "u32"
+      },
+      {
+        "name": "processed2",
+        "type": "u32"
+      },
+      {
+        "name": "disposed1",
+        "type": "u32"
+      },
+      {
+        "name": "disposed2",
+        "type": "u32"
+      }
+    ],
+    "Car": [
+      {
+        "name": "progress",
+        "type": "f64",
+        "projection": true
+      },
+      {
+        "name": "lateral",
+        "type": "f64",
+        "projection": true
+      },
+      {
+        "name": "normalSpeed",
+        "type": "f64"
+      },
+      {
+        "name": "lane",
+        "type": "u8",
+        "max": 2,
+        "bits": 2
+      },
+      {
+        "name": "departure",
+        "type": "u8",
+        "max": 2,
+        "bits": 2
+      },
+      {
+        "name": "target",
+        "type": "u8",
+        "max": 2,
+        "bits": 2
+      },
+      {
+        "name": "phase",
+        "type": "u8",
+        "max": 2,
+        "bits": 2
+      },
+      {
+        "name": "controls",
+        "type": "u8",
+        "max": 3,
+        "bits": 2
+      },
+      {
+        "name": "effective",
+        "type": "u8",
+        "max": 3,
+        "bits": 2
+      },
+      {
+        "name": "flags",
+        "type": "u8",
+        "mask": 15,
+        "bits": 4
+      },
+      {
+        "name": "movementOrigin",
+        "type": "f64",
+        "projection": true
+      },
+      {
+        "name": "movementTarget",
+        "type": "f64",
+        "projection": true
+      },
+      {
+        "name": "movementStartUs",
+        "type": "us"
+      },
+      {
+        "name": "movementEndUs",
+        "type": "us"
+      },
+      {
+        "name": "nextShiftUs",
+        "type": "us"
+      },
+      {
+        "name": "freshnessUs",
+        "type": "us"
+      },
+      {
+        "name": "protectionUs",
+        "type": "us"
+      },
+      {
+        "name": "hp",
+        "type": "u32"
+      },
+      {
+        "name": "score",
+        "type": "u32"
+      },
+      {
+        "name": "lastInput",
+        "type": "u32"
+      },
+      {
+        "name": "heldMask",
+        "type": "u8",
+        "mask": 7
+      },
+      {
+        "name": "inputGeneration",
+        "type": "u32"
+      }
+    ],
+    "Contact": [
+      {
+        "name": "episode",
+        "type": "u32"
+      },
+      {
+        "name": "flags",
+        "type": "u8",
+        "mask": 7
+      },
+      {
+        "name": "blockedSeat",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "latestSeat",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "latestControl",
+        "type": "u8",
+        "max": 3
+      },
+      {
+        "name": "latestSequence",
+        "type": "u32"
+      },
+      {
+        "name": "latestTimeUs",
+        "type": "us"
+      },
+      {
+        "name": "latestOrder",
+        "type": "u32"
+      }
+    ],
+    "ObjectState": [
+      {
+        "name": "id",
+        "type": "u32"
+      },
+      {
+        "name": "sliceId",
+        "type": "u32"
+      },
+      {
+        "name": "lane",
+        "type": "u8",
+        "max": 2,
+        "bits": 2
+      },
+      {
+        "name": "flags",
+        "type": "u8",
+        "mask": 31,
+        "bits": 5
+      },
+      {
+        "name": "distance",
+        "type": "f64",
+        "projection": true
+      }
+    ],
+    "Window": [
+      {
+        "name": "start",
+        "type": "f64",
+        "projection": true
+      },
+      {
+        "name": "end",
+        "type": "f64",
+        "projection": true
+      },
+      {
+        "name": "firstSlice",
+        "type": "u32"
+      },
+      {
+        "name": "lastSlice",
+        "type": "u32"
+      },
+      {
+        "name": "objects",
+        "type": "ObjectState",
+        "array": 40000
+      }
+    ],
+    "Generator": [
+      {
+        "name": "randomState",
+        "type": "u32"
+      },
+      {
+        "name": "nextSlice",
+        "type": "u32"
+      },
+      {
+        "name": "nextObject",
+        "type": "u32"
+      },
+      {
+        "name": "cursor",
+        "type": "f64",
+        "projection": true
+      },
+      {
+        "name": "nextSpawnUs",
+        "type": "us"
+      },
+      {
+        "name": "nextDifficultyUs",
+        "type": "us"
+      },
+      {
+        "name": "reservedCursor",
+        "type": "u32"
+      }
+    ],
+    "Gameplay": [
+      {
+        "name": "accelSpeedMultiplier",
+        "type": "f64"
+      },
+      {
+        "name": "carHeight",
+        "type": "f64"
+      },
+      {
+        "name": "carWidth",
+        "type": "f64"
+      },
+      {
+        "name": "coinSize",
+        "type": "f64"
+      },
+      {
+        "name": "coinWeight",
+        "type": "f64"
+      },
+      {
+        "name": "countdownDuration",
+        "type": "f64"
+      },
+      {
+        "name": "difficultyRampInterval",
+        "type": "f64"
+      },
+      {
+        "name": "emptyWeight",
+        "type": "f64"
+      },
+      {
+        "name": "finishDistance",
+        "type": "f64"
+      },
+      {
+        "name": "heartExclusionDistance",
+        "type": "f64"
+      },
+      {
+        "name": "heartSize",
+        "type": "f64"
+      },
+      {
+        "name": "heartWeight",
+        "type": "f64"
+      },
+      {
+        "name": "initialClearDistance",
+        "type": "f64"
+      },
+      {
+        "name": "initialSpawnInterval",
+        "type": "f64"
+      },
+      {
+        "name": "invincibleDuration",
+        "type": "f64"
+      },
+      {
+        "name": "laneLerpSpeed",
+        "type": "f64"
+      },
+      {
+        "name": "laneReturnDuration",
+        "type": "f64"
+      },
+      {
+        "name": "laneShiftDuration",
+        "type": "f64"
+      },
+      {
+        "name": "laneSpacing",
+        "type": "f64"
+      },
+      {
+        "name": "laneSwitchCooldownDuration",
+        "type": "f64"
+      },
+      {
+        "name": "maxHealth",
+        "type": "f64"
+      },
+      {
+        "name": "maxRoadSpeed",
+        "type": "f64"
+      },
+      {
+        "name": "minSpawnInterval",
+        "type": "f64"
+      },
+      {
+        "name": "obstacleDamage",
+        "type": "f64"
+      },
+      {
+        "name": "obstacleH",
+        "type": "f64"
+      },
+      {
+        "name": "obstacleW",
+        "type": "f64"
+      },
+      {
+        "name": "obstacleWeight",
+        "type": "f64"
+      },
+      {
+        "name": "playerContactDamage",
+        "type": "f64"
+      },
+      {
+        "name": "reservedHearts",
+        "type": "f64"
+      },
+      {
+        "name": "roadSpeedIncrement",
+        "type": "f64"
+      },
+      {
+        "name": "sliceSpacing",
+        "type": "f64"
+      },
+      {
+        "name": "spawnIntervalDecrement",
+        "type": "f64"
+      },
+      {
+        "name": "speedGrowth",
+        "type": "f64"
+      },
+      {
+        "name": "startingRoadSpeed",
+        "type": "f64"
+      },
+      {
+        "name": "tickRate",
+        "type": "f64"
+      },
+      {
+        "name": "timeLimit",
+        "type": "f64"
+      }
+    ],
+    "Presentation": [
+      {
+        "name": "accelCarOffset",
+        "type": "f64"
+      },
+      {
+        "name": "accelLerpSpeed",
+        "type": "f64"
+      },
+      {
+        "name": "blinkCount",
+        "type": "f64"
+      },
+      {
+        "name": "carBottomMargin",
+        "type": "f64"
+      },
+      {
+        "name": "carTiltLerpSpeed",
+        "type": "f64"
+      },
+      {
+        "name": "carTiltMaxAngle",
+        "type": "f64"
+      },
+      {
+        "name": "correctionSmoothing",
+        "type": "f64"
+      },
+      {
+        "name": "gameOverFadeMaxOpacity",
+        "type": "f64"
+      },
+      {
+        "name": "gameOverFadeSpeed",
+        "type": "f64"
+      },
+      {
+        "name": "gameOverShakeDuration",
+        "type": "f64"
+      },
+      {
+        "name": "gameOverShakeMultiplier",
+        "type": "f64"
+      },
+      {
+        "name": "narrowScreenWidth",
+        "type": "f64"
+      },
+      {
+        "name": "roadWidthRatioNarrow",
+        "type": "f64"
+      },
+      {
+        "name": "roadWidthRatioNormal",
+        "type": "f64"
+      },
+      {
+        "name": "shakeDuration",
+        "type": "f64"
+      },
+      {
+        "name": "shakeIntensity",
+        "type": "f64"
+      }
+    ],
+    "Room": [
+      {
+        "name": "idleExpiry",
+        "type": "f64"
+      },
+      {
+        "name": "idleWarning",
+        "type": "f64"
+      },
+      {
+        "name": "reconnectGrace",
+        "type": "f64"
+      }
+    ],
+    "Connection": [
+      {
+        "name": "admissionTicketLifetime",
+        "type": "f64"
+      },
+      {
+        "name": "baselineBytes",
+        "type": "f64"
+      },
+      {
+        "name": "clockRequestRate",
+        "type": "f64"
+      },
+      {
+        "name": "clockSamples",
+        "type": "f64"
+      },
+      {
+        "name": "clockSyncInterval",
+        "type": "f64"
+      },
+      {
+        "name": "controlFreshnessExpiry",
+        "type": "f64"
+      },
+      {
+        "name": "controlRefreshInterval",
+        "type": "f64"
+      },
+      {
+        "name": "essentialProgressDeadline",
+        "type": "f64"
+      },
+      {
+        "name": "essentialQueueWait",
+        "type": "f64"
+      },
+      {
+        "name": "inputBurst",
+        "type": "f64"
+      },
+      {
+        "name": "inputRate",
+        "type": "f64"
+      },
+      {
+        "name": "networkBudgetWindow",
+        "type": "f64"
+      },
+      {
+        "name": "networkBytesPerSecond",
+        "type": "f64"
+      },
+      {
+        "name": "queueBytes",
+        "type": "f64"
+      },
+      {
+        "name": "queueMessages",
+        "type": "f64"
+      },
+      {
+        "name": "recoveryRequestRate",
+        "type": "f64"
+      },
+      {
+        "name": "reliableFrameBytes",
+        "type": "f64"
+      },
+      {
+        "name": "replayHistory",
+        "type": "f64"
+      },
+      {
+        "name": "verificationInterval",
+        "type": "f64"
+      }
+    ],
+    "Operational": [
+      {
+        "name": "simulationLagThreshold",
+        "type": "f64"
+      }
+    ],
+    "Context": [
+      {
+        "name": "configurationVersion",
+        "type": "u32"
+      },
+      {
+        "name": "configurationId",
+        "type": "u32"
+      },
+      {
+        "name": "generationVersion",
+        "type": "u32"
+      },
+      {
+        "name": "seed",
+        "type": "u32"
+      },
+      {
+        "name": "mode",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "startUs",
+        "type": "us"
+      },
+      {
+        "name": "gameplay",
+        "type": "Gameplay"
+      },
+      {
+        "name": "presentation",
+        "type": "Presentation"
+      },
+      {
+        "name": "room",
+        "type": "Room"
+      },
+      {
+        "name": "connection",
+        "type": "Connection"
+      },
+      {
+        "name": "operational",
+        "type": "Operational"
+      }
+    ],
+    "Baseline": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "epoch",
+        "type": "u16"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "timeUs",
+        "type": "us"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      },
+      {
+        "name": "context",
+        "type": "Context"
+      },
+      {
+        "name": "cars",
+        "type": "Car",
+        "array": 2,
+        "fixed": true
+      },
+      {
+        "name": "contact",
+        "type": "Contact"
+      },
+      {
+        "name": "generator",
+        "type": "Generator"
+      },
+      {
+        "name": "windows",
+        "type": "Window",
+        "array": 2
+      }
+    ],
+    "FinalCar": [
+      {
+        "name": "progress",
+        "type": "f64"
+      },
+      {
+        "name": "lateral",
+        "type": "f64"
+      },
+      {
+        "name": "hp",
+        "type": "u32"
+      },
+      {
+        "name": "score",
+        "type": "u32"
+      }
+    ],
+    "Seat": [
+      {
+        "name": "session",
+        "type": "u32"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "max": 128
+      },
+      {
+        "name": "flags",
+        "type": "u8",
+        "mask": 7
+      },
+      {
+        "name": "reservationUs",
+        "type": "us"
+      }
+    ],
+    "AdmissionRequest": [
+      {
+        "name": "operation",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "version",
+        "type": "u16"
+      },
+      {
+        "name": "code",
+        "type": "string",
+        "max": 4
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "max": 128
+      },
+      {
+        "name": "credential",
+        "type": "bytes",
+        "max": 32
+      }
+    ],
+    "Admission": [
+      {
+        "name": "version",
+        "type": "u16"
+      },
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "credential",
+        "type": "bytes",
+        "max": 32
+      },
+      {
+        "name": "roomTicket",
+        "type": "bytes",
+        "max": 256
+      },
+      {
+        "name": "gameplayTicket",
+        "type": "bytes",
+        "max": 256
+      },
+      {
+        "name": "expiresUs",
+        "type": "us"
+      },
+      {
+        "name": "origin",
+        "type": "string",
+        "max": 512
+      }
+    ],
+    "ProtocolError": [
+      {
+        "name": "code",
+        "type": "u8",
+        "max": 15
+      },
+      {
+        "name": "expectedVersion",
+        "type": "u16"
+      },
+      {
+        "name": "detail",
+        "type": "string",
+        "max": 512
+      }
+    ],
+    "RoomInitialization": [
+      {
+        "name": "version",
+        "type": "u16"
+      },
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "revision",
+        "type": "u32"
+      }
+    ],
+    "RoomState": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "revision",
+        "type": "u32"
+      },
+      {
+        "name": "mode",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "phase",
+        "type": "u8",
+        "max": 3
+      },
+      {
+        "name": "host",
+        "type": "u8",
+        "max": 1
+      },
+      {
+        "name": "seats",
+        "type": "Seat",
+        "array": 2,
+        "fixed": true
+      },
+      {
+        "name": "roundId",
+        "type": "u32"
+      },
+      {
+        "name": "startUs",
+        "type": "us"
+      },
+      {
+        "name": "idleWarningUs",
+        "type": "us"
+      },
+      {
+        "name": "idleExpiryUs",
+        "type": "us"
+      }
+    ],
+    "RoomCommand": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "sequence",
+        "type": "u32"
+      },
+      {
+        "name": "revision",
+        "type": "u32"
+      },
+      {
+        "name": "command",
+        "type": "u8",
+        "max": 3
+      },
+      {
+        "name": "mode",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "ready",
+        "type": "u8",
+        "max": 1
+      }
+    ],
+    "Handshake": [
+      {
+        "name": "version",
+        "type": "u16"
+      },
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "datagramBytes",
+        "type": "u16"
+      }
+    ],
+    "Initialization": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "context",
+        "type": "Context"
+      }
+    ],
+    "Ready": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "transferId",
+        "type": "u32"
+      },
+      {
+        "name": "epoch",
+        "type": "u16"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      }
+    ],
+    "ClockRequest": [
+      {
+        "name": "sequence",
+        "type": "u32"
+      },
+      {
+        "name": "clientSendUs",
+        "type": "us"
+      }
+    ],
+    "ClockReply": [
+      {
+        "name": "sequence",
+        "type": "u32"
+      },
+      {
+        "name": "clientSendUs",
+        "type": "us"
+      },
+      {
+        "name": "serverReceiveUs",
+        "type": "us"
+      },
+      {
+        "name": "serverSendUs",
+        "type": "us"
+      }
+    ],
+    "Recovery": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "reason",
+        "type": "u8",
+        "max": 4
+      },
+      {
+        "name": "epoch",
+        "type": "u16"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      }
+    ],
+    "AuthorityAck": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "epoch",
+        "type": "u16"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      }
+    ],
+    "Outcome": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "roundId",
+        "type": "u32"
+      },
+      {
+        "name": "outcomeId",
+        "type": "u32"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "timeUs",
+        "type": "us"
+      },
+      {
+        "name": "result",
+        "type": "u8",
+        "max": 3
+      },
+      {
+        "name": "reason",
+        "type": "u8",
+        "max": 6
+      },
+      {
+        "name": "cars",
+        "type": "FinalCar",
+        "array": 2,
+        "fixed": true
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      }
+    ],
+    "Input": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "sequence",
+        "type": "u32"
+      },
+      {
+        "name": "intent",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "control",
+        "type": "u8",
+        "max": 3
+      },
+      {
+        "name": "heldMask",
+        "type": "u8",
+        "mask": 7
+      }
+    ],
+    "Disposition": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "authority",
+        "type": "u32"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "timeUs",
+        "type": "us"
+      },
+      {
+        "name": "seat",
+        "type": "u8",
+        "max": 1
+      },
+      {
+        "name": "sequence",
+        "type": "u32"
+      },
+      {
+        "name": "processed",
+        "type": "u32"
+      },
+      {
+        "name": "disposition",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "intent",
+        "type": "u8",
+        "max": 2
+      },
+      {
+        "name": "control",
+        "type": "u8",
+        "max": 3
+      },
+      {
+        "name": "car",
+        "type": "Car"
+      },
+      {
+        "name": "contact",
+        "type": "Contact"
+      }
+    ],
+    "Event": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "authority",
+        "type": "u32"
+      },
+      {
+        "name": "eventId",
+        "type": "u32"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "timeUs",
+        "type": "us"
+      },
+      {
+        "name": "kind",
+        "type": "u8",
+        "max": 8
+      },
+      {
+        "name": "causeInput",
+        "type": "u32"
+      },
+      {
+        "name": "objectId",
+        "type": "u32"
+      },
+      {
+        "name": "episodeId",
+        "type": "u32"
+      },
+      {
+        "name": "seatMask",
+        "type": "u8",
+        "mask": 3
+      },
+      {
+        "name": "cars",
+        "type": "Car",
+        "array": 2,
+        "fixed": true
+      },
+      {
+        "name": "contact",
+        "type": "Contact"
+      },
+      {
+        "name": "objects",
+        "type": "ObjectState",
+        "array": 3
+      }
+    ],
+    "Barrier": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "epoch",
+        "type": "u16"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "timeUs",
+        "type": "us"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      }
+    ],
+    "BaselineChunk": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "transferId",
+        "type": "u32"
+      },
+      {
+        "name": "epoch",
+        "type": "u16"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      },
+      {
+        "name": "total",
+        "type": "u32"
+      },
+      {
+        "name": "offset",
+        "type": "u32"
+      },
+      {
+        "name": "index",
+        "type": "u32"
+      },
+      {
+        "name": "count",
+        "type": "u32"
+      },
+      {
+        "name": "data",
+        "type": "bytes",
+        "max": 1048576
+      }
+    ],
+    "Verification": [
+      {
+        "name": "epoch",
+        "type": "u16"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "crc",
+        "type": "u32"
+      }
+    ],
+    "Projection": [
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "configurationId",
+        "type": "u32"
+      },
+      {
+        "name": "generationVersion",
+        "type": "u32"
+      },
+      {
+        "name": "seed",
+        "type": "u32"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "timeUs",
+        "type": "us"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      },
+      {
+        "name": "cars",
+        "type": "Car",
+        "array": 2,
+        "fixed": true
+      },
+      {
+        "name": "contact",
+        "type": "Contact"
+      },
+      {
+        "name": "generator",
+        "type": "Generator"
+      },
+      {
+        "name": "windows",
+        "type": "Window",
+        "array": 2
+      }
+    ],
+    "Coverage": [
+      {
+        "name": "identity",
+        "type": "Identity"
+      },
+      {
+        "name": "round",
+        "type": "Round"
+      },
+      {
+        "name": "authority",
+        "type": "u32"
+      },
+      {
+        "name": "tick",
+        "type": "u32"
+      },
+      {
+        "name": "timeUs",
+        "type": "us"
+      },
+      {
+        "name": "progress",
+        "type": "Progress"
+      },
+      {
+        "name": "generator",
+        "type": "Generator"
+      },
+      {
+        "name": "windows",
+        "type": "Window",
+        "array": 2
+      }
+    ]
+  },
+  "messages": {
+    "AdmissionRequest": {
+      "id": 1,
+      "channel": "https"
+    },
+    "Admission": {
+      "id": 2,
+      "channel": "https"
+    },
+    "ProtocolError": {
+      "id": 3,
+      "channel": "all-reliable"
+    },
+    "RoomInitialization": {
+      "id": 4,
+      "channel": "room"
+    },
+    "RoomState": {
+      "id": 5,
+      "channel": "room"
+    },
+    "RoomCommand": {
+      "id": 6,
+      "channel": "room"
+    },
+    "Handshake": {
+      "id": 7,
+      "channel": "control"
+    },
+    "Initialization": {
+      "id": 8,
+      "channel": "control"
+    },
+    "Ready": {
+      "id": 9,
+      "channel": "control"
+    },
+    "ClockRequest": {
+      "id": 10,
+      "channel": "control"
+    },
+    "ClockReply": {
+      "id": 11,
+      "channel": "control"
+    },
+    "Recovery": {
+      "id": 12,
+      "channel": "control"
+    },
+    "AuthorityAck": {
+      "id": 13,
+      "channel": "control"
+    },
+    "Outcome": {
+      "id": 14,
+      "channel": "control"
+    },
+    "Input": {
+      "id": 15,
+      "channel": "inputs"
+    },
+    "Disposition": {
+      "id": 16,
+      "channel": "authority"
+    },
+    "Event": {
+      "id": 17,
+      "channel": "authority"
+    },
+    "Barrier": {
+      "id": 18,
+      "channel": "authority"
+    },
+    "BaselineChunk": {
+      "id": 19,
+      "channel": "authority"
+    },
+    "Coverage": {
+      "id": 20,
+      "channel": "authority"
+    }
+  },
+  "enums": {
+    "mode": [
+      "long-drive",
+      "drag-race",
+      "road-rage"
+    ],
+    "seat": [
+      "player1",
+      "player2"
+    ],
+    "seatOrNone": [
+      "none",
+      "player1",
+      "player2"
+    ],
+    "lane": [
+      "left",
+      "middle",
+      "right"
+    ],
+    "phase": [
+      "steady",
+      "shift",
+      "return"
+    ],
+    "control": [
+      "none",
+      "left",
+      "right",
+      "NOS"
+    ],
+    "inputIntent": [
+      "press",
+      "release",
+      "refresh"
+    ],
+    "disposition": [
+      "accepted",
+      "ignored",
+      "rejected"
+    ],
+    "admissionOperation": [
+      "create",
+      "join",
+      "resume"
+    ],
+    "roomPhase": [
+      "lobby",
+      "countdown",
+      "active",
+      "ended"
+    ],
+    "roomCommand": [
+      "select-mode",
+      "ready",
+      "start",
+      "leave"
+    ],
+    "outcomeResult": [
+      "player1-win",
+      "player2-win",
+      "tie",
+      "abandoned"
+    ],
+    "outcomeReason": [
+      "finish",
+      "HP",
+      "deadline",
+      "explicit-leave",
+      "grace-expiry",
+      "both-disconnected",
+      "server-lag"
+    ],
+    "eventKind": [
+      "pickup",
+      "obstacle",
+      "HP-score-protection",
+      "contact",
+      "return",
+      "blocking",
+      "freshness-expiry",
+      "control-release",
+      "round-event"
+    ]
+  },
+  "flags": {
+    "Car": {
+      "0": "NOS active",
+      "1": "fresh steering required",
+      "2": "fresh NOS required",
+      "3": "forward blocked"
+    },
+    "Contact": {
+      "0": "episode active",
+      "1": "episode damage decided",
+      "2": "tailgating"
+    },
+    "ObjectState": {
+      "0..1": "kind: 1 coin, 2 obstacle, 3 heart",
+      "2": "shared pickup consumed",
+      "3": "obstacle spent player1",
+      "4": "obstacle spent player2"
+    },
+    "Seat": {
+      "0": "connected",
+      "1": "ready",
+      "2": "reserved"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+# Native Go server mechanics
+
+`simulation` is a serialized headless round owner for common multiplayer movement, shifts, NOS, next-tick authenticated-intent admission, control freshness and lag abandonment. `configuration` captures canonical JSON settings with semantic/resource validation and private value-owned state. `track` shares xorshift32 and lane/type selection with TypeScript, supports Long Drive anchors and chronological multiplayer placement, and retains stable identities through extension/retirement.
+
+Use Go 1.26.0 from `.go-version`. `go vet ./...`, `go test ./...` and `go build ./...` remain mandatory workspace checks. Native tests consume shared configuration, timeline, geometry, seeded-placement and wire fixtures. Continuous position tolerance is `0.000001 + 1e-12 * abs(expected)`; decisions, integer event times, seed words and identities match exactly.
+
+Call `configuration.Capture` with the canonical `packages/contracts/configuration/defaults.json` definition and optional JSON overrides before creating a round. Pass authenticated seat identities to `simulation.New` and separately to `Submit`; payload identities never authenticate themselves. Call `AdvanceTo` with monotonic seconds since announced round zero. The coordinator must exclude countdown and call `Disconnect` immediately on pair loss. Snapshots/events expose copies. Submit traffic-limit errors require explicit paired failure/recovery in the future transport adapter.
+
+Protocol version 1 provides generated binary contracts and handwritten wire-state/resource validation in `protocol/`. Run `pnpm generate` and `pnpm check:generated` from the root after schema changes. Secure transport/listeners, credentials and paired recovery remain #29. Contact/blocking/returns, object interactions and outcomes remain later gameplay slices; this module does not yet implement a complete multiplayer game. See [the #28 checkpoint](../../docs/preservation/mechanics-checkpoint.md).

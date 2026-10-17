@@ -2,5 +2,6 @@ node_modules
 dist
 .DS_Store
 prompt.md
-client/test-results/
-client/playwright-report/
+apps/client/test-results/
+apps/client/playwright-report/
+.turbo/

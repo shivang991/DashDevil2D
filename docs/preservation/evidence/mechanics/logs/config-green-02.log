@@ -1,0 +1,4 @@
+# github.com/shivang991/DashDevil2D/apps/server/configuration [github.com/shivang991/DashDevil2D/apps/server/configuration.test]
+configuration/configuration.go:203:32: cannot use source.Version (variable of type uint16) as uint32 value in struct literal
+FAIL	github.com/shivang991/DashDevil2D/apps/server/configuration [build failed]
+FAIL
