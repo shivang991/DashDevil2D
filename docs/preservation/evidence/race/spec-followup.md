@@ -1,0 +1,7 @@
+No remaining actionable Spec findings within #31's clear-track scope.
+
+The previous interpolation finding is resolved in `6717546`: `RaceSession.frame` preserves completed-tick geometry and supplies separate `renderedCars` interpolated toward the next predicted tick; `RaceView` draws those positions. The independent 25 ms example correctly expects 10 rendered units at 400 units/s while retaining 6.666666666666667 units at the last completed 60 Hz simulation tick. This implements “Interpolate ordinary movement between simulation ticks for smooth rendering” without altering authoritative geometry.
+
+Terminal outcome handling now ignores late dispositions as well as later events/coverage/barriers, updates exposed final positions, and acknowledges the outcome's terminal watermark. Server outstanding progress is replaced by that terminal point, preserving the application deadline without requiring superseded barriers. The actual WebTransport browser regression deliberately delays authority application and waits beyond the former timeout; its comments accurately avoid claiming a physical network-profile test.
+
+Independent finish-fixture arithmetic remains consistent with all six shared examples. Both engines now use the same integration helper within their respective language for forward movement and finish search. No scope creep identified. Full correction smoothing, contact-generated returns, shipped objects, and complete lifecycle/recovery acceptance remain the documented later-ticket work.

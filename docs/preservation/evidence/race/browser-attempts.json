@@ -1,0 +1,470 @@
+[
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/browser-green-01.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-27-23.129Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "33f1f41945e1943f7bcfa2acc7f9d02e9205571a",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/cmd/diagnostic/main.go\n M apps/server/simulation/simulation.go\n M apps/server/transport/pair.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms.go\n M apps/server/transport/server.go\n M package.json\n M packages/simulation/multiplayer.ts\n M packages/simulation/multiplayerTrack.ts\n?? apps/client/src/components/RaceView.tsx\n?? apps/client/src/game/RaceSession.ts\n?? apps/client/tests/browser/race.spec.ts\n?? apps/client/tests/session/race.test.ts\n?? apps/server/transport/race.go\n?? docs/preservation/evidence/race/\n?? infra/clear-track.json\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 1,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-nQfzbx"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/browser-green-02.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-28-10.400Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "33f1f41945e1943f7bcfa2acc7f9d02e9205571a",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/cmd/diagnostic/main.go\n M apps/server/simulation/simulation.go\n M apps/server/transport/pair.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms.go\n M apps/server/transport/server.go\n M package.json\n M packages/simulation/multiplayer.ts\n M packages/simulation/multiplayerTrack.ts\n?? apps/client/src/components/RaceView.tsx\n?? apps/client/src/game/RaceSession.ts\n?? apps/client/tests/browser/race.spec.ts\n?? apps/client/tests/session/race.test.ts\n?? apps/server/transport/race.go\n?? docs/preservation/evidence/race/\n?? infra/clear-track.json\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-rlYlxZ"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/browser-green-03.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-30-55.785Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "33f1f41945e1943f7bcfa2acc7f9d02e9205571a",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/cmd/diagnostic/main.go\n M apps/server/simulation/simulation.go\n M apps/server/simulation/simulation_test.go\n M apps/server/transport/pair.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms.go\n M apps/server/transport/server.go\n M package.json\n M packages/simulation/multiplayer.ts\n M packages/simulation/multiplayerTrack.ts\n?? apps/client/src/components/RaceView.tsx\n?? apps/client/src/game/RaceSession.ts\n?? apps/client/tests/browser/race.spec.ts\n?? apps/client/tests/session/race.test.ts\n?? apps/server/transport/race.go\n?? docs/preservation/evidence/race/\n?? infra/clear-track.json\n?? packages/contracts/race/\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-dPvWlA"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/browser-red-01.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-24-10.373Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "33f1f41945e1943f7bcfa2acc7f9d02e9205571a",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M package.json\n M packages/simulation/multiplayer.ts\n M packages/simulation/multiplayerTrack.ts\n?? apps/client/src/game/RaceSession.ts\n?? apps/client/tests/browser/race.spec.ts\n?? apps/client/tests/session/race.test.ts\n?? docs/preservation/evidence/race/\n?? infra/clear-track.json\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 1,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-dPGxsJ"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/finality-green-02.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-38-24.507Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "6f83763efb38ccc1bd9067a4839c2c301f6da2fb",
+      "dirty": " M .github/workflows/preservation.yml\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/game/RaceSession.ts\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/client/tests/browser/race.spec.ts\n M apps/client/tests/session/race.test.ts\n M apps/server/simulation/simulation.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms.go\n M packages/contracts/protocol/README.md\n M packages/simulation/multiplayer.ts\n?? docs/preservation/evidence/race/logs/finality-green-02.log\n?? docs/preservation/evidence/race/logs/finality-green.log\n?? docs/preservation/evidence/race/logs/finality-red.log\n?? docs/preservation/evidence/race/logs/interpolation-green.log\n?? docs/preservation/evidence/race/logs/interpolation-red.log\n?? docs/preservation/evidence/race/logs/lint-04.log\n?? docs/preservation/evidence/race/logs/lint-05.log\n?? docs/preservation/evidence/race/logs/preservation-01.log\n?? docs/preservation/evidence/race/logs/review-client-green.log\n?? docs/preservation/evidence/race/logs/rooms-01.log\n?? docs/preservation/evidence/race/logs/transport-01.log\n?? docs/preservation/evidence/race/logs/types-10.log\n?? docs/preservation/evidence/race/logs/types-11.log\n?? docs/preservation/evidence/race/logs/types-12.log\n?? docs/preservation/race-review.md\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 1,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EibKoA"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/finality-green.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-36-59.358Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "6f83763efb38ccc1bd9067a4839c2c301f6da2fb",
+      "dirty": " M .github/workflows/preservation.yml\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/game/RaceSession.ts\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/client/tests/browser/race.spec.ts\n M apps/client/tests/session/race.test.ts\n M apps/server/simulation/simulation.go\n M apps/server/transport/rooms.go\n M packages/simulation/multiplayer.ts\n?? docs/preservation/evidence/race/logs/finality-green.log\n?? docs/preservation/evidence/race/logs/finality-red.log\n?? docs/preservation/evidence/race/logs/interpolation-green.log\n?? docs/preservation/evidence/race/logs/interpolation-red.log\n?? docs/preservation/evidence/race/logs/lint-04.log\n?? docs/preservation/evidence/race/logs/lint-05.log\n?? docs/preservation/evidence/race/logs/preservation-01.log\n?? docs/preservation/evidence/race/logs/rooms-01.log\n?? docs/preservation/evidence/race/logs/transport-01.log\n?? docs/preservation/evidence/race/logs/types-10.log\n?? docs/preservation/evidence/race/logs/types-11.log\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 1,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-aKDO4K"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/finality-red.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-36-20.400Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "6f83763efb38ccc1bd9067a4839c2c301f6da2fb",
+      "dirty": " M .github/workflows/preservation.yml\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/game/RaceSession.ts\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/client/tests/browser/race.spec.ts\n M apps/client/tests/session/race.test.ts\n M apps/server/simulation/simulation.go\n M apps/server/transport/rooms.go\n M packages/simulation/multiplayer.ts\n?? docs/preservation/evidence/race/logs/finality-red.log\n?? docs/preservation/evidence/race/logs/interpolation-green.log\n?? docs/preservation/evidence/race/logs/interpolation-red.log\n?? docs/preservation/evidence/race/logs/lint-04.log\n?? docs/preservation/evidence/race/logs/preservation-01.log\n?? docs/preservation/evidence/race/logs/rooms-01.log\n?? docs/preservation/evidence/race/logs/transport-01.log\n?? docs/preservation/evidence/race/logs/types-10.log\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 1,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-wL0xyp"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/race-final-01.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-40-23.261Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "67175467f9a5a8e4169f73e831d571661a174559",
+      "dirty": "?? docs/preservation/evidence/race/logs/check-final-01.log\n?? docs/preservation/evidence/race/logs/race-final-01.log\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-tgN5Mz"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/race-final-02.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-46-12.231Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a",
+      "dirty": " M docs/preservation/race-checkpoint.md\n M docs/preservation/race-review.md\n?? docs/preservation/evidence/race/logs/check-final-02.log\n?? docs/preservation/evidence/race/logs/race-final-02.log\n?? docs/preservation/evidence/race/spec-final.md\n?? docs/preservation/evidence/race/spec-followup.md\n?? docs/preservation/evidence/race/spec-review.md\n?? docs/preservation/evidence/race/standards-final.md\n?? docs/preservation/evidence/race/standards-followup.md\n?? docs/preservation/evidence/race/standards-review.md\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-n4egws"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/recovery-finality-red.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-43-49.737Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "revision": "67175467f9a5a8e4169f73e831d571661a174559",
+      "dirty": " M apps/client/tests/browser/race.spec.ts\n?? docs/preservation/evidence/race/final-commands.json\n?? docs/preservation/evidence/race/logs/check-final-01.log\n?? docs/preservation/evidence/race/logs/preservation-final-01.log\n?? docs/preservation/evidence/race/logs/race-final-01.log\n?? docs/preservation/evidence/race/logs/recovery-finality-red.log\n?? docs/preservation/evidence/race/logs/rooms-final-01.log\n?? docs/preservation/evidence/race/logs/transport-final-01.log\n?? docs/preservation/evidence/race/outcomes.json\n?? docs/preservation/evidence/race/race.png\n?? docs/preservation/evidence/race/result-0.png\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 1,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-PHyvHN"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/rooms-01.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-33-31.806Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "revision": "6f83763efb38ccc1bd9067a4839c2c301f6da2fb",
+      "dirty": "?? docs/preservation/evidence/race/logs/rooms-01.log\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-grkU1A"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/rooms-final-01.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-40-38.037Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "revision": "67175467f9a5a8e4169f73e831d571661a174559",
+      "dirty": "?? docs/preservation/evidence/race/logs/check-final-01.log\n?? docs/preservation/evidence/race/logs/race-final-01.log\n?? docs/preservation/evidence/race/logs/rooms-final-01.log\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qbZDuA"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/rooms-final-02.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-46-27.182Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a",
+      "dirty": " M docs/preservation/race-checkpoint.md\n M docs/preservation/race-review.md\n?? docs/preservation/evidence/race/logs/check-final-02.log\n?? docs/preservation/evidence/race/logs/race-final-02.log\n?? docs/preservation/evidence/race/logs/rooms-final-02.log\n?? docs/preservation/evidence/race/spec-final.md\n?? docs/preservation/evidence/race/spec-followup.md\n?? docs/preservation/evidence/race/spec-review.md\n?? docs/preservation/evidence/race/standards-final.md\n?? docs/preservation/evidence/race/standards-followup.md\n?? docs/preservation/evidence/race/standards-review.md\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-b6m0WL"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/transport-01.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-33-41.996Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "revision": "6f83763efb38ccc1bd9067a4839c2c301f6da2fb",
+      "dirty": "?? docs/preservation/evidence/race/logs/rooms-01.log\n?? docs/preservation/evidence/race/logs/transport-01.log\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-ISGVtb"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/transport-final-01.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-40-50.544Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "revision": "67175467f9a5a8e4169f73e831d571661a174559",
+      "dirty": "?? docs/preservation/evidence/race/logs/check-final-01.log\n?? docs/preservation/evidence/race/logs/race-final-01.log\n?? docs/preservation/evidence/race/logs/rooms-final-01.log\n?? docs/preservation/evidence/race/logs/transport-final-01.log\n?? docs/preservation/evidence/race/outcomes.json\n?? docs/preservation/evidence/race/race.png\n?? docs/preservation/evidence/race/result-0.png\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-bK0tDX"
+    }
+  },
+  {
+    "commandLog": "docs/preservation/evidence/race/logs/transport-final-02.log",
+    "retainedDirectory": "apps/client/test-results/transport-2026-10-17T05-46-36.081Z",
+    "manifest": {
+      "version": 1,
+      "fixture": "protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a",
+      "dirty": " M docs/preservation/race-checkpoint.md\n M docs/preservation/race-review.md\n?? docs/preservation/evidence/race/logs/check-final-02.log\n?? docs/preservation/evidence/race/logs/race-final-02.log\n?? docs/preservation/evidence/race/logs/rooms-final-02.log\n?? docs/preservation/evidence/race/logs/transport-final-02.log\n?? docs/preservation/evidence/race/spec-final.md\n?? docs/preservation/evidence/race/spec-followup.md\n?? docs/preservation/evidence/race/spec-review.md\n?? docs/preservation/evidence/race/standards-final.md\n?? docs/preservation/evidence/race/standards-followup.md\n?? docs/preservation/evidence/race/standards-review.md\n",
+      "hashes": {
+        "apps/server/go.mod": "03290830b6f978d2a3e862009c619ffb5c7b986760932474da4014cf07f3dc11",
+        "apps/server/go.sum": "235a3840cf8f472433786ba096854c37956362d9fc16b99974ea602e775ec734",
+        "apps/server/transport/diagnostic.json": "2efeeadcecbd5da4dfb1eae7e46703183ce0eb2bb4276dcd95e0624e75f5a31a",
+        "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+        "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+        "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+      },
+      "go": "go version go1.26.0 darwin/arm64",
+      "pnpm": "8.15.9",
+      "node": "v26.10.0",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "exitCode": 0,
+      "originalDirectory": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-UwSJ6E"
+    }
+  }
+]
