@@ -273,6 +273,16 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		return fmt.Errorf("stale room command")
 	}
 	pair.roomSequence = command.Sequence
+	// Resolve the exact maintenance cutoff before any command can make a
+	// terminal result immutable between periodic sweeps.
+	if s.draining && !time.Now().Before(s.drainDeadline) {
+		changed := s.advanceRacesLocked()
+		defer func() {
+			for _, room := range changed {
+				s.broadcast(room)
+			}
+		}()
+	}
 	if command.Command == 3 {
 		if r.phase == 2 {
 			result := uint8(3)
