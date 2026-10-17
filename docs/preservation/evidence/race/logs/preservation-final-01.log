@@ -1,0 +1,102 @@
+
+> dashdevil@ test:browser /Users/shivang/Desktop/programs/test/claude-code-test
+> turbo run test:browser --filter=@dashdevil/client
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client
+   • Running test:browser in 1 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache miss, executing 03c13dabfd6788ea
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:typecheck: cache miss, executing dbd9a10be003c6b3
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/simulation:typecheck: cache miss, executing e382c2eb11b63e1a
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:build: cache miss, executing 328244ad8a719254
+@dashdevil/client:typecheck: cache miss, executing 5bc38e6779f78003
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > pnpm typecheck
+@dashdevil/simulation:build: 
+@dashdevil/client:typecheck: 
+@dashdevil/client:typecheck: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:typecheck: > tsc -b
+@dashdevil/client:typecheck: 
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > tsc -p tsconfig.json
+@dashdevil/simulation:build: 
+@dashdevil/client:build: cache miss, executing b6d5c3ea729de8e0
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > pnpm typecheck && vite build
+@dashdevil/client:build: 
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > tsc -b
+@dashdevil/client:build: 
+@dashdevil/client:build: vite v7.3.1 building client environment for production...
+@dashdevil/client:build: (node:70608) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@dashdevil/client:build: (Use `node --trace-deprecation ...` to show where the warning was created)
+@dashdevil/client:build: transforming...
+@dashdevil/client:build: ✓ 1757 modules transformed.
+@dashdevil/client:build: rendering chunks...
+@dashdevil/client:build: computing gzip size...
+@dashdevil/client:build: dist/index.html                                                  0.54 kB │ gzip:  0.32 kB
+@dashdevil/client:build: dist/transport.html                                              1.92 kB │ gzip:  0.87 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-BKRTx50S.woff      8.01 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-ext-wght-normal-BKihR4CZ.woff2    8.87 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-DoFJSI0R.woff2     9.30 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-wght-normal-BudczbaH.woff2       10.30 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-Dh0jW_6n.woff         13.91 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-D7DxpFcE.woff2        15.51 kB
+@dashdevil/client:build: dist/assets/transport-CMJqIDQr.css                               0.70 kB │ gzip:  0.42 kB
+@dashdevil/client:build: dist/assets/main-CyEG-c5m.css                                   27.54 kB │ gzip:  5.86 kB
+@dashdevil/client:build: dist/assets/transport-BvnCUZhu.js                                1.26 kB │ gzip:  0.55 kB
+@dashdevil/client:build: dist/assets/PairedConnection-oDFiQ3Gj.js                        76.86 kB │ gzip: 21.41 kB
+@dashdevil/client:build: dist/assets/main-nRV8SGly.js                                   241.06 kB │ gzip: 75.59 kB
+@dashdevil/client:build: ✓ built in 1.03s
+@dashdevil/client:test:browser: cache bypass, force executing 73151c9f95802cca
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: > @dashdevil/client@0.0.0 test:browser /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:test:browser: > playwright test
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: [WebServer] (node:70670) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+@dashdevil/client:test:browser: [WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+@dashdevil/client:test:browser: [WebServer] (node:70670) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: Running 12 tests using 1 worker
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: (node:70679) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+@dashdevil/client:test:browser: (Use `node --trace-warnings ...` to show where the warning was created)
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:   ✓   1 tests/browser/baseline.spec.ts:48:1 › public app: five-second start, actual canvas, keyboard pause and mute (5.7s)
+@dashdevil/client:test:browser:   ✓   2 tests/browser/baseline.spec.ts:71:1 › record real-time public presentation for later human comparison (20.3s)
+@dashdevil/client:test:browser:   ✓   3 tests/browser/baseline.spec.ts:104:1 › audio unavailable still allows gameplay (2.9s)
+@dashdevil/client:test:browser:   ✓   4 tests/browser/baseline.spec.ts:115:1 › isolated coin cue from public seeded gameplay (5.0s)
+@dashdevil/client:test:browser:   ✓   5 tests/browser/baseline.spec.ts:139:1 › session focus lifecycle: away countdown freezes and active blur requires fresh resume (10.6s)
+@dashdevil/client:test:browser:   ✓   6 tests/browser/baseline.spec.ts:163:1 › native sound control keeps Space behavior and clears held movement (3.7s)
+@dashdevil/client:test:browser:   ✓   7 tests/browser/baseline.spec.ts:179:1 › early Enter is discarded; restart and menu-return use fresh three-second countdowns (8.8s)
+@dashdevil/client:test:browser:   ✓   8 tests/browser/configuration.spec.ts:9:1 › developer capture drives actual Long Drive HP HUD, heart drawing, healing and audio (4.2s)
+@dashdevil/client:test:browser:   ✓   9 tests/browser/multiplayer.spec.ts:6:1 › actual browser executes next-tick NOS and shift diagnostics with independent sessions (1.1s)
+@dashdevil/client:test:browser:   ✓  10 tests/browser/track.spec.ts:7:3 › seeded high-speed contacts preserve exact HUD outcomes (2.8s)
+@dashdevil/client:test:browser:   ✓  11 tests/browser/track.spec.ts:7:3 › seeded high-speed contacts preserve exact HUD outcomes across resize (2.7s)
+@dashdevil/client:test:browser:   ✓  12 tests/browser/track.spec.ts:27:1 › seeded high-speed pickup adds exactly ten points (2.2s)
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:   12 passed (1.3m)
+
+ Tasks:    7 successful, 7 total
+Cached:    0 cached, 7 total
+  Time:    1m22.995s 
+

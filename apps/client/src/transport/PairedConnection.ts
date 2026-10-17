@@ -241,7 +241,8 @@ export class PairedConnection {
         this.state.timeUs = baseline.timeUs; this.state.cars = baseline.cars; this.state.seed = baseline.context.seed;
         if (!this.options.diagnostic) {
           if (this.race) this.race.install(baseline); else this.race = new RaceSession(baseline);
-          if (this.state.outcome?.roundId === baseline.round.roundId) { this.race.finish(this.state.outcome); this.state.timeUs = this.state.outcome.timeUs; }
+          if (this.state.outcome?.roundId === baseline.round.roundId) { this.race.finish(this.state.outcome); this.state.timeUs = this.state.outcome.timeUs;
+            this.state.cars = baseline.cars.map((car, seat) => ({ ...car, ...this.state.outcome!.cars[seat] })); this.state.positions = this.state.outcome.cars.map(car => car.progress).join(', '); }
         }
         await this.send('Ready', { identity, round: baseline.round, transferId: message.value.transferId, epoch: baseline.epoch, progress: baseline.progress }, generation);
         if (this.state.outcome) await this.ackOutcome(generation);
@@ -323,7 +324,7 @@ export class PairedConnection {
   }
   private async ackOutcome(generation: number) {
     const outcome = this.state.outcome, baseline = this.baseline;
-    if (outcome && baseline && outcome.roundId === baseline.round.roundId) await this.send('AuthorityAck', { identity: baseline.identity, round: baseline.round, epoch: baseline.epoch, tick: outcome.tick, progress: outcome.progress }, generation);
+    if (outcome && baseline && !this.recoveryOutstanding && !this.transfer && outcome.roundId === baseline.round.roundId) await this.send('AuthorityAck', { identity: baseline.identity, round: baseline.round, epoch: baseline.epoch, tick: outcome.tick, progress: outcome.progress }, generation);
   }
   private startTimers(generation: number) {
     this.timers.push(setInterval(() => {

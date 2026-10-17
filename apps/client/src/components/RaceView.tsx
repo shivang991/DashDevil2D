@@ -53,6 +53,7 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
         ctx.strokeStyle = '#737c90'; ctx.lineWidth = 2; ctx.setLineDash([20, 24]);
         for (const lane of [-.5, .5]) { ctx.beginPath(); ctx.moveTo(width / 2 + lane * g.laneSpacing * scale, 0); ctx.lineTo(width / 2 + lane * g.laneSpacing * scale, height); ctx.stroke(); }
         ctx.setLineDash([]);
+        ctx.textAlign = 'left';
         const finishY = y(g.finishDistance);
         if (finishY > -30 && finishY < height + 30) { ctx.fillStyle = '#f3f4f6'; ctx.fillRect(0, finishY - 6, width, 12); ctx.font = '18px sans-serif'; ctx.fillText('FINISH', 12, finishY - 18); }
         view.renderedCars.forEach((car, seat) => {
@@ -74,8 +75,8 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
   return <div className="relative flex flex-col gap-3">
     <div className="grid grid-cols-2 gap-3">{state.room?.seats.map((seat, i) => <div key={i} className="rounded border border-neutral-700 p-3">
       <p>{seat.name}{i === local ? ' (You)' : ''}</p><p>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</p>
-      <progress className="w-full" aria-label={`${i === local ? 'Your' : 'Opponent'} finish progress`} value={frame?.cars[i].progress ?? 0} max={context.gameplay.finishDistance} />
-      <p>{Math.round((frame?.cars[i].progress ?? 0) / context.gameplay.finishDistance * 100)}%</p>
+      <progress className="w-full" aria-label={`${i === local ? 'Your' : 'Opponent'} finish progress`} value={frame?.cars[i].progress ?? 0} max={context.gameplay.finishDistance - context.gameplay.carHeight / 2} />
+      <p>{Math.round((frame?.cars[i].progress ?? 0) / (context.gameplay.finishDistance - context.gameplay.carHeight / 2) * 100)}%</p>
     </div>)}</div>
     <p data-testid="nos-status">{frame?.cars[local].effective === 3 ? 'NOS active' : 'NOS ready'}</p>
     {frame?.awaiting && !outcome && <p role="status">Awaiting confirmation</p>}

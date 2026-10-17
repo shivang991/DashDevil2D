@@ -183,6 +183,9 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				ackedPulse = value.Sequence
 				lastAck = time.Now()
 			case p.AuthorityAck:
+				if record.channel == "control" && value.Identity == pair.identity && value.Round == baseline.Round && value.Epoch < baseline.Epoch {
+					continue
+				}
 				if record.channel != "control" || value.Identity != pair.identity || value.Round != baseline.Round || value.Epoch != baseline.Epoch {
 					return errors.New("authority acknowledgement context")
 				}
