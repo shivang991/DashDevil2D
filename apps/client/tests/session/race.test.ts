@@ -240,6 +240,19 @@ test('incomplete replacement track coverage cannot partially mutate authority', 
   expect(race.snapshot()).toEqual(b);
 });
 
+test('coverage headroom accepts the retained tick44 replay discrepancy', () => {
+  const b = baseline();
+  b.tick = 44; b.timeUs = 733333;
+  b.cars[0].progress = 366.6669333333332;
+  b.cars[1].progress = 293.33346666666654;
+  const race = new RaceSession(b);
+  const padding = b.context.gameplay.maxRoadSpeed * b.context.gameplay.accelSpeedMultiplier / b.context.gameplay.tickRate;
+  const windows = [{ start: 233.3333333333332 - padding, end: 1626.6666666666665 + padding, firstSlice: 0, lastSlice: 0, objects: [] }];
+  expect(() => race.coverage({ identity: b.identity, round: b.round, authority: 0, tick: 44, timeUs: 733333, progress: b.progress, generator: b.generator, windows })).not.toThrow();
+  expect(race.snapshot().windows).toEqual(windows);
+  expect(race.snapshot().cars.map(car => car.progress)).toEqual(b.cars.map(car => car.progress));
+});
+
 test('separate correction windows measure their own settling time', () => {
   let nowUs = 100000;
   const b = baseline(), race = new RaceSession(b, () => nowUs);

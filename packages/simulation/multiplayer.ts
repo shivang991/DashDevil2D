@@ -86,9 +86,10 @@ export class Multiplayer {
  private updateTrack(): void {
   const g = this.configuration.gameplay;
   const extent = (g.carHeight + Math.max(g.obstacleH, g.coinSize, g.heartSize)) / 2;
+  // Match authoritative coverage headroom, including complete retained objects.
   this.tracks.forEach((track, seat) => {
-   track.ensureThrough(this.cars[seat].progress + g.maxRoadSpeed * g.accelSpeedMultiplier + extent);
-   track.retireBehind(this.cars[seat].progress - g.carHeight / 2);
+   track.ensureThrough(this.cars[seat].progress + g.maxRoadSpeed * g.accelSpeedMultiplier + extent + g.maxRoadSpeed * g.accelSpeedMultiplier / g.tickRate);
+   track.retireBehind(this.cars[seat].progress - g.carHeight / 2 - g.maxRoadSpeed * g.accelSpeedMultiplier / g.tickRate);
   });
  }
  private clear(car: Car): void { car.controls = 0; car.effective = 0; car.heldMask = 0; car.flags = 0; car.freshnessUs = 0; }

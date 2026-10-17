@@ -196,11 +196,12 @@ func (e *Engine) Submit(auth protocol.Identity, input protocol.Input) (bool, err
 func (e *Engine) updateTrack() error {
 	g := e.context.Gameplay
 	extent := (g.CarHeight + math.Max(g.ObstacleH, math.Max(g.CoinSize, g.HeartSize))) / 2
+	// Retain complete placements for transport reconstruction headroom.
 	for seat, placements := range e.tracks {
-		if err := placements.EnsureThrough(e.state.Cars[seat].Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent); err != nil {
+		if err := placements.EnsureThrough(e.state.Cars[seat].Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent + g.MaxRoadSpeed*g.AccelSpeedMultiplier/g.TickRate); err != nil {
 			return err
 		}
-		placements.RetireBehind(e.state.Cars[seat].Progress - g.CarHeight/2)
+		placements.RetireBehind(e.state.Cars[seat].Progress - g.CarHeight/2 - g.MaxRoadSpeed*g.AccelSpeedMultiplier/g.TickRate)
 	}
 	return nil
 }
@@ -772,7 +773,7 @@ func (e *Engine) Coverage() (State, error) {
 	g := e.context.Gameplay
 	extent := (g.CarHeight + math.Max(g.ObstacleH, math.Max(g.CoinSize, g.HeartSize))) / 2
 	for seat, placements := range e.tracks {
-		if err := placements.EnsureThrough(e.state.Cars[seat].Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent + g.SliceSpacing); err != nil {
+		if err := placements.EnsureThrough(e.state.Cars[seat].Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent + g.SliceSpacing + g.MaxRoadSpeed*g.AccelSpeedMultiplier/g.TickRate); err != nil {
 			return State{}, err
 		}
 	}

@@ -260,9 +260,11 @@ func (pair *pair) submitRace(input p.Input) error {
 func raceCoverage(b p.Baseline, state simulation.State) (p.Generator, []p.Window) {
 	g := b.Context.Gameplay
 	extent := (g.CarHeight + math.Max(g.ObstacleH, math.Max(g.CoinSize, g.HeartSize))) / 2
+	// One movement tick of headroom covers reconstruction at canonical boundaries.
+	padding := g.MaxRoadSpeed * g.AccelSpeedMultiplier / g.TickRate
 	windows := []p.Window{}
 	for _, car := range state.Cars {
-		w := p.Window{Start: car.Progress - extent, End: car.Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent + g.SliceSpacing, Objects: []p.ObjectState{}}
+		w := p.Window{Start: car.Progress - extent - padding, End: car.Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent + g.SliceSpacing + padding, Objects: []p.ObjectState{}}
 		windows = append(windows, w)
 	}
 	if windows[0].Start > windows[1].Start {
