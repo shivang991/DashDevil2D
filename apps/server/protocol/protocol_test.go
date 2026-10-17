@@ -240,7 +240,7 @@ func TestContinuationAndResources(t *testing.T) {
 	if ValidateBaseline(b, context) == nil {
 		t.Fatal("context mismatch")
 	}
-	if ValidateVersion(2) == nil {
+	if ValidateVersion(1) == nil {
 		t.Fatal("version mismatch")
 	}
 	if _, e = NextCounter(65535, 16); e == nil {
@@ -302,14 +302,21 @@ func TestMessageSemantics(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
+		version := reflect.ValueOf(v).FieldByName("Version")
+		if version.IsValid() && uint16(version.Uint()) != ProtocolVersion {
+			if ValidateMessage(v, b.Context) == nil {
+				t.Fatalf("historical version accepted: %s", f.Name)
+			}
+			continue
+		}
 		if e = ValidateMessage(v, b.Context); e != nil {
 			t.Fatalf("%s: %v", f.Name, e)
 		}
 	}
-	if ValidateMessage(Handshake{Version: 2, Identity: b.Identity, DatagramBytes: 10}, b.Context) == nil {
+	if ValidateMessage(Handshake{Version: 1, Identity: b.Identity, DatagramBytes: 10}, b.Context) == nil {
 		t.Fatal("version")
 	}
-	if ValidateMessage(Handshake{Version: 1, Identity: b.Identity, DatagramBytes: 9}, b.Context) == nil {
+	if ValidateMessage(Handshake{Version: ProtocolVersion, Identity: b.Identity, DatagramBytes: 9}, b.Context) == nil {
 		t.Fatal("capacity")
 	}
 	if ValidateMessage(Input{Identity: b.Identity, Round: b.Round, Control: 3}, b.Context) == nil {

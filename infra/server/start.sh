@@ -20,8 +20,13 @@ while :; do
   (
     while sleep 30; do
       if [ "$(fingerprint)" != "$previous" ]; then
-        kill -TERM "$child" 2>/dev/null || true
-        exit 0
+        # Keep the currently loaded certificate serving while rounds drain.
+        # A failed drain must not turn renewal into an abrupt restart.
+        if /usr/local/bin/dashdevil-server --request-drain "$@"; then
+          kill -TERM "$child" 2>/dev/null || true
+          exit 0
+        fi
+        echo 'Certificate changed but maintenance drain failed; keeping current listeners' >&2
       fi
     done
   ) &

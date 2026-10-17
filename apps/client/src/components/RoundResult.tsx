@@ -1,6 +1,6 @@
 import type { Outcome } from '@dashdevil/contracts/protocol';
 
-const reasons = ['Finish line', 'HP depleted', 'Time limit', 'Forfeit', 'Reconnect grace expired', 'Both players disconnected or left', 'Server simulation interrupted'];
+const reasons = ['Finish line', 'HP depleted', 'Time limit', 'Forfeit', 'Reconnect grace expired', 'Both players disconnected or left', 'Server simulation interrupted', 'Server maintenance'];
 
 export function RoundResult({ outcome, local }: { outcome: Outcome; local: number }) {
   return <div role="status" className="rounded-xl border border-red-400 bg-neutral-900 p-5">

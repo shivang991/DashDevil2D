@@ -1,4 +1,4 @@
-# Protocol schema version 1
+# Protocol schema version 2
 
 Issue [#27](https://github.com/shivang991/DashDevil2D/issues/27). Governing [protocol](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562), [resource gate](https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6171130505), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139) and [sequence](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).
 
@@ -64,3 +64,7 @@ An applied self-contained `Outcome` acknowledges its terminal tick/progress usin
 ## Shared lobby return (#35)
 
 RoomCommand values are 0 select mode, 1 readiness, 2 start, 3 leave, 4 focus and 5 Return to Lobby. Command 5 is accepted only for a finalized round, moves the shared room to lobby, clears readiness and retains its code, host and idle deadline. Existing seat sessions retain their result summary; replacement guests do not inherit it. The coordinated version-1 schema now bounds this enum at 5; no existing record width or fixture bytes change. The new literal command-5 fixture is independently reviewed and consumed in both languages.
+
+## Maintenance deployment compatibility
+
+Protocol 2 adds Outcome reason 7 (`maintenance`) for an abandoned round at planned shutdown. Earlier clients are rejected at admission with the expected version before any seat is allocated; a cached v1 tab must reload. Production clients and servers use the generated protocol version rather than duplicated literals. Existing wire record widths and historical fixture bytes are retained. Shared fixture set 2 adds a literal v2 Handshake and maintenance Outcome; v1 headers in older named vectors test mechanical codecs and do not claim live v1 acceptance. Configuration and track-generation versions remain 1.

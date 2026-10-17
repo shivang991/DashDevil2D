@@ -3,7 +3,7 @@ import { RaceSession } from '@/game/RaceSession';
 import { RaceVerification } from '@/game/RaceVerification';
 import { validateMessage } from '@dashdevil/contracts/validation';
 import {
-  decodeMessage, encodeMessage, decodeVerification, projectBaseline,
+  protocolVersion, decodeMessage, encodeMessage, decodeVerification, projectBaseline,
   type Outcome, type Admission, type Baseline, type Barrier, type Context, type Identity, type Messages, type RoomState, type RoomReply,
 } from '@dashdevil/contracts/protocol';
 import { FrameReader, crc32c } from '@dashdevil/contracts/wire';
@@ -112,12 +112,12 @@ export class PairedConnection {
     try {
       const response = await fetch(`${this.options.server}/admission${operation === 0 && !this.options.diagnostic ? `?mode=${mode}` : ''}`, {
         method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, signal: AbortSignal.timeout(5000),
-        body: encodeMessage('AdmissionRequest', { operation, version: 1, code, name: operation === 2 ? '' : localName(), credential: operation === 2 ? this.credential() : new Uint8Array() }) as Uint8Array<ArrayBuffer>,
+        body: encodeMessage('AdmissionRequest', { operation, version: protocolVersion, code, name: operation === 2 ? '' : localName(), credential: operation === 2 ? this.credential() : new Uint8Array() }) as Uint8Array<ArrayBuffer>,
       });
       const bytes = new Uint8Array(await response.arrayBuffer());
       const message = decodeMessage(bytes);
       if (message.type === 'ProtocolError') throw new Error(message.value.detail);
-      if (!response.ok || message.type !== 'Admission' || message.value.version !== 1 || message.value.origin !== location.origin) throw new Error('Admission rejected');
+      if (!response.ok || message.type !== 'Admission' || message.value.version !== protocolVersion || message.value.origin !== location.origin) throw new Error('Admission rejected');
       if (generation !== this.generation) return;
       this.admission = message.value; this.state.identity = message.value.identity;
       this.state.code = response.headers.get('X-Room-Code') ?? code;
@@ -135,7 +135,7 @@ export class PairedConnection {
       void this.read(control.readable, 'control', generation).catch(error => this.fail(error, generation));
       void this.readAuthority(gameplay, generation).catch(error => this.fail(error, generation));
       void this.readDatagrams(gameplay, generation).catch(error => this.fail(error, generation));
-      await this.send('Handshake', { version: 1, identity: message.value.identity, datagramBytes: gameplay.datagrams.maxDatagramSize }, generation);
+      await this.send('Handshake', { version: protocolVersion, identity: message.value.identity, datagramBytes: gameplay.datagrams.maxDatagramSize }, generation);
       const watchdog = setInterval(() => {
         if (generation !== this.generation) return;
         if (this.lastUsable && performance.now() - this.lastUsable >= 1000) {
@@ -161,7 +161,7 @@ export class PairedConnection {
         const message = decodeMessage(new Uint8Array(event.data));
         if (message.type === 'ProtocolError') throw new Error(message.value.detail);
         if (message.type === 'RoomInitialization') {
-          if (message.value.version !== 1 || !sameIdentity(message.value.identity, admission.identity)) throw new Error('Room initialization mismatch');
+          if (message.value.version !== protocolVersion || !sameIdentity(message.value.identity, admission.identity)) throw new Error('Room initialization mismatch');
           socket.send(encodeMessage('RoomInitialization', message.value));
         } else if (message.type === 'RoomState') {
           if (!sameIdentity(message.value.identity, admission.identity)) throw new Error('Room state identity mismatch');
@@ -218,7 +218,7 @@ export class PairedConnection {
     if ('identity' in message.value && !sameIdentity(message.value.identity, identity)) throw new Error('Reliable identity mismatch');
     switch (message.type) {
       case 'Handshake':
-        if (channel !== 'control' || message.value.version !== 1 || message.value.datagramBytes !== 10) throw new Error('Gameplay handshake rejected');
+        if (channel !== 'control' || message.value.version !== protocolVersion || message.value.datagramBytes !== 10) throw new Error('Gameplay handshake rejected');
         break;
       case 'Initialization': {
         if (channel !== 'control' || this.options.diagnostic && this.context) throw new Error('Unexpected initialization');

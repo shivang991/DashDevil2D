@@ -23,6 +23,7 @@
     "test:race": "node apps/client/scripts/transport.mjs --test --race",
     "test:objects": "node apps/client/scripts/transport.mjs --test --objects",
     "test:contacts": "node apps/client/scripts/transport.mjs --test --contacts",
+    "test:maintenance": "node apps/client/scripts/transport.mjs --test --maintenance",
     "test:lifecycle": "node apps/client/scripts/transport.mjs --test --lifecycle",
     "test:hearts": "node apps/client/scripts/transport.mjs --test --hearts"
   },

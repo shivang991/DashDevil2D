@@ -1,4 +1,4 @@
-import { layouts, encodeBaseline, encodeContext, encodeObjectState, encodeMessage, projectBaseline, type Baseline, type BaselineChunk, type Car, type Context, type Progress, type Window } from '../generated/protocol';
+import { protocolVersion, layouts, encodeBaseline, encodeContext, encodeObjectState, encodeMessage, projectBaseline, type Baseline, type BaselineChunk, type Car, type Context, type Progress, type Window } from '../generated/protocol';
 import { quantize, WireError } from './runtime';
 import defaults from '../configuration/defaults.json';
 
@@ -130,7 +130,7 @@ export function validateBaseline(b: Baseline, expectedContext: Context): void {
 export function nextCounter(value: number, bits: 16 | 32): number {
   requireState(Number.isInteger(value) && value >= 0 && value < (bits === 16 ? 65535 : 0xffffffff), 'counter exhausted; renew context'); return value + 1;
 }
-export function validateVersion(version: number): void { requireState(version === 1, 'incompatible protocol version'); }
+export function validateVersion(version: number): void { requireState(version === protocolVersion, 'incompatible protocol version'); }
 
 /** Static semantic checks. Current identity/sequence admission and gameplay application are #28/#29. */
 export function validateMessage<K extends keyof import('../generated/protocol').Messages>(type: K, value: import('../generated/protocol').Messages[K], context: Context): void {

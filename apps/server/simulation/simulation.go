@@ -286,6 +286,25 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 	e.pending = nil
 }
 func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
+	return e.advance(seconds, false)
+}
+
+// StopAt resolves gameplay through an exact maintenance boundary, including a
+// partial final tick, then abandons only if gameplay did not already end it.
+// It is terminal; future advancement cannot replay the partial tick.
+func (e *Engine) StopAt(seconds float64) ([]Observation, error) {
+	events, err := e.advance(seconds, true)
+	if err == nil && e.state.Finish == nil && !e.state.Abandoned {
+		e.state.Abandoned = true
+		e.pending = nil
+		events = append(events, Observation{Type: "maintenance", Tick: e.state.Tick, TimeUs: e.state.TimeUs})
+		for seat := range e.state.Cars {
+			clear(&e.state.Cars[seat])
+		}
+	}
+	return events, err
+}
+func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) {
 	if _, err := CanonicalTime(seconds); err != nil {
 		return nil, err
 	}
@@ -317,12 +336,15 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 	if err := e.updateTrack(); err != nil {
 		return nil, err
 	}
-	for float64(uint64(e.state.Tick)+1)/g.TickRate <= seconds {
+	for float64(uint64(e.state.Tick)+1)/g.TickRate <= seconds || stopping && float64(e.state.Tick)/g.TickRate < seconds {
 		if e.state.Tick == math.MaxUint32 {
 			return nil, fmt.Errorf("tick exhausted")
 		}
 		time := float64(e.state.Tick) / g.TickRate
 		end := float64(uint64(e.state.Tick)+1) / g.TickRate
+		if stopping {
+			end = math.Min(end, seconds)
+		}
 		timeUs, _ := CanonicalTime(time)
 		e.boundaries(timeUs, &events)
 		e.apply(timeUs, &events)
@@ -452,6 +474,11 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 		}
 		if err := e.updateTrack(); err != nil {
 			return nil, err
+		}
+		if stopping && end < float64(uint64(e.state.Tick)+1)/g.TickRate {
+			e.state.Tick++
+			e.state.TimeUs, _ = CanonicalTime(end)
+			return events, nil
 		}
 		e.state.Tick++
 		e.state.TimeUs, _ = CanonicalTime(float64(e.state.Tick) / g.TickRate)

@@ -27,6 +27,7 @@ jobs:
       - run: pnpm test:objects
       - run: pnpm test:contacts
       - run: pnpm test:hearts
+      - run: pnpm test:maintenance
       - run: pnpm test:lifecycle
       - uses: actions/upload-artifact@v4
         if: always()

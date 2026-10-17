@@ -48,13 +48,32 @@ func (s *Server) advanceRacesLocked() []*room {
 		if r.phase != 2 || r.mode != 1 || r.engine == nil {
 			continue
 		}
-		events, err := r.engine.AdvanceTo(float64(s.nowUs()-r.startUs) / 1e6)
+		targetUs := s.nowUs()
+		stopping := false
+		if s.draining {
+			deadlineUs := uint64(s.drainDeadline.Sub(s.start).Microseconds())
+			if targetUs >= deadlineUs {
+				targetUs = deadlineUs
+				stopping = true
+			}
+		}
+		var events []simulation.Observation
+		var err error
+		if stopping {
+			events, err = r.engine.StopAt(float64(targetUs-r.startUs) / 1e6)
+		} else {
+			events, err = r.engine.AdvanceTo(float64(targetUs-r.startUs) / 1e6)
+		}
 		if err != nil {
 			s.finalizeRaceLocked(r, 3, 6, r.zero.Tick, r.zero.TimeUs)
 			changed = append(changed, r)
 			continue
 		}
+		maintenanceEnded := false
 		for _, event := range events {
+			if event.Type == "maintenance" {
+				maintenanceEnded = true
+			}
 			s.recordRaceLocked(r, event)
 		}
 		state := r.engine.Snapshot()
@@ -62,7 +81,11 @@ func (s *Server) advanceRacesLocked() []*room {
 		r.zero.Tick = state.Tick
 		r.zero.TimeUs = state.TimeUs
 		if state.Abandoned {
-			s.finalizeRaceLocked(r, 3, 6, state.Tick, state.TimeUs)
+			reason := uint8(6)
+			if maintenanceEnded {
+				reason = 7
+			}
+			s.finalizeRaceLocked(r, 3, reason, state.Tick, state.TimeUs)
 			changed = append(changed, r)
 		} else if state.Finish != nil {
 			s.finalizeRaceLocked(r, state.Finish.Result, state.Finish.Reason, state.Finish.Tick, state.Finish.TimeUs)

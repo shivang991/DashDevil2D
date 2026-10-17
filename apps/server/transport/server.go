@@ -41,20 +41,24 @@ type Config struct {
 	DragRaceOverrides                                                            []byte
 }
 type Server struct {
-	config       Config
-	mu           sync.Mutex // serializes room, admission and pair ownership; never hold across I/O
-	rooms        map[string]*room
-	credentials  map[string]*seat
-	tickets      map[string]ticket
-	nextID       uint32
-	start        time.Time
-	app          *fiber.App
-	webtransport *wt.Server
-	tcp          net.Listener
-	udp          net.PacketConn
-	stop         chan struct{}
-	closeOnce    sync.Once
-	errors       chan error
+	draining      bool
+	drainComplete bool
+	drainDeadline time.Time
+	drainClosing  time.Time
+	config        Config
+	mu            sync.Mutex // serializes room, admission and pair ownership; never hold across I/O
+	rooms         map[string]*room
+	credentials   map[string]*seat
+	tickets       map[string]ticket
+	nextID        uint32
+	start         time.Time
+	app           *fiber.App
+	webtransport  *wt.Server
+	tcp           net.Listener
+	udp           net.PacketConn
+	stop          chan struct{}
+	closeOnce     sync.Once
+	errors        chan error
 }
 type room struct {
 	engine          *simulation.Engine
@@ -285,6 +289,10 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	var participant *seat
 	switch request.Operation {
 	case 0, 1:
+		if s.draining {
+			s.mu.Unlock()
+			return s.failure(c, 503, 8, maintenanceMessage)
+		}
 		if len(request.Credential) != 0 || len(request.Name) == 0 || len(request.Name) > 128 || !utf8.ValidString(request.Name) {
 			s.mu.Unlock()
 			return s.failure(c, 400, 2, "Invalid admission")
@@ -441,7 +449,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	expires := now.Add(30 * time.Second)
 	s.tickets[token(roomTicket)] = ticket{participant, participant.generation, "room", s.config.Origin, expires}
 	s.tickets[token(gameplayTicket)] = ticket{participant, participant.generation, "gameplay", s.config.Origin, expires}
-	response := p.Admission{Version: 1, Identity: pair.identity, Credential: participant.credential, RoomTicket: roomTicket, GameplayTicket: gameplayTicket, ExpiresUs: s.nowUs() + 30000000, Origin: s.config.Origin}
+	response := p.Admission{Version: p.ProtocolVersion, Identity: pair.identity, Credential: participant.credential, RoomTicket: roomTicket, GameplayTicket: gameplayTicket, ExpiresUs: s.nowUs() + 30000000, Origin: s.config.Origin}
 	code := participant.room.code
 	s.mu.Unlock()
 	if old != nil {
@@ -525,9 +533,14 @@ func (s *Server) sweep() {
 			changed := s.advanceCountdownsLocked()
 			changed = append(changed, s.advanceRacesLocked()...)
 			changed = append(changed, s.expireLocked(now)...)
+			maintenanceChanged, closingPairs := s.advanceMaintenanceLocked(now)
+			changed = append(changed, maintenanceChanged...)
 			s.mu.Unlock()
 			for _, r := range changed {
 				s.broadcast(r)
+			}
+			for _, pair := range closingPairs {
+				pair.close("Server maintenance")
 			}
 		}
 	}

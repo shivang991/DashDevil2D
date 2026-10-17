@@ -1,78 +1,88 @@
-# VPC transport test deployment
+# Deploy DashDevil
 
-This packages the current Long Drive client and Stage 4 multiplayer transport diagnostic. It does not add gameplay authority or establish the remaining #29 browser/network acceptance requirements.
+This deploys the current Long Drive client and playable Drag Race rooms, including results, rematches and recovery. Product rooms are the default; `transport.html` is a retained developer diagnostic and is not the deployment acceptance path.
 
-The three Dockerfiles build the client (Node 26.10.0/pnpm 8.15.9), native Go diagnostic server (Go 1.26.0), and nginx edge proxy. The client image includes only built static assets. The server build disables optional Git VCS stamping, so `.git` is not needed in the build context. The official Certbot 5.8.0 image handles automatic Let's Encrypt issuance and renewal.
+The client uses Node 26.10.0/pnpm 8.15.9 at build time; the native Go server uses Go 1.26.0. nginx serves built assets and proxies HTTPS admission/room WebSockets. The same Go process owns authoritative rooms and the direct HTTP/3 WebTransport listener. Certbot 5.8.0 issues/renews the public certificate. Protocol 2 adds explicit maintenance abandonment; older tabs must reload and are rejected with a version mismatch before admission.
 
-## Before starting
+## Host requirements
 
-Use a Linux host with Docker Engine, the Compose v2 plugin, and a DNS hostname you control. Point its A record at the host's public IPv4 address. Only publish an AAAA record if IPv6 ingress also reaches this host.
+Use a Linux Docker host with Compose v2 supporting `up --wait`. Point `PUBLIC_HOST` DNS at this host. Publish AAAA only when IPv6 ingress reaches it. Allow TCP **80**, TCP **443** and UDP **443** through every firewall/security group/NAT. TCP 80 is required for ACME HTTP-01; TCP 443 serves the app and room channel; UDP 443 maps directly to Go UDP 8443. Backend TCP 8443/client TCP 8080 are bridge-only. Operator HTTP is **127.0.0.1:8082 inside the server container**, with no published port or nginx route.
 
-Allow these inbound ports in the host firewall, VPC security group and any network ACL/NAT rules:
+The public hostname, client origin and certificate must agree. Use normal public certificate validation; no development fingerprint or fallback transport is installed. An HTTP-only CDN/load balancer does not provide the required UDP path. Private-only hosts need a different issuance arrangement such as DNS-01; this script uses public HTTP-01.
 
-| Public port | Destination | Purpose |
-| --- | --- | --- |
-| TCP 80 | nginx | Let's Encrypt HTTP-01 challenges and HTTPS redirect |
-| TCP 443 | nginx | Client assets, HTTPS admission and room WebSocket |
-| UDP 443 | Go server UDP 8443 | Real HTTP/3 WebTransport streams/datagrams |
+## First deployment and updates
 
-Go TCP 8443 and client TCP 8080 remain private on the Compose bridge. Both public protocols use the same hostname, origin and certificate. nginx handles WebSocket upgrade headers; it does not pretend that a TCP proxy supplies HTTP/3. Browser WebTransport uses normal public certificate validation, with no development fingerprint or gameplay fallback.
-
-A private-only VPC instance cannot complete public HTTP-01 validation as configured. Give the test host public ingress/forwarding, or adapt certificate issuance to a DNS-01 provider. A load balancer, CDN or DNS proxy in front must support the required UDP path; a normal HTTP-only reverse proxy is insufficient. Keep host TCP/UDP 443 aligned rather than remapping just one protocol to another public port.
-
-## Start on the host
-
-From the repository root:
+From the repository root on the Docker host:
 
 ```sh
 cp infra/.env.example infra/.env
-# Edit infra/.env: set PUBLIC_HOST and ACME_EMAIL.
+# Set PUBLIC_HOST and ACME_EMAIL; keep this file private.
 ./infra/up.sh
 ```
 
-The helper:
+For later updates, pull the desired revision and run **the same `./infra/up.sh`**. It:
 
-1. Builds the three images using the lockfile and pinned toolchains.
-2. Starts the client and nginx in HTTP-only challenge mode, without a dummy certificate.
-3. Runs Certbot webroot issuance for `PUBLIC_HOST`, using `ACME_EMAIL` and Let's Encrypt's terms of service (`--agree-tos`).
-4. Starts Go and the renewal service, then reloads nginx with HTTPS enabled.
+1. Validates Compose and builds images before interrupting the running revision.
+2. Requests maintenance from an existing server and waits for it to drain, then stops it. Existing client/nginx containers stay on their old images until this completes.
+3. Stops the renewal service to avoid competing certificate writers; starts missing client/nginx services in HTTP challenge mode without recreating existing ones.
+4. Issues/reuses the certificate. Then recreates the services together, waits for client/nginx health and server readiness, and restarts renewal.
+5. Probes public HTTPS assets, binary admission/version routing and real HTTP/3 UDP reachability using normal TLS. It prints `Deployment ready` only after these checks succeed.
 
-Open `https://YOUR_HOST/` for Long Drive and `https://YOUR_HOST/transport.html` in two browsers for transport testing. Creating/joining a room must show two connected seats, increasing verification counts and the fixture positions `100.125, 20000.5`. Exercise dropping each channel, recovering the same seat, reloading, connected-pair replacement and requesting a fresh baseline. Record exact browser/OS versions and evidence for acceptance.
+The public probes allocate no room. They prove deployment routing/listener reachability, not WebTransport browser interoperability or a complete playtest. Open **`https://YOUR_HOST/`** in two supported browsers and verify create/join, Ready, countdown, the default Drag Race course, matching results, Return to Lobby/rematch and recovery before grace. Retain actual versions, screenshots and logs for host acceptance.
 
-After initial provisioning, ordinary restarts/updates can use:
+Do not use a bare `docker compose up -d --build` as an update procedure: it can replace client assets or kill the server while rounds are active. For a simple planned stop, use `docker compose --env-file infra/.env -f infra/compose.yml stop`; the server drains on SIGTERM. `down` additionally removes containers/networks. Avoid `down -v`, which deletes ACME accounts/certificates and forces issuance again.
+
+### Migrating an older deployed server
+
+The original Stage 4/5 deployment has no operator/drain API. The helper refuses to silently interrupt that release. Schedule a maintenance window, ensure losing its in-memory rooms is acceptable, then run once:
 
 ```sh
-docker compose --env-file infra/.env -f infra/compose.yml up -d --build
-docker compose --env-file infra/.env -f infra/compose.yml ps
-docker compose --env-file infra/.env -f infra/compose.yml logs -f server certbot
+./infra/up.sh --allow-disruptive-upgrade
 ```
 
-Re-running `./infra/up.sh` reuses an existing certificate unless it is due for renewal. DNS and port 80 must remain available for renewal. Issuance failures leave the HTTP challenge service available; correct DNS/firewall settings and rerun the helper. Avoid repeatedly issuing fresh certificates while debugging, to respect CA rate limits.
+The flag permits proceeding if the existing server cannot drain; it does not bypass build, certificate, readiness or public probe failures. Future deployments use normal draining. Reload old tabs after the protocol-2 deployment.
 
-## Certificates and renewal
+## Maintenance and certificates
 
-`letsencrypt` and `acme-webroot` are persistent named volumes. The entire Let's Encrypt directory is mounted, preserving `live/` to `archive/` symlinks. Only Certbot writes certificates; nginx and Go mount them read-only. No keys, certificates, `.env`, host dependencies, Git metadata or diagnostic captures are included in build contexts.
+`DRAIN_TIMEOUT` defaults to **3m**. Maintenance immediately stops new room creation, joining and round starts, and cancels countdowns into the lobby. Existing seats may reconnect while active rounds continue. At the deadline, gameplay through the exact boundary is resolved first; unfinished rounds are abandoned without a winner with the explicit maintenance reason. Already-confirmed results remain unchanged. One application-progress window is allowed for notification, then all rooms/credentials are closed. Restarted processes begin empty.
 
-Certbot checks renewal every 12 hours. nginx and Go poll certificate contents every 30 seconds: nginx validates/reloads its configuration, while Go restarts its listeners because the diagnostic currently loads certificates at startup. This Go restart clears in-memory rooms and invalidates their credentials; recreate diagnostic rooms after renewal. This is a testing setup, not a complete multiplayer maintenance/drain implementation. Both listener failures terminate the Go container, allowing Compose's restart policy to restart it empty.
+`STOP_GRACE_PERIOD` defaults to **200s** and must exceed `DRAIN_TIMEOUT` by at least 15 seconds; change both together for a longer drain. Drain durations use whole microseconds and must be at least 1 ms. A listener/process crash still fails the container and restarts empty; a crash cannot promise graceful notification.
 
-To check the ACME renewal flow on the actual host without replacing the live certificate:
+The entire persistent Let's Encrypt directory is mounted read-only in nginx/Go, preserving `live/` → `archive/` links. Certbot is the only certificate writer and checks every 12 hours. nginx polls every 30 seconds and validates/reloads certificates. Go's watcher detects changed certificate contents, requests maintenance, then restarts listeners only after the drain completes. The old loaded certificate remains in service while rounds finish. A drain failure leaves the existing listeners running and logs the problem rather than forcibly interrupting rounds.
+
+Certificate renewal and planned updates close all rooms after draining. Reconnect credentials do not survive restart. No Docker socket or cloud credentials are mounted inside services. Public health/metrics routes are not enabled.
+
+## Operator commands and verification
 
 ```sh
+# Container/process readiness; returns nonzero during maintenance.
+docker compose --env-file infra/.env -f infra/compose.yml exec -T server \
+  /usr/local/bin/dashdevil-server --check-ready
+
+# Enter maintenance and wait for all rooms to close (use the configured timeout).
+docker compose --env-file infra/.env -f infra/compose.yml exec -T server \
+  /usr/local/bin/dashdevil-server --request-drain --drain-timeout 3m
+
+# Public HTTPS/admission/HTTP3 probe, from the running container.
+docker compose --env-file infra/.env -f infra/compose.yml exec -T server \
+  /usr/local/bin/dashdevil-server --check-public --origin https://YOUR_HOST
+
+# CA renewal validation on the configured public host.
 docker compose --env-file infra/.env -f infra/compose.yml run --rm --no-deps \
   --entrypoint certbot certbot renew --dry-run
 ```
 
-Stop with `docker compose --env-file infra/.env -f infra/compose.yml down`. Keep the named certificate volumes; `down -v` removes the ACME account/certificates and forces reissuance. No Docker socket or cloud credentials are mounted into containers.
+A drained process remains unavailable for new play; use `up.sh` to restart/redeploy it. Inspect `docker compose --env-file infra/.env -f infra/compose.yml ps` and `logs server nginx certbot` on failure. If issuance fails after a planned drain, the old server is stopped and the HTTP challenge service remains available; correct DNS/firewall/CA errors and rerun. A failed public probe leaves containers available for inspection and exits nonzero; it does not assert deployment success or roll back automatically.
 
-## Checks and limitations
-
-Validate resolved configuration without a daemon:
+Run local static checks with:
 
 ```sh
-PUBLIC_HOST=play.example.com docker compose -f infra/compose.yml config --quiet
-sh -n infra/up.sh infra/nginx/start.sh infra/nginx/render-config.sh infra/server/start.sh
+PUBLIC_HOST=play.example.com docker compose --env-file /dev/null -f infra/compose.yml config --quiet
+sh -n infra/up.sh infra/server/start.sh infra/nginx/start.sh infra/nginx/render-config.sh
+pnpm check
+pnpm test:maintenance
 ```
 
-Container builds and the local certificate/bootstrap/transport smoke are recorded in `infra/VALIDATION.md`. Live public ACME issuance cannot be proven from a local fixture: it must pass on your host after DNS and ingress are configured. The current server is the stationary #29 diagnostic, not #28 gameplay parity or a completed multiplayer game.
+Maintenance coverage is required in CI alongside existing preservation/transport suites. [Validation history](VALIDATION.md) distinguishes local fixtures from actual public ACME, VPC/firewall, supported-browser, reference-hardware/network, capacity and human acceptance. The operating model also requires wider observability and capacity evidence; this deployment update does not claim full production acceptance.
 
-References: [Compose interpolation](https://docs.docker.com/compose/how-tos/environment-variables/variable-interpolation/), [nginx WebSocket proxying](https://nginx.org/en/docs/http/websocket.html), [Certbot webroot validation](https://eff-certbot.readthedocs.io/en/stable/using.html#webroot).
+Governing [operating model](https://github.com/shivang991/DashDevil2D/issues/18#issuecomment-6147409056), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139) and [stage sequence](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).

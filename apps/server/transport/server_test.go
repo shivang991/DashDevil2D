@@ -109,7 +109,7 @@ func admitWithCode(t *testing.T, s *transport.Server, c *http.Client, request p.
 }
 func TestHTTPSAdmissionBindsOpaqueSeatAndReplacementGeneration(t *testing.T) {
 	s, c, _ := server(t)
-	status, value := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, origin)
+	status, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	if status != 201 {
 		t.Fatalf("create: %d %v", status, value)
 	}
@@ -120,16 +120,16 @@ func TestHTTPSAdmissionBindsOpaqueSeatAndReplacementGeneration(t *testing.T) {
 	if a.Identity.RoomId == 0 || a.Identity.PairGeneration != 1 || a.Identity.Seat != 0 {
 		t.Fatalf("identity: %+v", a.Identity)
 	}
-	status, value = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: 1, Credential: a.Credential}, origin)
+	status, value = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: p.ProtocolVersion, Credential: a.Credential}, origin)
 	b := value.(p.Admission)
 	if status != 201 || b.Identity.SeatSession != a.Identity.SeatSession || b.Identity.PairGeneration != 2 || !bytes.Equal(a.Credential, b.Credential) {
 		t.Fatalf("resume: %d %+v", status, b)
 	}
 	status, value = admit(t, s, c, p.AdmissionRequest{Version: 99, Name: "Driver"}, origin)
-	if status != 409 || value.(p.ProtocolError).ExpectedVersion != 1 {
+	if status != 409 || value.(p.ProtocolError).ExpectedVersion != p.ProtocolVersion {
 		t.Fatal("explicit version error required")
 	}
-	status, _ = admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, "https://evil.example")
+	status, _ = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, "https://evil.example")
 	if status != 403 {
 		t.Fatal("foreign origins must be rejected")
 	}
@@ -137,7 +137,7 @@ func TestHTTPSAdmissionBindsOpaqueSeatAndReplacementGeneration(t *testing.T) {
 
 func TestRoomTicketIsSingleUseAndRoomInitializationIsBoundToSeat(t *testing.T) {
 	s, c, roots := server(t)
-	_, value := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, origin)
+	_, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	a := value.(p.Admission)
 	dialer := ws.Dialer{TLSClientConfig: &tls.Config{RootCAs: roots}}
 	endpoint := "wss" + strings.TrimPrefix(s.URL(), "https") + "/room?ticket=" + base64.RawURLEncoding.EncodeToString(a.RoomTicket)
@@ -156,7 +156,7 @@ func TestRoomTicketIsSingleUseAndRoomInitializationIsBoundToSeat(t *testing.T) {
 		t.Fatal(err)
 	}
 	init, ok := message.(p.RoomInitialization)
-	if !ok || init.Identity != a.Identity || init.Version != 1 {
+	if !ok || init.Identity != a.Identity || init.Version != p.ProtocolVersion {
 		t.Fatalf("initialization: %v", message)
 	}
 	second, reply, err := dialer.Dial(endpoint, http.Header{"Origin": []string{origin}})
@@ -201,7 +201,7 @@ func sendRecord(t *testing.T, w io.Writer, value any) {
 }
 func TestRealQUICInitializesThreeStreamsAndVerifiesDiagnosticState(t *testing.T) {
 	s, c, roots := server(t)
-	_, value := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, origin)
+	_, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	a := value.(p.Admission)
 	dialer := wt.Transport{TLSClientConfig: &tls.Config{RootCAs: roots}}
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
@@ -216,7 +216,7 @@ func TestRealQUICInitializesThreeStreamsAndVerifiesDiagnosticState(t *testing.T)
 		t.Fatal(err)
 	}
 	control.SetDeadline(time.Now().Add(3 * time.Second))
-	sendRecord(t, control, p.Handshake{Version: 1, Identity: a.Identity, DatagramBytes: 10})
+	sendRecord(t, control, p.Handshake{Version: p.ProtocolVersion, Identity: a.Identity, DatagramBytes: 10})
 	handshake := readRecord(t, control).(p.Handshake)
 	if handshake.Identity != a.Identity {
 		t.Fatal("handshake seat mismatch")
@@ -340,7 +340,7 @@ func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a 
 		t.Fatal(err)
 	}
 	control.SetDeadline(time.Now().Add(4 * time.Second))
-	sendRecord(t, control, p.Handshake{Version: 1, Identity: a.Identity, DatagramBytes: 10})
+	sendRecord(t, control, p.Handshake{Version: p.ProtocolVersion, Identity: a.Identity, DatagramBytes: 10})
 	readRecord(t, control)
 	initialization := readRecord(t, control).(p.Initialization)
 	inputs, err := session.OpenUniStreamSync(ctx)
@@ -443,7 +443,7 @@ func readTestFrame(r io.Reader) (any, error) {
 }
 func TestPairLossRecoversSameSeatAndReplacementOutlivesOldCallbacks(t *testing.T) {
 	s, c, roots := server(t)
-	_, v := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, origin)
+	_, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	a := v.(p.Admission)
 	socket, gameplay := initializedPair(t, s, roots, a, true)
 	socket.Close()
@@ -452,10 +452,10 @@ func TestPairLossRecoversSameSeatAndReplacementOutlivesOldCallbacks(t *testing.T
 	case <-time.After(2 * time.Second):
 		t.Fatal("room loss did not close gameplay")
 	}
-	_, v = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: 1, Credential: a.Credential}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: p.ProtocolVersion, Credential: a.Credential}, origin)
 	b := v.(p.Admission)
 	_, replacement := initializedPair(t, s, roots, b, true)
-	_, v = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: 1, Credential: a.Credential}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: p.ProtocolVersion, Credential: a.Credential}, origin)
 	d := v.(p.Admission)
 	_, current := initializedPair(t, s, roots, d, true)
 	if d.Identity.SeatSession != a.Identity.SeatSession || d.Identity.PairGeneration != 3 {
@@ -476,7 +476,7 @@ func TestPairLossRecoversSameSeatAndReplacementOutlivesOldCallbacks(t *testing.T
 }
 func TestUnacknowledgedApplicationProgressClosesBothChannels(t *testing.T) {
 	s, c, roots := server(t)
-	_, v := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, origin)
+	_, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	socket, gameplay := initializedPair(t, s, roots, v.(p.Admission), false)
 	select {
 	case <-gameplay.Context().Done():
@@ -494,25 +494,25 @@ func TestUnacknowledgedApplicationProgressClosesBothChannels(t *testing.T) {
 
 func TestDisconnectedReservationCannotBeExtendedByTicketRetries(t *testing.T) {
 	s, c, _ := server(t)
-	_, v := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, origin)
+	_, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	a := v.(p.Admission)
 	timer := time.NewTimer(8 * time.Second)
 	defer timer.Stop()
 	<-timer.C
-	status, v := admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: 1, Credential: a.Credential}, origin)
+	status, v := admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: p.ProtocolVersion, Credential: a.Credential}, origin)
 	if status != 201 || v.(p.Admission).Identity.SeatSession != a.Identity.SeatSession {
 		t.Fatal("same seat must recover before grace")
 	}
 	timer.Reset(7500 * time.Millisecond)
 	<-timer.C
-	status, v = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: 1, Credential: a.Credential}, origin)
+	status, v = admit(t, s, c, p.AdmissionRequest{Operation: 2, Version: p.ProtocolVersion, Credential: a.Credential}, origin)
 	if status != 410 || v.(p.ProtocolError).Detail != "Room expired" {
 		t.Fatal("ticket retries extended reconnect grace")
 	}
 }
 func TestTicketsRejectWrongChannelAndOriginWithoutConsumingValidAdmission(t *testing.T) {
 	s, c, roots := server(t)
-	_, v := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Driver"}, origin)
+	_, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	a := v.(p.Admission)
 	dialer := ws.Dialer{TLSClientConfig: &tls.Config{RootCAs: roots}}
 	for _, attempt := range []struct {
@@ -538,10 +538,10 @@ func TestTicketsRejectWrongChannelAndOriginWithoutConsumingValidAdmission(t *tes
 
 func TestReservationExpiryNotifiesConnectedGuestAndTransfersHost(t *testing.T) {
 	s, c, roots := server(t)
-	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: 1, Name: "Host"}, origin)
+	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, gameplay := initializedPair(t, s, roots, a, true)
-	_, v = admit(t, s, c, p.AdmissionRequest{Operation: 1, Version: 1, Code: code, Name: "Guest"}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Operation: 1, Version: p.ProtocolVersion, Code: code, Name: "Guest"}, origin)
 	guest, _ := initializedPair(t, s, roots, v.(p.Admission), true)
 	host.Close()
 	select {

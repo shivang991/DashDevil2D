@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "byteOrder": "big-endian",
   "timestampMax": 9007199254740991,
   "projection": "signed-int64; floor(position*1024+0.5); exact-JS-integer subset",
@@ -1055,7 +1055,7 @@
       {
         "name": "reason",
         "type": "u8",
-        "max": 6
+        "max": 7
       },
       {
         "name": "cars",
@@ -1594,7 +1594,8 @@
       "explicit-leave",
       "grace-expiry",
       "both-disconnected",
-      "server-lag"
+      "server-lag",
+      "maintenance"
     ],
     "eventKind": [
       "pickup",

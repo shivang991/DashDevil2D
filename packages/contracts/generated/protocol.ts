@@ -1,6 +1,6 @@
 // Generated from protocol/schema.json. Run pnpm generate; do not edit.
 import { encodeRecord, decodeRecord, encodeFrame, decodeFrame, projectRecord } from '../protocol/runtime';
-export const protocolVersion = 1;
+export const protocolVersion = 2;
 export const layouts = {
   "Identity": [
     {
@@ -1053,7 +1053,7 @@ export const layouts = {
     {
       "name": "reason",
       "type": "u8",
-      "max": 6
+      "max": 7
     },
     {
       "name": "cars",

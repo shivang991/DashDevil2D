@@ -23,12 +23,12 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 		return err
 	}
 	hello, ok := first.(p.Handshake)
-	if !ok || hello.Version != 1 || hello.Identity != pair.identity || hello.DatagramBytes < 10 {
+	if !ok || hello.Version != p.ProtocolVersion || hello.Identity != pair.identity || hello.DatagramBytes < 10 {
 		return errors.New("incompatible version, identity or datagrams")
 	}
 	control.SetReadDeadline(time.Time{})
 	cw := writer(pair, control)
-	if err = cw.send(p.Handshake{Version: 1, Identity: pair.identity, DatagramBytes: 10}); err != nil {
+	if err = cw.send(p.Handshake{Version: p.ProtocolVersion, Identity: pair.identity, DatagramBytes: 10}); err != nil {
 		return err
 	}
 	baseline, err := pair.roomBaseline()

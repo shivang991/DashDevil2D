@@ -17,6 +17,12 @@ services:
       - 0.0.0.0:8443
       - --origin
       - https://${PUBLIC_HOST:?Set PUBLIC_HOST to your DNS hostname}
+      - --admin-address
+      - 127.0.0.1:8082
+      - --drain-timeout
+      - ${DRAIN_TIMEOUT:-3m}
+      - --stop-grace-period
+      - ${STOP_GRACE_PERIOD:-200s}
       - --cert
       - /run/tls/live/dashdevil/fullchain.pem
       - --key
@@ -28,7 +34,7 @@ services:
       - "443:8443/udp"
     restart: unless-stopped
     init: true
-    stop_grace_period: 10s
+    stop_grace_period: ${STOP_GRACE_PERIOD:-200s}
     networks: [app]
 
   nginx:

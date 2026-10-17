@@ -84,7 +84,7 @@ describe('shared versioned Go/TypeScript wire fixtures', () => {
     const incomplete = new FrameReader(); incomplete.push(a.subarray(0, 5)); expect(() => incomplete.finish()).toThrow();
   });
   it('rejects incompatible versions and refuses counter wrap', () => {
-    expect(() => validateVersion(2)).toThrow(); expect(nextCounter(65534, 16)).toBe(65535);
+    expect(() => validateVersion(1)).toThrow(); expect(nextCounter(65534, 16)).toBe(65535);
     expect(() => nextCounter(65535, 16)).toThrow(); expect(() => nextCounter(0xffffffff, 32)).toThrow();
   });
   it('validates continuation semantics beyond mechanical decoding', () => {
@@ -121,13 +121,13 @@ describe('atomic complete-baseline transfer', () => {
 import { validateMessage } from '@dashdevil/contracts/validation';
 describe('handwritten reliable record semantics', () => {
   it('rejects incompatible handshakes and missing required datagram capacity', () => {
-    const value = hydrate('Handshake', fixtures.records.find(r => r.type === 'Handshake')!.value) as Messages['Handshake'];
-    expect(() => validateMessage('Handshake', { ...value, version: 2 }, baseline.context)).toThrow();
+    const value = hydrate('Handshake', fixtures.records.find(r => r.name === 'Handshake protocol 2')!.value) as Messages['Handshake'];
+    expect(() => validateMessage('Handshake', { ...value, version: 1 }, baseline.context)).toThrow();
     expect(() => validateMessage('Handshake', { ...value, datagramBytes: 9 }, baseline.context)).toThrow();
   });
   it('checks admissions, input progress and self-contained terminal values', () => {
     for (const type of ['Admission', 'Input', 'Outcome', 'Barrier', 'Disposition', 'Event', 'Coverage'] as const) {
-      validateMessage(type, hydrate(type, fixtures.records.find(r => r.type === type)!.value) as Messages[typeof type], baseline.context);
+      validateMessage(type, hydrate(type, fixtures.records.find(r => r.name === (type === 'Admission' ? 'Admission protocol 2' : type))!.value) as Messages[typeof type], baseline.context);
     }
     const input = hydrate('Input', fixtures.records.find(r => r.type === 'Input')!.value) as Messages['Input'];
     expect(() => validateMessage('Input', { ...input, sequence: 0 }, baseline.context)).toThrow();

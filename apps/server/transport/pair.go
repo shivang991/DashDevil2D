@@ -188,7 +188,7 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 	s.mu.Lock()
 	revision := pair.seat.room.revision
 	s.mu.Unlock()
-	if err := pair.enqueueRoom(p.RoomInitialization{Version: 1, Identity: pair.identity, Revision: revision}); err != nil {
+	if err := pair.enqueueRoom(p.RoomInitialization{Version: p.ProtocolVersion, Identity: pair.identity, Revision: revision}); err != nil {
 		return
 	}
 	for {
@@ -212,7 +212,7 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 		}
 		switch value := message.(type) {
 		case p.RoomInitialization:
-			if value.Version != 1 || value.Identity != pair.identity || value.Revision != revision {
+			if value.Version != p.ProtocolVersion || value.Identity != pair.identity || value.Revision != revision {
 				return
 			}
 			pair.mu.Lock()
@@ -341,6 +341,10 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		}
 		participant.ready = command.Ready == 1
 	case 2:
+		if s.draining {
+			s.mu.Unlock()
+			return fmt.Errorf("%s", maintenanceMessage)
+		}
 		if r.phase != 0 || participant.index != r.host {
 			s.mu.Unlock()
 			return fmt.Errorf("Only host may start from the lobby")

@@ -209,8 +209,8 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 		return err
 	}
 	hello, ok := first.(p.Handshake)
-	if !ok || hello.Version != 1 || hello.Identity != pair.identity || hello.DatagramBytes < 10 {
-		wire, _ := p.EncodeMessage(p.ProtocolError{Code: 1, ExpectedVersion: 1, Detail: "Incompatible version, identity or datagram support"}, frameLimit)
+	if !ok || hello.Version != p.ProtocolVersion || hello.Identity != pair.identity || hello.DatagramBytes < 10 {
+		wire, _ := p.EncodeMessage(p.ProtocolError{Code: 1, ExpectedVersion: p.ProtocolVersion, Detail: "Incompatible version, identity or datagram support"}, frameLimit)
 		control.SetWriteDeadline(time.Now().Add(500 * time.Millisecond))
 		control.Write(wire)
 		return errors.New("gameplay handshake rejected")
@@ -221,7 +221,7 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 	}
 	control.SetReadDeadline(time.Time{})
 	cw := writer(pair, control)
-	if err = cw.send(p.Handshake{Version: 1, Identity: pair.identity, DatagramBytes: 10}); err != nil {
+	if err = cw.send(p.Handshake{Version: p.ProtocolVersion, Identity: pair.identity, DatagramBytes: 10}); err != nil {
 		return err
 	}
 	if err = cw.send(p.Initialization{Identity: pair.identity, Round: baseline.Round, Context: baseline.Context}); err != nil {
@@ -281,7 +281,7 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 	lastRate := time.Now()
 	lastRecovery := time.Time{}
 	fail := func(err error) error {
-		cw.send(p.ProtocolError{Code: 3, ExpectedVersion: 1, Detail: err.Error()})
+		cw.send(p.ProtocolError{Code: 3, ExpectedVersion: p.ProtocolVersion, Detail: err.Error()})
 		return err
 	}
 	for {
