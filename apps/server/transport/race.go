@@ -58,7 +58,7 @@ func (s *Server) advanceRacesLocked() []*room {
 			s.finalizeRaceLocked(r, 3, 6, state.Tick, state.TimeUs)
 			changed = append(changed, r)
 		} else if state.Finish != nil {
-			s.finalizeRaceLocked(r, state.Finish.Result, 0, state.Finish.Tick, state.Finish.TimeUs)
+			s.finalizeRaceLocked(r, state.Finish.Result, state.Finish.Reason, state.Finish.Tick, state.Finish.TimeUs)
 			changed = append(changed, r)
 		}
 		// Retain enough ordered history for the bounded replay window. A lagging
@@ -95,7 +95,7 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 		delete(r.inputs[seat], sequence)
 		value := p.Disposition{Authority: b.Progress.Authority, Tick: event.Tick, TimeUs: event.TimeUs, Seat: seat, Sequence: sequence, Processed: sequence, Disposition: disposition, Intent: input.Intent, Control: input.Control, Car: *event.Car, Contact: b.Contact}
 		r.history = append(r.history, raceRecord{b.Progress.Authority, value})
-	} else if event.Car != nil {
+	} else if event.Car != nil || event.Type == "objects" {
 		b.Progress.Event++
 		cars := event.Cars
 		kind := uint8(8)
@@ -105,7 +105,14 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 		if event.Type == "release" {
 			kind = 7
 		}
-		value := p.Event{Authority: b.Progress.Authority, EventId: b.Progress.Event, Tick: event.Tick, TimeUs: event.TimeUs, Kind: kind, SeatMask: 1 << *event.Seat, Cars: cars, Contact: b.Contact, Objects: []p.ObjectState{}}
+		mask := uint8(3)
+		if event.Seat != nil {
+			mask = 1 << *event.Seat
+		}
+		if event.Type == "objects" {
+			kind = 2
+		}
+		value := p.Event{Authority: b.Progress.Authority, EventId: b.Progress.Event, Tick: event.Tick, TimeUs: event.TimeUs, Kind: kind, SeatMask: mask, Cars: cars, Contact: b.Contact, Objects: append([]p.ObjectState{}, event.Objects...)}
 		r.history = append(r.history, raceRecord{b.Progress.Authority, value})
 	} else {
 		b.Progress.Authority--
@@ -138,7 +145,7 @@ func (pair *pair) submitRace(input p.Input) error {
 }
 
 // Track coverage is reliable mutable continuation, independent of verification.
-// Road-object consumption is added by #32; stable placement identity is slice/lane.
+// Stable placement and complete mutable consumption cover both reachable windows.
 func raceCoverage(b p.Baseline, state simulation.State) (p.Generator, []p.Window) {
 	g := b.Context.Gameplay
 	extent := (g.CarHeight + math.Max(g.ObstacleH, math.Max(g.CoinSize, g.HeartSize))) / 2
@@ -164,18 +171,9 @@ func raceCoverage(b p.Baseline, state simulation.State) (p.Generator, []p.Window
 				w.FirstSlice = uint32(slice.ID)
 			}
 			w.LastSlice = uint32(slice.ID)
-			for lane, kind := range slice.Cells {
-				flag := uint8(0)
-				switch kind {
-				case "coin":
-					flag = 1
-				case "obstacle":
-					flag = 2
-				case "heart":
-					flag = 3
-				}
-				if flag != 0 {
-					w.Objects = append(w.Objects, p.ObjectState{Id: uint32(slice.ID)*3 + uint32(lane) + 1, SliceId: uint32(slice.ID), Lane: uint8(lane), Flags: flag, Distance: slice.Distance})
+			for _, object := range state.Objects {
+				if object.SliceId == uint32(slice.ID) {
+					w.Objects = append(w.Objects, object)
 				}
 			}
 		}

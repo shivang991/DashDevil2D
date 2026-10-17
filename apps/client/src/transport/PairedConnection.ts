@@ -13,6 +13,7 @@ export interface PairedState {
   verified: number; barriers: number; clockSamples: number; clockOffsetUs: number;
   context?: Context; outcome?: Outcome;
   diagnostics: { localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
+  objects?: Baseline['windows'][number]['objects'];
   room?: RoomState; pending?: string; notice?: string; roundId?: number; startUs?: number; timeUs?: number; cars?: Baseline['cars']; seed?: number; positions: string; errors: string[]; baselineBytes: number; recoveryMs?: number;
 }
 export interface ConnectionOptions { server: string; certificateHash?: number[]; development?: boolean; diagnostic?: boolean }
@@ -348,6 +349,7 @@ export class PairedConnection {
     const b = this.baseline;
     if (!b || value.epoch !== b.epoch || value.round.roundId !== b.round.roundId || value.round.inputGeneration !== b.round.inputGeneration || (this.options.diagnostic ? value.tick <= b.tick : value.tick < b.tick) || !sameProgress(value.progress, b.progress)) throw new Error('Authority history unavailable');
     b.tick = value.tick; b.timeUs = value.timeUs;
+    this.state.objects = b.windows.flatMap(window => window.objects);
     this.state.timeUs = b.timeUs; this.state.cars = structuredClone(b.cars); this.state.positions = b.cars.map(c => c.progress).join(', ');
     this.history.set(value.tick, crc32c(projectBaseline(b)));
     while (this.history.size > 20) this.history.delete(this.history.keys().next().value!);

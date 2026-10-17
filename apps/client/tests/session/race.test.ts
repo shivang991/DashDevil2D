@@ -62,3 +62,56 @@ test('rendered positions interpolate at current time without changing tick geome
   expect(frame.cars[0].progress).toBeCloseTo(6.666666666666667, 6);
   expect(frame.renderedCars[0].progress).toBeCloseTo(10, 6);
 });
+
+test('a mid-tick authoritative object event repairs HP and availability immediately and only once', () => {
+  const b = baseline();
+  b.windows[0].objects = [{ id: 4, sliceId: 1, lane: 0, flags: 3, distance: 100 }];
+  b.windows[0].firstSlice = 1; b.windows[0].lastSlice = 1; b.generator.nextSlice = 2; b.generator.nextObject = 7;
+  const race = new RaceSession(b);
+  const event = { identity: b.identity, round: b.round, authority: 1, eventId: 1, tick: 0, timeUs: 5000, kind: 2, seatMask: 1,
+    cars: structuredClone(b.cars), contact: b.contact, objects: [{ ...b.windows[0].objects[0], flags: 7 }] };
+  event.cars[0].hp = 2; event.cars.forEach(car => { car.progress = 2; });
+  race.event(event);
+  expect(race.frame(5000, 0).cars[0].hp).toBe(2);
+  expect(race.snapshot().windows[0].objects[0].flags).toBe(7);
+  race.event({ ...event, cars: b.cars });
+  expect(race.frame(25000, 0).cars[0].hp).toBe(2);
+  expect(race.frame(25000, 0).cars[0].progress).toBeCloseTo(6.666666666666667, 6);
+});
+
+test('predicted pickup feedback is delivered once across frame replay and confirmation', () => {
+  const b = baseline();
+  b.cars[0].progress = 44;
+  b.windows[0].objects = [{ id: 4, sliceId: 1, lane: 0, flags: 3, distance: 100 }];
+  b.windows[0].firstSlice = 1; b.windows[0].lastSlice = 1; b.generator.nextSlice = 2; b.generator.nextObject = 7;
+  const race = new RaceSession(b);
+  expect(race.frame(25000, 0).feedback).toEqual(['Heart consumed']);
+  expect(race.frame(25000, 0).feedback).toEqual([]);
+  const state = race.frame(25000, 0);
+  race.event({ identity: b.identity, round: b.round, authority: 1, eventId: 1, tick: 1, timeUs: 16667, kind: 2, seatMask: 1, cars: state.cars, contact: b.contact, objects: state.objects });
+  expect(race.frame(30000, 0).feedback).toEqual([]);
+});
+
+test('an older same-tick checkpoint cannot undo confirmed HP or consumption', () => {
+  const b = baseline(), race = new RaceSession(b);
+  const cars = structuredClone(b.cars); cars[0].hp = 1;
+  race.event({ identity: b.identity, round: b.round, authority: 1, eventId: 1, tick: 0, timeUs: 5000, kind: 2, seatMask: 1, cars, contact: b.contact, objects: [] });
+  race.install(b);
+  expect(race.frame(5000, 0).cars[0].hp).toBe(1);
+});
+
+test('authority reverses provisional death and restores an unconsumed obstacle', () => {
+  const b = baseline(); b.cars[0].progress = 38; b.cars[0].hp = 1;
+  b.windows[0].objects = [{ id: 4, sliceId: 1, lane: 0, flags: 2, distance: 100 }];
+  b.windows[0].firstSlice = 1; b.windows[0].lastSlice = 1; b.generator.nextSlice = 2; b.generator.nextObject = 7;
+  const race = new RaceSession(b);
+  const predicted = race.frame(25000, 0);
+  expect(predicted.cars[0].hp).toBe(0); expect(predicted.awaiting).toBe(true); expect(predicted.outcome).toBeUndefined();
+  expect(predicted.objects[0].flags).toBe(10);
+  const repaired = structuredClone(b); repaired.tick = 1; repaired.timeUs = 16667;
+  Object.assign(repaired.cars[0], { progress: 44.666666666666664, hp: 3, lateral: 120, lane: 2, departure: 2, target: 2 });
+  race.install(repaired);
+  const frame = race.frame(25000, 0);
+  expect(frame.cars[0].hp).toBe(3); expect(frame.objects[0].flags).toBe(2); expect(frame.awaiting).toBe(false);
+  expect(frame.feedback).toEqual([]);
+});

@@ -20,7 +20,9 @@
     "dev:transport": "node apps/client/scripts/transport.mjs",
     "test:transport": "node apps/client/scripts/transport.mjs --test",
     "test:rooms": "node apps/client/scripts/transport.mjs --test --rooms",
-    "test:race": "node apps/client/scripts/transport.mjs --test --race"
+    "test:race": "node apps/client/scripts/transport.mjs --test --race",
+    "test:objects": "node apps/client/scripts/transport.mjs --test --objects",
+    "test:hearts": "node apps/client/scripts/transport.mjs --test --hearts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

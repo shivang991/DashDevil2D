@@ -1,11 +1,12 @@
-import { type Car, type Context, type Identity, type Input } from '@dashdevil/contracts/protocol';
+import { type Car, type Context, type Identity, type Input, type ObjectState } from '@dashdevil/contracts/protocol';
 import type { Configuration } from './config';
 import { MultiplayerTrack } from './multiplayerTrack';
 import { configurationContext, validateMessage } from '@dashdevil/contracts/validation';
 
 export type MultiplayerConfiguration = Configuration<'drag-race' | 'road-rage'>;
 export interface Observation {
- readonly type: 'input' | 'shift' | 'shift-end' | 'expiry' | 'release' | 'abandoned';
+ readonly objects?: readonly ObjectState[]; readonly cars?: readonly Car[];
+ readonly type: 'objects' | 'input' | 'shift' | 'shift-end' | 'expiry' | 'release' | 'abandoned';
  readonly tick: number; readonly timeUs: number; readonly seat?: number;
  readonly car?: Readonly<Car>; readonly sequence?: number; readonly disposition?: 'accepted' | 'ignored' | 'rejected';
 }
@@ -19,11 +20,14 @@ const sameIdentity = (a: Identity, b: Identity) => a.roomId === b.roomId && a.se
  * the payload cannot choose a different seat. All clocks are monotonic elapsed seconds. */
 export class Multiplayer {
  private readonly context: Context;
+ private represented?: readonly ObjectState[];
+ private continuationUs?: number;
+ private consumption = new Map<number, number>();
  private readonly tracks: readonly [MultiplayerTrack, MultiplayerTrack];
  private tick = 0;
  private wallTime = 0;
  private abandoned = false;
- private finish?: { tick: number; timeUs: number; result: number };
+ private finish?: { tick: number; timeUs: number; result: number; reason: number };
  private readonly cars: [Car, Car];
  private pending: { seat: number; input: Input; valid: boolean }[] = [];
  private releases: Observation[] = [];
@@ -63,7 +67,9 @@ export class Multiplayer {
   return valid;
  }
  /** Restore a copied authoritative continuation at an exact simulation boundary. */
- restore(cars: readonly Car[], tick: number): void {
+ restore(cars: readonly Car[], tick: number, objects?: readonly ObjectState[], timeUs = canonicalTime(tick / this.configuration.gameplay.tickRate)): void {
+  this.represented = objects?.map(object => ({ ...object })); this.continuationUs = timeUs === canonicalTime(tick / this.configuration.gameplay.tickRate) ? undefined : timeUs;
+  this.consumption = new Map((objects ?? []).map(object => [object.id, object.flags & 28]));
   if (!Number.isSafeInteger(tick) || tick < 0 || cars.length !== 2) throw new Error('Invalid continuation');
   this.tick = tick; this.wallTime = tick / this.configuration.gameplay.tickRate;
   this.pending = []; this.releases = []; this.abandoned = false; this.finish = undefined;
@@ -149,7 +155,8 @@ export class Multiplayer {
   }
   while ((this.tick + 1) / g.tickRate <= seconds) {
    if (this.tick === 0xffffffff) throw new Error('Tick exhausted');
-   let time = this.tick / g.tickRate;
+   let time = Math.max(this.tick / g.tickRate, (this.continuationUs ?? 0) / 1e6);
+   this.continuationUs = undefined;
    const end = (this.tick + 1) / g.tickRate;
    this.boundaries(canonicalTime(time), events); this.apply(events, canonicalTime(time));
    while (time < end) {
@@ -161,6 +168,7 @@ export class Multiplayer {
      if (car.phase !== 0 && car.movementEndUs > startUs) next = Math.min(next, car.movementEndUs / 1e6);
      if (car.phase === 0 && (car.effective === 1 || car.effective === 2) && car.nextShiftUs > startUs) next = Math.min(next, car.nextShiftUs / 1e6);
     }
+    const contacts = this.objectContacts(time, next);
     let finishTime = Infinity, finishMask = 0;
     if (!provisional && this.configuration.mode === 'drag-race') {
      const finish = this.context.gameplay.finishDistance;
@@ -175,15 +183,27 @@ export class Multiplayer {
      }
      if (finishMask) next = finishTime;
     }
+    const first = contacts[0];
+    if (first && first.timeUs <= canonicalTime(next)) {
+     if (finishMask && first.timeUs < canonicalTime(next)) finishMask = 0;
+     next = Math.min(next, Math.max(time, first.timeUs / 1e6));
+    }
     const elapsed = next - time;
     for (const car of this.cars) {
      car.progress += this.forwardDistance(time, elapsed) * (car.effective === 3 ? g.accelSpeedMultiplier : 1);
      car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * next);
      if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * ((next * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs));
     }
+    if (first && first.timeUs === canonicalTime(next)) this.resolveObjects(contacts.filter(c => c.timeUs === first.timeUs), events, first.timeUs);
+    const deadMask = this.cars.reduce((mask, car, seat) => mask | (car.hp === 0 ? 1 << seat : 0), 0);
+    if (!provisional && deadMask) {
+     this.tick = Math.ceil(canonicalTime(next) * g.tickRate / 1e6);
+     this.finish = { tick: this.tick, timeUs: canonicalTime(next), result: deadMask === 1 ? 1 : deadMask === 2 ? 0 : 2, reason: 1 };
+     return events;
+    }
     if (finishMask) {
      this.cars.forEach((car, seat) => { if (finishMask & (1 << seat)) car.progress = this.context.gameplay.finishDistance - g.carHeight / 2; });
-     this.tick = Math.ceil(canonicalTime(next) * g.tickRate / 1e6); this.finish = { tick: this.tick, timeUs: canonicalTime(next), result: finishMask === 1 ? 0 : finishMask === 2 ? 1 : 2 };
+     this.tick = Math.ceil(canonicalTime(next) * g.tickRate / 1e6); this.finish = { tick: this.tick, timeUs: canonicalTime(next), result: finishMask === 1 ? 0 : finishMask === 2 ? 1 : 2, reason: 0 };
      return events;
     }
     time = next; this.boundaries(canonicalTime(time), events);
@@ -192,6 +212,69 @@ export class Multiplayer {
    this.tick++;
   }
   return events;
+ }
+ /** Stable placement is independent from mutable shared/per-seat consumption. */
+ private objects(): ObjectState[] {
+  if (this.represented) return this.represented.map(object => ({ ...object, flags: (object.flags & 3) | (this.consumption.get(object.id) ?? 0) }));
+  return this.trackState().slices.flatMap(slice => slice.cells.flatMap((kind, lane) => {
+   if (kind === 'empty') return [];
+   const id = slice.id * 3 + lane + 1;
+   return [{ id, sliceId: slice.id, lane, distance: slice.distance, flags: ({ coin: 1, obstacle: 2, heart: 3 }[kind]) | (this.consumption.get(id) ?? 0) }];
+  }));
+ }
+ /** Intersect monotone longitudinal overlap and linear lateral overlap. Bisection
+  * uses the integrated speed ramp, so acceleration cannot tunnel through objects. */
+ private objectContacts(start: number, end: number) {
+  if (this.configuration.mode !== 'drag-race') return [];
+  const g = this.configuration.gameplay;
+  const contacts: { object: ObjectState; seat: number; timeUs: number }[] = [];
+  for (const object of this.objects()) for (let seat = 0; seat < 2; seat++) {
+   const kind = object.flags & 3, car = this.cars[seat];
+   if (object.flags & (kind === 2 ? 8 << seat : 4)) continue;
+   const width = kind === 2 ? g.obstacleW : kind === 1 ? g.coinSize : g.heartSize;
+   const height = kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize;
+   const lateralExtent = (g.carWidth + width) / 2, forwardExtent = (g.carHeight + height) / 2;
+   const center = (object.lane - 1) * g.laneSpacing;
+   const multiplier = car.effective === 3 ? g.accelSpeedMultiplier : 1;
+   const progress = (at: number) => car.progress + this.forwardDistance(start, at - start) * multiplier;
+   if (progress(end) <= object.distance - forwardExtent || car.progress >= object.distance + forwardExtent) continue;
+   let entry = start, exit = end;
+   if (car.progress <= object.distance - forwardExtent) {
+    let low = start, high = end;
+    for (let n = 0; n < 52; n++) { const middle = low + (high - low) / 2; if (progress(middle) <= object.distance - forwardExtent) low = middle; else high = middle; }
+    entry = high;
+   }
+   if (progress(end) >= object.distance + forwardExtent) {
+    let low = start, high = end;
+    for (let n = 0; n < 52; n++) { const middle = low + (high - low) / 2; if (progress(middle) < object.distance + forwardExtent) low = middle; else high = middle; }
+    exit = high;
+   }
+   const speed = car.phase === 0 ? 0 : (car.movementTarget - car.movementOrigin) * 1e6 / (car.movementEndUs - car.movementStartUs);
+   if (speed === 0) { if (Math.abs(car.lateral - center) >= lateralExtent) continue; }
+   else {
+    const a = start + (center - lateralExtent - car.lateral) / speed;
+    const b = start + (center + lateralExtent - car.lateral) / speed;
+    entry = Math.max(entry, Math.min(a, b)); exit = Math.min(exit, Math.max(a, b));
+   }
+   if (entry < exit) contacts.push({ object, seat, timeUs: canonicalTime(entry) });
+  }
+  return contacts.sort((a,b) => a.timeUs - b.timeUs || a.object.id - b.object.id || a.seat - b.seat);
+ }
+ private resolveObjects(contacts: { object: ObjectState; seat: number; timeUs: number }[], events: Observation[], timeUs: number) {
+  const g = this.configuration.gameplay, objects = new Map<number, ObjectState>(), damage = [0, 0];
+  for (const { object } of contacts) objects.set(object.id, { ...object });
+  for (const object of objects.values()) {
+   const kind = object.flags & 3;
+   const seats = contacts.filter(c => c.object.id === object.id).map(c => c.seat);
+   if (kind === 2) for (const seat of seats) { object.flags |= 8 << seat; damage[seat] += g.obstacleDamage; }
+   else {
+    object.flags |= 4;
+    if (seats.length === 1) { const car = this.cars[seats[0]]; if (kind === 3) car.hp = Math.min(g.maxHealth, car.hp + 1); else car.score += 10; }
+   }
+   this.consumption.set(object.id, object.flags & 28);
+  }
+  this.cars.forEach((car, seat) => { car.hp = Math.max(0, car.hp - damage[seat]); });
+  events.push({ type: 'objects', tick: this.tick, timeUs, objects: [...objects.values()], cars: this.cars.map(car => ({ ...car })) });
  }
  private forwardDistance(start: number, elapsed: number) {
   const g = this.configuration.gameplay;
@@ -205,6 +288,6 @@ export class Multiplayer {
   const slices = new Map(states.flatMap(state => state.slices).map(slice => [slice.id, slice]));
   return { ...leading, slices: [...slices.values()].sort((a,b) => a.id - b.id) };
  }
- snapshot() { return { finish: this.finish ? { ...this.finish } : undefined, tick: this.tick, timeUs: this.finish?.timeUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
+ snapshot() { return { finish: this.finish ? { tick: this.finish.tick, timeUs: this.finish.timeUs, result: this.finish.result } : undefined, reason: this.finish?.reason, objects: this.objects(), tick: this.tick, timeUs: this.finish?.timeUs ?? this.continuationUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
   cars: this.cars.map(car => ({ ...car })) as [Car, Car], latestPress: this.latestPress ? { ...this.latestPress } : null }; }
 }

@@ -12,14 +12,15 @@ import (
 )
 
 type Observation struct {
-	Cars        [2]protocol.Car `json:"-"`
-	Car         *protocol.Car   `json:"car,omitempty"`
-	Type        string          `json:"type"`
-	Tick        uint32          `json:"tick"`
-	TimeUs      uint64          `json:"timeUs"`
-	Seat        *uint8          `json:"seat,omitempty"`
-	Sequence    *uint32         `json:"sequence,omitempty"`
-	Disposition string          `json:"disposition,omitempty"`
+	Objects     []protocol.ObjectState `json:"objects,omitempty"`
+	Cars        [2]protocol.Car        `json:"-"`
+	Car         *protocol.Car          `json:"car,omitempty"`
+	Type        string                 `json:"type"`
+	Tick        uint32                 `json:"tick"`
+	TimeUs      uint64                 `json:"timeUs"`
+	Seat        *uint8                 `json:"seat,omitempty"`
+	Sequence    *uint32                `json:"sequence,omitempty"`
+	Disposition string                 `json:"disposition,omitempty"`
 }
 type Press struct {
 	Seat     uint8  `json:"seat"`
@@ -29,18 +30,20 @@ type Press struct {
 	Order    uint32 `json:"order"`
 }
 type Finish struct {
+	Reason uint8  `json:"-"`
 	Tick   uint32 `json:"tick"`
 	TimeUs uint64 `json:"timeUs"`
 	Result uint8  `json:"result"`
 }
 type State struct {
-	Finish      *Finish              `json:"finish,omitempty"`
-	Track       track.PlacementState `json:"track"`
-	Tick        uint32               `json:"tick"`
-	TimeUs      uint64               `json:"timeUs"`
-	Abandoned   bool                 `json:"abandoned"`
-	Cars        [2]protocol.Car      `json:"cars"`
-	LatestPress *Press               `json:"latestPress"`
+	Objects     []protocol.ObjectState `json:"objects"`
+	Finish      *Finish                `json:"finish,omitempty"`
+	Track       track.PlacementState   `json:"track"`
+	Tick        uint32                 `json:"tick"`
+	TimeUs      uint64                 `json:"timeUs"`
+	Abandoned   bool                   `json:"abandoned"`
+	Cars        [2]protocol.Car        `json:"cars"`
+	LatestPress *Press                 `json:"latestPress"`
 }
 type queued struct {
 	seat  uint8
@@ -50,18 +53,19 @@ type queued struct {
 
 // Engine is owned by one round coordinator. No method may run concurrently.
 type Engine struct {
-	tracks     [2]*track.Multiplayer
-	context    protocol.Context
-	identities [2]protocol.Identity
-	roundID    uint32
-	state      State
-	wallTime   float64
-	pending    []queued
-	releases   []Observation
-	sequences  [2]uint32
-	tokens     [2]float64
-	connected  [2]bool
-	order      uint32
+	consumption map[uint32]uint8
+	tracks      [2]*track.Multiplayer
+	context     protocol.Context
+	identities  [2]protocol.Identity
+	roundID     uint32
+	state       State
+	wallTime    float64
+	pending     []queued
+	releases    []Observation
+	sequences   [2]uint32
+	tokens      [2]float64
+	connected   [2]bool
+	order       uint32
 }
 
 func CanonicalTime(seconds float64) (uint64, error) {
@@ -84,7 +88,7 @@ func New(config configuration.Configuration, seed uint32, identities [2]protocol
 	if context.Mode != 1 && context.Mode != 2 {
 		return nil, fmt.Errorf("multiplayer mode required")
 	}
-	e := &Engine{context: context, identities: identities, roundID: roundID, connected: [2]bool{true, true}, tokens: [2]float64{context.Connection.InputBurst, context.Connection.InputBurst}}
+	e := &Engine{consumption: map[uint32]uint8{}, context: context, identities: identities, roundID: roundID, connected: [2]bool{true, true}, tokens: [2]float64{context.Connection.InputBurst, context.Connection.InputBurst}}
 	for seat, lane := range []uint8{0, 2} {
 		lateral := (float64(lane) - 1) * context.Gameplay.LaneSpacing
 		e.state.Cars[seat] = protocol.Car{Lane: lane, Departure: lane, Target: lane, Lateral: lateral, MovementOrigin: lateral, MovementTarget: lateral, NormalSpeed: context.Gameplay.StartingRoadSpeed, Hp: uint32(context.Gameplay.MaxHealth), InputGeneration: 1}
@@ -122,6 +126,7 @@ func (e *Engine) Snapshot() State {
 		copy := *result.LatestPress
 		result.LatestPress = &copy
 	}
+	result.Objects = e.objects(result.Track)
 	return result
 }
 func (e *Engine) Submit(auth protocol.Identity, input protocol.Input) (bool, error) {
@@ -309,6 +314,9 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 		events = append(events, Observation{Type: "abandoned", Tick: e.state.Tick, TimeUs: e.state.TimeUs})
 		return events, nil
 	}
+	if err := e.updateTrack(); err != nil {
+		return nil, err
+	}
 	for float64(uint64(e.state.Tick)+1)/g.TickRate <= seconds {
 		if e.state.Tick == math.MaxUint32 {
 			return nil, fmt.Errorf("tick exhausted")
@@ -335,6 +343,7 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 					next = math.Min(next, float64(car.NextShiftUs)/1e6)
 				}
 			}
+			contacts := e.objectContacts(time, next)
 			finishTime := math.Inf(1)
 			finishMask := uint8(0)
 			if e.context.Mode == 1 {
@@ -370,6 +379,15 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 					next = finishTime
 				}
 			}
+			if len(contacts) > 0 {
+				nextUs, _ := CanonicalTime(next)
+				if contacts[0].timeUs <= nextUs {
+					if contacts[0].timeUs < nextUs {
+						finishMask = 0
+					}
+					next = math.Min(next, math.Max(time, float64(contacts[0].timeUs)/1e6))
+				}
+			}
 			elapsed := next - time
 			for seat := range e.state.Cars {
 				car := &e.state.Cars[seat]
@@ -384,6 +402,29 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 					fraction := (float64(next*1e6) - float64(car.MovementStartUs)) / float64(car.MovementEndUs-car.MovementStartUs)
 					car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
 				}
+			}
+			nextUs, _ := CanonicalTime(next)
+			if len(contacts) > 0 && contacts[0].timeUs == nextUs {
+				e.resolveObjects(contacts, &events, nextUs)
+			}
+			deadMask := uint8(0)
+			for seat, car := range e.state.Cars {
+				if car.Hp == 0 {
+					deadMask |= 1 << seat
+				}
+			}
+			if deadMask != 0 {
+				result := uint8(2)
+				if deadMask == 1 {
+					result = 1
+				}
+				if deadMask == 2 {
+					result = 0
+				}
+				e.state.Tick = uint32(math.Ceil(float64(nextUs) * g.TickRate / 1e6))
+				e.state.TimeUs = nextUs
+				e.state.Finish = &Finish{Tick: e.state.Tick, TimeUs: nextUs, Result: result, Reason: 1}
+				return events, nil
 			}
 			if finishMask != 0 {
 				result := uint8(2)
@@ -444,6 +485,7 @@ func forwardDistance(g protocol.Gameplay, start, elapsed float64) float64 {
 }
 
 func (e *Engine) Restore(cars [2]protocol.Car, tick uint32) {
+	e.consumption = map[uint32]uint8{}
 	e.state.Cars = cars
 	e.state.Tick = tick
 	e.state.TimeUs, _ = CanonicalTime(float64(tick) / e.context.Gameplay.TickRate)

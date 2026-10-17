@@ -12,6 +12,7 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
   const pressed = useRef(new Set<string>());
   const [muted, setMuted] = useState(!gameAudio.enabled);
   const [menu, setMenu] = useState(false);
+  const [feedback, setFeedback] = useState('');
   const [frame, setFrame] = useState<Frame>();
   const local = state.identity?.seat ?? 0;
   const context = state.context!;
@@ -56,6 +57,18 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
         ctx.textAlign = 'left';
         const finishY = y(g.finishDistance);
         if (finishY > -30 && finishY < height + 30) { ctx.fillStyle = '#f3f4f6'; ctx.fillRect(0, finishY - 6, width, 12); ctx.font = '18px sans-serif'; ctx.fillText('FINISH', 12, finishY - 18); }
+        for (const object of view.objects) {
+          const kind = object.flags & 3;
+          if (object.flags & (kind === 2 ? 8 << local : 4)) continue;
+          const x = width / 2 + (object.lane - 1) * g.laneSpacing * scale, cy = y(object.distance);
+          const ow = (kind === 2 ? g.obstacleW : kind === 1 ? g.coinSize : g.heartSize) * scale;
+          const oh = (kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize) * scale;
+          if (cy < -oh || cy > height + oh) continue;
+          ctx.fillStyle = kind === 2 ? '#f59e0b' : kind === 3 ? '#fb7185' : '#fde047';
+          if (kind === 2) { ctx.fillRect(x - ow / 2, cy - oh / 2, ow, oh); ctx.fillStyle = '#171b24'; ctx.fillRect(x - ow / 2, cy - oh / 8, ow, oh / 4); }
+          else { ctx.font = `${ow}px sans-serif`; ctx.textAlign = 'center'; ctx.fillText(kind === 3 ? '♥' : '●', x, cy + oh / 3); }
+        }
+        if (view.feedback.length) setFeedback(view.feedback.join(' · '));
         view.renderedCars.forEach((car, seat) => {
           const x = width / 2 + car.lateral * scale, cy = y(car.progress);
           ctx.fillStyle = seat === local ? '#e74656' : '#40c9d5';
@@ -74,10 +87,11 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
   useEffect(() => { if (outcome) connection.recordResultCommit(); }, [connection, outcome]);
   return <div className="relative flex flex-col gap-3">
     <div className="grid grid-cols-2 gap-3">{state.room?.seats.map((seat, i) => <div key={i} className="rounded border border-neutral-700 p-3">
-      <p>{seat.name}{i === local ? ' (You)' : ''}</p><p>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</p>
+      <p>{seat.name}{i === local ? ' (You)' : ''}</p><p data-testid={`hp-${i}`}>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</p><p>Score {frame?.cars[i].score ?? 0}</p>
       <progress className="w-full" aria-label={`${i === local ? 'Your' : 'Opponent'} finish progress`} value={frame?.cars[i].progress ?? 0} max={context.gameplay.finishDistance - context.gameplay.carHeight / 2} />
       <p>{Math.round((frame?.cars[i].progress ?? 0) / (context.gameplay.finishDistance - context.gameplay.carHeight / 2) * 100)}%</p>
     </div>)}</div>
+    <p role="status" data-testid="object-feedback">{feedback}</p>
     <p data-testid="nos-status">{frame?.cars[local].effective === 3 ? 'NOS active' : 'NOS ready'}</p>
     {frame?.awaiting && !outcome && <p role="status">Awaiting confirmation</p>}
     {frame?.stale && !outcome && <p role="alert">Reconnecting—round continues.</p>}
