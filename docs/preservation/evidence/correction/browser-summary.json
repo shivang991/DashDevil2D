@@ -1,0 +1,3724 @@
+{
+  "version": 1,
+  "scope": "Local actual-Chrome application-delivery scenarios; not network profile, statistical, OS matrix or human acceptance.",
+  "scenarios": [
+    {
+      "title": "two actual browsers drive and confirm one finish (clean)",
+      "status": "failed",
+      "durationMs": 6992,
+      "report": "apps/client/test-results/transport-2026-10-17T11-49-42.683Z/browser-1792237753476/results.json",
+      "revision": "7d6e39c22037a39e206d31dedb612cdd8cadf127",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed"
+      ],
+      "reportSha256": "ed347b2934f3c04643f8cbdb57e61734a0f2efce7fb657e6231a59b39897496c"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (delayed)",
+      "status": "failed",
+      "durationMs": 6419,
+      "report": "apps/client/test-results/transport-2026-10-17T11-49-42.683Z/browser-1792237753476/results.json",
+      "revision": "7d6e39c22037a39e206d31dedb612cdd8cadf127",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed"
+      ],
+      "reportSha256": "ed347b2934f3c04643f8cbdb57e61734a0f2efce7fb657e6231a59b39897496c"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (recovering)",
+      "status": "passed",
+      "durationMs": 10401,
+      "report": "apps/client/test-results/transport-2026-10-17T11-49-42.683Z/browser-1792237753476/results.json",
+      "revision": "7d6e39c22037a39e206d31dedb612cdd8cadf127",
+      "errors": [],
+      "delivery": "recovering",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 189,
+          "timeUs": 3150000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1260.000000000001,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 189,
+          "timeUs": 3150000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1260.000000000001,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 2578290853,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 23668447
+          },
+          "baselineBytes": 1956,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "lastLocalInputUs": 5399500,
+            "localInputToDrawUs": [
+              10900,
+              10300,
+              1600,
+              7700
+            ],
+            "lastRemoteReceiveUs": 7953400,
+            "remoteReceiveToDrawUs": [
+              3900,
+              2900,
+              4100,
+              3900,
+              2900,
+              3800,
+              2800,
+              2600,
+              3300,
+              2800,
+              3800,
+              3800
+            ],
+            "outcomeReceivedUs": 7965900,
+            "resultDelayEstimateUs": 6199.756691932678,
+            "resultCommitDelayEstimateUs": 9399.756691932678
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 2578290853,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 23668447
+          },
+          "baselineBytes": 2934,
+          "verified": 26,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "lastRemoteReceiveUs": 7535600,
+            "remoteReceiveToDrawUs": [
+              1400,
+              1400,
+              8500,
+              11600,
+              5000,
+              2500,
+              9600,
+              1500,
+              1200,
+              2300,
+              2500,
+              2200,
+              1200,
+              2100,
+              1000,
+              2200,
+              1100
+            ],
+            "outcomeReceivedUs": 7634200,
+            "resultDelayEstimateUs": 12485.060554504395,
+            "resultCommitDelayEstimateUs": 19185.060554504395
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "ed347b2934f3c04643f8cbdb57e61734a0f2efce7fb657e6231a59b39897496c"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (clean)",
+      "status": "failed",
+      "durationMs": 14038,
+      "report": "apps/client/test-results/transport-2026-10-17T11-52-26.988Z/browser-1792237896323/results.json",
+      "revision": "871fb4e198e7cbaf7375ed9c8a7306936dd173e0",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m"
+      ],
+      "reportSha256": "14fcf169cade6ae32786c9de25c358375882394167c1deef0cb4cc8c40377c4b"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (delayed)",
+      "status": "passed",
+      "durationMs": 10270,
+      "report": "apps/client/test-results/transport-2026-10-17T11-52-26.988Z/browser-1792237896323/results.json",
+      "revision": "871fb4e198e7cbaf7375ed9c8a7306936dd173e0",
+      "errors": [],
+      "delivery": "delayed",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 4023562702,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 24924552
+          },
+          "baselineBytes": 2934,
+          "verified": 23,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "baselineEpochs": [
+              1,
+              2,
+              3
+            ],
+            "corrections": [
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "lastLocalInputUs": 5175000,
+            "localInputToDrawUs": [
+              14700,
+              9300,
+              15100,
+              800,
+              4600
+            ],
+            "recoveryRequests": 1,
+            "lastRemoteReceiveUs": 7621300,
+            "remoteReceiveToDrawUs": [
+              7700,
+              8000,
+              3400,
+              8100,
+              9200,
+              8700,
+              8100,
+              8700,
+              7800,
+              8900,
+              8200
+            ],
+            "outcomeReceivedUs": 7700600,
+            "resultDelayEstimateUs": 10707.3796043396,
+            "resultCommitDelayEstimateUs": 12107.3796043396
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 4023562702,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 24924552
+          },
+          "baselineBytes": 1956,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 6,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "lastRemoteReceiveUs": 7124000,
+            "remoteReceiveToDrawUs": [
+              2900,
+              7300,
+              5100,
+              3800,
+              8000,
+              4500,
+              6500,
+              3700,
+              7500,
+              8200,
+              6800,
+              7300,
+              8200,
+              7500,
+              1700,
+              6800,
+              8600
+            ],
+            "outcomeReceivedUs": 7304200,
+            "resultDelayEstimateUs": 10638.40285873413,
+            "resultCommitDelayEstimateUs": 12238.40285873413
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "14fcf169cade6ae32786c9de25c358375882394167c1deef0cb4cc8c40377c4b"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (recovering)",
+      "status": "passed",
+      "durationMs": 9943,
+      "report": "apps/client/test-results/transport-2026-10-17T11-52-26.988Z/browser-1792237896323/results.json",
+      "revision": "871fb4e198e7cbaf7375ed9c8a7306936dd173e0",
+      "errors": [],
+      "delivery": "recovering",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 191,
+          "timeUs": 3183333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1273.3333333333346,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 191,
+          "timeUs": 3183333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1273.3333333333346,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 2303963350,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 34875508
+          },
+          "baselineBytes": 2934,
+          "verified": 26,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "baselineEpochs": [
+              1,
+              2,
+              3
+            ],
+            "corrections": [
+              {
+                "corrections": 1,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 33228.9560546875
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 33228.9560546875
+              }
+            ],
+            "lastLocalInputUs": 4935700,
+            "localInputToDrawUs": [
+              14500,
+              800,
+              6600,
+              12800
+            ],
+            "lastRemoteReceiveUs": 7458700,
+            "remoteReceiveToDrawUs": [
+              6000,
+              6800,
+              7100,
+              6100,
+              7200,
+              7100,
+              6300,
+              6100,
+              6400,
+              6600,
+              5900,
+              6300
+            ],
+            "recoveryRequests": 1,
+            "outcomeReceivedUs": 7488400,
+            "resultDelayEstimateUs": 5037.24885559082,
+            "resultCommitDelayEstimateUs": 7337.24885559082
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 2303963350,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 34875508
+          },
+          "baselineBytes": 2934,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "baselineEpochs": [
+              1,
+              2,
+              3
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "lastRemoteReceiveUs": 7038100,
+            "remoteReceiveToDrawUs": [
+              7000,
+              16100,
+              15800,
+              2200,
+              16400,
+              12000,
+              14700,
+              2300,
+              16300,
+              16900,
+              15300,
+              15300,
+              12000,
+              14100,
+              15600,
+              12100,
+              16200
+            ],
+            "recoveryRequests": 1,
+            "outcomeReceivedUs": 7207900,
+            "resultDelayEstimateUs": 9602.84924697876,
+            "resultCommitDelayEstimateUs": 11002.84924697876
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "14fcf169cade6ae32786c9de25c358375882394167c1deef0cb4cc8c40377c4b"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (unordered)",
+      "status": "passed",
+      "durationMs": 10509,
+      "report": "apps/client/test-results/transport-2026-10-17T11-52-26.988Z/browser-1792237896323/results.json",
+      "revision": "871fb4e198e7cbaf7375ed9c8a7306936dd173e0",
+      "errors": [],
+      "delivery": "unordered",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 192,
+          "timeUs": 3191667,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1276.6666666666679,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 192,
+          "timeUs": 3191667,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1276.6666666666679,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 436744171,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 45389615
+          },
+          "baselineBytes": 1956,
+          "verified": 19,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 1,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 100000
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 100000
+              }
+            ],
+            "lastLocalInputUs": 5356500,
+            "localInputToDrawUs": [
+              13600,
+              5700,
+              7700,
+              11100
+            ],
+            "lastRemoteReceiveUs": 7877400,
+            "remoteReceiveToDrawUs": [
+              5800,
+              6000,
+              6200,
+              6500,
+              6300,
+              5800,
+              5100,
+              6900,
+              5400,
+              6900,
+              6800,
+              6000
+            ],
+            "outcomeReceivedUs": 7907400,
+            "resultDelayEstimateUs": 12848.367252111435,
+            "resultCommitDelayEstimateUs": 15948.367252111435
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 436744171,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 45389615
+          },
+          "baselineBytes": 1956,
+          "verified": 20,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "lastRemoteReceiveUs": 7488200,
+            "remoteReceiveToDrawUs": [
+              9100,
+              10400,
+              6800,
+              10300,
+              3300,
+              9400,
+              7300,
+              8900,
+              16700,
+              9200,
+              9100,
+              10200,
+              10100,
+              10000,
+              9000,
+              8800,
+              9000
+            ],
+            "outcomeReceivedUs": 7627200,
+            "resultDelayEstimateUs": 19421.089797973633,
+            "resultCommitDelayEstimateUs": 22021.089797973633
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "14fcf169cade6ae32786c9de25c358375882394167c1deef0cb4cc8c40377c4b"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (clean)",
+      "status": "passed",
+      "durationMs": 8587,
+      "report": "apps/client/test-results/transport-2026-10-17T11-56-20.205Z/browser-1792238137817/results.json",
+      "revision": "701c42299a3e1e68800880207fec1f6383a667b8",
+      "errors": [],
+      "delivery": "clean",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 2,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333346,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 33,
+            "processed2": 26,
+            "disposed1": 33,
+            "disposed2": 26
+          }
+        },
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 3,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333346,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 33,
+            "processed2": 26,
+            "disposed1": 33,
+            "disposed2": 26
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 2,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 108426633,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 7098585
+          },
+          "baselineBytes": 1956,
+          "verified": 30,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 13,
+            "reliableSentBytes": 4403,
+            "reliableReceivedBytes": 17548,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 1,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 132299.9997138977
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 132299.9997138977
+              }
+            ],
+            "verificationReceivedBytes": 300,
+            "lastRemoteReceiveUs": 7318900,
+            "remoteReceiveToDrawUs": [
+              9300,
+              9300,
+              8800,
+              8700,
+              8700,
+              8700,
+              8200,
+              6900,
+              8500,
+              8300,
+              8900,
+              9200,
+              8500
+            ],
+            "lastLocalInputUs": 4863200,
+            "localInputToDrawUs": [
+              12900,
+              4100,
+              11700,
+              500,
+              14800
+            ],
+            "outcomeReceivedUs": 7388600,
+            "resultDelayEstimateUs": 15793.650482177734,
+            "resultCommitDelayEstimateUs": 18193.650482177734
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 3,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 108426633,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 7098585
+          },
+          "baselineBytes": 1956,
+          "verified": 30,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 20,
+            "reliableSentBytes": 4172,
+            "reliableReceivedBytes": 17548,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 1,
+                "snaps": 0,
+                "maxSettlingUs": 92500
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 92500
+              }
+            ],
+            "lastRemoteReceiveUs": 6470800,
+            "remoteReceiveToDrawUs": [
+              11700,
+              11800,
+              7400,
+              11900,
+              5300,
+              11900,
+              8900,
+              5200,
+              15000,
+              11800,
+              12000,
+              12000,
+              11600,
+              12100,
+              13500,
+              11400,
+              11500,
+              11900
+            ],
+            "verificationReceivedBytes": 300,
+            "outcomeReceivedUs": 6622200,
+            "resultDelayEstimateUs": 12391.996913909912,
+            "resultCommitDelayEstimateUs": 16091.996913909912
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "a63e52265530d0e2ce1ebdd3a46bb721e1477bd59a1696f15c1d44a069cd6576"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (delayed)",
+      "status": "passed",
+      "durationMs": 9684,
+      "report": "apps/client/test-results/transport-2026-10-17T11-56-20.205Z/browser-1792238137817/results.json",
+      "revision": "701c42299a3e1e68800880207fec1f6383a667b8",
+      "errors": [],
+      "delivery": "delayed",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333346,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333346,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 3047647635,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 15558963
+          },
+          "baselineBytes": 1956,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableSentBytes": 4535,
+            "reliableReceivedBytes": 17956,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 1,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 104000
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 104099.99990463257
+              }
+            ],
+            "verificationReceivedBytes": 300,
+            "lastLocalInputUs": 4779300,
+            "localInputToDrawUs": [
+              1300,
+              7300,
+              13100,
+              5000
+            ],
+            "lastRemoteReceiveUs": 7306400,
+            "remoteReceiveToDrawUs": [
+              11700,
+              13000,
+              10300,
+              11400,
+              9300,
+              8200,
+              9900,
+              10200,
+              10100,
+              9400,
+              11100,
+              11400
+            ],
+            "outcomeReceivedUs": 7356400,
+            "resultDelayEstimateUs": 11524.473567962646,
+            "resultCommitDelayEstimateUs": 14224.473567962646
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 3047647635,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 15558963
+          },
+          "baselineBytes": 1956,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableSentBytes": 4178,
+            "reliableReceivedBytes": 17809,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 300,
+            "lastRemoteReceiveUs": 7014200,
+            "remoteReceiveToDrawUs": [
+              6300,
+              5500,
+              11700,
+              12200,
+              5300,
+              12600,
+              6000,
+              12300,
+              5100,
+              6300,
+              6000,
+              7300,
+              5600,
+              4500,
+              5100,
+              5000,
+              4600
+            ],
+            "outcomeReceivedUs": 7143000,
+            "resultDelayEstimateUs": 18582.22327041626,
+            "resultCommitDelayEstimateUs": 19882.22327041626
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "a63e52265530d0e2ce1ebdd3a46bb721e1477bd59a1696f15c1d44a069cd6576"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (recovering)",
+      "status": "passed",
+      "durationMs": 9883,
+      "report": "apps/client/test-results/transport-2026-10-17T11-56-20.205Z/browser-1792238137817/results.json",
+      "revision": "701c42299a3e1e68800880207fec1f6383a667b8",
+      "errors": [],
+      "delivery": "recovering",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 194,
+          "timeUs": 3225000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1290.0000000000014,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 194,
+          "timeUs": 3225000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1290.0000000000014,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 149027235,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 25236676
+          },
+          "baselineBytes": 2934,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableSentBytes": 4476,
+            "reliableReceivedBytes": 18647,
+            "baselineEpochs": [
+              1,
+              2,
+              3
+            ],
+            "corrections": [
+              {
+                "corrections": 3,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 123199.99980926514
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 123199.99980926514
+              }
+            ],
+            "verificationReceivedBytes": 300,
+            "lastRemoteReceiveUs": 7351600,
+            "lastLocalInputUs": 4927800,
+            "localInputToDrawUs": [
+              10300,
+              14200,
+              7800,
+              10700
+            ],
+            "remoteReceiveToDrawUs": [
+              13800,
+              8400,
+              3400,
+              2500,
+              7300,
+              6900,
+              8900,
+              12400,
+              2600,
+              3700,
+              1600,
+              4000
+            ],
+            "recoveryRequests": 1,
+            "outcomeReceivedUs": 7411100,
+            "resultDelayEstimateUs": 11622.602340698242,
+            "resultCommitDelayEstimateUs": 22022.602340698242
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 149027235,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 25236676
+          },
+          "baselineBytes": 2934,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableSentBytes": 4137,
+            "reliableReceivedBytes": 18424,
+            "baselineEpochs": [
+              1,
+              2,
+              3
+            ],
+            "verificationReceivedBytes": 300,
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "lastRemoteReceiveUs": 7024000,
+            "remoteReceiveToDrawUs": [
+              600,
+              700,
+              7300,
+              8900,
+              7000,
+              4500,
+              11700,
+              3200,
+              16000,
+              7100,
+              8100,
+              7500,
+              7000,
+              2100,
+              6900,
+              2400,
+              7000
+            ],
+            "recoveryRequests": 1,
+            "outcomeReceivedUs": 7174000,
+            "resultDelayEstimateUs": 19687.602340698242,
+            "resultCommitDelayEstimateUs": 22587.602340698242
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "a63e52265530d0e2ce1ebdd3a46bb721e1477bd59a1696f15c1d44a069cd6576"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (unordered)",
+      "status": "passed",
+      "durationMs": 11164,
+      "report": "apps/client/test-results/transport-2026-10-17T11-56-20.205Z/browser-1792238137817/results.json",
+      "revision": "701c42299a3e1e68800880207fec1f6383a667b8",
+      "errors": [],
+      "delivery": "unordered",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 194,
+          "timeUs": 3216667,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1286.6666666666679,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 194,
+          "timeUs": 3216667,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1286.6666666666679,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 2410174555,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 36525841
+          },
+          "baselineBytes": 1956,
+          "verified": 19,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableSentBytes": 4847,
+            "reliableReceivedBytes": 18348,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 210,
+            "lastLocalInputUs": 5423500,
+            "localInputToDrawUs": [
+              9400,
+              3300,
+              11800,
+              1200,
+              9700
+            ],
+            "lastRemoteReceiveUs": 7932000,
+            "remoteReceiveToDrawUs": [
+              2900,
+              17100,
+              1800,
+              3000,
+              3000,
+              1800,
+              1400,
+              2400,
+              3200,
+              1600,
+              4700,
+              1600
+            ],
+            "outcomeReceivedUs": 7980900,
+            "resultDelayEstimateUs": 11685.855659008026,
+            "resultCommitDelayEstimateUs": 18885.855659008026
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 2410174555,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 36525841
+          },
+          "baselineBytes": 1956,
+          "verified": 20,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableSentBytes": 4345,
+            "reliableReceivedBytes": 18082,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 210,
+            "lastRemoteReceiveUs": 7492500,
+            "remoteReceiveToDrawUs": [
+              2100,
+              3000,
+              800,
+              3300,
+              3800,
+              15600,
+              1300,
+              1200,
+              2700,
+              1400,
+              2700,
+              1400,
+              1200,
+              2400,
+              2600,
+              2500
+            ],
+            "outcomeReceivedUs": 7631400,
+            "resultDelayEstimateUs": 11826.625270843506,
+            "resultCommitDelayEstimateUs": 14126.625270843506
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "a63e52265530d0e2ce1ebdd3a46bb721e1477bd59a1696f15c1d44a069cd6576"
+    },
+    {
+      "title": "two browsers return, overtake and release tailgating (leader seat 0)",
+      "status": "passed",
+      "durationMs": 12403,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-06.433Z/browser-1792238319929/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "cb244ed3d8256cb259c49a3241b0fe93feccd8f39613923ebbe8f9962de23614"
+    },
+    {
+      "title": "two browsers return, overtake and release tailgating (leader seat 1)",
+      "status": "passed",
+      "durationMs": 12363,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-06.433Z/browser-1792238319929/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "cb244ed3d8256cb259c49a3241b0fe93feccd8f39613923ebbe8f9962de23614"
+    },
+    {
+      "title": "two actual browsers collect and deny reserved hearts and confirm finish",
+      "status": "passed",
+      "durationMs": 10834,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-39.144Z/browser-1792238366941/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "df7742fb6a0e028f75d8b6238e235bb6b4bdab62eb3616ff8d292ed6e9b9d2a5"
+    },
+    {
+      "title": "two actual browsers survive shipped default objects until HP elimination",
+      "status": "passed",
+      "durationMs": 13842,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-24.660Z/browser-1792238348800/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "5e7cd618435d15b500953a03b30ab5da17f374f19800d7c1d3b84c10c29a52f1"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (clean)",
+      "status": "passed",
+      "durationMs": 8649,
+      "report": "apps/client/test-results/transport-2026-10-17T12-02-48.199Z/browser-1792238523812/results.json",
+      "revision": "5ad0e037fae4b22856aa51718734824cda9db0e2",
+      "errors": [],
+      "delivery": "clean",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 2,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 192,
+          "timeUs": 3200000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1280.0000000000011,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 33,
+            "processed2": 26,
+            "disposed1": 33,
+            "disposed2": 26
+          }
+        },
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 3,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 192,
+          "timeUs": 3200000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1280.0000000000011,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 33,
+            "processed2": 26,
+            "disposed1": 33,
+            "disposed2": 26
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 2,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 1549734714,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 7397948
+          },
+          "baselineBytes": 1956,
+          "verified": 31,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 13,
+            "reliableAttemptedBytes": 4459,
+            "reliableReceivedBytes": 17750,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "verificationReceivedBytes": 310,
+            "corrections": [
+              {
+                "corrections": 2,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 129800.00019073486
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 129800.00019073486
+              }
+            ],
+            "lastRemoteReceiveUs": 7331300,
+            "remoteReceiveToDrawUs": [
+              6400,
+              6400,
+              6200,
+              5800,
+              6800,
+              5700,
+              4500,
+              4800,
+              4400,
+              4800,
+              5100,
+              7000,
+              5100
+            ],
+            "lastLocalInputUs": 4857400,
+            "localInputToDrawUs": [
+              14900,
+              2800,
+              9400,
+              12600
+            ],
+            "outcomeReceivedUs": 7360700,
+            "resultDelayEstimateUs": 5405.409160614014,
+            "resultCommitDelayEstimateUs": 9105.409160614014
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 3,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 1549734714,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 7397948
+          },
+          "baselineBytes": 1956,
+          "verified": 30,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 20,
+            "reliableAttemptedBytes": 4172,
+            "reliableReceivedBytes": 17548,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 1,
+                "snaps": 0,
+                "maxSettlingUs": 117199.99980926514
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 117199.99980926514
+              }
+            ],
+            "lastRemoteReceiveUs": 6472600,
+            "remoteReceiveToDrawUs": [
+              13800,
+              3100,
+              3800,
+              3600,
+              400,
+              13800,
+              500,
+              13800,
+              300,
+              2700,
+              300,
+              200,
+              600,
+              200,
+              12400,
+              500,
+              500,
+              400
+            ],
+            "verificationReceivedBytes": 300,
+            "outcomeReceivedUs": 6642600,
+            "resultDelayEstimateUs": 10552.557737350464,
+            "resultCommitDelayEstimateUs": 12852.557737350464
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "c93be3517ddb71ae91b5d539586f6b64a7068df94c6b27e9bcdc9fb75349ad26"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (delayed)",
+      "status": "passed",
+      "durationMs": 10351,
+      "report": "apps/client/test-results/transport-2026-10-17T12-02-48.199Z/browser-1792238523812/results.json",
+      "revision": "5ad0e037fae4b22856aa51718734824cda9db0e2",
+      "errors": [],
+      "delivery": "delayed",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 14356387,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 16515012
+          },
+          "baselineBytes": 1956,
+          "verified": 28,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableAttemptedBytes": 4885,
+            "reliableReceivedBytes": 18184,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 2,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 110699.99980926514
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 110699.99980926514
+              }
+            ],
+            "verificationReceivedBytes": 300,
+            "lastLocalInputUs": 5439800,
+            "localInputToDrawUs": [
+              6300,
+              9000,
+              14800,
+              1500,
+              13000
+            ],
+            "lastRemoteReceiveUs": 7895300,
+            "remoteReceiveToDrawUs": [
+              6400,
+              6700,
+              6800,
+              7100,
+              8000,
+              7600,
+              6400,
+              7300,
+              7000,
+              7500,
+              6500,
+              7400
+            ],
+            "outcomeReceivedUs": 7965200,
+            "resultDelayEstimateUs": 18900.172973632812,
+            "resultCommitDelayEstimateUs": 21500.172973632812
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 14356387,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 16515012
+          },
+          "baselineBytes": 1956,
+          "verified": 28,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableAttemptedBytes": 4234,
+            "reliableReceivedBytes": 18011,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "verificationReceivedBytes": 310,
+            "corrections": [
+              {
+                "corrections": 6,
+                "abrupt": 6,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "lastRemoteReceiveUs": 7496200,
+            "remoteReceiveToDrawUs": [
+              11100,
+              11000,
+              11000,
+              10300,
+              4000,
+              10200,
+              7000,
+              4800,
+              9000,
+              10800,
+              11200,
+              9400,
+              10000,
+              11600,
+              10100,
+              10000,
+              11300,
+              9500
+            ],
+            "outcomeReceivedUs": 7645900,
+            "resultDelayEstimateUs": 11338.291748046875,
+            "resultCommitDelayEstimateUs": 14138.291748046875
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "c93be3517ddb71ae91b5d539586f6b64a7068df94c6b27e9bcdc9fb75349ad26"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (recovering)",
+      "status": "passed",
+      "durationMs": 11344,
+      "report": "apps/client/test-results/transport-2026-10-17T12-02-48.199Z/browser-1792238523812/results.json",
+      "revision": "5ad0e037fae4b22856aa51718734824cda9db0e2",
+      "errors": [],
+      "delivery": "recovering",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 193,
+          "timeUs": 3208333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1283.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 8,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 4011432213,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 27481143
+          },
+          "baselineBytes": 2934,
+          "verified": 27,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableAttemptedBytes": 4808,
+            "reliableReceivedBytes": 18875,
+            "baselineEpochs": [
+              1,
+              2,
+              3
+            ],
+            "corrections": [
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 300,
+            "lastLocalInputUs": 5478800,
+            "localInputToDrawUs": [
+              4900,
+              12200,
+              2900,
+              6000
+            ],
+            "lastRemoteReceiveUs": 7959900,
+            "remoteReceiveToDrawUs": [
+              7600,
+              11200,
+              8100,
+              7500,
+              8300,
+              8700,
+              7600,
+              10100,
+              7400,
+              7500,
+              11200,
+              7300
+            ],
+            "recoveryRequests": 1,
+            "recoveryEpochs": [
+              2
+            ],
+            "outcomeReceivedUs": 8011500,
+            "resultDelayEstimateUs": 16435.060297966003,
+            "resultCommitDelayEstimateUs": 21835.060297966003
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 7,
+            "seatSession": 9,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 4011432213,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 27481143
+          },
+          "baselineBytes": 2934,
+          "verified": 26,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableAttemptedBytes": 4250,
+            "reliableReceivedBytes": 18407,
+            "baselineEpochs": [
+              1,
+              2,
+              3
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 290,
+            "lastRemoteReceiveUs": 7518300,
+            "remoteReceiveToDrawUs": [
+              10900,
+              2700,
+              1900,
+              11800,
+              4600,
+              2000,
+              12300,
+              15100,
+              1500,
+              1200,
+              10800,
+              1600,
+              11300,
+              4300,
+              12000,
+              10600,
+              2500
+            ],
+            "recoveryRequests": 1,
+            "recoveryEpochs": [
+              2
+            ],
+            "outcomeReceivedUs": 7668300,
+            "resultDelayEstimateUs": 23337.50123977661,
+            "resultCommitDelayEstimateUs": 31737.50123977661
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "c93be3517ddb71ae91b5d539586f6b64a7068df94c6b27e9bcdc9fb75349ad26"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (unordered)",
+      "status": "passed",
+      "durationMs": 10704,
+      "report": "apps/client/test-results/transport-2026-10-17T12-02-48.199Z/browser-1792238523812/results.json",
+      "revision": "5ad0e037fae4b22856aa51718734824cda9db0e2",
+      "errors": [],
+      "delivery": "unordered",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 192,
+          "timeUs": 3200000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1280.0000000000014,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 192,
+          "timeUs": 3200000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1280.0000000000014,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 3023165421,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 38794740
+          },
+          "baselineBytes": 1956,
+          "verified": 19,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableAttemptedBytes": 4771,
+            "reliableReceivedBytes": 18070,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 2,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 110500
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 110500
+              }
+            ],
+            "verificationReceivedBytes": 200,
+            "lastLocalInputUs": 5455100,
+            "localInputToDrawUs": [
+              8500,
+              14400,
+              13200,
+              14000
+            ],
+            "lastRemoteReceiveUs": 7912500,
+            "remoteReceiveToDrawUs": [
+              6700,
+              6600,
+              15200,
+              7000,
+              7100,
+              7100,
+              3100,
+              5900,
+              6400,
+              7500,
+              10600,
+              6100
+            ],
+            "outcomeReceivedUs": 7961500,
+            "resultDelayEstimateUs": 6451.487702846527,
+            "resultCommitDelayEstimateUs": 12951.487702846527
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 3023165421,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 38794740
+          },
+          "baselineBytes": 1956,
+          "verified": 18,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableAttemptedBytes": 4064,
+            "reliableReceivedBytes": 17493,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 200,
+            "lastRemoteReceiveUs": 7554400,
+            "remoteReceiveToDrawUs": [
+              12300,
+              10900,
+              11900,
+              5500,
+              7600,
+              12800,
+              8000,
+              6400,
+              11900,
+              14100,
+              12200,
+              11900,
+              10200,
+              12100,
+              11700,
+              12700,
+              13000
+            ],
+            "outcomeReceivedUs": 7694300,
+            "resultDelayEstimateUs": 7940.684379577637,
+            "resultCommitDelayEstimateUs": 13040.684379577637
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "c93be3517ddb71ae91b5d539586f6b64a7068df94c6b27e9bcdc9fb75349ad26"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (clean)",
+      "status": "passed",
+      "durationMs": 8541,
+      "report": "apps/client/test-results/transport-2026-10-17T11-58-37.660Z/browser-1792238276550/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "delivery": "clean",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 2,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 189,
+          "timeUs": 3150000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1260.000000000001,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 34,
+            "event": 2,
+            "processed1": 33,
+            "processed2": 25,
+            "disposed1": 33,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 3,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 189,
+          "timeUs": 3150000,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1260.000000000001,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 34,
+            "event": 2,
+            "processed1": 33,
+            "processed2": 25,
+            "disposed1": 33,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 2,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 3907150044,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 7371034
+          },
+          "baselineBytes": 1956,
+          "verified": 29,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableAttemptedBytes": 4347,
+            "reliableReceivedBytes": 17169,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 1,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 28400.00009536743
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 28400.00009536743
+              }
+            ],
+            "verificationReceivedBytes": 290,
+            "lastRemoteReceiveUs": 7082600,
+            "remoteReceiveToDrawUs": [
+              5700,
+              5400,
+              5200,
+              5600,
+              5600,
+              5700,
+              7100,
+              4800,
+              4500,
+              5200,
+              5300,
+              5400
+            ],
+            "lastLocalInputUs": 4703400,
+            "localInputToDrawUs": [
+              15400,
+              11500,
+              12500,
+              600
+            ],
+            "outcomeReceivedUs": 7314400,
+            "resultDelayEstimateUs": 3583.812728881836,
+            "resultCommitDelayEstimateUs": 7483.812728881836
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 1,
+            "seatSession": 3,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 3907150044,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 7371034
+          },
+          "baselineBytes": 1956,
+          "verified": 30,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 20,
+            "reliableAttemptedBytes": 4063,
+            "reliableReceivedBytes": 17295,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 1,
+                "snaps": 0,
+                "maxSettlingUs": 98599.99990463257
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 98599.99990463257
+              }
+            ],
+            "verificationReceivedBytes": 300,
+            "lastRemoteReceiveUs": 6494900,
+            "remoteReceiveToDrawUs": [
+              9000,
+              12600,
+              5700,
+              5500,
+              12100,
+              5200,
+              8800,
+              8800,
+              8900,
+              9000,
+              8400,
+              12400,
+              9000,
+              8700,
+              8400,
+              8800,
+              8600,
+              8500
+            ],
+            "outcomeReceivedUs": 6544900,
+            "resultDelayEstimateUs": 7871.076950073242,
+            "resultCommitDelayEstimateUs": 10671.076950073242
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "a99b64b295a74ea8189b9e5e42b63747b7a179f6f9fcd70ec1a93d2b3e2e672d"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (delayed)",
+      "status": "passed",
+      "durationMs": 9597,
+      "report": "apps/client/test-results/transport-2026-10-17T11-58-37.660Z/browser-1792238276550/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "delivery": "delayed",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 194,
+          "timeUs": 3216667,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1286.6666666666679,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 194,
+          "timeUs": 3216667,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1286.6666666666679,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 5,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 3330667121,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 15627964
+          },
+          "baselineBytes": 1956,
+          "verified": 29,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 12,
+            "reliableAttemptedBytes": 4647,
+            "reliableReceivedBytes": 18158,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "verificationReceivedBytes": 310,
+            "corrections": [
+              {
+                "corrections": 3,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 116800.00019073486
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 116800.00019073486
+              }
+            ],
+            "lastLocalInputUs": 4881600,
+            "localInputToDrawUs": [
+              9100,
+              15300,
+              5000,
+              9500
+            ],
+            "lastRemoteReceiveUs": 7381400,
+            "remoteReceiveToDrawUs": [
+              10300,
+              17100,
+              16700,
+              9900,
+              9800,
+              10000,
+              9200,
+              9000,
+              9900,
+              9000,
+              9400,
+              10200
+            ],
+            "outcomeReceivedUs": 7421300,
+            "resultDelayEstimateUs": 11545.60922241211,
+            "resultCommitDelayEstimateUs": 14045.60922241211
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 4,
+            "seatSession": 6,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 3330667121,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 15627964
+          },
+          "baselineBytes": 1956,
+          "verified": 28,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableAttemptedBytes": 4234,
+            "reliableReceivedBytes": 18011,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 6,
+                "abrupt": 6,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 310,
+            "lastRemoteReceiveUs": 7018900,
+            "remoteReceiveToDrawUs": [
+              9200,
+              9600,
+              16600,
+              11200,
+              10100,
+              800,
+              13200,
+              10600,
+              10000,
+              10600,
+              11300,
+              10700,
+              9900,
+              11000,
+              11300,
+              11200,
+              11000
+            ],
+            "outcomeReceivedUs": 7129000,
+            "resultDelayEstimateUs": 4621.442428588867,
+            "resultCommitDelayEstimateUs": 11421.442428588867
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "a99b64b295a74ea8189b9e5e42b63747b7a179f6f9fcd70ec1a93d2b3e2e672d"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (recovering)",
+      "status": "failed",
+      "durationMs": 9315,
+      "report": "apps/client/test-results/transport-2026-10-17T11-58-37.660Z/browser-1792238276550/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [
+        "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m"
+      ],
+      "reportSha256": "a99b64b295a74ea8189b9e5e42b63747b7a179f6f9fcd70ec1a93d2b3e2e672d"
+    },
+    {
+      "title": "two actual browsers drive and confirm one finish (unordered)",
+      "status": "passed",
+      "durationMs": 9635,
+      "report": "apps/client/test-results/transport-2026-10-17T11-58-37.660Z/browser-1792238276550/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "delivery": "unordered",
+      "outcomes": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 191,
+          "timeUs": 3183333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1273.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "roundId": 2,
+          "outcomeId": 1,
+          "tick": 191,
+          "timeUs": 3183333,
+          "result": 0,
+          "reason": 0,
+          "cars": [
+            {
+              "progress": 2360,
+              "lateral": 0,
+              "hp": 3,
+              "score": 0
+            },
+            {
+              "progress": 1273.3333333333344,
+              "lateral": 120,
+              "hp": 3,
+              "score": 0
+            }
+          ],
+          "progress": {
+            "authority": 35,
+            "event": 2,
+            "processed1": 32,
+            "processed2": 25,
+            "disposed1": 32,
+            "disposed2": 25
+          }
+        }
+      ],
+      "environments": [
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        },
+        {
+          "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+          "viewport": {
+            "width": 1280,
+            "height": 720
+          }
+        }
+      ],
+      "players": [
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 11,
+            "pairGeneration": 1,
+            "seat": 0
+          },
+          "seed": 2140592107,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 35674418
+          },
+          "baselineBytes": 1956,
+          "verified": 18,
+          "diagnostics": {
+            "localInputs": 6,
+            "remoteRecords": 11,
+            "reliableAttemptedBytes": 4573,
+            "reliableReceivedBytes": 17817,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 3,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 119200.0002861023
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 119200.0002861023
+              }
+            ],
+            "verificationReceivedBytes": 200,
+            "lastLocalInputUs": 4759800,
+            "localInputToDrawUs": [
+              1000,
+              9800,
+              2600,
+              9100
+            ],
+            "lastRemoteReceiveUs": 7065800,
+            "remoteReceiveToDrawUs": [
+              4600,
+              2400,
+              2200,
+              3100,
+              3400,
+              2000,
+              3200,
+              3200,
+              1900,
+              3100,
+              3300
+            ],
+            "outcomeReceivedUs": 7315700,
+            "resultDelayEstimateUs": 11297.572883605957,
+            "resultCommitDelayEstimateUs": 13997.572883605957
+          },
+          "errors": []
+        },
+        {
+          "identity": {
+            "roomId": 10,
+            "seatSession": 12,
+            "pairGeneration": 1,
+            "seat": 1
+          },
+          "seed": 2140592107,
+          "roundId": 2,
+          "context": {
+            "mode": 1,
+            "configurationId": 1,
+            "configurationVersion": 1,
+            "generationVersion": 1,
+            "startUs": 35674418
+          },
+          "baselineBytes": 1956,
+          "verified": 19,
+          "diagnostics": {
+            "localInputs": 0,
+            "remoteRecords": 19,
+            "reliableAttemptedBytes": 4234,
+            "reliableReceivedBytes": 17834,
+            "baselineEpochs": [
+              1,
+              2
+            ],
+            "corrections": [
+              {
+                "corrections": 5,
+                "abrupt": 5,
+                "snaps": 5,
+                "maxSettlingUs": 0
+              },
+              {
+                "corrections": 0,
+                "abrupt": 0,
+                "snaps": 0,
+                "maxSettlingUs": 0
+              }
+            ],
+            "verificationReceivedBytes": 210,
+            "lastRemoteReceiveUs": 6964800,
+            "remoteReceiveToDrawUs": [
+              13600,
+              1800,
+              1500,
+              1200,
+              11700,
+              15700,
+              1400,
+              13000,
+              13200,
+              13700,
+              12900,
+              12600,
+              12700,
+              12800,
+              12500,
+              11600
+            ],
+            "outcomeReceivedUs": 7063500,
+            "resultDelayEstimateUs": 9955.098823547363,
+            "resultCommitDelayEstimateUs": 12955.098823547363
+          },
+          "errors": []
+        }
+      ],
+      "reportSha256": "a99b64b295a74ea8189b9e5e42b63747b7a179f6f9fcd70ec1a93d2b3e2e672d"
+    },
+    {
+      "title": "two React participants adopt host mode, ready and share a physics-free countdown and round zero",
+      "status": "passed",
+      "durationMs": 4973,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-50.259Z/browser-1792238381241/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "ad76fbb66c5cff7cf028ae56584685678e4825db5221305661ac15d17bc5a10b"
+    },
+    {
+      "title": "four-digit entry retains leading zeros and shows admission errors beside the native form",
+      "status": "passed",
+      "durationMs": 454,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-50.259Z/browser-1792238381241/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "ad76fbb66c5cff7cf028ae56584685678e4825db5221305661ac15d17bc5a10b"
+    },
+    {
+      "title": "storage denial retains one local name across entry, admission and return",
+      "status": "passed",
+      "durationMs": 552,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-50.259Z/browser-1792238381241/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "ad76fbb66c5cff7cf028ae56584685678e4825db5221305661ac15d17bc5a10b"
+    },
+    {
+      "title": "host mode changes clear readiness and a reloaded tab recovers its authenticated seat",
+      "status": "passed",
+      "durationMs": 1278,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-50.259Z/browser-1792238381241/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "ad76fbb66c5cff7cf028ae56584685678e4825db5221305661ac15d17bc5a10b"
+    },
+    {
+      "title": "readiness stays pending until its own command reply despite a room-state broadcast",
+      "status": "passed",
+      "durationMs": 643,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-50.259Z/browser-1792238381241/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "ad76fbb66c5cff7cf028ae56584685678e4825db5221305661ac15d17bc5a10b"
+    },
+    {
+      "title": "two admitted browser seats verify real streams/datagrams and recover either lost channel",
+      "status": "passed",
+      "durationMs": 3535,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-58.638Z/browser-1792238392684/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "fd6cfcfdfc9d9b11d7032b14e59081b59d50f1f5e585d778178f3658f927b7e5"
+    },
+    {
+      "title": "missing WebTransport features produce Browser unsupported",
+      "status": "passed",
+      "durationMs": 348,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-58.638Z/browser-1792238392684/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "fd6cfcfdfc9d9b11d7032b14e59081b59d50f1f5e585d778178f3658f927b7e5"
+    },
+    {
+      "title": "an admission/network failure is Unable to connect on a supported browser",
+      "status": "passed",
+      "durationMs": 361,
+      "report": "apps/client/test-results/transport-2026-10-17T11-59-58.638Z/browser-1792238392684/results.json",
+      "revision": "9bd2cd03516a06a016dedb96db3845f5b8d5faea",
+      "errors": [],
+      "reportSha256": "fd6cfcfdfc9d9b11d7032b14e59081b59d50f1f5e585d778178f3658f927b7e5"
+    }
+  ]
+}
