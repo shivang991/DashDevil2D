@@ -1,0 +1,5 @@
+# github.com/shivang991/DashDevil2D/apps/server/transport [github.com/shivang991/DashDevil2D/apps/server/transport.test]
+transport/maintenance_boundary_test.go:65:12: undefined: p.InitialBaseline
+ok  	github.com/shivang991/DashDevil2D/apps/server/simulation	0.640s
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport [build failed]
+FAIL

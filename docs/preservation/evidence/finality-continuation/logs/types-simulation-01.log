@@ -1,0 +1,4 @@
+
+> @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+> tsc -p tsconfig.json
+

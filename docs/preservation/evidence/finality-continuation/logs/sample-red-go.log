@@ -1,0 +1,5 @@
+--- FAIL: TestCanonicalGroupSamplePreservesBlockedSegmentBeforeClearance (0.00s)
+    groups_test.go:141: sample rewrote blocked movement: 339.999653333333
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation	0.531s
+FAIL

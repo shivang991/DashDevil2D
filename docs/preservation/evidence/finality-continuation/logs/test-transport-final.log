@@ -1,0 +1,23 @@
+
+> dashdevil@ test:transport /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-uapJkQ/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-uapJkQ
+HTTPS diagnostic page: https://127.0.0.1:4173/transport.html; certificate expires 2026-10-30T20:16:17Z
+[WebServer] (node:29559) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29560) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29560) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 3 tests using 1 worker
+
+(node:29567) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/transport.spec.ts:3:1 › two admitted browser seats verify real streams/datagrams and recover either lost channel (3.1s)
+  ✓  2 tests/browser/transport.spec.ts:53:1 › missing WebTransport features produce Browser unsupported (363ms)
+  ✓  3 tests/browser/transport.spec.ts:60:1 › an admission/network failure is Unable to connect on a supported browser (373ms)
+
+  3 passed (5.5s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-16-24.051Z

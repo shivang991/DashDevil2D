@@ -1,0 +1,47 @@
+[
+  {
+    "log": "browser-groups-02.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-08-24.465Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-08-24.465Z"
+  },
+  {
+    "log": "browser-groups-01.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-03-33.886Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-03-33.886Z"
+  },
+  {
+    "log": "test-rooms-readiness.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-26-24.137Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-26-24.137Z"
+  },
+  {
+    "log": "coverage-diagnostic.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-18-52.879Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-18-52.879Z"
+  },
+  {
+    "log": "test-race-final.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-17-10.063Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-17-10.063Z"
+  },
+  {
+    "log": "test-transport-final.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-16-24.051Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-16-24.051Z"
+  },
+  {
+    "log": "test-rooms-acceptance.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-25-32.446Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-25-32.446Z"
+  },
+  {
+    "log": "test-finality-final.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-16-16.154Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-16-16.154Z"
+  },
+  {
+    "log": "test-groups-final.log",
+    "rawEvidence": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-15-47.713Z",
+    "retained": "evidence/finality-continuation/attempts/transport-2026-10-17T20-15-47.713Z"
+  }
+]

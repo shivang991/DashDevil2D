@@ -1,0 +1,44 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/race.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (36 tests | 1 failed) 50ms
+   × shared finish: equal canonical finishes straddle the raw tick boundary 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts > shared finish: equal canonical finishes straddle the raw tick boundary
+AssertionError: expected { tick: 2, timeUs: 16667, result: +0 } to deeply equal { tick: 2, timeUs: 16667, result: 2 }
+
+- Expected
++ Received
+
+  {
+-   "result": 2,
++   "result": 0,
+    "tick": 2,
+    "timeUs": 16667,
+  }
+
+ ❯ tests/session/race.test.ts:53:34
+     51|   game.restore(b.cars, 0);
+     52|   game.advanceTo(1);
+     53|   expect(game.snapshot().finish).toEqual({ tick: scenario.tick, timeUs…
+       |                                  ^
+     54|   expect(game.snapshot().cars[0].progress).toBeCloseTo('position0' in …
+     55|   expect(game.snapshot().cars[0].lateral).toBeCloseTo(scenario.lateral…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 35 passed (36)
+   Start at  12:54:37
+   Duration  209ms (tests 57%, transform 24%, import 16%, worker 3%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/race.test.ts"`
+Exit status 1

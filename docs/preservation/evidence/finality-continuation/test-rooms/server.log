@@ -1,0 +1,15 @@
+{"time":"2026-10-17T13:26:49.479294-07:00","level":"INFO","msg":"listeners_ready","address":"https://127.0.0.1:8443","origin":"https://127.0.0.1:4173"}
+{"time":"2026-10-17T13:26:59.464655-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":1,"reason":""}
+{"time":"2026-10-17T13:26:59.46523-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":1,"reason":""}
+{"time":"2026-10-17T13:26:59.524047-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:26:59.524132-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":1,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:27:00.462419-07:00","level":"INFO","msg":"pair_closed","room":4,"seat":0,"generation":1,"reason":"explicit leave"}
+{"time":"2026-10-17T13:27:00.462608-07:00","level":"INFO","msg":"gameplay_failure","room":4,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:27:01.618733-07:00","level":"INFO","msg":"pair_closed","room":6,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:27:01.618842-07:00","level":"INFO","msg":"gameplay_failure","room":6,"seat":1,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:27:02.199349-07:00","level":"INFO","msg":"pair_closed","room":6,"seat":0,"generation":1,"reason":"explicit leave"}
+{"time":"2026-10-17T13:27:02.199482-07:00","level":"INFO","msg":"gameplay_failure","room":6,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:27:02.240883-07:00","level":"INFO","msg":"pair_closed","room":6,"seat":1,"generation":2,"reason":"room channel lost"}
+{"time":"2026-10-17T13:27:02.240961-07:00","level":"INFO","msg":"gameplay_failure","room":6,"seat":1,"generation":2,"reason":"pair closed"}
+{"time":"2026-10-17T13:27:02.880824-07:00","level":"INFO","msg":"pair_closed","room":9,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:27:02.880901-07:00","level":"INFO","msg":"gameplay_failure","room":9,"seat":0,"generation":1,"reason":"pair closed"}

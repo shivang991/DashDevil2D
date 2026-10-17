@@ -1,0 +1,5 @@
+--- FAIL: TestRaceCoverageRetainsPlacementInsideBackwardHeadroom (0.00s)
+    coverage_headroom_test.go:102: retired seeded obstacle30 inside backward replay headroom
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	0.603s
+FAIL

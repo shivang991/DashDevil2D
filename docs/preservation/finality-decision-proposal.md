@@ -1,10 +1,10 @@
 # Approved canonical-group continuation amendment
 
-Owners: [simulation/time decision #11](https://github.com/shivang991/DashDevil2D/issues/11#issuecomment-6124322966) and [snapshot/input decision #14](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562). Blocking implementation issue: [#36](https://github.com/shivang991/DashDevil2D/issues/36).
+Owners: [simulation/time decision #11](https://github.com/shivang991/DashDevil2D/issues/11#issuecomment-6124322966) and [snapshot/input decision #14](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562). Resolved implementation issue: [#36](https://github.com/shivang991/DashDevil2D/issues/36).
 
 ## Concrete failure
 
-At60Hz, raw tick1 ends at16666.666…us. Two front-edge finishes at16666.6 and16666.8us both canonicalize to16667us, so they must tie. Current engines finalize the first crossing before discovering the second. The same clipping can put a heart after a same-canonical fatal obstacle, split simultaneous distinct damage, or award a contested pickup. Boundary inputs can also have canonical time16667 and must precede that group's collisions.
+At60Hz, raw tick1 ends at16666.666…us. Two front-edge finishes at16666.6 and16666.8us both canonicalize to16667us, so they must tie. The original engines finalized the first crossing before discovering the second. The same clipping can put a heart after a same-canonical fatal obstacle, split simultaneous distinct damage, or award a contested pickup. Boundary inputs can also have canonical time16667 and must precede that group's collisions.
 
 ## Approved resolution
 
@@ -25,3 +25,5 @@ Sampling preserves the existing tick/time representation: when a group's canonic
 Terminal lifecycle requests settle gameplay through their exact cutoff first; reconnect expiry also caps catch-up so a later finish cannot overtake an earlier deadline. Seat-generation resets queued during an open group apply only after a nonterminal commit. Final outcomes ignore those resets. Existing maintenance/application deadlines and the bounded authority history still apply.
 
 Independent review and required checks remain mandatory before #36 is closed. The historical failure and preliminary blocked reports remain retained; approval alone is not a passing gate.
+
+The amendment is implemented and the issue36 gate passes; final reviews and all required checks are indexed in `finality-validation.json`. Historical failing probes remain retained.

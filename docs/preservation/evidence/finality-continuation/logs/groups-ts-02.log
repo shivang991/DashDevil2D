@@ -1,0 +1,44 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/race.test.ts" "tests/simulation/objects.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (40 tests | 1 failed) 79ms
+   × shared finish: exclusive group upper bound remains a later finish 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts > shared finish: exclusive group upper bound remains a later finish
+AssertionError: expected { tick: 2, timeUs: 16667, result: 2 } to deeply equal { tick: 2, timeUs: 16667, result: +0 }
+
+- Expected
++ Received
+
+  {
+-   "result": 0,
++   "result": 2,
+    "tick": 2,
+    "timeUs": 16667,
+  }
+
+ ❯ tests/session/race.test.ts:53:34
+     51|   game.restore(b.cars, 0);
+     52|   game.advanceTo(1);
+     53|   expect(game.snapshot().finish).toEqual({ tick: scenario.tick, timeUs…
+       |                                  ^
+     54|   expect(game.snapshot().cars[0].progress).toBeCloseTo('position0' in …
+     55|   expect(game.snapshot().cars[0].lateral).toBeCloseTo(scenario.lateral…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 58 passed (59)
+   Start at  13:01:19
+   Duration  289ms (transform 42%, tests 41%, import 15%, worker 2%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/race.test.ts" "tests/simulation/objects.test.ts"`
+Exit status 1

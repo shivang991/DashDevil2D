@@ -1,0 +1,5 @@
+--- FAIL: TestRecoveryResetWaitsForPendingGroup (0.00s)
+    groups_test.go:68: reset exposed an unfinished group
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation	0.561s
+FAIL

@@ -1,0 +1,61 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-KrR7aj/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-KrR7aj
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T20:16:24Z
+[WebServer] (node:29736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29737) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:29737) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 4 tests using 1 worker
+
+(node:29744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (clean) (10.3s)
+(node:29767) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (delayed) (10.7s)
+  ✓  3 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (recovering) (10.6s)
+  ✓  4 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (unordered) (10.7s)
+
+
+  1) tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (clean) ────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "insufficient reachable track coverage",
+    + ]
+
+      106 |     expect(evidence[0].startUs).toBe(evidence[1].startUs);
+      107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);
+    > 108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);
+          |                                ^
+      109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);
+      110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {
+      111 |       const state = evidence[seat];
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:108:32
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-KrR7aj/browser-1792268186669/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-KrR7aj/browser-1792268186669/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-KrR7aj/browser-1792268186669/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/error-context.md
+
+  1 failed
+    tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (clean) ─────
+  3 passed (44.0s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-17-10.063Z
+ ELIFECYCLE  Command failed with exit code 1.

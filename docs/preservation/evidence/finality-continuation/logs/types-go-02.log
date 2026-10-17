@@ -1,0 +1,4 @@
+
+> @dashdevil/server@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+> go vet ./...
+

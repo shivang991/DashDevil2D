@@ -1,0 +1,359 @@
+{
+  "config": {
+    "argv": [
+      "/opt/homebrew/Cellar/node/26.10.0_2/bin/node",
+      "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/node_modules/@playwright/test/cli.js",
+      "test",
+      "-c",
+      "playwright.transport.config.ts"
+    ],
+    "configFile": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/playwright.transport.config.ts",
+    "rootDir": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268720987",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser",
+        "testIgnore": [],
+        "testMatch": [
+          "rooms.spec.ts"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268720987",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser",
+        "snapshotDir": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser",
+        "testIgnore": [],
+        "testMatch": "rooms.spec.ts",
+        "timeout": 30000,
+        "use": {
+          "baseURL": "https://127.0.0.1:4173",
+          "channel": "chrome",
+          "launchOptions": {
+            "args": [
+              "--ignore-certificate-errors-spki-list=sXYMQrWrlNURRMqDM0tqm6bu7IB2Yri4+ui6gA9Akzg="
+            ]
+          },
+          "screenshot": "only-on-failure",
+          "video": "on",
+          "trace": "off"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268720987/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.64.0",
+    "workers": 1,
+    "webServer": {
+      "command": "pnpm exec vite --host 127.0.0.1 --port 4173 --strictPort",
+      "url": "https://127.0.0.1:4173/transport.html",
+      "ignoreHTTPSErrors": true,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "rooms.spec.ts",
+      "file": "rooms.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "two React participants adopt host mode, ready and share a physics-free countdown and round zero",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6365,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('connection-state')\nExpected: \u001b[32m\"Connected\"\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('connection-state') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('connection-state')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('connection-state')\nExpected: \u001b[32m\"Connected\"\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('connection-state') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('connection-state')\u001b[22m\n\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/rooms.spec.ts:20:60",
+                    "location": {
+                      "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/rooms.spec.ts",
+                      "column": 60,
+                      "line": 20
+                    },
+                    "snippet": "  18 |     await pages[1].getByLabel('Room code').fill(code);\n  19 |     await pages[1].getByLabel('Room code').press('Enter');\n> 20 |     await expect(pages[1].getByTestId('connection-state')).toHaveText('Connected');\n     |                                                            ^\n  21 |     await expect(pages[1].getByTestId('selected-mode')).toHaveText('Road Rage');\n  22 |     for (const page of pages) await expect(page.getByText('Same Driver (You)', { exact: true })).toBeVisible();\n  23 |     await expect(pages[1].getByLabel('Multiplayer mode')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/rooms.spec.ts",
+                        "column": 60,
+                        "line": 20
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('connection-state')\nExpected: \u001b[32m\"Connected\"\u001b[39m\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" getByTestId('connection-state') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('connection-state')\u001b[22m\n\n\n  18 |     await pages[1].getByLabel('Room code').fill(code);\n  19 |     await pages[1].getByLabel('Room code').press('Enter');\n> 20 |     await expect(pages[1].getByTestId('connection-state')).toHaveText('Connected');\n     |                                                            ^\n  21 |     await expect(pages[1].getByTestId('selected-mode')).toHaveText('Road Rage');\n  22 |     for (const page of pages) await expect(page.getByText('Same Driver (You)', { exact: true })).toBeVisible();\n  23 |     await expect(pages[1].getByLabel('Multiplayer mode')).toHaveCount(0);\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/rooms.spec.ts:20:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:25:21.634Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268721623/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/test-failed-1.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268721623/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/test-failed-2.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268721623/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/rooms.spec.ts",
+                    "column": 60,
+                    "line": 20
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c60be36dadaf24e75fb7-48f2b0edc7334849bb61",
+          "file": "rooms.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "four-digit entry retains leading zeros and shows admission errors beside the native form",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 573,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:25:28.731Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268728719/rooms-four-digit-entry-ret-58ded-rors-beside-the-native-form/video.webm"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c60be36dadaf24e75fb7-e29319b8f763ba65051b",
+          "file": "rooms.spec.ts",
+          "line": 66,
+          "column": 1
+        },
+        {
+          "title": "storage denial retains one local name across entry, admission and return",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 538,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:25:29.560Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268728719/rooms-storage-denial-retai-82df6--entry-admission-and-return/video.webm"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c60be36dadaf24e75fb7-1042ad5925d661444cb1",
+          "file": "rooms.spec.ts",
+          "line": 84,
+          "column": 1
+        },
+        {
+          "title": "host mode changes clear readiness and a reloaded tab recovers its authenticated seat",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1616,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:25:30.107Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "recovery-identities.json",
+                      "contentType": "application/json",
+                      "body": "eyJvcmlnaW5hbCI6eyJyb29tSWQiOjUsInNlYXRTZXNzaW9uIjo3LCJwYWlyR2VuZXJhdGlvbiI6MSwic2VhdCI6MX0sInJlY292ZXJlZCI6eyJyb29tSWQiOjUsInNlYXRTZXNzaW9uIjo3LCJwYWlyR2VuZXJhdGlvbiI6Miwic2VhdCI6MX19"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c60be36dadaf24e75fb7-94963d5f95ddcc4b8c25",
+          "file": "rooms.spec.ts",
+          "line": 97,
+          "column": 1
+        },
+        {
+          "title": "readiness stays pending until its own command reply despite a room-state broadcast",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 613,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-17T20:25:31.730Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-G2uW8U/browser-1792268728719/rooms-readiness-stays-pend-3a211-pite-a-room-state-broadcast/video.webm"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "c60be36dadaf24e75fb7-af302f81bb824c19d864",
+          "file": "rooms.spec.ts",
+          "line": 139,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-17T20:25:20.997Z",
+    "duration": 11434.731,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

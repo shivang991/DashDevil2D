@@ -1,0 +1,13 @@
+{"time":"2026-10-17T13:25:20.947534-07:00","level":"INFO","msg":"listeners_ready","address":"https://127.0.0.1:8443","origin":"https://127.0.0.1:4173"}
+{"time":"2026-10-17T13:25:28.421954-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:25:28.422254-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:25:29.960574-07:00","level":"INFO","msg":"pair_closed","room":3,"seat":0,"generation":1,"reason":"explicit leave"}
+{"time":"2026-10-17T13:25:29.960643-07:00","level":"INFO","msg":"gameplay_failure","room":3,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:25:31.097621-07:00","level":"INFO","msg":"pair_closed","room":5,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:25:31.097739-07:00","level":"INFO","msg":"gameplay_failure","room":5,"seat":1,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:25:31.662364-07:00","level":"INFO","msg":"pair_closed","room":5,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:25:31.662438-07:00","level":"INFO","msg":"gameplay_failure","room":5,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:25:31.727097-07:00","level":"INFO","msg":"pair_closed","room":5,"seat":1,"generation":2,"reason":"room channel lost"}
+{"time":"2026-10-17T13:25:31.727179-07:00","level":"INFO","msg":"gameplay_failure","room":5,"seat":1,"generation":2,"reason":"pair closed"}
+{"time":"2026-10-17T13:25:32.347232-07:00","level":"INFO","msg":"pair_closed","room":8,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:25:32.347317-07:00","level":"INFO","msg":"gameplay_failure","room":8,"seat":0,"generation":1,"reason":"pair closed"}

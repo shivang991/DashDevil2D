@@ -1,0 +1,87 @@
+
+> dashdevil@ check /Users/shivang/Desktop/programs/test/claude-code-test
+> pnpm check:generated && turbo run typecheck lint test build
+
+
+> dashdevil@ check:generated /Users/shivang/Desktop/programs/test/claude-code-test
+> pnpm --filter @dashdevil/contracts check:generated
+
+
+> @dashdevil/contracts@0.0.0 check:generated /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+> node protocol/generate.mjs --check
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running typecheck, lint, test, build in 4 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache miss, executing fcc95c930112ab44
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/server:generate: cache miss, executing 7be8d874e4cf5e6a
+@dashdevil/contracts:test: cache bypass, force executing cb04faa9af0faa05
+@dashdevil/contracts:lint: cache miss, executing 896556a89e6046e8
+@dashdevil/contracts:typecheck: cache miss, executing 93415fbf344b723f
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/server:generate: 
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > pnpm check:generated
+@dashdevil/contracts:test: 
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:lint: > @dashdevil/contracts@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:lint: > eslint .
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 check:generated /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > node protocol/generate.mjs --check
+@dashdevil/contracts:test: 
+@dashdevil/server:test: cache bypass, force executing fd8aa79da355b124
+@dashdevil/simulation:lint: cache miss, executing 606deb5bdf17d2c5
+@dashdevil/server:typecheck: cache miss, executing c637254ae1a2955b
+@dashdevil/simulation:typecheck: cache miss, executing 8b0374fcefe9c405
+@dashdevil/server:typecheck: 
+@dashdevil/server:typecheck: > @dashdevil/server@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:typecheck: > go vet ./...
+@dashdevil/server:typecheck: 
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/server:test: 
+@dashdevil/server:test: > @dashdevil/server@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:test: > go test -count=1 ./...
+@dashdevil/server:test: 
+@dashdevil/simulation:lint: 
+@dashdevil/simulation:lint: > @dashdevil/simulation@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:lint: > eslint .
+@dashdevil/simulation:lint: 
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server	[no test files]
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server/cmd/devcert	[no test files]
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server/cmd/diagnostic	[no test files]
+@dashdevil/server:build: cache miss, executing f49c1b96c27d78ca
+@dashdevil/simulation:typecheck: multiplayer.ts(189,39): error TS2304: Cannot find name 'structuredClone'.
+@dashdevil/simulation:typecheck: multiplayer.ts(266,24): error TS2304: Cannot find name 'structuredClone'.
+@dashdevil/simulation:typecheck: multiplayer.ts(416,22): error TS2304: Cannot find name 'structuredClone'.
+@dashdevil/simulation:typecheck:  ELIFECYCLE  Command failed with exit code 2.
+@dashdevil/server:test: signal: interrupt
+@dashdevil/server:test: FAIL	github.com/shivang991/DashDevil2D/apps/server/configuration	0.270s
+@dashdevil/server:test:  ELIFECYCLE  Test failed. See above for more details.
+ ERROR  @dashdevil/simulation#typecheck: command (/Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation) /Users/shivang/Library/pnpm/.tools/@pnpm+exe/8.15.9/bin/pnpm run typecheck exited (2)
+
+ Tasks:    6 successful, 10 total
+Cached:    0 cached, 10 total
+  Time:    2.864s 
+Failed:    @dashdevil/simulation#typecheck
+
+ ERROR  run failed: command  exited (2)
+ ELIFECYCLE  Command failed with exit code 2.

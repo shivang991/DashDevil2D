@@ -1,0 +1,6 @@
+--- FAIL: TestSharedFinishContinuations (0.00s)
+    --- FAIL: TestSharedFinishContinuations/exclusive_group_upper_bound_remains_a_later_finish (0.00s)
+        simulation_test.go:341: got &{Reason:0 Tick:2 TimeUs:16667 Result:2} cars [{Progress:360 Lateral:-120 NormalSpeed:400 Lane:0 Departure:0 Target:0 Phase:0 Controls:0 Effective:0 Flags:0 MovementOrigin:-120 MovementTarget:-120 MovementStartUs:0 MovementEndUs:0 NextShiftUs:0 FreshnessUs:0 ProtectionUs:0 Hp:3 Score:0 LastInput:0 HeldMask:0 InputGeneration:1} {Progress:360 Lateral:120 NormalSpeed:400 Lane:2 Departure:2 Target:2 Phase:0 Controls:0 Effective:0 Flags:0 MovementOrigin:120 MovementTarget:120 MovementStartUs:0 MovementEndUs:0 NextShiftUs:0 FreshnessUs:0 ProtectionUs:0 Hp:3 Score:0 LastInput:0 HeldMask:0 InputGeneration:1}]; want &{Reason:0 Tick:2 TimeUs:16667 Result:0} lateral -120
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation	0.640s
+FAIL

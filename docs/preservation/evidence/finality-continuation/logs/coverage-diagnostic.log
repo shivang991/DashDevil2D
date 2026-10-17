@@ -1,0 +1,93 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T20:18:03Z
+[WebServer] (node:30114) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:30115) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:30115) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 4 tests using 1 worker
+
+(node:30122) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (clean) (11.0s)
+(node:30165) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (delayed) (10.7s)
+  ✓  3 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (recovering) (10.7s)
+  ✘  4 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (unordered) (12.7s)
+
+
+  1) tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (clean) ────
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "[DEBUG-36coverage] Error: insufficient reachable track coverage {\"tick\":44,\"timeUs\":733333,\"cars\":[366.6669333333332,293.33346666666654],\"windows\":[[233.3333333333332,1626.6666666666665]]}",
+    + ]
+
+      106 |     expect(evidence[0].startUs).toBe(evidence[1].startUs);
+      107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);
+    > 108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);
+          |                                ^
+      109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);
+      110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {
+      111 |       const state = evidence[seat];
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:108:32
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI/browser-1792268285984/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI/browser-1792268285984/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI/browser-1792268285984/race-two-actual-browsers-drive-and-confirm-one-finish-clean-/error-context.md
+
+  2) tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (unordered) 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "[DEBUG-36coverage] Error: insufficient reachable track coverage {\"tick\":51,\"timeUs\":850000,\"cars\":[466.6669333333332,339.99999999999983],\"windows\":[[279.99999999999983,1726.6666666666665]]}",
+    + ]
+
+      106 |     expect(evidence[0].startUs).toBe(evidence[1].startUs);
+      107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);
+    > 108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);
+          |                                ^
+      109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);
+      110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {
+      111 |       const state = evidence[seat];
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:108:32
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI/browser-1792268298181/race-two-actual-browsers-d-9c59f-nfirm-one-finish-unordered-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI/browser-1792268298181/race-two-actual-browsers-d-9c59f-nfirm-one-finish-unordered-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-pZNvPI/browser-1792268298181/race-two-actual-browsers-d-9c59f-nfirm-one-finish-unordered-/error-context.md
+
+  2 failed
+    tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (clean) ─────
+    tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (unordered) ─
+  2 passed (48.0s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T20-18-52.879Z
+ ELIFECYCLE  Command failed with exit code 1.

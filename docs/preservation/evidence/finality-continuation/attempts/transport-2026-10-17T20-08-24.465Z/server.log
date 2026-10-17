@@ -1,0 +1,77 @@
+{"time":"2026-10-17T13:07:56.299846-07:00","level":"INFO","msg":"listeners_ready","address":"https://127.0.0.1:8443","origin":"https://127.0.0.1:4173"}
+{"time":"2026-10-17T13:08:05.396653-07:00","level":"INFO","msg":"race_group_pending","room":1,"round":2}
+{"time":"2026-10-17T13:08:05.444226-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:05.444314-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:05.615953-07:00","level":"INFO","msg":"baseline_waiting_group","room":1,"seat":0}
+{"time":"2026-10-17T13:08:06.395088-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":0,"sequence":14,"time_us":0,"server_application_us":8093257,"server_record_us":10096061,"disposition":1}
+{"time":"2026-10-17T13:08:06.395159-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":0,"sequence":15,"time_us":0,"server_application_us":8093257,"server_record_us":10096135,"disposition":1}
+{"time":"2026-10-17T13:08:06.395175-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":0,"sequence":16,"time_us":0,"server_application_us":8093257,"server_record_us":10096152,"disposition":1}
+{"time":"2026-10-17T13:08:06.395186-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":0,"sequence":17,"time_us":0,"server_application_us":8093257,"server_record_us":10096163,"disposition":1}
+{"time":"2026-10-17T13:08:06.395194-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":14,"time_us":0,"server_application_us":8093257,"server_record_us":10096171,"disposition":1}
+{"time":"2026-10-17T13:08:06.395202-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":15,"time_us":0,"server_application_us":8093257,"server_record_us":10096180,"disposition":1}
+{"time":"2026-10-17T13:08:06.39521-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":16,"time_us":0,"server_application_us":8093257,"server_record_us":10096187,"disposition":1}
+{"time":"2026-10-17T13:08:06.395217-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":17,"time_us":0,"server_application_us":8093257,"server_record_us":10096194,"disposition":1}
+{"time":"2026-10-17T13:08:06.395227-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":18,"time_us":1000000,"server_application_us":9093257,"server_record_us":10096204,"disposition":1}
+{"time":"2026-10-17T13:08:06.395234-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":19,"time_us":1000000,"server_application_us":9093257,"server_record_us":10096211,"disposition":1}
+{"time":"2026-10-17T13:08:06.39524-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":20,"time_us":1000000,"server_application_us":9093257,"server_record_us":10096218,"disposition":1}
+{"time":"2026-10-17T13:08:06.395247-07:00","level":"INFO","msg":"race_input_applied","room":1,"round":2,"seat":1,"sequence":21,"time_us":1000000,"server_application_us":9093257,"server_record_us":10096224,"disposition":1}
+{"time":"2026-10-17T13:08:06.395258-07:00","level":"INFO","msg":"race_finalized","room":1,"round":2,"time_us":1000000,"server_us":10096234,"result":2,"reason":0}
+{"time":"2026-10-17T13:08:06.595283-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":2,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:06.595414-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":2,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:06.604042-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:06.604097-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":1,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:11.825793-07:00","level":"INFO","msg":"race_group_pending","room":4,"round":2}
+{"time":"2026-10-17T13:08:11.857716-07:00","level":"INFO","msg":"pair_closed","room":4,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:11.858163-07:00","level":"INFO","msg":"gameplay_failure","room":4,"seat":1,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:11.998127-07:00","level":"INFO","msg":"baseline_waiting_group","room":4,"seat":1}
+{"time":"2026-10-17T13:08:12.825153-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":14,"time_us":0,"server_application_us":14522105,"server_record_us":16526165,"disposition":1}
+{"time":"2026-10-17T13:08:12.825236-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":15,"time_us":0,"server_application_us":14522105,"server_record_us":16526250,"disposition":1}
+{"time":"2026-10-17T13:08:12.825256-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":16,"time_us":0,"server_application_us":14522105,"server_record_us":16526271,"disposition":1}
+{"time":"2026-10-17T13:08:12.825269-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":17,"time_us":0,"server_application_us":14522105,"server_record_us":16526284,"disposition":1}
+{"time":"2026-10-17T13:08:12.82528-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":1,"sequence":14,"time_us":0,"server_application_us":14522105,"server_record_us":16526295,"disposition":1}
+{"time":"2026-10-17T13:08:12.825291-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":1,"sequence":15,"time_us":0,"server_application_us":14522105,"server_record_us":16526307,"disposition":1}
+{"time":"2026-10-17T13:08:12.825301-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":1,"sequence":16,"time_us":0,"server_application_us":14522105,"server_record_us":16526316,"disposition":1}
+{"time":"2026-10-17T13:08:12.82531-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":1,"sequence":17,"time_us":0,"server_application_us":14522105,"server_record_us":16526325,"disposition":1}
+{"time":"2026-10-17T13:08:12.825322-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":18,"time_us":1000000,"server_application_us":15522105,"server_record_us":16526337,"disposition":1}
+{"time":"2026-10-17T13:08:12.825332-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":19,"time_us":1000000,"server_application_us":15522105,"server_record_us":16526347,"disposition":1}
+{"time":"2026-10-17T13:08:12.825365-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":20,"time_us":1000000,"server_application_us":15522105,"server_record_us":16526380,"disposition":1}
+{"time":"2026-10-17T13:08:12.825376-07:00","level":"INFO","msg":"race_input_applied","room":4,"round":2,"seat":0,"sequence":21,"time_us":1000000,"server_application_us":15522105,"server_record_us":16526391,"disposition":1}
+{"time":"2026-10-17T13:08:12.82539-07:00","level":"INFO","msg":"race_finalized","room":4,"round":2,"time_us":1000000,"server_us":16526405,"result":2,"reason":0}
+{"time":"2026-10-17T13:08:13.443219-07:00","level":"INFO","msg":"pair_closed","room":4,"seat":1,"generation":2,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:13.443319-07:00","level":"INFO","msg":"gameplay_failure","room":4,"seat":1,"generation":2,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:13.480297-07:00","level":"INFO","msg":"pair_closed","room":4,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:13.480445-07:00","level":"INFO","msg":"gameplay_failure","room":4,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:18.515128-07:00","level":"INFO","msg":"race_group_pending","room":7,"round":2}
+{"time":"2026-10-17T13:08:18.635531-07:00","level":"INFO","msg":"baseline_waiting_group","room":7,"seat":1}
+{"time":"2026-10-17T13:08:18.715753-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":0,"sequence":14,"time_us":0,"server_application_us":21215898,"server_record_us":22416802,"disposition":1}
+{"time":"2026-10-17T13:08:18.715826-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":0,"sequence":15,"time_us":0,"server_application_us":21215898,"server_record_us":22416876,"disposition":1}
+{"time":"2026-10-17T13:08:18.715834-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":0,"sequence":16,"time_us":0,"server_application_us":21215898,"server_record_us":22416885,"disposition":1}
+{"time":"2026-10-17T13:08:18.71584-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":0,"sequence":17,"time_us":0,"server_application_us":21215898,"server_record_us":22416891,"disposition":1}
+{"time":"2026-10-17T13:08:18.715845-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":1,"sequence":14,"time_us":0,"server_application_us":21215898,"server_record_us":22416895,"disposition":1}
+{"time":"2026-10-17T13:08:18.715851-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":1,"sequence":15,"time_us":0,"server_application_us":21215898,"server_record_us":22416902,"disposition":1}
+{"time":"2026-10-17T13:08:18.715856-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":1,"sequence":16,"time_us":0,"server_application_us":21215898,"server_record_us":22416906,"disposition":1}
+{"time":"2026-10-17T13:08:18.71586-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":1,"sequence":17,"time_us":0,"server_application_us":21215898,"server_record_us":22416910,"disposition":1}
+{"time":"2026-10-17T13:08:18.715864-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":0,"sequence":18,"time_us":1000000,"server_application_us":22215898,"server_record_us":22416915,"disposition":1}
+{"time":"2026-10-17T13:08:18.715868-07:00","level":"INFO","msg":"race_input_applied","room":7,"round":2,"seat":1,"sequence":18,"time_us":1000000,"server_application_us":22215898,"server_record_us":22416919,"disposition":1}
+{"time":"2026-10-17T13:08:18.715875-07:00","level":"INFO","msg":"race_finalized","room":7,"round":2,"time_us":1000000,"server_us":22416925,"result":2,"reason":0}
+{"time":"2026-10-17T13:08:18.716181-07:00","level":"INFO","msg":"pair_closed","room":7,"seat":0,"generation":1,"reason":"explicit leave"}
+{"time":"2026-10-17T13:08:18.716352-07:00","level":"INFO","msg":"gameplay_failure","room":7,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:18.89991-07:00","level":"INFO","msg":"pair_closed","room":7,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:18.900083-07:00","level":"INFO","msg":"gameplay_failure","room":7,"seat":1,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T13:08:23.970354-07:00","level":"INFO","msg":"race_group_pending","room":10,"round":2}
+{"time":"2026-10-17T13:08:24.079736-07:00","level":"INFO","msg":"baseline_waiting_group","room":10,"seat":1}
+{"time":"2026-10-17T13:08:24.171488-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":0,"sequence":14,"time_us":0,"server_application_us":26667440,"server_record_us":27872567,"disposition":1}
+{"time":"2026-10-17T13:08:24.171533-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":0,"sequence":15,"time_us":0,"server_application_us":26667440,"server_record_us":27872616,"disposition":1}
+{"time":"2026-10-17T13:08:24.171543-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":0,"sequence":16,"time_us":0,"server_application_us":26667440,"server_record_us":27872626,"disposition":1}
+{"time":"2026-10-17T13:08:24.171549-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":0,"sequence":17,"time_us":0,"server_application_us":26667440,"server_record_us":27872632,"disposition":1}
+{"time":"2026-10-17T13:08:24.171554-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":1,"sequence":14,"time_us":0,"server_application_us":26667440,"server_record_us":27872637,"disposition":1}
+{"time":"2026-10-17T13:08:24.171565-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":1,"sequence":15,"time_us":0,"server_application_us":26667440,"server_record_us":27872648,"disposition":1}
+{"time":"2026-10-17T13:08:24.171587-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":1,"sequence":16,"time_us":0,"server_application_us":26667440,"server_record_us":27872670,"disposition":1}
+{"time":"2026-10-17T13:08:24.171591-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":1,"sequence":17,"time_us":0,"server_application_us":26667440,"server_record_us":27872675,"disposition":1}
+{"time":"2026-10-17T13:08:24.171596-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":0,"sequence":18,"time_us":1000000,"server_application_us":27667440,"server_record_us":27872679,"disposition":1}
+{"time":"2026-10-17T13:08:24.171601-07:00","level":"INFO","msg":"race_input_applied","room":10,"round":2,"seat":1,"sequence":18,"time_us":1000000,"server_application_us":27667440,"server_record_us":27872684,"disposition":1}
+{"time":"2026-10-17T13:08:24.171608-07:00","level":"INFO","msg":"race_finalized","room":10,"round":2,"time_us":1000000,"server_us":27872691,"result":2,"reason":0}
+{"time":"2026-10-17T13:08:24.171742-07:00","level":"INFO","msg":"pair_closed","room":10,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:24.17181-07:00","level":"INFO","msg":"gameplay_failure","room":10,"seat":1,"generation":1,"reason":"pair closed while waiting for committed baseline"}
+{"time":"2026-10-17T13:08:24.319529-07:00","level":"INFO","msg":"pair_closed","room":10,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T13:08:24.319583-07:00","level":"INFO","msg":"gameplay_failure","room":10,"seat":0,"generation":1,"reason":"pair closed"}

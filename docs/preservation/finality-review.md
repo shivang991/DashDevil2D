@@ -1,3 +1,5 @@
+> Final status: the #36 issue gate passes under the approved #11/#14 amendment. Earlier blocked reports below are retained history; see the final section and validation manifest.
+
 # #36 independent reviews
 
 Reviewed implementation: `git diff 76325f95f050f89d604e92241192f07d9c7fc77a...d183707`. The implement skill required code-review; its separate Standards and Spec agents ran independently after the implementation commit. Final full checks and browser validation are indexed in `finality-validation.json`.
@@ -24,3 +26,17 @@ The reviewer confirmed that widening only the sweep horizon is insufficient: nex
 Additional required regressions are fatal obstacle plus later same-bucket heart, distinct same-bucket obstacles, contested same-bucket pickup, adjacent buckets at16667.5us, equal-time input admission and a shift/return boundary inside the group. Passing existing Go/TypeScript parity fixtures does not satisfy these missing scenarios.
 
 Standards: 0 findings. Spec: 1 blocking canonical-group/checkpoint issue. **#36 remains open; its gate has not passed.** No subsequent stage may treat this checkpoint as acceptance.
+
+## Final approved continuation review
+
+The owner approved the scheduler/checkpoint amendment, recorded on [#11](https://github.com/shivang991/DashDevil2D/issues/11#issuecomment-6239984034) and [#14](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6239984266). The earlier blocked assessment above remains as history. Final production implementation revision is `fbb8cf3` (final test readiness commit `0d13544`), compared with original base `76325f95f050f89d604e92241192f07d9c7fc77a`.
+
+The independent Spec reviewer checked split finishes at16666.6/16666.8us (both16667), split healing/obstacle entry, return-origin distinct damage, shift/return completion and next-bucket finishes. Follow-up review found a genuine additional defect: a NOS follower released by lateral clearance at16666.8us discovered a fatal obstacle at16667.1us, then incorrectly reconstructed the preceding raw-boundary sample with the new multiplier. Public regressions independently expect `333.33304 + 400/60 = 339.99970666666667`; both engines now preserve recent physical segments and meet that value. Red and green logs are retained.
+
+The parent's lifecycle precision regression found that settling a cutoff bucket shifted a requested5000us checkpoint to5001us. `StopAt` now completes only same-canonical gameplay while restoring the requested raw cutoff position/time if no earlier gameplay outcome wins. The independent reviewer checked this final path, pending checkpoints, resets and immutable outcomes and found no remaining actionable Spec issue.
+
+A final browser attempt found insufficient coverage after client replay at a canonical boundary. A targeted diagnostic retained the actual tick44 client positions366.6669333333332/293.33346666666654 against a server window233.3333333333332..1626.6666666666665. Strict coverage bounds had zero room for reconstructed positions. Both engines now generate and retain one maximum-speed movement tick of complete headroom, and transport transmits matching bounds. Validation stays strict. Independent public-session and Go regressions cover this exact discrepancy, forward generation, backward retention and exact consumption flags. Substantially insufficient coverage still fails. Both initial browser failures and diagnostic failures remain retained.
+
+Standards review identified duplicated phase-sensitive position restoration; `restorePosition` now serves both Go callers. Its final assessment, including the coverage change, is **0 actionable findings**. The independent Spec review's final assessment is **0 actionable findings**, contingent on the parent's required full and browser checks. Those final results are indexed in `finality-validation.json`; the historical preliminary pass is not substituted for them.
+
+A retained room-browser failure occurred before guest admission: Enter was pressed before the asynchronously initialized Join Room button became enabled. The final harness waits for that existing enabled state in both native Enter tests. Independent Spec review confirmed it preserves keyboard submission and all assertions; production behavior is unchanged. The final browser run records the corrected harness at `0d13544`.

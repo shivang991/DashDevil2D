@@ -1,0 +1,29 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/race.test.ts" "tests/simulation/objects.test.ts" "tests/simulation/contacts.test.ts" "tests/simulation/multiplayer.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/simulation/objects.test.ts (17 tests | 1 failed) 32ms
+   × fatal contact at exact tick endpoint is not deferred 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/objects.test.ts > fatal contact at exact tick endpoint is not deferred
+AssertionError: expected 6.25 to be less than or equal to 0.00000100034
+ ❯ tests/simulation/objects.test.ts:13:113
+
+ ❯ tests/simulation/objects.test.ts:13:24
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 3 passed (4)
+      Tests  1 failed | 107 passed (108)
+   Start at  12:56:46
+   Duration  275ms (tests 44%, transform 39%, import 15%, worker 2%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/race.test.ts" "tests/simulation/objects.test.ts" "tests/simulation/contacts.test.ts" "tests/simulation/multiplayer.test.ts"`
+Exit status 1

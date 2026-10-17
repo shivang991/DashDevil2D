@@ -1,0 +1,1 @@
+{"actual":{"tick":2,"timeUs":16667,"result":2},"expected":{"tick":2,"timeUs":16667,"result":2},"seed":1,"crossingsUs":[16666.6,16666.8],"tickBoundaryUs":16666.666666666668}
