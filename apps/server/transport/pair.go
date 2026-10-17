@@ -50,6 +50,10 @@ func (pair *pair) close(reason string) {
 				pair.seat.deadline = time.Now().Add(15 * time.Second)
 			}
 			s.cancelCountdownLocked(pair.seat.room)
+			if pair.seat.room.phase == 2 && pair.seat.room.engine != nil {
+				pair.seat.room.engine.Disconnect(pair.identity)
+				pair.seat.room.primed[pair.identity.Seat] = false
+			}
 			pair.seat.connected = false
 			for _, other := range pair.seat.room.seats {
 				if other != nil {
@@ -270,6 +274,15 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	}
 	pair.roomSequence = command.Sequence
 	if command.Command == 3 {
+		if r.phase == 2 {
+			result := uint8(3)
+			reason := uint8(5)
+			if other := r.seats[1-participant.index]; other != nil && other.connected {
+				result = 1 - participant.index
+				reason = 3
+			}
+			s.finalizeRaceLocked(r, result, reason, r.zero.Tick, r.zero.TimeUs)
+		}
 		s.cancelCountdownLocked(r)
 		delete(s.credentials, token(participant.credential))
 		r.seats[participant.index] = nil
@@ -308,7 +321,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 				mode = "road-rage"
 			}
 			definition := []byte(p.DefaultConfigurationJSON)
-			config, e := configuration.Capture(definition, mode, nil)
+			config, e := configuration.Capture(definition, mode, s.roundOverrides(command.Mode))
 			if e != nil {
 				s.mu.Unlock()
 				return e
@@ -370,6 +383,10 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		participant.focused = command.Ready == 1
 		if !participant.focused {
 			participant.ready = false
+			if r.phase == 2 && r.engine != nil {
+				r.engine.Disconnect(pair.identity)
+				r.primed[participant.index] = false
+			}
 			if command.Mode == 0 {
 				s.cancelCountdownLocked(r)
 			}

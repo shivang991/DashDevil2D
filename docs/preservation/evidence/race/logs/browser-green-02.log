@@ -1,0 +1,21 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-rlYlxZ/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-rlYlxZ
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T05:27:56Z
+[WebServer] (node:66070) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:66071) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:66071) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 1 test using 1 worker
+
+(node:66078) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/race.spec.ts:3:1 › two actual browsers predict NOS and steering, then display one confirmed front-edge result (8.7s)
+
+  1 passed (12.2s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T05-28-10.400Z

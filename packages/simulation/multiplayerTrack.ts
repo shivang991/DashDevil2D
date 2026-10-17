@@ -9,7 +9,8 @@ export class MultiplayerTrack {
  private heartIndex = 1;
  private slices: RoadSlice[] = [];
  private through = 0;
- constructor(private readonly configuration: MultiplayerConfiguration, seed: number) { this.generator = createTrack(seed); }
+ private readonly configuration: MultiplayerConfiguration;
+ constructor(configuration: MultiplayerConfiguration, seed: number) { this.configuration = configuration; this.generator = createTrack(seed); }
  ensureThrough(distance: number): void {
   if (!Number.isFinite(distance) || distance < 0 || !Number.isSafeInteger(Math.ceil(distance * 1024))) throw new Error('Unrepresentable track coverage');
   const g = this.configuration.gameplay;

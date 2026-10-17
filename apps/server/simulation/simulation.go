@@ -12,6 +12,7 @@ import (
 )
 
 type Observation struct {
+ Cars [2]protocol.Car `json:"-"`
 	Car         *protocol.Car `json:"car,omitempty"`
 	Type        string        `json:"type"`
 	Tick        uint32        `json:"tick"`
@@ -27,7 +28,13 @@ type Press struct {
 	TimeUs   uint64 `json:"timeUs"`
 	Order    uint32 `json:"order"`
 }
+type Finish struct {
+	Tick   uint32 `json:"tick"`
+	TimeUs uint64 `json:"timeUs"`
+	Result uint8  `json:"result"`
+}
 type State struct {
+	Finish      *Finish              `json:"finish,omitempty"`
 	Track       track.PlacementState `json:"track"`
 	Tick        uint32               `json:"tick"`
 	TimeUs      uint64               `json:"timeUs"`
@@ -153,7 +160,7 @@ func clear(car *protocol.Car) {
 func (e *Engine) event(kind string, seat uint8, timeUs uint64) Observation {
 	copy := seat
 	car := e.state.Cars[seat]
-	return Observation{Type: kind, Tick: e.state.Tick, TimeUs: timeUs, Seat: &copy, Car: &car}
+	return Observation{Type: kind, Tick: e.state.Tick, TimeUs: timeUs, Seat: &copy, Car: &car, Cars:e.state.Cars}
 }
 func (e *Engine) Disconnect(auth protocol.Identity) {
 	seat := auth.Seat
@@ -276,7 +283,7 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 	if seconds < e.wallTime {
 		return nil, fmt.Errorf("monotonic clock moved backwards")
 	}
-	if e.state.Abandoned {
+	if e.state.Abandoned || e.state.Finish != nil {
 		return []Observation{}, nil
 	}
 	for seat, tokens := range e.tokens {
@@ -324,6 +331,41 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 					next = math.Min(next, float64(car.NextShiftUs)/1e6)
 				}
 			}
+			finishTime := math.Inf(1)
+			finishMask := uint8(0)
+			if e.context.Mode == 1 {
+				for seat, car := range e.state.Cars {
+					remaining := g.FinishDistance - g.CarHeight/2 - car.Progress
+					multiplier := 1.0
+					if car.Effective == 3 {
+						multiplier = g.AccelSpeedMultiplier
+					}
+					if forwardDistance(g, time, next-time)*multiplier < remaining {
+						continue
+					}
+					low, high := time, next
+					for n := 0; n < 52; n++ {
+						middle := low + (high-low)/2
+						if forwardDistance(g, time, middle-time)*multiplier < remaining {
+							low = middle
+						} else {
+							high = middle
+						}
+					}
+					crossing := high
+					crossingUs, _ := CanonicalTime(crossing)
+					firstUs, _ := CanonicalTime(finishTime)
+					if math.IsInf(finishTime, 1) || crossingUs < firstUs {
+						finishTime = crossing
+						finishMask = 1 << seat
+					} else if crossingUs == firstUs {
+						finishMask |= 1 << seat
+					}
+				}
+				if finishMask != 0 {
+					next = finishTime
+				}
+			}
 			elapsed := next - time
 			for seat := range e.state.Cars {
 				car := &e.state.Cars[seat]
@@ -346,6 +388,25 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 					car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
 				}
 			}
+			if finishMask != 0 {
+				result := uint8(2)
+				if finishMask == 1 {
+					result = 0
+				}
+				if finishMask == 2 {
+					result = 1
+				}
+				for seat := range e.state.Cars {
+					if finishMask&(1<<seat) != 0 {
+						e.state.Cars[seat].Progress = g.FinishDistance - g.CarHeight/2
+					}
+				}
+				terminalUs, _ := CanonicalTime(next)
+				e.state.Tick = uint32(math.Ceil(float64(terminalUs) * g.TickRate / 1e6))
+				e.state.TimeUs = terminalUs
+				e.state.Finish = &Finish{Tick: e.state.Tick, TimeUs: terminalUs, Result: result}
+				return events, nil
+			}
 			time = next
 			timeUs, _ = CanonicalTime(time)
 			e.boundaries(timeUs, &events)
@@ -357,4 +418,53 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 		e.state.TimeUs, _ = CanonicalTime(float64(e.state.Tick) / g.TickRate)
 	}
 	return events, nil
+}
+
+// ResetSeat is the authoritative fresh-generation barrier, also used after a
+// countdown has discarded keys. It never queues or reactivates those controls.
+func (e *Engine) ResetSeat(identity protocol.Identity, generation, sequence uint32) {
+	seat := identity.Seat
+	e.identities[seat] = identity
+	e.connected[seat] = true
+	e.sequences[seat] = sequence
+	car := &e.state.Cars[seat]
+	clear(car)
+	car.InputGeneration = generation
+	car.LastInput = sequence
+	for i := range e.pending {
+		if e.pending[i].seat == seat {
+			e.pending[i].valid = false
+		}
+	}
+}
+func forwardDistance(g protocol.Gameplay, start, elapsed float64) float64 {
+	normal := math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*start))
+	ramp := 0.0
+	if g.SpeedGrowth != 0 {
+		ramp = math.Min(elapsed, math.Max(0, (g.MaxRoadSpeed-normal)/g.SpeedGrowth))
+	}
+	return float64(normal*ramp) + float64(float64(float64(.5*g.SpeedGrowth)*ramp)*ramp) + float64(math.Min(g.MaxRoadSpeed, normal+float64(g.SpeedGrowth*ramp))*(elapsed-ramp))
+}
+
+func (e *Engine) Restore(cars [2]protocol.Car, tick uint32) {
+	e.state.Cars = cars
+	e.state.Tick = tick
+	e.state.TimeUs, _ = CanonicalTime(float64(tick) / e.context.Gameplay.TickRate)
+	e.state.Finish = nil
+	e.state.Abandoned = false
+	e.wallTime = float64(tick) / e.context.Gameplay.TickRate
+	e.pending = nil
+	e.releases = nil
+	for seat, car := range cars {
+		e.sequences[seat] = car.LastInput
+		e.connected[seat] = true
+	}
+}
+
+// Coverage extends only the represented reachable windows, leaving headless
+// mechanics' placement retention independent of transport prediction horizons.
+func (e *Engine) Coverage() State {
+ g:=e.context.Gameplay;extent:=(g.CarHeight+math.Max(g.ObstacleH,math.Max(g.CoinSize,g.HeartSize)))/2
+ for seat,placements:=range e.tracks {placements.EnsureThrough(e.state.Cars[seat].Progress+g.MaxRoadSpeed*g.AccelSpeedMultiplier+extent+g.SliceSpacing)}
+ return e.Snapshot()
 }

@@ -20,7 +20,17 @@ func (s *Server) prepareRoundLocked(r *room) error {
 	if err != nil {
 		return err
 	}
-	state := engine.Snapshot()
+	for i, seat := range r.seats {
+		if seat != nil {
+			engine.ResetSeat(ids[i], seat.inputGeneration, 0)
+		}
+	}
+	r.engine = engine
+	r.history = nil
+	r.outcome = nil
+	r.primed = [2]bool{}
+	r.inputs = [2]map[uint32]p.Input{}
+	state := engine.Coverage()
 	context := r.settings.Context(r.seed)
 	context.StartUs = r.startUs
 	b := p.Baseline{Round: p.Round{RoundId: r.roundID, InputGeneration: r.roundID}, Epoch: 1, Context: context, Cars: state.Cars}
@@ -65,6 +75,7 @@ func (s *Server) prepareRoundLocked(r *room) error {
 	}
 	b.Generator = p.Generator{RandomState: placement.RandomState, NextSlice: uint32(placement.NextID), NextObject: uint32(len(window.Objects) + 1), Cursor: placement.Through, ReservedCursor: uint32(placement.HeartIndex)}
 	b.Windows = []p.Window{window}
+	b.Generator, b.Windows = raceCoverage(b, state)
 	r.zero = &b
 	return nil
 }
@@ -115,7 +126,10 @@ func (pair *pair) roomBaseline() (p.Baseline, error) {
 			return p.Baseline{}, err
 		}
 	}
-	b := *r.zero
+	b := cloneBaseline(*r.zero)
+	if r.engine != nil {
+		b.Generator, b.Windows = raceCoverage(b, r.engine.Coverage())
+	}
 	b.Identity = pair.identity
 	for i, seat := range r.seats {
 		if seat != nil {

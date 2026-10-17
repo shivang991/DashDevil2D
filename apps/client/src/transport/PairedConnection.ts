@@ -1,7 +1,9 @@
 import { localName } from './localName';
+import { RaceSession } from '@/game/RaceSession';
+import { validateMessage } from '@dashdevil/contracts/validation';
 import {
   decodeMessage, encodeMessage, decodeVerification, projectBaseline,
-  type Admission, type Baseline, type Barrier, type Context, type Identity, type Messages, type RoomState, type RoomReply,
+  type Outcome, type Admission, type Baseline, type Barrier, type Context, type Identity, type Messages, type RoomState, type RoomReply,
 } from '@dashdevil/contracts/protocol';
 import { FrameReader, crc32c } from '@dashdevil/contracts/wire';
 import { BaselineTransfer } from '@dashdevil/contracts/transfer';
@@ -9,10 +11,12 @@ import { BaselineTransfer } from '@dashdevil/contracts/transfer';
 export interface PairedState {
   status: string; code: string; identity?: Identity; connectedSeats: number;
   verified: number; barriers: number; clockSamples: number; clockOffsetUs: number;
+  context?: Context; outcome?: Outcome;
+  diagnostics: { localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
   room?: RoomState; pending?: string; notice?: string; roundId?: number; startUs?: number; timeUs?: number; cars?: Baseline['cars']; seed?: number; positions: string; errors: string[]; baselineBytes: number; recoveryMs?: number;
 }
 export interface ConnectionOptions { server: string; certificateHash?: number[]; development?: boolean; diagnostic?: boolean }
-const emptyState = (): PairedState => ({ status: 'Disconnected', code: '', connectedSeats: 0, verified: 0, barriers: 0, clockSamples: 0, clockOffsetUs: 0, positions: '', errors: [], baselineBytes: 0 });
+const emptyState = (): PairedState => ({ status: 'Disconnected', diagnostics: { localInputs: 0, remoteRecords: 0 }, code: '', connectedSeats: 0, verified: 0, barriers: 0, clockSamples: 0, clockOffsetUs: 0, positions: '', errors: [], baselineBytes: 0 });
 const nowUs = () => Math.round(performance.now() * 1000);
 const token = (bytes: Uint8Array) => btoa(String.fromCharCode(...bytes)).replaceAll('+', '-').replaceAll('/', '_').replace(/=+$/, '');
 const sameIdentity = (a: Identity, b: Identity) => a.roomId === b.roomId && a.seat === b.seat && a.seatSession === b.seatSession && a.pairGeneration === b.pairGeneration;
@@ -27,6 +31,11 @@ export class PairedConnection {
   private control?: WritableStreamDefaultWriter<Uint8Array>;
   private inputs?: WritableStreamDefaultWriter<Uint8Array>;
   private baseline?: Baseline;
+  private race?: RaceSession;
+  private heldMask = 0;
+  private winningControl = 0;
+  private lastDrawnLocalUs = 0;
+  private lastDrawnRemoteUs = 0;
   private admission?: Admission;
   private context?: Context;
   private transfer?: BaselineTransfer;
@@ -78,7 +87,7 @@ export class PairedConnection {
     }
   }
   private teardown() {
-    this.generation++;
+    this.generation++; this.race = undefined; this.heldMask = 0; this.winningControl = 0;
     clearTimeout(this.recoveryTimer); this.pendingCommands.forEach(command => clearTimeout(command.timeout)); this.pendingCommands.clear(); this.timerStarted = false;
     this.timers.forEach(clearInterval); this.timers = [];
     this.socket?.close(); this.gameplay?.close(); this.socket = undefined; this.gameplay = undefined;
@@ -149,6 +158,7 @@ export class PairedConnection {
           this.revision = message.value.revision;
           const previous = this.state.room;
           this.state.room = message.value;
+          if (previous?.phase !== message.value.phase) this.releaseControls();
           if (previous?.phase === 1 && message.value.phase === 0) this.state.notice = 'Countdown cancelled. Both players must ready again.';
           this.state.connectedSeats = message.value.seats.filter(seat => seat.flags & 1).length;
           if ((message.value.seats[admission.identity.seat].flags & 1) && this.baseline) { this.state.status = 'Connected'; if (![...this.pendingCommands.values()].some(command => command.label !== 'Focus')) this.state.pending = undefined; this.recoverUntil = 0; this.state.recoveryMs = performance.now() - this.restoredAt; }
@@ -201,7 +211,9 @@ export class PairedConnection {
         if (channel !== 'control' || this.options.diagnostic && this.context) throw new Error('Unexpected initialization');
         if (this.initialRound !== undefined && message.value.round.roundId <= this.initialRound) throw new Error('Stale round initialization');
         this.initialRound = message.value.round.roundId;
-        this.context = message.value.context; this.transfer?.cancel(); this.transfer = new BaselineTransfer(this.context, 1048576);
+        this.context = message.value.context; this.state.context = this.context;
+        this.race = undefined; this.heldMask = 0; this.winningControl = 0;
+        if (this.state.outcome && message.value.round.roundId > this.state.outcome.roundId) this.state.outcome = undefined; this.transfer?.cancel(); this.transfer = new BaselineTransfer(this.context, 1048576);
         this.baseline = undefined; this.inputSequence = 0;
         if (!this.inputs) { const inputs = await this.gameplay!.createUnidirectionalStream(); this.inputs = inputs.getWriter(); }
         await this.send('Input', { identity, round: message.value.round, sequence: ++this.inputSequence, intent: 2, control: 0, heldMask: 0 }, generation, true);
@@ -227,6 +239,10 @@ export class PairedConnection {
         this.state.positions = baseline.cars.map(car => car.progress).join(', ');
         this.state.roundId = baseline.round.roundId; this.state.startUs = baseline.context.startUs;
         this.state.timeUs = baseline.timeUs; this.state.cars = baseline.cars; this.state.seed = baseline.context.seed;
+        if (!this.options.diagnostic) {
+          if (this.race) this.race.install(baseline); else this.race = new RaceSession(baseline);
+          if (this.state.outcome?.roundId === baseline.round.roundId) { this.race.finish(this.state.outcome); this.state.timeUs = this.state.outcome.timeUs; }
+        }
         await this.send('Ready', { identity, round: baseline.round, transferId: message.value.transferId, epoch: baseline.epoch, progress: baseline.progress }, generation);
         if (!wasInitialized) { this.startTimers(generation); this.timerStarted = true; }
         if (!this.options.diagnostic) this.focus(this.focused, this.hidden);
@@ -235,19 +251,54 @@ export class PairedConnection {
       case 'RoomPulse': {
         if (channel !== 'authority' || this.options.diagnostic || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId) break;
         if (message.value.sequence <= this.pulseSequence) throw new Error('Stale room pulse');
-        this.pulseSequence = message.value.sequence; this.lastUsable = performance.now();
+        this.pulseSequence = message.value.sequence; if (this.state.room?.phase !== 2) this.lastUsable = performance.now();
         if (this.state.status === 'Connection warning') this.state.status = 'Connected';
         await this.send('RoomPulse', message.value, generation); this.publish(); break;
       }
       case 'Disposition': {
         if (channel !== 'authority' || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId || message.value.round.inputGeneration !== this.baseline.round.inputGeneration) throw new Error('Disposition context mismatch');
         const value = message.value;
+        if (!this.options.diagnostic && this.race) {
+          validateMessage('Disposition', value, this.context!);
+          if (value.authority <= this.baseline.progress.authority) break;
+          if (value.authority !== this.baseline.progress.authority + 1) throw new Error('Authority sequence gap');
+          this.race.disposition(value); this.baseline = this.race.snapshot();
+          this.lastUsable = performance.now();
+          if (value.seat !== identity.seat) { this.state.diagnostics.remoteRecords++; this.state.diagnostics.lastRemoteReceiveUs = nowUs(); }
+          break;
+        }
         if (value.authority !== this.baseline.progress.authority + 1 || value.disposition !== 1 || value.intent !== 2) throw new Error('Unexpected diagnostic disposition');
         this.baseline.cars[value.seat] = value.car; this.baseline.contact = value.contact;
         this.baseline.progress.authority = value.authority;
         if (value.seat === 0) { this.baseline.progress.processed1 = value.processed; this.baseline.progress.disposed1 = value.processed; }
         else { this.baseline.progress.processed2 = value.processed; this.baseline.progress.disposed2 = value.processed; }
         break;
+      }
+      case 'Event': {
+        if (channel !== 'authority' || !this.race || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId) throw new Error('Event context mismatch');
+        if (this.state.outcome) break;
+        validateMessage('Event', message.value, this.context!);
+        if (message.value.authority <= this.baseline.progress.authority) break;
+        if (message.value.authority !== this.baseline.progress.authority + 1) throw new Error('Authority event gap');
+        this.race.event(message.value); this.baseline = this.race.snapshot(); this.lastUsable = performance.now(); break;
+      }
+      case 'Coverage': {
+        if (channel !== 'authority' || !this.race || !this.baseline || message.value.round.roundId !== this.baseline.round.roundId) throw new Error('Coverage context mismatch');
+        if (this.state.outcome) break;
+        validateMessage('Coverage', message.value, this.context!);
+        if (!sameProgress(message.value.progress, this.baseline.progress)) throw new Error('Coverage history unavailable');
+        this.race.coverage(message.value); this.baseline = this.race.snapshot(); break;
+      }
+      case 'Outcome': {
+        if (channel !== 'control' || !this.context || message.value.roundId !== this.initialRound) throw new Error('Outcome context mismatch');
+        if (this.state.outcome) break;
+        validateMessage('Outcome', message.value, this.context);
+        this.state.outcome = structuredClone(message.value); this.race?.finish(message.value);
+        this.heldMask = 0; this.winningControl = 0;
+        this.state.timeUs = message.value.timeUs;
+        this.state.diagnostics.outcomeReceivedUs = nowUs();
+        this.state.diagnostics.resultDelayEstimateUs = nowUs() + this.state.clockOffsetUs - this.context.startUs - message.value.timeUs;
+        this.publish(); break;
       }
       case 'Barrier':
         if (channel !== 'authority') throw new Error('Barrier on wrong stream');
@@ -268,9 +319,11 @@ export class PairedConnection {
   }
   private startTimers(generation: number) {
     this.timers.push(setInterval(() => {
-      if (!this.baseline || generation !== this.generation) return;
+      if (!this.baseline || generation !== this.generation || this.state.outcome) return;
       if (this.inputSequence >= 0xffffffff) { this.fail(new Error('Input counter exhausted'), generation); return; }
-      void this.send('Input', { identity: this.admission!.identity, round: this.baseline.round, sequence: ++this.inputSequence, intent: 2, control: 0, heldMask: 0 }, generation, true).catch(e => this.fail(e, generation));
+      const input = { identity: this.admission!.identity, round: this.baseline.round, sequence: ++this.inputSequence, intent: 2, control: this.winningControl, heldMask: this.heldMask };
+      if (this.race && this.state.room?.phase === 2) this.race.input(input, this.estimatedRoundUs());
+      void this.send('Input', input, generation, true).catch(e => this.fail(e, generation));
     }, 250));
     const clock = () => {
       if (generation !== this.generation) return;
@@ -281,9 +334,12 @@ export class PairedConnection {
     clock(); this.timers.push(setInterval(clock, 1000));
   }
   private async barrier(value: Barrier, generation: number) {
+    if (this.state.outcome) return;
+    if (this.race) this.baseline = this.race.advanceAuthority(value.tick);
     const b = this.baseline;
-    if (!b || value.epoch !== b.epoch || value.round.roundId !== b.round.roundId || value.round.inputGeneration !== b.round.inputGeneration || value.tick <= b.tick || !sameProgress(value.progress, b.progress)) throw new Error('Authority history unavailable');
+    if (!b || value.epoch !== b.epoch || value.round.roundId !== b.round.roundId || value.round.inputGeneration !== b.round.inputGeneration || (this.options.diagnostic ? value.tick <= b.tick : value.tick < b.tick) || !sameProgress(value.progress, b.progress)) throw new Error('Authority history unavailable');
     b.tick = value.tick; b.timeUs = value.timeUs;
+    this.state.timeUs = b.timeUs; this.state.cars = structuredClone(b.cars); this.state.positions = b.cars.map(c => c.progress).join(', ');
     this.history.set(value.tick, crc32c(projectBaseline(b)));
     while (this.history.size > 20) this.history.delete(this.history.keys().next().value!);
     this.lastUsable = performance.now(); this.state.barriers++;
@@ -320,8 +376,36 @@ export class PairedConnection {
     const generation = this.generation;
     void this.send('Recovery', { identity: baseline.identity, round: baseline.round, reason: 0, epoch: baseline.epoch, tick: baseline.tick, progress: baseline.progress }, generation).catch(error => this.fail(error, generation));
   }
+  private estimatedRoundUs() { return Math.max(0, nowUs() + this.state.clockOffsetUs - (this.context?.startUs ?? nowUs())); }
+  recordDraw() {
+    const d = this.state.diagnostics;
+    if (d.lastLocalInputUs && d.lastLocalInputUs > this.lastDrawnLocalUs) { this.lastDrawnLocalUs = d.lastLocalInputUs; (d.localInputToDrawUs ??= []).push(nowUs() - d.lastLocalInputUs); if (d.localInputToDrawUs.length > 200) d.localInputToDrawUs.shift(); }
+    if (d.lastRemoteReceiveUs && d.lastRemoteReceiveUs > this.lastDrawnRemoteUs) { this.lastDrawnRemoteUs = d.lastRemoteReceiveUs; (d.remoteReceiveToDrawUs ??= []).push(nowUs() - d.lastRemoteReceiveUs); if (d.remoteReceiveToDrawUs.length > 200) d.remoteReceiveToDrawUs.shift(); }
+  }
+  recordResultCommit() {
+    if (this.state.outcome && this.context && this.state.diagnostics.resultCommitDelayEstimateUs === undefined) this.state.diagnostics.resultCommitDelayEstimateUs = nowUs() + this.state.clockOffsetUs - this.context.startUs - this.state.outcome.timeUs;
+  }
+  frame() { return this.race?.frame(this.estimatedRoundUs(), (performance.now() - this.lastUsable) * 1000); }
+  input(intent: 0 | 1, control: number) {
+    if (!this.baseline || !this.admission || !this.race || this.state.room?.phase !== 2 || this.state.status !== 'Connected' || this.state.outcome || !this.focused || this.hidden) return;
+    const mask = 1 << (control - 1);
+    if (intent === 0) { if (this.heldMask & mask) return; this.heldMask |= mask; this.winningControl = control; }
+    else { this.heldMask &= ~mask; if (this.winningControl === control) this.winningControl = 0; }
+    const input = { identity: this.admission.identity, round: this.baseline.round, sequence: ++this.inputSequence, intent, control, heldMask: this.heldMask };
+    this.race.input(input, this.estimatedRoundUs());
+    this.state.diagnostics.localInputs++; this.state.diagnostics.lastLocalInputUs = nowUs();
+    const generation = this.generation; void this.send('Input', input, generation, true).catch(e => this.fail(e, generation));
+  }
+  releaseControls() {
+    const hadInput = this.heldMask !== 0; this.heldMask = 0; this.winningControl = 0;
+    if (!hadInput || !this.baseline || !this.admission || !this.inputs || this.state.outcome) return;
+    const input = { identity: this.admission.identity, round: this.baseline.round, sequence: ++this.inputSequence, intent: 1, control: 0, heldMask: 0 };
+    this.race?.input(input, this.estimatedRoundUs());
+    const generation = this.generation; void this.send('Input', input, generation, true).catch(e => this.fail(e, generation));
+  }
   get hasCredential() { return this.credential().length === 32; }
   focus(focused: boolean, hidden: boolean) {
+    if (!focused || hidden) this.releaseControls();
     this.focused = focused; this.hidden = hidden;
     if (!this.options.diagnostic && this.state.status === 'Connected') this.command(4, hidden ? 0 : 1, focused && !hidden ? 1 : 0, 'Focus');
   }
