@@ -107,7 +107,7 @@ test('default course: native menu controls, recovered authority, shared results 
     for (const page of pages) await expect(page.getByRole('heading', { name: 'Round result' })).toBeVisible({ timeout: 65000 });
     const again = await Promise.all(pages.map(async page => JSON.parse((await page.getByTestId('outcome-evidence').textContent())!)));
     expect(again[0].roundId).toBe(rematch[0].roundId); expect(again[0].cars).toEqual(again[1].cars); expect(again[0].timeUs).toBe(again[1].timeUs);
-    records.push({ again, states: await Promise.all(pages.map(read)), environments: await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, viewport: [innerWidth, innerHeight] })))) });
+    records.push({ again, states: await Promise.all(pages.map(read)), environments: await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, viewport: [innerWidth, innerHeight], canvas: (() => { const canvas = document.querySelector('canvas'); return canvas ? { width: canvas.width, height: canvas.height, displayedWidth: canvas.clientWidth, displayedHeight: canvas.clientHeight } : null; })() })))) });
     expect(pageErrors).toEqual([]);
   } finally {
     records.push({ pageErrors });
