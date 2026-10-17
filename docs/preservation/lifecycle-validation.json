@@ -1,0 +1,408 @@
+{
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/35",
+  "date": "2026-10-17",
+  "timezone": "America/Phoenix",
+  "startingRevision": "096ba65992f57c123fcdab8054dab641157f2238",
+  "implementationRevisions": [
+    "b63971d Require secure lifecycle checks and record browser canvas evidence (#35)",
+    "6cbfbb8 Wait for race context when recovering finalized rooms (#35)",
+    "82ba219 Complete Drag Race rematch and fresh-control recovery (#35)"
+  ],
+  "protocolVersion": 1,
+  "configurationVersion": 1,
+  "generationVersion": 1,
+  "fixtureVersions": {
+    "protocol": 1,
+    "lifecycle": 1,
+    "race": 1,
+    "objects": 1,
+    "contacts": 1
+  },
+  "hashes": {
+    ".github/workflows/preservation.yml": "4c4cbce9ec21e2ff35a41ff796298145a23831adff8f7349fbc54a7094eb38ee",
+    "README.md": "b275cc37f102adef6f2b99b9f013fdbe20f9df1087d5d5970d49df434fb399a8",
+    "apps/client/playwright.config.ts": "2f2d2cb5256f94a4304458e34cfcf2a8e6c29c670e57ebed1932eb6b866d8984",
+    "apps/client/playwright.transport.config.ts": "62114e2ffb96b5f1f11e940f3e3c1da63db74d8f0f3e8afe68158f07a556f0a0",
+    "apps/client/scripts/transport.mjs": "8daefa79adf2673d8035dc1effa0bb0016480fe6ff2505631a03318e32301ce8",
+    "apps/client/src/components/RaceView.tsx": "9b7f360faf31b79e974717edf6185c139e7756726252fe98435a5b7539f99d2b",
+    "apps/client/src/components/RoundResult.tsx": "f6fbaf38ed1ec4720ee436fe794bc290872a6cc8763c20789cd99cb9112bd5fa",
+    "apps/client/src/screens/MultiplayerScreen.tsx": "d9ef63a051f8dac07096fb15639e26cac9520a090bfbb3a419db4981e7adadd1",
+    "apps/client/src/transport/PairedConnection.ts": "62332b6061f2d908fe9155009834685b6cda46e56e3877568997940efe4ada87",
+    "apps/client/tests/browser/lifecycle.spec.ts": "e37fea28a8f2fb298d79ef2e550241367ef082bd107d4a1fa2c8e3af9444dc25",
+    "apps/server/protocol/generated.go": "4b58613bb3026b5db0ad983d898f03e66acfeb22efa30db28bc28b6fbb0bc30b",
+    "apps/server/transport/pair.go": "b22f983d8eb4a898c9a299ff1f8cf6ff12f5f663110473d61ab219247da84148",
+    "apps/server/transport/race.go": "8fb71280ec8f49fa1e0c8f319da053979244fc80d3169ee7c92da4aeef112620",
+    "apps/server/transport/room_gameplay.go": "d165cad9f84c53ae1b750396b9c5523de5036fa3a4392ca638cf715053bd5af5",
+    "apps/server/transport/rooms_test.go": "033d0c1b309c04a09bb1cc1e6d64692dbb2df8b60cec97f473fad4cdf1a97a15",
+    "apps/server/transport/server.go": "be194619208d5fa365e56ebcfc2277ad7903a0d986f15a1327fb57e2acd271b9",
+    "package.json": "29a2463f452f68ab308e388a586665b6910bcebf624484132c7e069fcf92fb09",
+    "packages/contracts/generated/protocol.ts": "5d68e67073e5eec190f463a7ae79306777b567bfd5dd0b5695c05d127a0fbd14",
+    "packages/contracts/protocol/README.md": "c9cd335aba02e6c1ce8ae1a40bae08f39a6f54507d4dc37be96fe6d22c309413",
+    "packages/contracts/protocol/fixtures.json": "f807f9744743dd752ffb006bd1979b9d8b23779924c7748eb0f976ff3ee57373",
+    "packages/contracts/protocol/schema.json": "626223eb1422fa6b99963adaa21b1a71737d796a083d553fa359945523bbb86a",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+    "packages/contracts/race/objects.json": "ce8474d6941416145bad2e5a3986803ee366e01329d41028d20388d23989e492",
+    "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "finalRuns": [
+    {
+      "command": [
+        "pnpm",
+        "check:generated"
+      ],
+      "exitCode": 0,
+      "started": 1792239978.564445,
+      "elapsed": 0.8057971000671387,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-check-generated.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "turbo",
+        "run",
+        "typecheck",
+        "lint",
+        "test",
+        "build",
+        "--env-mode=loose",
+        "--force"
+      ],
+      "exitCode": 0,
+      "started": 1792239979.3769531,
+      "elapsed": 37.576148986816406,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-workspace.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:lifecycle"
+      ],
+      "exitCode": 0,
+      "started": 1792240016.9600298,
+      "elapsed": 38.033504009246826,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-lifecycle.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:race"
+      ],
+      "exitCode": 0,
+      "started": 1792240055.005301,
+      "elapsed": 44.91999316215515,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-race.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:objects"
+      ],
+      "exitCode": 0,
+      "started": 1792240099.936505,
+      "elapsed": 15.901553869247437,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-objects.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:hearts"
+      ],
+      "exitCode": 0,
+      "started": 1792240115.8502421,
+      "elapsed": 16.31866478919983,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-hearts.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:contacts"
+      ],
+      "exitCode": 0,
+      "started": 1792240132.179573,
+      "elapsed": 29.50196886062622,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-contacts.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:rooms"
+      ],
+      "exitCode": 0,
+      "started": 1792240161.6918972,
+      "elapsed": 12.272461652755737,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-rooms.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:transport"
+      ],
+      "exitCode": 0,
+      "started": 1792240173.971494,
+      "elapsed": 7.905602931976318,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-transport.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:browser"
+      ],
+      "exitCode": 137,
+      "started": 1792240181.884269,
+      "elapsed": 57.85894513130188,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/final-test-browser.log",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0"
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "turbo",
+        "run",
+        "typecheck",
+        "lint",
+        "test",
+        "build",
+        "--env-mode=loose",
+        "--force"
+      ],
+      "exitCode": 0,
+      "started": 1792240273.810076,
+      "elapsed": 36.68944978713989,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/workspace-final.log",
+      "revision": "b63971d86f6b465d951bf0c37c1af8bda7765f5d"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:lifecycle"
+      ],
+      "exitCode": 0,
+      "started": 1792240310.515575,
+      "elapsed": 32.945494174957275,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/lifecycle-final.log",
+      "revision": "b63971d86f6b465d951bf0c37c1af8bda7765f5d"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:browser"
+      ],
+      "exitCode": 0,
+      "started": 1792240343.472925,
+      "elapsed": 74.97432589530945,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/lifecycle-implementation/preservation-final.log",
+      "revision": "b63971d86f6b465d951bf0c37c1af8bda7765f5d"
+    }
+  ],
+  "transportAttempts": [
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/final-test-contacts.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-29-21.406Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "validated infra/contacts-track.json; swept returns, overtaking and persistent tailgating",
+      "dirty": " M .github/workflows/preservation.yml\n M README.md\n M packages/contracts/protocol/README.md\n?? docs/preservation/evidence/lifecycle/\n?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/final-test-hearts.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-28-51.898Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "validated infra/hearts-track.json; reserved heart contention and confirmed finish",
+      "dirty": " M .github/workflows/preservation.yml\n M README.md\n M packages/contracts/protocol/README.md\n?? docs/preservation/evidence/lifecycle/\n?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/final-test-lifecycle.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-27-34.699Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "dirty": "?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/final-test-objects.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-28-35.560Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "shipped default Drag Race configuration; random server seed; obstacles and HP elimination",
+      "dirty": " M .github/workflows/preservation.yml\n M README.md\n M packages/contracts/protocol/README.md\n?? docs/preservation/evidence/lifecycle/\n?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/final-test-race.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-28-19.658Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "dirty": " M .github/workflows/preservation.yml\n M README.md\n M packages/contracts/protocol/README.md\n?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/final-test-rooms.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-29-33.733Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "dirty": " M .github/workflows/preservation.yml\n M README.md\n M packages/contracts/protocol/README.md\n?? docs/preservation/evidence/lifecycle/\n?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/final-test-transport.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-29-41.705Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "dirty": " M .github/workflows/preservation.yml\n M README.md\n M packages/contracts/protocol/README.md\n?? docs/preservation/evidence/lifecycle/\n?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-1.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-19-18.938Z",
+      "revision": "096ba65992f57c123fcdab8054dab641157f2238",
+      "exitCode": 0,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/protocol/generated.go\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/server.go\n M package.json\n M packages/contracts/generated/protocol.ts\n M packages/contracts/protocol/schema.json\n?? apps/client/src/components/RoundResult.tsx\n?? apps/client/tests/browser/lifecycle.spec.ts\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-context-green.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-26-08.778Z",
+      "revision": "6cbfbb892f70cdef10d5045c6d3efca916514eb0",
+      "exitCode": 0,
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "dirty": "?? docs/preservation/lifecycle-checkpoint.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-delayed-red.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-20-35.529Z",
+      "revision": "096ba65992f57c123fcdab8054dab641157f2238",
+      "exitCode": 0,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/protocol/generated.go\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms_test.go\n M apps/server/transport/server.go\n M package.json\n M packages/contracts/generated/protocol.ts\n M packages/contracts/protocol/fixtures.json\n M packages/contracts/protocol/schema.json\n?? apps/client/src/components/RoundResult.tsx\n?? apps/client/tests/browser/lifecycle.spec.ts\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-32-23.133Z",
+      "revision": "b63971d86f6b465d951bf0c37c1af8bda7765f5d",
+      "exitCode": 0,
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "dirty": "?? docs/preservation/evidence/lifecycle/\n?? docs/preservation/lifecycle-checkpoint.md\n?? docs/preservation/lifecycle-review.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-rate-green.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-24-33.661Z",
+      "revision": "82ba2197379f58098e7771bb0d75432452e50c0c",
+      "exitCode": 1,
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "dirty": "?? docs/preservation/lifecycle-checkpoint.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-rate-red.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-23-36.322Z",
+      "revision": "096ba65992f57c123fcdab8054dab641157f2238",
+      "exitCode": 1,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/protocol/generated.go\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms_test.go\n M apps/server/transport/server.go\n M package.json\n M packages/contracts/generated/protocol.ts\n M packages/contracts/protocol/fixtures.json\n M packages/contracts/protocol/schema.json\n?? apps/client/src/components/RoundResult.tsx\n?? apps/client/tests/browser/lifecycle.spec.ts\n?? docs/preservation/lifecycle-checkpoint.md\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-slow-green.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-22-11.487Z",
+      "revision": "096ba65992f57c123fcdab8054dab641157f2238",
+      "exitCode": 1,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/protocol/generated.go\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms_test.go\n M apps/server/transport/server.go\n M package.json\n M packages/contracts/generated/protocol.ts\n M packages/contracts/protocol/fixtures.json\n M packages/contracts/protocol/schema.json\n?? apps/client/src/components/RoundResult.tsx\n?? apps/client/tests/browser/lifecycle.spec.ts\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/lifecycle-slow-red.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-21-16.234Z",
+      "revision": "096ba65992f57c123fcdab8054dab641157f2238",
+      "exitCode": 1,
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "dirty": " M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/components/RaceView.tsx\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/protocol/generated.go\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/rooms_test.go\n M apps/server/transport/server.go\n M package.json\n M packages/contracts/generated/protocol.ts\n M packages/contracts/protocol/fixtures.json\n M packages/contracts/protocol/schema.json\n?? apps/client/src/components/RoundResult.tsx\n?? apps/client/tests/browser/lifecycle.spec.ts\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/race-browser-1.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-16-53.037Z",
+      "revision": "096ba65992f57c123fcdab8054dab641157f2238",
+      "exitCode": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "dirty": " M apps/client/src/components/RaceView.tsx\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/protocol/generated.go\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/server.go\n M packages/contracts/generated/protocol.ts\n M packages/contracts/protocol/schema.json\n?? apps/client/src/components/RoundResult.tsx\n"
+    },
+    {
+      "commandLog": "apps/client/test-results/lifecycle-implementation/race-browser-2.log",
+      "directory": "apps/client/test-results/transport-2026-10-17T12-18-05.524Z",
+      "revision": "096ba65992f57c123fcdab8054dab641157f2238",
+      "exitCode": 1,
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "dirty": " M apps/client/src/components/RaceView.tsx\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/protocol/generated.go\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/room_gameplay.go\n M apps/server/transport/server.go\n M packages/contracts/generated/protocol.ts\n M packages/contracts/protocol/schema.json\n?? apps/client/src/components/RoundResult.tsx\n"
+    }
+  ],
+  "workspace": {
+    "tasks": 15,
+    "cachedTasks": 0,
+    "vitestTests": 320,
+    "go": "tests/vet/build passed",
+    "log": "apps/client/test-results/lifecycle-implementation/workspace-final.log",
+    "testedRevision": "b63971d86f6b465d951bf0c37c1af8bda7765f5d"
+  },
+  "reviews": {
+    "standards": {
+      "reviewer": "/root/standards_review",
+      "outstandingFindings": 0
+    },
+    "spec": {
+      "reviewer": "/root/spec_review",
+      "outstandingFindings": 0
+    },
+    "expectations": "lifecycle-review.md"
+  },
+  "failureRetention": {
+    "rawLogs": "apps/client/test-results/lifecycle-implementation/",
+    "rawMedia": "unique apps/client/test-results/transport-* directories, including inline JSON/PNG attachments and videos",
+    "vitereloads": "Initial race runs overlapped source edits or forced generation writes; pages returned to main menu. Isolated final suites passed. These remain failed attempts.",
+    "watchdog": "700 ms replacement baseline failed recovery due inherited lastUsable. Reset on teardown; exact failing and passing runs retained.",
+    "rate": "Two successive corrupted epochs caused invalid recovery and opponent disconnect. Client coalesces across configured rate window; server uses captured rate. Passing final scenario reaches later baseline while preserving connected pair.",
+    "reload": "After rate repair, cold finalized-room reload crashed when RoomState preceded Context. Guard waits for Context without waiting for baseline/Connected to display a valid result. Retained browser red and page-error-free green.",
+    "goSetup": "First new rejection regression waited for a broadcast consumed by helper. Corrected test requests a fresh focus broadcast; same pair then rejects unfinished Return and accepts readiness.",
+    "environment": "Original sandbox cache/listener denials and incorrect pnpm flag forwarding retained in logs/tool transcript; temporary Go cache and authorized local-listener execution used for final checks.",
+    "tdd": "Initial feature implementation preceded test-boundary confirmation. Those initial checks are post-implementation, not red-first. Watchdog/rate/reload regressions retain actual failing runs before repairs.",
+    "probe300ms": "Passed probe retained as lifecycle-delayed-red.log; filename is historical and does not make it a red test."
+  },
+  "limits": [
+    "No supported current/previous browser-release or OS matrix established by Chrome contexts alone.",
+    "Platform visibility is a fixture, not physical OS suspension or a two-person manual playtest.",
+    "Application delivery delays/corruption are above real WebTransport, not measured below-transport impairment profiles.",
+    "Reference-hardware/network sample targets, QUIC/UDP overhead, capacity and human/full acceptance remain unestablished; see #42-45.",
+    "Stage 5 is the complete Drag Race path; remaining edge cases and Road Rage belong to Stage 6."
+  ],
+  "preservation": {
+    "directory": "apps/client/test-results/run-2026-10-17T12-32-29.217Z-1cF3Pw",
+    "scenarios": 12,
+    "result": "passed",
+    "interruptedAttempt": "apps/client/test-results/run-2026-10-17T12-29-48.010Z-wWkNQ9",
+    "interruptedLog": "apps/client/test-results/lifecycle-implementation/final-test-browser.log",
+    "explanation": "Intentionally stopped after discovering secure lifecycle tests were selected by HTTP configuration. Test selection fixed; complete 12-case rerun passed."
+  },
+  "stage5Gate": {
+    "status": "complete playable Drag Race path verified",
+    "finalBrowserScenarios": {
+      "lifecycle": 2,
+      "race": 4,
+      "objects": 1,
+      "hearts": 1,
+      "contacts": 2,
+      "rooms": 5,
+      "transport": 3,
+      "preservation": 12
+    },
+    "fullMultiplayerAcceptance": "not established; retained limits and later stage ownership apply"
+  }
+}

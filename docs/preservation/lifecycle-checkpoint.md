@@ -1,0 +1,48 @@
+# #35 Drag Race lifecycle and Stage 5 path
+
+Issue: [Rematch and recover a playable Drag Race with fresh controls](https://github.com/shivang991/DashDevil2D/issues/35). Starting revision `096ba65992f57c123fcdab8054dab641157f2238`. Date: 2026-10-17 America/Phoenix. The owner approved keyboard/session commands, public room/round actions and two-browser real-transport flows as test boundaries in this implementation chat.
+
+## Governing decisions
+
+[Lifecycle](https://github.com/shivang991/DashDevil2D/issues/8#issuecomment-6120278462), [prediction/correction](https://github.com/shivang991/DashDevil2D/issues/12#issuecomment-6124581405), [protocol](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562), [screens/focus](https://github.com/shivang991/DashDevil2D/issues/19#issuecomment-6147750725), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139), [stage gates](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).
+
+## Requirement-to-evidence map
+
+| Requirement | Implementation / observation |
+| --- | --- |
+| Native keys and fresh controls | `lifecycle.spec.ts` submits Join with native Enter, activates Resume with native Space, holds NOS across menu suspension, verifies no automatic resumption, then releases/represses. Countdown-held keys are discarded. Leave cancellation returns focus to the canvas. Long Drive retains its separate KeyboardInput and preservation checks. |
+| Unpaused menu and confirmation, authoritative finality | Menu and confirmation release inputs. Server advancement continues behind them. A confirmed outcome hides the menu/dialog immediately; results report win/loss/tie/abandonment, reason, final HP and score. Browser scenario leaves confirmation open until matching terminal results replace it. |
+| Shared Return to Lobby and rematch | Generated RoomCommand enum adds command 5. Either participant may request it only after finalization. Server retains terminal state for existing seat sessions, code, host and idle deadline; clears readiness. Browser rematches after mode changes with unchanged pair identities, a newer round/input generation, reset HP/held controls/score and a fresh seed. Both results agree on canonical time, cars and outcome. |
+| Result ownership | Terminal results are scoped to the seat sessions that played. A replacement guest joins a lobby without inheriting an old result. Existing players retain a dismissible summary. Reserved seats can reload and recover their own finalized results. |
+| Opponent disconnect versus unavailable authority | HUD labels an opponent's disconnected seat separately from “Reconnecting—round continues.” Recovery retains the frozen view while current initialization is pending. Stale authority still freezes speculation at one second; the server never pauses. |
+| Suspension/recovery | Focus restoration during an active round obtains a fresh authenticated pair, current baseline and input generation before controls return. Browser fixtures cover transport close and platform visibility events; they do not establish physical OS suspension or human keyboard behavior. A delayed replacement baseline reproduces the stale-watchdog bug before resetting the inherited freshness timestamp. |
+| Shared codec and server checks | Literal command-5 wire vector is consumed by Go and TypeScript; no existing byte expectation changes. Public paired server regression rejects Return to Lobby before finality and proves the same pair remains usable. Positions retain existing `1e-6 + 1e-12 * abs(expected)` parity tolerance; decisions, times, bytes, identities and consumption remain exact. |
+| Long Drive | No Long Drive source, configuration, assets or authorized correction exceptions change. Applicable retained 30/60/120 FPS and browser preservation checks remain required. |
+
+## Failure retention and scope
+
+Raw command attempts remain in `apps/client/test-results/lifecycle-implementation/`; each transport invocation retains its unique directory, server log, browser JSON, PNGs and videos. First race attempts overlapped source edits or generated-file writes; Vite reloads returned pages to the main menu. These are retained failed attempts, never relabelled as passing. Go cache permissions required a temporary GOCACHE; integration tests additionally required local listener access. A mistaken pnpm argument forwarding attempt passed a Turbo flag to TypeScript and failed; its log remains. The first focused Go regression waited for a room broadcast already consumed by its setup helper; corrected setup explicitly requests a fresh broadcast.
+
+Most initial lifecycle behavior was implemented while test-boundary confirmation was pending; those initial regression cases are post-implementation checks, not claimed as red-first TDD. The delayed-baseline watchdog and subsequent recovery-rate regressions retain their actual red/green attempts.
+
+This checkpoint concerns the Stage 5 complete Drag Race path. Stage 6 still owns remaining edge cases and Road Rage rules. Full acceptance still requires supported-release/OS supplements, reference-hardware/network measurements and samples, capacity and recorded two-person manual playtests under #42–#45. Automation and agent screenshot inspection cannot establish that full acceptance. No failed gate authorizes progression.
+
+Cross-epoch recovery requests now coalesce behind the configured recovery-request rate; the server applies that same captured rate. The deterministic fixture corrupts two successive epochs: before the fix it drops the opponent with `invalid recovery`; after the fix both repairs complete while that pair remains connected. Cold finalized-room reload then exposed a missing-context HUD render; the screen waits for Context and displays the valid result immediately once received. The original blank-page failure and successful page-error-free rerun remain retained.
+
+Independent Standards and Spec reviews, follow-up reload-guard review and manually derived fixture expectations are recorded in [lifecycle-review.md](lifecycle-review.md). Final command and environment evidence is indexed by [lifecycle-validation.json](lifecycle-validation.json).
+
+## Browser evidence and acceptance limits
+
+The retained actual Chrome clients use the shipped default Drag Race course, not the short clear-track fixture. The independent race regression still uses its explicitly labelled clear-track configuration for clean/delayed/corrupted/reordered correction checks. Per-player correction counters and observed settling are retained in [browser-summary.json](evidence/lifecycle/browser-summary.json); these short runs do not establish a statistical numerical performance target. No transport-byte budget, OS/browser-release matrix, capacity or manual acceptance is inferred from them.
+
+Static agent inspection of the successful final-result and replacement-lobby screenshots found visible road/car/HUD presentation, final result/reason/HP/score and Return to Lobby/Leave, plus the replacement guest's lobby with code/host/readiness and no inherited result. This is agent image inspection, not human audiovisual signoff. Raw PNGs/videos remain in the unique ignored run folders, preserving the baseline archive.
+
+The ordinary HTTP preservation configuration initially selected the new secure lifecycle tests as well. That invocation was intentionally interrupted before invalid prerequisite execution; its exit 137 and completed checks are retained. The corrected configuration excludes lifecycle alongside the other secure suites, and CI runs it separately through `pnpm test:lifecycle`. A final rerun records the complete preservation result. The 300 ms baseline-delay probe passed; its filename contains “red” but is not counted as a red test. The 700 ms probe is the actual reproduced freshness failure.
+
+## Final local validation and Stage 5 exit
+
+At `b63971d`, forced workspace validation passed **15/15 tasks with zero cache reuse**, including **320 Vitest tests**, all Go tests/vet/build, TypeScript, lint and production build. Generated-output verification also passed. Final local browser evidence comprises lifecycle **2**, correction/race **4**, default objects **1**, reserved hearts **1**, contacts **2**, rooms **5**, transport **3**, and retained browser/preservation **12**: **30 passing scenarios**. The latter 12-case run follows the corrected HTTP/secure suite separation. Exact tested revisions and earlier failed/interrupted attempts remain in the validation index.
+
+The final measured lifecycle run used default-course seeds **3649631568** and **2737388972** for consecutive rounds. Both clients agreed on final cars, canonical outcome time and result. The host retained pair generation 1; the recovering guest retained its replacement generation 2 across the rematch. Both explicitly readied again. The browser observed a **560×440** backing canvas, displayed **510×401**, at **1280×900**. Chrome reported `HeadlessChrome/155.0.0.0`; actual host was Apple M2, Darwin 25.5.0 arm64, Node 26.10.0, pnpm 8.15.9 and Go 1.26.0. Local HTTPS trust uses a process-scoped SPKI pin and a separate WebTransport SHA-256 certificate pin.
+
+The complete Stage 5 Drag Race path is demonstrated through actual transport with prediction, correction, focus handling and diagnostics operating. Long Drive remains playable and its applicable checks passed. This clears this ticket's Stage 5 path gate; it does **not** claim Stage 6 completion or full Stage 7/browser/network/capacity/manual acceptance. Original failures were repaired or explicitly classified as harness/environment interruptions before this gate was recorded.
