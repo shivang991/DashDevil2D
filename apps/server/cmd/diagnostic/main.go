@@ -11,6 +11,7 @@ import (
 
 func main() {
 	var c transport.Config
+	var roundConfig string
 	flag.StringVar(&c.Address, "address", "127.0.0.1:8443", "TCP and UDP listen address")
 	flag.StringVar(&c.Origin, "origin", "https://127.0.0.1:4173", "exact permitted website origin")
 	flag.StringVar(&c.Certificate, "cert", "", "trusted HTTPS certificate PEM")
@@ -19,7 +20,16 @@ func main() {
 	flag.StringVar(&c.QUICKey, "quic-key", "", "WebTransport private key PEM")
 	flag.StringVar(&c.StaticDirectory, "static", "", "built client directory (production)")
 	flag.BoolVar(&c.Diagnostic, "diagnostic", false, "stationary Stage 4 diagnostic instead of product rooms")
+	flag.StringVar(&roundConfig, "drag-race-config", "", "explicit validated Drag Race configuration overrides JSON")
 	flag.Parse()
+	if roundConfig != "" {
+		var err error
+		c.DragRaceOverrides, err = os.ReadFile(roundConfig)
+		if err != nil {
+			slog.Error("round configuration", "error", err)
+			os.Exit(1)
+		}
+	}
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
 	server, err := transport.New(c)
 	if err != nil {

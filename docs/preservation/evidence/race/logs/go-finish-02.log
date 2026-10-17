@@ -1,0 +1,14 @@
+--- FAIL: TestSharedTimelines (0.01s)
+    --- FAIL: TestSharedTimelines/independent_windows_avoid_retaining_empty_separation_span (0.00s)
+        simulation_test.go:162: got [4000,4400,4800,5200,8000,8400,8800,9200]
+            want [
+                      4000,
+                      4400,
+                      4800,
+                      8000,
+                      8400,
+                      8800
+                    ]
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation	0.704s
+FAIL

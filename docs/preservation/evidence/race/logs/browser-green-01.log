@@ -1,0 +1,10 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-nQfzbx/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-nQfzbx
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T05:27:21Z
+Transport server exited early (1)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T05-27-23.129Z
+ ELIFECYCLE  Command failed with exit code 1.

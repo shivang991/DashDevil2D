@@ -23,6 +23,7 @@ export class Multiplayer {
  private tick = 0;
  private wallTime = 0;
  private abandoned = false;
+ private finish?: { tick: number; timeUs: number; result: number };
  private readonly cars: [Car, Car];
  private pending: { seat: number; input: Input; valid: boolean }[] = [];
  private releases: Observation[] = [];
@@ -32,7 +33,10 @@ export class Multiplayer {
  private readonly connected = [true, true];
  private order = 0;
  private latestPress: { seat: number; control: number; sequence: number; timeUs: number; order: number } | null = null;
- constructor(private readonly configuration: MultiplayerConfiguration, seed: number, identities: readonly [Identity, Identity], private readonly roundId = 1) {
+ private readonly configuration: MultiplayerConfiguration;
+ private readonly roundId: number;
+ constructor(configuration: MultiplayerConfiguration, seed: number, identities: readonly [Identity, Identity], roundId = 1) {
+  this.configuration = configuration; this.roundId = roundId;
   if (!Number.isInteger(seed) || seed < 1 || seed > 0xffffffff) throw new Error('Seed must be a nonzero uint32');
   if (!Number.isInteger(roundId) || roundId < 1 || roundId > 0xffffffff || identities.some((identity, seat) => identity.seat !== seat || [identity.roomId, identity.seatSession, identity.pairGeneration].some(v => !Number.isInteger(v) || v < 1 || v > 0xffffffff))) throw new Error('Invalid round/seat identity');
   this.context = configurationContext(configuration, seed);
@@ -57,6 +61,14 @@ export class Multiplayer {
   if (valid) this.sequences[seat] = input.sequence;
   this.pending.push({ seat, input: { ...input, identity: { ...input.identity }, round: { ...input.round } }, valid });
   return valid;
+ }
+ /** Restore a copied authoritative continuation at an exact simulation boundary. */
+ restore(cars: readonly Car[], tick: number): void {
+  if (!Number.isSafeInteger(tick) || tick < 0 || cars.length !== 2) throw new Error('Invalid continuation');
+  this.tick = tick; this.wallTime = tick / this.configuration.gameplay.tickRate;
+  this.pending = []; this.releases = []; this.abandoned = false; this.finish = undefined;
+  cars.forEach((car, seat) => { this.cars[seat] = { ...car }; this.sequences[seat] = car.lastInput; this.connected[seat] = true; });
+  this.updateTrack();
  }
  private updateTrack(): void {
   const g = this.configuration.gameplay;
@@ -123,10 +135,10 @@ export class Multiplayer {
   }
   this.pending = [];
  }
- advanceTo(seconds: number): Observation[] {
+ advanceTo(seconds: number, provisional = false): Observation[] {
   canonicalTime(seconds);
   if (seconds < this.wallTime) throw new Error('Monotonic clock moved backwards');
-  if (this.abandoned) return [];
+  if (this.abandoned || this.finish && !provisional) return [];
   this.tokens.forEach((tokens, seat) => { this.tokens[seat] = Math.min(this.configuration.connection.inputBurst, tokens + (seconds - this.wallTime) * this.configuration.connection.inputRate); });
   this.wallTime = seconds;
   const g = this.configuration.gameplay;
@@ -149,16 +161,30 @@ export class Multiplayer {
      if (car.phase !== 0 && car.movementEndUs > startUs) next = Math.min(next, car.movementEndUs / 1e6);
      if (car.phase === 0 && (car.effective === 1 || car.effective === 2) && car.nextShiftUs > startUs) next = Math.min(next, car.nextShiftUs / 1e6);
     }
+    let finishTime = Infinity, finishMask = 0;
+    if (!provisional && this.configuration.mode === 'drag-race') {
+     const finish = this.context.gameplay.finishDistance;
+     for (let seat = 0; seat < this.cars.length; seat++) {
+      const car = this.cars[seat], remaining = finish - g.carHeight / 2 - car.progress;
+      const multiplier = car.effective === 3 ? g.accelSpeedMultiplier : 1;
+      if (this.forwardDistance(time, next - time) * multiplier < remaining) continue;
+      let low = time, high = next;
+      for (let n = 0; n < 52; n++) { const middle = low + (high - low) / 2; if (this.forwardDistance(time, middle - time) * multiplier < remaining) low = middle; else high = middle; }
+      if (finishTime === Infinity || canonicalTime(high) < canonicalTime(finishTime)) { finishTime = high; finishMask = 1 << seat; }
+      else if (canonicalTime(high) === canonicalTime(finishTime)) finishMask |= 1 << seat;
+     }
+     if (finishMask) next = finishTime;
+    }
     const elapsed = next - time;
     for (const car of this.cars) {
-     // Integrate continuous normal-speed growth exactly, splitting at the cap.
-     const normal = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * time);
-     const ramp = g.speedGrowth === 0 ? 0 : Math.min(elapsed, Math.max(0, (g.maxRoadSpeed - normal) / g.speedGrowth));
-     const rampDistance = normal * ramp + .5 * g.speedGrowth * ramp * ramp;
-     const distance = rampDistance + Math.min(g.maxRoadSpeed, normal + g.speedGrowth * ramp) * (elapsed - ramp);
-     car.progress += distance * (car.effective === 3 ? g.accelSpeedMultiplier : 1);
+     car.progress += this.forwardDistance(time, elapsed) * (car.effective === 3 ? g.accelSpeedMultiplier : 1);
      car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * next);
      if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * ((next * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs));
+    }
+    if (finishMask) {
+     this.cars.forEach((car, seat) => { if (finishMask & (1 << seat)) car.progress = this.context.gameplay.finishDistance - g.carHeight / 2; });
+     this.tick = Math.ceil(canonicalTime(next) * g.tickRate / 1e6); this.finish = { tick: this.tick, timeUs: canonicalTime(next), result: finishMask === 1 ? 0 : finishMask === 2 ? 1 : 2 };
+     return events;
     }
     time = next; this.boundaries(canonicalTime(time), events);
    }
@@ -167,12 +193,18 @@ export class Multiplayer {
   }
   return events;
  }
+ private forwardDistance(start: number, elapsed: number) {
+  const g = this.configuration.gameplay;
+  const normal = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * start);
+  const ramp = g.speedGrowth === 0 ? 0 : Math.min(elapsed, Math.max(0, (g.maxRoadSpeed - normal) / g.speedGrowth));
+  return normal * ramp + .5 * g.speedGrowth * ramp * ramp + Math.min(g.maxRoadSpeed, normal + g.speedGrowth * ramp) * (elapsed - ramp);
+ }
  private trackState() {
   const states = this.tracks.map(track => track.snapshot());
   const leading = states[0].through >= states[1].through ? states[0] : states[1];
   const slices = new Map(states.flatMap(state => state.slices).map(slice => [slice.id, slice]));
   return { ...leading, slices: [...slices.values()].sort((a,b) => a.id - b.id) };
  }
- snapshot() { return { tick: this.tick, timeUs: canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
+ snapshot() { return { finish: this.finish ? { ...this.finish } : undefined, tick: this.tick, timeUs: this.finish?.timeUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
   cars: this.cars.map(car => ({ ...car })) as [Car, Car], latestPress: this.latestPress ? { ...this.latestPress } : null }; }
 }

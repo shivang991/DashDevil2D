@@ -1,0 +1,39 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (39 tests | 1 failed) 35ms
+   × shared timeline: independent windows avoid retaining empty separation span 8ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: independent windows avoid retaining empty separation span
+AssertionError: expected [ 4000, 4400, 4800, 5200, 8000, …(3) ] to deeply equal [ 4000, 4400, 4800, 8000, 8400, 8800 ]
+
+- Expected
++ Received
+
+  [
+    4000,
+    4400,
+    4800,
++   5200,
+    8000,
+    8400,
+    8800,
++   9200,
+  ]
+
+ ❯ tests/simulation/multiplayer.test.ts:78:105
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 47 passed (48)
+   Start at  22:29:50
+   Duration  227ms (tests 48%, import 28%, transform 19%, worker 5%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/session/race.test.ts tests/simulation/multiplayer.test.ts

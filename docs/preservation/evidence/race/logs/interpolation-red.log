@@ -1,0 +1,29 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (10 tests | 1 failed) 16ms
+   × rendered positions interpolate at current time without changing tick geometry 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts > rendered positions interpolate at current time without changing tick geometry
+TypeError: Cannot read properties of undefined (reading '0')
+ ❯ tests/session/race.test.ts:63:16
+     61|   const frame = race.frame(25000, 0);
+     62|   expect(frame.cars[0].progress).toBeCloseTo(6.666666666666667, 6);
+     63|   expect(frame.renderedCars[0].progress).toBeCloseTo(10, 6);
+       |                ^
+     64| });
+     65|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 9 passed (10)
+   Start at  22:34:28
+   Duration  182ms (transform 56%, tests 22%, import 19%, worker 3%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/session/race.test.ts

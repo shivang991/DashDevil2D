@@ -1,0 +1,8 @@
+
+> @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> tsc -b
+
+src/game/RaceSession.ts(71,87): error TS2554: Expected 1 arguments, but got 2.
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 typecheck: `tsc -b`
+Exit status 2

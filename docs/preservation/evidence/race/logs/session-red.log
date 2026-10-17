@@ -1,0 +1,28 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (0 test)
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts [ tests/session/race.test.ts ]
+Error: Cannot find module '../../src/game/RaceSession' imported from /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/session/race.test.ts
+ ❯ tests/session/race.test.ts:3:1
+      1| // @vitest-environment node
+      2| import { expect, test } from 'vitest';
+      3| import { RaceSession } from '../../src/game/RaceSession';
+       | ^
+      4| import { captureConfiguration } from '@dashdevil/simulation/config';
+      5| import { configurationContext, initialBaseline } from '@dashdevil/cont…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  22:21:48
+   Duration  144ms (worker 97%, environment 3%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/session/race.test.ts

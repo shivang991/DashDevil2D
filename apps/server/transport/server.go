@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
+	"github.com/shivang991/DashDevil2D/apps/server/simulation"
 	"log/slog"
 	"math"
 	"math/big"
@@ -37,6 +38,7 @@ type Config struct {
 	Address, Origin, Certificate, Key, QUICCertificate, QUICKey, StaticDirectory string
 	Logger                                                                       *slog.Logger
 	Diagnostic                                                                   bool
+	DragRaceOverrides                                                            []byte
 }
 type Server struct {
 	config       Config
@@ -55,6 +57,11 @@ type Server struct {
 	errors       chan error
 }
 type room struct {
+	engine   *simulation.Engine
+	history  []raceRecord
+	outcome  *p.Outcome
+	primed   [2]bool
+	inputs   [2]map[uint32]p.Input
 	phase    uint8
 	roundID  uint32
 	startUs  uint64
@@ -92,6 +99,12 @@ type ticket struct {
 }
 
 func New(config Config) (*Server, error) {
+	if len(config.DragRaceOverrides) > 0 {
+		if _, err := configuration.Capture([]byte(p.DefaultConfigurationJSON), "drag-race", config.DragRaceOverrides); err != nil {
+			return nil, err
+		}
+	}
+	config.DragRaceOverrides = append([]byte(nil), config.DragRaceOverrides...)
 	u, err := url.Parse(config.Origin)
 	if err != nil || u.Scheme != "https" || u.Host == "" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
 		return nil, errors.New("one explicit HTTPS website origin is required")
@@ -327,7 +340,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 				modeName = "road-rage"
 			}
 			definition := []byte(p.DefaultConfigurationJSON)
-			r.settings, err = configuration.Capture(definition, modeName, nil)
+			r.settings, err = configuration.Capture(definition, modeName, s.roundOverrides(mode))
 			if err != nil {
 				s.mu.Unlock()
 				return s.failure(c, 503, 2, "Invalid configuration")
@@ -406,6 +419,11 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	participant.inputGeneration++
 	pair := newPair(s, participant)
 	participant.pair = pair
+	if r := participant.room; r.phase == 2 && r.engine != nil {
+		r.engine.ResetSeat(pair.identity, participant.inputGeneration, 0)
+		r.primed[participant.index] = false
+		r.zero.Cars = r.engine.Snapshot().Cars
+	}
 	for key, t := range s.tickets {
 		if t.seat == participant {
 			delete(s.tickets, key)
@@ -451,6 +469,15 @@ func (s *Server) expireLocked(now time.Time) []*room {
 						delete(s.tickets, k)
 					}
 				}
+				if r.phase == 2 {
+					result := uint8(3)
+					reason := uint8(5)
+					if other := r.seats[1-i]; other != nil && other.connected {
+						result = uint8(1 - i)
+						reason = 4
+					}
+					s.finalizeRaceLocked(r, result, reason, r.zero.Tick, r.zero.TimeUs)
+				}
 				r.seats[i] = nil
 				s.cancelCountdownLocked(r)
 				modified = true
@@ -478,7 +505,7 @@ func (s *Server) expireLocked(now time.Time) []*room {
 	return changed
 }
 func (s *Server) sweep() {
-	ticker := time.NewTicker(100 * time.Millisecond)
+	ticker := time.NewTicker(5 * time.Millisecond)
 	defer ticker.Stop()
 	for {
 		select {
@@ -486,12 +513,20 @@ func (s *Server) sweep() {
 			return
 		case now := <-ticker.C:
 			s.mu.Lock()
-			changed := s.expireLocked(now)
-			changed = append(changed, s.advanceCountdownsLocked()...)
+			changed := s.advanceCountdownsLocked()
+			changed = append(changed, s.advanceRacesLocked()...)
+			changed = append(changed, s.expireLocked(now)...)
 			s.mu.Unlock()
 			for _, r := range changed {
 				s.broadcast(r)
 			}
 		}
 	}
+}
+
+func (s *Server) roundOverrides(mode uint8) []byte {
+	if mode == 1 {
+		return s.config.DragRaceOverrides
+	}
+	return nil
 }

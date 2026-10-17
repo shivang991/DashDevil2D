@@ -1,0 +1,48 @@
+
+> @dashdevil/client@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> eslint .
+
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx
+  82:209  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:82:209
+  80 |           {seat.session > 0 && <p className="text-sm text-neutral-400">{index === room!.host ? 'Host · ' : ''}{seat.flags & 1 ? 'Connected' : 'Reconnecting'} · {seat.flags & 2 ? 'Ready' : 'Not ready'}</p>}
+  81 |         </li>)}</ul>
+> 82 |         {countdown ? <div className="text-center py-8"><p className="text-7xl" data-testid="countdown" aria-live="polite">{remaining}</p><p>{installed ? 'Get ready!' : 'Preparing round…'}</p></div> : race && connection.current && state ? <RaceView connection={connection.current} state={state} onLeave={() => { connection.current?.releaseControls(); setConfirmLeave(true); }} /> : active ? <p>{installed ? 'Players synchronized.' : 'Synchronizing…'}</p> : <>
+     |                                                                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  83 |           {host && <label className="flex flex-col gap-2">Multiplayer mode<select className="rounded-lg bg-neutral-900 border border-neutral-600 p-3" value={room!.mode} disabled={!eligible} onChange={event => connection.current?.command(0, Number(event.target.value), 0, 'Changing mode')}><option value={1}>Drag Race</option><option value={2}>Road Rage</option></select></label>}
+  84 |           <button className={button} disabled={!eligible || document.hidden || !document.hasFocus()} onClick={() => connection.current?.command(1, room!.mode, room!.seats[local].flags & 2 ? 0 : 1, 'Confirming readiness')}>{room!.seats[local].flags & 2 ? 'Cancel ready' : 'Ready'}</button>
+  85 |           {host && <><button className={button} disabled={!canStart} onClick={() => connection.current?.command(2, room!.mode, 0, 'Starting round')}>Start round</button>{!canStart && <p className="text-sm text-neutral-400">Start requires two connected, initialized, focused and ready players.</p>}</>}                                                      react-hooks/refs
+  82:209  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:82:209
+  80 |           {seat.session > 0 && <p className="text-sm text-neutral-400">{index === room!.host ? 'Host · ' : ''}{seat.flags & 1 ? 'Connected' : 'Reconnecting'} · {seat.flags & 2 ? 'Ready' : 'Not ready'}</p>}
+  81 |         </li>)}</ul>
+> 82 |         {countdown ? <div className="text-center py-8"><p className="text-7xl" data-testid="countdown" aria-live="polite">{remaining}</p><p>{installed ? 'Get ready!' : 'Preparing round…'}</p></div> : race && connection.current && state ? <RaceView connection={connection.current} state={state} onLeave={() => { connection.current?.releaseControls(); setConfirmLeave(true); }} /> : active ? <p>{installed ? 'Players synchronized.' : 'Synchronizing…'}</p> : <>
+     |                                                                                                                                                                                                                 ^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  83 |           {host && <label className="flex flex-col gap-2">Multiplayer mode<select className="rounded-lg bg-neutral-900 border border-neutral-600 p-3" value={room!.mode} disabled={!eligible} onChange={event => connection.current?.command(0, Number(event.target.value), 0, 'Changing mode')}><option value={1}>Drag Race</option><option value={2}>Road Rage</option></select></label>}
+  84 |           <button className={button} disabled={!eligible || document.hidden || !document.hasFocus()} onClick={() => connection.current?.command(1, room!.mode, room!.seats[local].flags & 2 ? 0 : 1, 'Confirming readiness')}>{room!.seats[local].flags & 2 ? 'Cancel ready' : 'Ready'}</button>
+  85 |           {host && <><button className={button} disabled={!canStart} onClick={() => connection.current?.command(2, room!.mode, 0, 'Starting round')}>Start round</button>{!canStart && <p className="text-sm text-neutral-400">Start requires two connected, initialized, focused and ready players.</p>}</>}                                                      react-hooks/refs
+  82:261  error  Error: Cannot access refs during render
+
+React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected (https://react.dev/reference/react/useRef).
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/src/screens/MultiplayerScreen.tsx:82:261
+  80 |           {seat.session > 0 && <p className="text-sm text-neutral-400">{index === room!.host ? 'Host · ' : ''}{seat.flags & 1 ? 'Connected' : 'Reconnecting'} · {seat.flags & 2 ? 'Ready' : 'Not ready'}</p>}
+  81 |         </li>)}</ul>
+> 82 |         {countdown ? <div className="text-center py-8"><p className="text-7xl" data-testid="countdown" aria-live="polite">{remaining}</p><p>{installed ? 'Get ready!' : 'Preparing round…'}</p></div> : race && connection.current && state ? <RaceView connection={connection.current} state={state} onLeave={() => { connection.current?.releaseControls(); setConfirmLeave(true); }} /> : active ? <p>{installed ? 'Players synchronized.' : 'Synchronizing…'}</p> : <>
+     |                                                                                                                                                                                                                                                                     ^^^^^^^^^^^^^^^^^^ Cannot access ref value during render
+  83 |           {host && <label className="flex flex-col gap-2">Multiplayer mode<select className="rounded-lg bg-neutral-900 border border-neutral-600 p-3" value={room!.mode} disabled={!eligible} onChange={event => connection.current?.command(0, Number(event.target.value), 0, 'Changing mode')}><option value={1}>Drag Race</option><option value={2}>Road Rage</option></select></label>}
+  84 |           <button className={button} disabled={!eligible || document.hidden || !document.hasFocus()} onClick={() => connection.current?.command(1, room!.mode, room!.seats[local].flags & 2 ? 0 : 1, 'Confirming readiness')}>{room!.seats[local].flags & 2 ? 'Cancel ready' : 'Ready'}</button>
+  85 |           {host && <><button className={button} disabled={!canStart} onClick={() => connection.current?.command(2, room!.mode, 0, 'Starting round')}>Start round</button>{!canStart && <p className="text-sm text-neutral-400">Start requires two connected, initialized, focused and ready players.</p>}</>}  react-hooks/refs
+
+✖ 3 problems (3 errors, 0 warnings)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 lint: `eslint .`
+Exit status 1

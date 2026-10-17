@@ -6,7 +6,8 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const test = process.argv.includes('--test');
-const rooms = process.argv.includes('--rooms');
+const race = process.argv.includes('--race');
+const rooms = race || process.argv.includes('--rooms');
 const diagnostic = process.argv.includes('--diagnostic') || test && !rooms;
 const directory = test ? fs.mkdtempSync(path.join(os.tmpdir(), 'dashdevil-transport-')) : path.join(root, '.local/transport');
 fs.mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -37,17 +38,17 @@ function retainEvidence(code) {
   }
   const revision = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).stdout.trim();
   const dirty = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' }).stdout;
-  const hashes = Object.fromEntries(['apps/server/go.mod', 'apps/server/go.sum', 'apps/server/transport/diagnostic.json', 'packages/contracts/protocol/fixtures.json', 'packages/contracts/configuration/defaults.json', 'pnpm-lock.yaml'].map(file => [file, createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex')]));
+  const hashes = Object.fromEntries(['apps/server/go.mod', 'apps/server/go.sum', 'apps/server/transport/diagnostic.json', 'packages/contracts/protocol/fixtures.json', 'packages/contracts/race/fixtures.json', 'infra/clear-track.json', 'packages/contracts/configuration/defaults.json', 'pnpm-lock.yaml'].map(file => [file, createHash('sha256').update(fs.readFileSync(path.join(root, file))).digest('hex')]));
   const go = spawnSync('go', ['version'], { cwd: serverDirectory, env: process.env, encoding: 'utf8' }).stdout.trim();
   const pnpm = spawnSync('pnpm', ['--version'], { env: process.env, encoding: 'utf8' }).stdout.trim();
-  fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify({ version: 1, fixture: rooms ? 'React private rooms; random server seed; round zero and released controls' : 'protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls', revision, dirty, hashes, go, pnpm, node: process.version, platform: process.platform, architecture: process.arch, cpu: os.cpus()[0]?.model, release: os.release(), trust: 'Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass', exitCode: code, originalDirectory: directory }, null, 2));
+  fs.writeFileSync(path.join(output, 'manifest.json'), JSON.stringify({ version: 1, fixture: race ? 'validated infra/clear-track.json; real room driving and confirmed finish' : rooms ? 'React private rooms; random server seed; round zero and released controls' : 'protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls', revision, dirty, hashes, go, pnpm, node: process.version, platform: process.platform, architecture: process.arch, cpu: os.cpus()[0]?.model, release: os.release(), trust: 'Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass', exitCode: code, originalDirectory: directory }, null, 2));
   console.log(`Retained transport evidence: ${output}`);
 }
 for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { stop(); process.exitCode = 1; });
 const serverLog = fs.openSync(path.join(directory, 'server.log'), 'a', 0o600);
-const server = spawn(path.join(directory, 'diagnostic-server'), [...(diagnostic ? ['--diagnostic'] : []), '--cert', httpsCert, '--key', httpsKey, '--quic-cert', path.join(directory, 'webtransport.pem'), '--quic-key', path.join(directory, 'webtransport-key.pem')], { cwd: root, stdio: ['ignore', serverLog, serverLog] });
+const server = spawn(path.join(directory, 'diagnostic-server'), [...(diagnostic ? ['--diagnostic'] : []), ...(race ? ['--drag-race-config', path.join(root, 'infra/clear-track.json')] : []), '--cert', httpsCert, '--key', httpsKey, '--quic-cert', path.join(directory, 'webtransport.pem'), '--quic-key', path.join(directory, 'webtransport-key.pem')], { cwd: root, stdio: ['ignore', serverLog, serverLog] });
 children.push(server);
-const env = { ...process.env, DASHDEVIL_ROOM_TESTS: rooms ? '1' : '', DASHDEVIL_TRANSPORT_CONFIG: configPath, DASHDEVIL_HTTPS_CERT: httpsCert, DASHDEVIL_HTTPS_KEY: httpsKey };
+const env = { ...process.env, DASHDEVIL_RACE_TESTS: race ? '1' : '', DASHDEVIL_ROOM_TESTS: rooms ? '1' : '', DASHDEVIL_TRANSPORT_CONFIG: configPath, DASHDEVIL_HTTPS_CERT: httpsCert, DASHDEVIL_HTTPS_KEY: httpsKey };
 console.log(`Transport evidence directory: ${directory}`);
 console.log(`HTTPS ${diagnostic ? 'diagnostic page' : 'private rooms'}: https://127.0.0.1:4173/${diagnostic ? 'transport.html' : ''}; certificate expires ${config.expires}`);
 if (test) {

@@ -1,0 +1,12 @@
+
+> @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> tsc -b
+
+src/game/RaceSession.ts(98,160): error TS2339: Property 'finishDistance' does not exist on type 'Numeric<{ maxHealth: number; carWidth: number; carHeight: number; accelSpeedMultiplier: number; invincibleDuration: number; coinSize: number; obstacleW: number; obstacleH: number; maxRoadSpeed: number; ... 18 more ...; heartExclusionDistance: number; } | { ...; }>'.
+  Property 'finishDistance' does not exist on type 'Numeric<{ maxHealth: number; carWidth: number; carHeight: number; accelSpeedMultiplier: number; invincibleDuration: number; coinSize: number; obstacleW: number; obstacleH: number; maxRoadSpeed: number; ... 17 more ...; timeLimit: number; }>'.
+../../packages/simulation/multiplayer.ts(35,14): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
+../../packages/simulation/multiplayer.ts(35,129): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
+../../packages/simulation/multiplayerTrack.ts(12,14): error TS1294: This syntax is not allowed when 'erasableSyntaxOnly' is enabled.
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 typecheck: `tsc -b`
+Exit status 2

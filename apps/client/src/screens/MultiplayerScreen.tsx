@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { PairedConnection, type ConnectionOptions, type PairedState } from '@/transport/PairedConnection';
+import { RaceView } from '@/components/RaceView';
 import { localName } from '@/transport/localName';
 
 const button = 'rounded-lg border border-neutral-600 px-4 py-2 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed';
@@ -7,6 +8,7 @@ const modeName = (mode: number) => mode === 2 ? 'Road Rage' : 'Drag Race';
 
 export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () => void }) {
   const connection = useRef<PairedConnection | undefined>(undefined);
+  const [client, setClient] = useState<PairedConnection>();
   const [state, setState] = useState<PairedState>();
   const [error, setError] = useState('');
   const [code, setCode] = useState('');
@@ -32,7 +34,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
           : { server: location.origin };
         if (disposed) return;
         const client = new PairedConnection(options, setState);
-        connection.current = client; setState({ ...client.state }); focus();
+        connection.current = client; setClient(client); setState({ ...client.state }); focus();
         if (client.hasCredential) await client.connect(2);
       } catch (failure) { if (!disposed) setError(String(failure instanceof Error ? failure.message : failure)); }
     };
@@ -46,6 +48,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
   const leave = () => { connection.current?.leave(); setConfirmLeave(false); };
   const countdown = room?.phase === 1;
   const active = room?.phase === 2;
+  const race = (active || room?.phase === 3) && room?.mode === 1;
   const installed = room && state?.roundId === room.roundId && state?.startUs === room.startUs;
   const remaining = room ? Math.max(1, Math.min(3, Math.ceil((room.startUs - (clock + (state?.clockOffsetUs ?? 0))) / 1e6))) : 3;
   const inRoom = Boolean(room && state?.identity && state.status !== 'Disconnected');
@@ -57,8 +60,8 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
     }
   }}>
     <section className="w-full max-w-lg flex flex-col gap-5 py-10">
-      <h1 className="text-2xl font-heading">{inRoom ? active ? 'Round ready' : countdown ? 'Starting round' : 'Private room' : modeName(mode)}</h1>
-      <p className="text-neutral-400">{localName()}</p>
+      <h1 className="text-2xl font-heading">{inRoom ? race ? 'Drag Race' : active ? 'Round ready' : countdown ? 'Starting round' : 'Private room' : modeName(mode)}</h1>
+      {!race && <p className="text-neutral-400">{localName()}</p>}
       {!inRoom ? <>
         <p>Create a private room or join a friend.</p>
         <button className={button} disabled={!state || pending} onClick={() => void connection.current?.connect(0, '', mode)}>Create Room</button>
@@ -73,25 +76,25 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
         <div className="flex gap-4 items-center"><span className="text-3xl font-mono tracking-widest" data-testid="room-code">{state?.code}</span><button className={button} onClick={() => { void navigator.clipboard?.writeText(state?.code ?? '').then(() => setCopy('Copied'), () => setCopy('Select and copy the code')); }}>{copy}</button></div>
         <p data-testid="connection-state" role="status">{state?.status}</p>
         <p>Mode: <span data-testid="selected-mode">{modeName(room!.mode)}</span></p>
-        <ul className="flex flex-col gap-3">{room!.seats.map((seat, index) => <li key={index} className="rounded-lg border border-neutral-700 p-4">
+        {!race && <ul className="flex flex-col gap-3">{room!.seats.map((seat, index) => <li key={index} className="rounded-lg border border-neutral-700 p-4">
           <span>{seat.session ? `${seat.name}${index === local ? ' (You)' : ''}` : 'Waiting for player'}</span>
           {seat.session > 0 && <p className="text-sm text-neutral-400">{index === room!.host ? 'Host · ' : ''}{seat.flags & 1 ? 'Connected' : 'Reconnecting'} · {seat.flags & 2 ? 'Ready' : 'Not ready'}</p>}
-        </li>)}</ul>
-        {countdown ? <div className="text-center py-8"><p className="text-7xl" data-testid="countdown" aria-live="polite">{remaining}</p><p>{installed ? 'Get ready!' : 'Preparing round…'}</p></div> : active ? <p>{installed ? 'Players synchronized.' : 'Synchronizing…'}</p> : <>
+        </li>)}</ul>}
+        {countdown ? <div className="text-center py-8"><p className="text-7xl" data-testid="countdown" aria-live="polite">{remaining}</p><p>{installed ? 'Get ready!' : 'Preparing round…'}</p></div> : race && client && state ? <RaceView connection={client} state={state} suspended={confirmLeave} onLeave={() => { connection.current?.releaseControls(); setConfirmLeave(true); }} /> : active ? <p>{installed ? 'Players synchronized.' : 'Synchronizing…'}</p> : <>
           {host && <label className="flex flex-col gap-2">Multiplayer mode<select className="rounded-lg bg-neutral-900 border border-neutral-600 p-3" value={room!.mode} disabled={!eligible} onChange={event => connection.current?.command(0, Number(event.target.value), 0, 'Changing mode')}><option value={1}>Drag Race</option><option value={2}>Road Rage</option></select></label>}
           <button className={button} disabled={!eligible || document.hidden || !document.hasFocus()} onClick={() => connection.current?.command(1, room!.mode, room!.seats[local].flags & 2 ? 0 : 1, 'Confirming readiness')}>{room!.seats[local].flags & 2 ? 'Cancel ready' : 'Ready'}</button>
           {host && <><button className={button} disabled={!canStart} onClick={() => connection.current?.command(2, room!.mode, 0, 'Starting round')}>Start round</button>{!canStart && <p className="text-sm text-neutral-400">Start requires two connected, initialized, focused and ready players.</p>}</>}
           {room!.idleWarningUs > 0 && clock + (state?.clockOffsetUs ?? 0) >= room!.idleWarningUs && <p role="alert">This room expires in less than one minute without activity.</p>}
         </>}
-        <button className={button} onClick={() => countdown || active ? setConfirmLeave(true) : leave()}>Leave</button>
+        <button className={button} onClick={() => { connection.current?.releaseControls(); if (countdown || active) setConfirmLeave(true); else leave(); }}>Leave</button>
         {(countdown || active) && <p className="text-sm text-neutral-400">Round time: <span data-testid="round-time">{state?.timeUs ?? 0}</span></p>}
-        <details><summary className="cursor-pointer text-sm text-neutral-400">Connection details</summary><pre className="text-xs overflow-auto" data-testid="room-evidence">{JSON.stringify({ roundId: state?.roundId, startUs: state?.startUs, timeUs: state?.timeUs, seed: state?.seed, cars: state?.cars, identity: state?.identity, roomRevision: room!.revision }, null, 2)}</pre></details>
+        <details><summary className="cursor-pointer text-sm text-neutral-400">Connection details</summary><pre className="text-xs overflow-auto" data-testid="room-evidence">{JSON.stringify({ roundId: state?.roundId, startUs: state?.startUs, timeUs: state?.timeUs, seed: state?.seed, cars: state?.cars, identity: state?.identity, roomRevision: room!.revision, diagnostics: state?.diagnostics, verified: state?.verified, errors: state?.errors, baselineBytes: state?.baselineBytes }, null, 2)}</pre></details>
       </>}
       {state?.pending && <p role="status">{state.pending}…</p>}
       {state?.notice && <p role="alert">{state.notice}</p>}
-      {confirmLeave && <div role="dialog" aria-modal="true" aria-labelledby="leave-title" className="fixed inset-0 bg-black/90 flex items-center justify-center p-6" onKeyDown={event => {
+      {confirmLeave && !state?.outcome && <div role="dialog" aria-modal="true" aria-labelledby="leave-title" className="fixed inset-0 bg-black/90 flex items-center justify-center p-6" onKeyDown={event => {
         if (event.key === 'Tab') { event.preventDefault(); const buttons = event.currentTarget.querySelectorAll('button'); const next = document.activeElement === buttons[0] ? buttons[1] : buttons[0]; next.focus(); }
-      }}><div className="rounded-xl border border-neutral-600 bg-neutral-950 p-6 flex flex-col gap-4"><h2 id="leave-title">Leave room?</h2><p>{countdown ? 'Leaving cancels the countdown for both players.' : 'Leave the shared round start.'}</p><button ref={cancelLeave} className={button} onClick={() => setConfirmLeave(false)}>Cancel</button><button className={button} onClick={leave}>Confirm leave</button></div></div>}
+      }}><div className="rounded-xl border border-neutral-600 bg-neutral-950 p-6 flex flex-col gap-4"><h2 id="leave-title">Leave room?</h2><p>{countdown ? 'Leaving cancels the countdown for both players.' : room!.seats[1 - local].flags & 1 ? 'Leaving forfeits this round to the connected opponent.' : 'Leaving abandons this round while the opponent is disconnected.'}</p><button ref={cancelLeave} className={button} onClick={() => setConfirmLeave(false)}>Cancel</button><button className={button} onClick={leave}>Confirm leave</button></div></div>}
     </section>
   </main>;
 }

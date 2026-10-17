@@ -1,0 +1,125 @@
+{
+  "version": 1,
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/31",
+  "date": "2026-10-16",
+  "timezone": "America/Phoenix",
+  "baseline": "33f1f41945e1943f7bcfa2acc7f9d02e9205571a",
+  "reviewedAndTestedProductRevision": "9083eb5792dfb92614329fca1792390f397bd37a",
+  "scope": "Explicit validated clear-track countdown, prediction, driving and matching authoritative finish; later issue boundaries remain intact",
+  "fixtureVersions": {
+    "protocol": 1,
+    "race": 1,
+    "configuration": 1,
+    "generation": 1
+  },
+  "fixtureSha256": {
+    "packages/contracts/race/fixtures.json": "fe1688470834667448f5d017168c8d245e28fad98720d430695af2e7106a5618",
+    "packages/contracts/simulation/fixtures.json": "5baeca7e456cb5d70e44757f0281f8f8eec83e3715e82ee053ac144759034b04",
+    "packages/contracts/protocol/fixtures.json": "28e6fe55ed5243c1b8a7e5e82eb22f5cbbaf876ede985e32d3e0cf077f0542fa",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "infra/clear-track.json": "ec84a72ff30740ad0507d175ed22f9600a3f79907efbbd8127f5c3f5940d415f"
+  },
+  "commands": [
+    {
+      "name": "check-final-02",
+      "command": [
+        "pnpm",
+        "check",
+        "--force",
+        "--env-mode=loose"
+      ],
+      "exitCode": 0,
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+    },
+    {
+      "name": "race-final-02",
+      "command": [
+        "pnpm",
+        "test:race"
+      ],
+      "exitCode": 0,
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+    },
+    {
+      "name": "rooms-final-02",
+      "command": [
+        "pnpm",
+        "test:rooms"
+      ],
+      "exitCode": 0,
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+    },
+    {
+      "name": "transport-final-02",
+      "command": [
+        "pnpm",
+        "test:transport"
+      ],
+      "exitCode": 0,
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+    },
+    {
+      "name": "preservation-final-02",
+      "command": [
+        "pnpm",
+        "test:browser"
+      ],
+      "exitCode": 0,
+      "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+    }
+  ],
+  "results": {
+    "workspaceTasksPassed": 15,
+    "workspaceTasksCached": 0,
+    "vitestPassed": 271,
+    "raceBrowserPassed": 3,
+    "roomsBrowserPassed": 5,
+    "transportBrowserPassed": 3,
+    "preservationBrowserPassed": 12,
+    "browserRetries": 0,
+    "standardsOutstanding": 0,
+    "specOutstanding": 0
+  },
+  "environment": {
+    "node": "26.10.0",
+    "pnpm": "8.15.9",
+    "go": "1.26.0",
+    "browser": "installed Google Chrome 155.0.8059.80, actual chrome channel in headless mode",
+    "hardware": "Apple M2",
+    "os": "Darwin 25.5.0 arm64",
+    "raceViewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "preservationViewport": {
+      "width": 1280,
+      "height": 900
+    },
+    "powerSettings": "not established",
+    "trust": "process-scoped HTTPS SPKI and development WebTransport certificate pins"
+  },
+  "evidence": {
+    "browserAttempts": "evidence/race/browser-attempts.json",
+    "preservationManifest": "evidence/race/preservation-manifest.json",
+    "perSeatRaceOutcomes": [
+      "evidence/race/clean-outcomes.json",
+      "evidence/race/delayed-outcomes.json",
+      "evidence/race/recovering-outcomes.json"
+    ],
+    "screenshots": [
+      "evidence/race/race.png",
+      "evidence/race/result-0.png",
+      "evidence/race/result-1.png"
+    ],
+    "reviews": "race-review.md",
+    "preservationOriginalDirectoryManifest": "apps/client/test-results/run-2026-10-17T05-46-41.823Z-7y2Lp6/manifest.json"
+  },
+  "diagnosticLimits": "Input-to-canvas draw, remote receipt-to-draw and estimated result commit boundaries are retained. They are not physical screen-visible performance acceptance; sampling and clock uncertainty do not establish thresholds.",
+  "unestablishedLaterAcceptance": [
+    "supported current/previous browser and OS matrix",
+    "real network impairment profiles",
+    "reference hardware and capacity measurements",
+    "two-person playtests and full Stage 5/Stage 7 acceptance"
+  ],
+  "preservation": "No Long Drive gameplay code or new correction changed; all retained browser scenarios passed."
+}

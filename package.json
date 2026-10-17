@@ -19,7 +19,8 @@
     "check:generated": "pnpm --filter @dashdevil/contracts check:generated",
     "dev:transport": "node apps/client/scripts/transport.mjs",
     "test:transport": "node apps/client/scripts/transport.mjs --test",
-    "test:rooms": "node apps/client/scripts/transport.mjs --test --rooms"
+    "test:rooms": "node apps/client/scripts/transport.mjs --test --rooms",
+    "test:race": "node apps/client/scripts/transport.mjs --test --race"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

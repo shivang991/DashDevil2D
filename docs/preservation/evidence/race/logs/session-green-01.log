@@ -1,0 +1,49 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/race.test.ts (3 tests | 3 failed) 4ms
+   × local NOS predicts immediately; provisional finish keeps advancing and accepting controls 3ms
+   × self-contained outcome wins over late baseline, authority and prediction 0ms
+   × stale authority freezes prediction at one second without declaring a result 0ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/race.test.ts > local NOS predicts immediately; provisional finish keeps advancing and accepting controls
+ConfigurationError: gameplay.finishDistance: must exceed clear distance and starting front edge
+ ❯ requireValue ../../packages/simulation/config.ts:43:25
+
+ ❯ captureConfiguration ../../packages/simulation/config.ts:92:7
+ ❯ baseline tests/session/race.test.ts:8:18
+ ❯ tests/session/race.test.ts:14:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  tests/session/race.test.ts > self-contained outcome wins over late baseline, authority and prediction
+ConfigurationError: gameplay.finishDistance: must exceed clear distance and starting front edge
+ ❯ requireValue ../../packages/simulation/config.ts:43:25
+
+ ❯ captureConfiguration ../../packages/simulation/config.ts:92:7
+ ❯ baseline tests/session/race.test.ts:8:18
+ ❯ tests/session/race.test.ts:24:13
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  tests/session/race.test.ts > stale authority freezes prediction at one second without declaring a result
+ConfigurationError: gameplay.finishDistance: must exceed clear distance and starting front edge
+ ❯ requireValue ../../packages/simulation/config.ts:43:25
+
+ ❯ captureConfiguration ../../packages/simulation/config.ts:92:7
+ ❯ baseline tests/session/race.test.ts:8:18
+ ❯ tests/session/race.test.ts:33:32
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed (3)
+   Start at  22:22:22
+   Duration  203ms (transform 69%, import 22%, tests 5%, worker 3%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/session/race.test.ts

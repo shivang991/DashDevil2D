@@ -1,0 +1,49 @@
+[
+  {
+    "name": "check-final-02",
+    "command": [
+      "pnpm",
+      "check",
+      "--force",
+      "--env-mode=loose"
+    ],
+    "exitCode": 0,
+    "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+  },
+  {
+    "name": "race-final-02",
+    "command": [
+      "pnpm",
+      "test:race"
+    ],
+    "exitCode": 0,
+    "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+  },
+  {
+    "name": "rooms-final-02",
+    "command": [
+      "pnpm",
+      "test:rooms"
+    ],
+    "exitCode": 0,
+    "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+  },
+  {
+    "name": "transport-final-02",
+    "command": [
+      "pnpm",
+      "test:transport"
+    ],
+    "exitCode": 0,
+    "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+  },
+  {
+    "name": "preservation-final-02",
+    "command": [
+      "pnpm",
+      "test:browser"
+    ],
+    "exitCode": 0,
+    "revision": "9083eb5792dfb92614329fca1792390f397bd37a"
+  }
+]
