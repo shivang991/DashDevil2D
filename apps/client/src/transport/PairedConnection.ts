@@ -13,7 +13,7 @@ export interface PairedState {
   status: string; code: string; identity?: Identity; connectedSeats: number;
   verified: number; barriers: number; clockSamples: number; clockOffsetUs: number;
   context?: Context; outcome?: Outcome;
-  diagnostics: { corrections?: RaceSession['diagnostics']; reliableAttemptedBytes?: number; reliableReceivedBytes?: number; verificationReceivedBytes?: number; recoveryRequests?: number; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
+  diagnostics: { corrections?: RaceSession['diagnostics']; reliableAttemptedBytes?: number; reliableReceivedBytes?: number; verificationReceivedBytes?: number; recoveryRequests?: number; recoveryEpochs?: number[]; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
   objects?: Baseline['windows'][number]['objects'];
   room?: RoomState; pending?: string; notice?: string; roundId?: number; startUs?: number; timeUs?: number; cars?: Baseline['cars']; seed?: number; positions: string; errors: string[]; baselineBytes: number; recoveryMs?: number;
 }
@@ -382,6 +382,7 @@ export class PairedConnection {
     if (!baseline || this.recoveryOutstanding) return;
     this.recoveryOutstanding = true;
     this.state.diagnostics.recoveryRequests = (this.state.diagnostics.recoveryRequests ?? 0) + 1;
+    (this.state.diagnostics.recoveryEpochs ??= []).push(baseline.epoch);
     const generation = this.generation;
     void this.send('Recovery', { identity: baseline.identity, round: baseline.round, reason: 0, epoch: baseline.epoch, tick: baseline.tick, progress: baseline.progress }, generation).catch(error => this.fail(error, generation));
   }

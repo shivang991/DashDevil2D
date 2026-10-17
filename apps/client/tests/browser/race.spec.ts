@@ -11,7 +11,7 @@ for (const delivery of ['clean', 'delayed', 'recovering', 'unordered']) test(`tw
         // Application delivery fixture over actual WebTransport. It preserves
         // authority stream order and does not establish a network-profile result.
         const Native = window.WebTransport;
-        let corrupted = false, corruptions = 0, datagrams = 0;
+        let corrupted = false, corruptions = 0, datagrams = 0, corruptedEpoch: number | undefined;
         window.WebTransport = class extends Native {
           private verification?: WebTransportDatagramDuplexStream;
           get datagrams() {
@@ -22,9 +22,12 @@ for (const delivery of ['clean', 'delayed', 'recovering', 'unordered']) test(`tw
                   datagrams++;
                   if (unordered && datagrams % 3 === 0) return;
                   if (unordered && datagrams % 3 === 1) { setTimeout(() => { try { controller.enqueue(bytes); } catch { /* fixture stream closed */ } }, 150); return; }
-                  if (recovering && corruptions < 3 && Number(document.querySelector('[data-testid="round-time"]')?.textContent ?? 0) >= 2500000) {
+                  const epoch = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength).getUint16(0);
+                  if (recovering && corruptions < 3 && (corruptedEpoch === undefined || epoch === corruptedEpoch) && Number(document.querySelector('[data-testid="round-time"]')?.textContent ?? 0) >= 2500000) {
+                    corruptedEpoch ??= epoch; document.documentElement.dataset.raceRecoveryEpoch = String(corruptedEpoch);
                     bytes = bytes.slice(); bytes[9] ^= 1; corrupted = true; corruptions++;
                     document.documentElement.dataset.raceRecoveryFixture = 'corrupted';
+                    document.documentElement.dataset.raceCorruptions = String(corruptions);
                   }
                   controller.enqueue(bytes);
                 },
@@ -98,19 +101,23 @@ for (const delivery of ['clean', 'delayed', 'recovering', 'unordered']) test(`tw
     expect(outcomes[0].timeUs).toBe(outcomes[1].timeUs); expect(outcomes[0].cars).toEqual(outcomes[1].cars);
     expect(outcomes[0].cars[0].progress).toBeCloseTo(2360, 6);
     const evidence = await Promise.all(pages.map(page => page.getByTestId('room-evidence').textContent().then(v => JSON.parse(v!))));
+    const environments = await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, viewport: { width: innerWidth, height: innerHeight } }))));
+    await info.attach('outcomes.json', { body: JSON.stringify({ outcomes, evidence, environments, delivery }), contentType: 'application/json' });
     expect(evidence[0].startUs).toBe(evidence[1].startUs);
     expect(evidence[0].roundId).toBe(evidence[1].roundId);
     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);
     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);
-    if (recovering) for (const state of evidence) {
-      expect(state.diagnostics.recoveryRequests).toBe(1);
-      expect(state.diagnostics.baselineEpochs.at(-1)).toBeGreaterThan(state.diagnostics.baselineEpochs.at(-2));
+    if (recovering) for (let seat = 0; seat < pages.length; seat++) {
+      const state = evidence[seat];
+      const corruptedEpoch = Number(await pages[seat].locator('html').getAttribute('data-race-recovery-epoch'));
+      await expect(pages[seat].locator('html')).toHaveAttribute('data-race-corruptions', '3');
+      expect(state.diagnostics.recoveryEpochs.filter((epoch: number) => epoch === corruptedEpoch)).toHaveLength(1);
+      expect(new Set(state.diagnostics.recoveryEpochs).size).toBe(state.diagnostics.recoveryEpochs.length);
+      expect(state.diagnostics.baselineEpochs.at(-1)).toBeGreaterThan(corruptedEpoch);
     }
     for (const state of evidence) for (const correction of state.diagnostics.corrections ?? []) expect(correction.maxSettlingUs).toBeLessThanOrEqual(250000);
     expect(evidence[0].diagnostics.localInputs).toBeGreaterThan(0);
     expect(evidence[1].diagnostics.remoteRecords).toBeGreaterThan(0);
-    const environments = await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, viewport: { width: innerWidth, height: innerHeight } }))));
-    await info.attach('outcomes.json', { body: JSON.stringify({ outcomes, evidence, environments, delivery }), contentType: 'application/json' });
     for (let i = 0; i < pages.length; i++) await info.attach(`result-${i}.png`, { body: await pages[i].screenshot({ fullPage: true }), contentType: 'image/png' });
   } finally { await Promise.all(contexts.map(c => c.close())); }
 });
