@@ -13,7 +13,7 @@ export default defineConfig({
     baseURL: 'https://127.0.0.1:4173', channel: 'chrome',
     // Scope local HTTPS trust to this certificate's public key. WebTransport
     // separately uses its short-lived certificate hash, with no UDP bypass.
-    launchOptions: { args: [`--ignore-certificate-errors-spki-list=${config.spki}`] },
+    launchOptions: { args: [`--log-net-log=${path.join(path.dirname(file), `browser-network-${Date.now()}.json`)}`, `--ignore-certificate-errors-spki-list=${config.spki}`] },
     screenshot: 'only-on-failure', video: 'on', trace: 'off',
   },
   webServer: { command: 'pnpm exec vite --host 127.0.0.1 --port 4173 --strictPort', url: 'https://127.0.0.1:4173/transport.html', ignoreHTTPSErrors: true, reuseExistingServer: false },

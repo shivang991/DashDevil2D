@@ -1,5 +1,6 @@
 import { localName } from './localName';
 import { RaceSession } from '@/game/RaceSession';
+import { RaceVerification } from '@/game/RaceVerification';
 import { validateMessage } from '@dashdevil/contracts/validation';
 import {
   decodeMessage, encodeMessage, decodeVerification, projectBaseline,
@@ -12,7 +13,7 @@ export interface PairedState {
   status: string; code: string; identity?: Identity; connectedSeats: number;
   verified: number; barriers: number; clockSamples: number; clockOffsetUs: number;
   context?: Context; outcome?: Outcome;
-  diagnostics: { localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
+  diagnostics: { corrections?: RaceSession['diagnostics']; recoveryRequests?: number; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
   objects?: Baseline['windows'][number]['objects'];
   room?: RoomState; pending?: string; notice?: string; roundId?: number; startUs?: number; timeUs?: number; cars?: Baseline['cars']; seed?: number; positions: string; errors: string[]; baselineBytes: number; recoveryMs?: number;
 }
@@ -47,9 +48,7 @@ export class PairedConnection {
   private clockSequence = 0;
   private clocks = new Map<number, number>();
   private samples: { rtt: number; offset: number }[] = [];
-  private history = new Map<number, number>();
-  private pending = new Map<number, ReturnType<typeof decodeVerification>>();
-  private lastVerified = 0;
+  private verification?: RaceVerification;
   private queuedBytes = 0;
   private queuedMessages = 0;
   private restoredAt = 0;
@@ -93,7 +92,7 @@ export class PairedConnection {
     this.timers.forEach(clearInterval); this.timers = [];
     this.socket?.close(); this.gameplay?.close(); this.socket = undefined; this.gameplay = undefined;
     this.control = undefined; this.inputs = undefined; this.transfer?.cancel(); this.transfer = undefined;
-    this.earlyChunks = []; this.baseline = undefined; this.context = undefined; this.recoveryOutstanding = false; this.history.clear(); this.pending.clear(); this.clocks.clear(); this.samples = [];
+    this.earlyChunks = []; this.baseline = undefined; this.context = undefined; this.recoveryOutstanding = false; this.verification = undefined; this.clocks.clear(); this.samples = [];
     this.queuedBytes = 0; this.queuedMessages = 0;
   }
   async connect(operation: 0 | 1 | 2, code = '', mode: 1 | 2 = 1): Promise<void> {
@@ -117,7 +116,7 @@ export class PairedConnection {
       this.admission = message.value; this.state.identity = message.value.identity;
       this.state.code = response.headers.get('X-Room-Code') ?? code;
       try { sessionStorage.setItem(this.storageKey(), btoa(String.fromCharCode(...message.value.credential))); } catch { /* retain in memory */ }
-      this.revision = 0; this.inputSequence = 0; this.clockSequence = 0; this.lastVerified = 0; this.roomSequence = 0; this.restoredAt = performance.now();
+      this.revision = 0; this.inputSequence = 0; this.clockSequence = 0; this.roomSequence = 0; this.restoredAt = performance.now();
       this.openRoom(message.value, generation);
       const options: WebTransportOptions = this.options.certificateHash ? { serverCertificateHashes: [{ algorithm: 'sha-256', value: Uint8Array.from(this.options.certificateHash).buffer }] } : {};
       const gameplay = new WebTransport(`${this.options.server}/gameplay?ticket=${token(message.value.gameplayTicket)}`, options);
@@ -133,7 +132,12 @@ export class PairedConnection {
       await this.send('Handshake', { version: 1, identity: message.value.identity, datagramBytes: gameplay.datagrams.maxDatagramSize }, generation);
       const watchdog = setInterval(() => {
         if (generation !== this.generation) return;
-        if (this.lastUsable && performance.now() - this.lastUsable >= 1000) { this.state.status = 'Connection warning'; this.publish(); }
+        if (this.lastUsable && performance.now() - this.lastUsable >= 1000) {
+          this.state.status = 'Connection warning'; this.releaseControls(); this.publish();
+          if (!this.options.diagnostic && this.state.room?.phase === 2 && !this.state.outcome) {
+            this.fail(new Error('Authoritative history expired; recovering connection'), generation); return;
+          }
+        }
         if (!this.baseline && performance.now() - this.restoredAt >= 5000) this.fail(new Error('Initialization timed out'), generation);
       }, 100);
       this.timers.push(watchdog);
@@ -236,7 +240,8 @@ export class PairedConnection {
         const wasInitialized = this.timerStarted;
         const baseline = this.transfer.accept(message.value); this.state.baselineBytes += message.value.data.length;
         if (!baseline) break;
-        this.baseline = baseline; this.transfer = undefined; this.recoveryOutstanding = false; this.history.clear(); this.pending.clear(); this.lastVerified = 0; this.lastUsable = performance.now();
+        this.baseline = baseline; this.transfer = undefined; this.recoveryOutstanding = false; this.verification = new RaceVerification(baseline.epoch, baseline.context.gameplay.tickRate, baseline.context.connection.replayHistory); this.lastUsable = performance.now();
+        (this.state.diagnostics.baselineEpochs ??= []).push(baseline.epoch);
         this.state.positions = baseline.cars.map(car => car.progress).join(', ');
         this.state.roundId = baseline.round.roundId; this.state.startUs = baseline.context.startUs;
         this.state.timeUs = baseline.timeUs; this.state.cars = baseline.cars; this.state.seed = baseline.context.seed;
@@ -351,12 +356,12 @@ export class PairedConnection {
     b.tick = value.tick; b.timeUs = value.timeUs;
     this.state.objects = b.windows.flatMap(window => window.objects);
     this.state.timeUs = b.timeUs; this.state.cars = structuredClone(b.cars); this.state.positions = b.cars.map(c => c.progress).join(', ');
-    this.history.set(value.tick, crc32c(projectBaseline(b)));
-    while (this.history.size > 20) this.history.delete(this.history.keys().next().value!);
+    const recover = this.verification?.barrier(value.tick, crc32c(projectBaseline(b)));
     this.lastUsable = performance.now(); this.state.barriers++;
     if (this.state.status === 'Connection warning') this.state.status = 'Connected';
     await this.send('AuthorityAck', { identity: b.identity, round: b.round, epoch: b.epoch, tick: b.tick, progress: b.progress }, generation);
-    this.comparePending(); this.publish();
+    if (recover) this.requestBaseline();
+    this.state.verified = this.verification?.verified ?? 0; this.publish();
   }
   private async readDatagrams(gameplay: WebTransport, generation: number) {
     const reader = gameplay.datagrams.readable.getReader();
@@ -364,32 +369,23 @@ export class PairedConnection {
       const { done, value } = await reader.read(); if (done || generation !== this.generation) return;
       if (value.length !== 10) continue;
       const verification = decodeVerification(value);
-      if (!this.baseline || verification.epoch !== this.baseline.epoch || verification.tick <= this.lastVerified) continue;
-      this.pending.set(verification.tick, verification);
-      while (this.pending.size > 20) this.pending.delete(this.pending.keys().next().value!);
-      this.comparePending(); this.publish();
+      if (this.state.outcome) continue;
+      if (this.verification?.datagram(verification)) this.requestBaseline();
+      this.state.verified = this.verification?.verified ?? 0; this.publish();
     } } finally { reader.releaseLock(); }
-  }
-  private comparePending() {
-    for (const [tick, value] of this.pending) {
-      const expected = this.history.get(tick);
-      if (expected === undefined) { if (this.baseline && tick < this.baseline.tick - 20) this.pending.delete(tick); continue; }
-      this.pending.delete(tick);
-      if (tick <= this.lastVerified) continue;
-      if (value.crc !== expected) { this.requestBaseline(); continue; }
-      this.lastVerified = tick; this.state.verified++;
-    }
   }
   requestBaseline() {
     const baseline = this.baseline;
     if (!baseline || this.recoveryOutstanding) return;
     this.recoveryOutstanding = true;
+    this.state.diagnostics.recoveryRequests = (this.state.diagnostics.recoveryRequests ?? 0) + 1;
     const generation = this.generation;
     void this.send('Recovery', { identity: baseline.identity, round: baseline.round, reason: 0, epoch: baseline.epoch, tick: baseline.tick, progress: baseline.progress }, generation).catch(error => this.fail(error, generation));
   }
   private estimatedRoundUs() { return Math.max(0, nowUs() + this.state.clockOffsetUs - (this.context?.startUs ?? nowUs())); }
   recordDraw() {
     const d = this.state.diagnostics;
+    if (this.race) d.corrections = this.race.diagnostics.map(value => ({ ...value }));
     if (d.lastLocalInputUs && d.lastLocalInputUs > this.lastDrawnLocalUs) { this.lastDrawnLocalUs = d.lastLocalInputUs; (d.localInputToDrawUs ??= []).push(nowUs() - d.lastLocalInputUs); if (d.localInputToDrawUs.length > 200) d.localInputToDrawUs.shift(); }
     if (d.lastRemoteReceiveUs && d.lastRemoteReceiveUs > this.lastDrawnRemoteUs) { this.lastDrawnRemoteUs = d.lastRemoteReceiveUs; (d.remoteReceiveToDrawUs ??= []).push(nowUs() - d.lastRemoteReceiveUs); if (d.remoteReceiveToDrawUs.length > 200) d.remoteReceiveToDrawUs.shift(); }
   }

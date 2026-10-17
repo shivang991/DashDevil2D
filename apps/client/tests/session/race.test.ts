@@ -115,3 +115,126 @@ test('authority reverses provisional death and restores an unconsumed obstacle',
   expect(frame.cars[0].hp).toBe(3); expect(frame.objects[0].flags).toBe(2); expect(frame.awaiting).toBe(false);
   expect(frame.feedback).toEqual([]);
 });
+
+test('ordinary authority corrections settle in 100ms while gameplay repairs immediately', () => {
+  const b = baseline(), race = new RaceSession(b);
+  const before = race.frame(100000, 0);
+  const corrected = structuredClone(b);
+  corrected.tick = 6; corrected.timeUs = 100000; corrected.epoch++;
+  corrected.cars.forEach(car => { car.progress = 48; car.hp = 2; });
+  race.install(corrected);
+  const repaired = race.frame(100000, 0);
+  expect(repaired.cars[0].progress).toBe(48);
+  expect(repaired.cars[0].hp).toBe(2);
+  expect(repaired.renderedCars[0].progress).toBeCloseTo(before.renderedCars[0].progress, 6);
+  expect(race.frame(150000, 0).renderedCars[0].progress).toBeCloseTo(64, 6);
+  const settled = race.frame(200000, 0);
+  expect(settled.renderedCars[0].progress).toBeCloseTo(settled.cars[0].progress, 6);
+});
+
+test('authority arriving ahead of the previous render compares positions at matching times', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.frame(100000, 0);
+  const corrected = structuredClone(b); corrected.epoch++;
+  corrected.tick = 12; corrected.timeUs = 200000;
+  corrected.cars.forEach(car => { car.progress = 88; });
+  race.install(corrected);
+  expect(race.frame(200000, 0).renderedCars[0].progress).toBeCloseTo(80, 6);
+});
+
+test('late remote steering is already two-thirds complete after 100ms', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.frame(100000, 0);
+  const car = { ...b.cars[1], controls: 1, effective: 1, heldMask: 1, lastInput: 1, freshnessUs: 1000000, phase: 1, departure: 2, target: 1, movementOrigin: 120, movementTarget: 0, movementStartUs: 0, movementEndUs: 150000, nextShiftUs: 250000 };
+  race.disposition({ identity: b.identity, round: b.round, authority: 1, tick: 0, timeUs: 0, seat: 1, sequence: 1, processed: 1, disposition: 0, intent: 0, control: 1, car, contact: b.contact });
+  expect(race.frame(100000, 0).cars[1].lateral).toBeCloseTo(40, 6);
+  expect(race.frame(200000, 0).cars[1].lateral).toBe(0);
+});
+
+test('correction retains unresolved inputs exactly once by sequence cutoff', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.input({ identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 2, heldMask: 2 }, 0);
+  const applied = race.frame(100000, 0);
+  const corrected = structuredClone(b); corrected.epoch++;
+  corrected.tick = 6; corrected.timeUs = 100000; corrected.cars = applied.cars;
+  corrected.progress.processed1 = 1; corrected.progress.disposed1 = 1;
+  // Sent before the checkpoint but not processed: replay by sequence, not time.
+  race.input({ identity: b.identity, round: b.round, sequence: 2, intent: 1, control: 2, heldMask: 0 }, 50000);
+  race.install(corrected);
+  const frame = race.frame(300000, 0);
+  expect(frame.cars[0].lateral).toBe(0);
+  expect(frame.cars[0].lastInput).toBe(2);
+  expect(frame.cars[0].effective).toBe(0);
+});
+
+test('a rejected local shift repairs gameplay and snaps its misleading animation', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.input({ identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 2, heldMask: 2 }, 0);
+  expect(race.frame(100000, 0).cars[0].lateral).toBeCloseTo(-40, 6);
+  race.disposition({ identity: b.identity, round: b.round, authority: 1, tick: 0, timeUs: 0, seat: 0, sequence: 1, processed: 1, disposition: 2, intent: 0, control: 2, car: b.cars[0], contact: b.contact });
+  const frame = race.frame(100000, 0);
+  expect(frame.cars[0].lateral).toBe(-120);
+  expect(frame.renderedCars[0].lateral).toBe(-120);
+});
+
+test('large corrections snap and repeated small corrections retain the first settling deadline', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.frame(100000, 0);
+  const corrected = structuredClone(b); corrected.epoch++;
+  corrected.tick = 6; corrected.timeUs = 100000;
+  corrected.cars.forEach(car => { car.progress = 48; });
+  race.install(corrected); race.frame(100000, 0);
+  corrected.epoch++; corrected.tick = 9; corrected.timeUs = 150000;
+  corrected.cars.forEach(car => { car.progress = 72; });
+  race.install(corrected); race.frame(150000, 0);
+  expect(race.frame(200000, 0).renderedCars[0].progress).toBeCloseTo(92, 6);
+  corrected.epoch++; corrected.tick = 12; corrected.timeUs = 200000;
+  corrected.cars.forEach(car => { car.progress = 200; });
+  race.install(corrected);
+  expect(race.frame(200000, 0).renderedCars[0].progress).toBe(200);
+});
+
+test('old input generations and duplicate local sequences never enter replay', () => {
+  const b = baseline(), race = new RaceSession(b);
+  const input = { identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 3, heldMask: 4 };
+  race.input({ ...input, round: { ...b.round, inputGeneration: 2 } }, 0);
+  race.input(input, 0);
+  race.input({ ...input, intent: 1, heldMask: 0 }, 0);
+  expect(race.frame(100000, 0).cars[0].progress).toBe(80);
+  expect(race.frame(100000, 0).cars[0].effective).toBe(3);
+});
+
+test('a replaced pair cannot enqueue local prediction into the current session', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.input({ identity: { ...b.identity, pairGeneration: b.identity.pairGeneration + 1 }, round: b.round, sequence: 1, intent: 0, control: 3, heldMask: 4 }, 0);
+  expect(race.frame(100000, 0).cars[0].effective).toBe(0);
+});
+
+test('fresh-generation recovery drops pending controls and presentation offsets', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.input({ identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 2, heldMask: 2 }, 0);
+  race.frame(100000, 0);
+  const recovered = structuredClone(b); recovered.epoch++;
+  recovered.round.inputGeneration++; recovered.cars[0].inputGeneration++;
+  race.install(recovered);
+  const frame = race.frame(100000, 0);
+  expect(frame.cars[0].effective).toBe(0);
+  expect(frame.renderedCars[0].lateral).toBe(-120);
+});
+
+test('correction diagnostics measure abrupt corrections and settling without counting normal movement', () => {
+  const b = baseline(), race = new RaceSession(b);
+  race.frame(100000, 0);
+  const corrected = structuredClone(b); corrected.epoch++;
+  corrected.tick = 6; corrected.timeUs = 100000;
+  corrected.cars.forEach(car => { car.progress = 48; });
+  race.install(corrected); race.frame(100000, 0); race.frame(200000, 0);
+  expect(race.diagnostics[0]).toMatchObject({ corrections: 1, abrupt: 0, snaps: 0, maxSettlingUs: 100000 });
+});
+
+test('incomplete replacement track coverage cannot partially mutate authority', () => {
+  const b = baseline(), race = new RaceSession(b);
+  expect(() => race.coverage({ identity: b.identity, round: b.round, authority: 0, tick: 0, timeUs: 0, progress: b.progress, generator: b.generator,
+    windows: [{ ...b.windows[0], end: 50 }] })).toThrow(/coverage/);
+  expect(race.snapshot()).toEqual(b);
+});

@@ -1,17 +1,17 @@
 import { test, expect } from '@playwright/test';
 
-for (const delivery of ['clean', 'delayed', 'recovering']) test(`two actual browsers drive and confirm one finish (${delivery})`, async ({ browser, baseURL }, info) => {
-  const delayedAuthority = delivery !== 'clean', recovering = delivery === 'recovering';
+for (const delivery of ['clean', 'delayed', 'recovering', 'unordered']) test(`two actual browsers drive and confirm one finish (${delivery})`, async ({ browser, baseURL }, info) => {
+  const delayedAuthority = delivery !== 'clean', recovering = delivery === 'recovering', unordered = delivery === 'unordered';
   test.setTimeout(45000);
   const contexts = await Promise.all([browser.newContext({ baseURL }), browser.newContext({ baseURL })]);
   const pages = await Promise.all(contexts.map(c => c.newPage()));
   try {
     for (const page of pages) {
-      if (delayedAuthority) await page.addInitScript(({ recovering }) => {
+      if (delayedAuthority) await page.addInitScript(({ recovering, unordered }) => {
         // Application delivery fixture over actual WebTransport. It preserves
         // authority stream order and does not establish a network-profile result.
         const Native = window.WebTransport;
-        let corrupted = false;
+        let corrupted = false, corruptions = 0, datagrams = 0;
         window.WebTransport = class extends Native {
           private verification?: WebTransportDatagramDuplexStream;
           get datagrams() {
@@ -19,8 +19,11 @@ for (const delivery of ['clean', 'delayed', 'recovering']) test(`two actual brow
               const original = super.datagrams;
               const readable = original.readable.pipeThrough(new TransformStream({
                 transform(bytes: Uint8Array, controller) {
-                  if (recovering && !corrupted && Number(document.querySelector('[data-testid="round-time"]')?.textContent ?? 0) >= 2500000) {
-                    bytes = bytes.slice(); bytes[9] ^= 1; corrupted = true;
+                  datagrams++;
+                  if (unordered && datagrams % 3 === 0) return;
+                  if (unordered && datagrams % 3 === 1) { setTimeout(() => { try { controller.enqueue(bytes); } catch { /* fixture stream closed */ } }, 150); return; }
+                  if (recovering && corruptions < 3 && Number(document.querySelector('[data-testid="round-time"]')?.textContent ?? 0) >= 2500000) {
+                    bytes = bytes.slice(); bytes[9] ^= 1; corrupted = true; corruptions++;
                     document.documentElement.dataset.raceRecoveryFixture = 'corrupted';
                   }
                   controller.enqueue(bytes);
@@ -58,7 +61,7 @@ for (const delivery of ['clean', 'delayed', 'recovering']) test(`two actual brow
             }));
           }
         };
-      }, { recovering });
+      }, { recovering, unordered });
       await page.goto('/'); await page.getByRole('button', { name: /Drag Race/ }).click(); }
     await pages[0].getByRole('button', { name: 'Create Room', exact: true }).click();
     await expect(pages[0].getByTestId('connection-state')).toHaveText('Connected');
@@ -99,6 +102,11 @@ for (const delivery of ['clean', 'delayed', 'recovering']) test(`two actual brow
     expect(evidence[0].roundId).toBe(evidence[1].roundId);
     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);
     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);
+    if (recovering) for (const state of evidence) {
+      expect(state.diagnostics.recoveryRequests).toBe(1);
+      expect(state.diagnostics.baselineEpochs.at(-1)).toBeGreaterThan(state.diagnostics.baselineEpochs.at(-2));
+    }
+    for (const state of evidence) for (const correction of state.diagnostics.corrections ?? []) expect(correction.maxSettlingUs).toBeLessThanOrEqual(250000);
     expect(evidence[0].diagnostics.localInputs).toBeGreaterThan(0);
     expect(evidence[1].diagnostics.remoteRecords).toBeGreaterThan(0);
     const environments = await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, viewport: { width: innerWidth, height: innerHeight } }))));
