@@ -67,7 +67,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
           <input id="room-code" className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest" type="text" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} autoComplete="off" value={code} onChange={event => setCode(event.target.value.replace(/[^0-9]/g, ''))} aria-describedby="admission-error" />
           <button className={button} disabled={!state || pending || !/^\d{4}$/.test(code)}>Join Room</button>
         </form>
-        <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' ? state.status : '')}</p>
+        <p id="admission-error" role="alert">{error || (state?.status.startsWith('Unable') || state?.status === 'Browser unsupported' || state?.status === 'Version mismatch—reload' ? state.status : '')}</p>
         <button className={button} onClick={onBack}>Back</button>
       </> : <>
         <div className="flex gap-4 items-center"><span className="text-3xl font-mono tracking-widest" data-testid="room-code">{state?.code}</span><button className={button} onClick={() => { void navigator.clipboard?.writeText(state?.code ?? '').then(() => setCopy('Copied'), () => setCopy('Select and copy the code')); }}>{copy}</button></div>

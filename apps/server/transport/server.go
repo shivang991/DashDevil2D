@@ -221,7 +221,18 @@ func (s *Server) failure(c *fiber.Ctx, status int, code uint8, detail string) er
 	return c.Status(status).Send(wire)
 }
 func randomBytes() ([]byte, error) { b := make([]byte, 32); _, err := rand.Read(b); return b, err }
-func token(b []byte) string        { return base64.RawURLEncoding.EncodeToString(b) }
+func newTrackSeed() (uint32, error) {
+	var bytes [4]byte
+	if _, err := rand.Read(bytes[:]); err != nil {
+		return 0, err
+	}
+	value := binary.BigEndian.Uint32(bytes[:])
+	if value == 0 {
+		value = 1
+	}
+	return value, nil
+}
+func token(b []byte) string { return base64.RawURLEncoding.EncodeToString(b) }
 func (s *Server) admission(c *fiber.Ctx) error {
 	if c.Get("Origin") != s.config.Origin {
 		return s.failure(c, 403, 2, "Admission rejected")
@@ -306,14 +317,10 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			}
 			r.mode = mode
 			r.roundID = 1
-			var seed [4]byte
-			if _, e := rand.Read(seed[:]); e != nil {
+			r.seed, err = newTrackSeed()
+			if err != nil {
 				s.mu.Unlock()
 				return s.failure(c, 503, 2, "Unable to connect")
-			}
-			r.seed = binary.BigEndian.Uint32(seed[:])
-			if r.seed == 0 {
-				r.seed = 1
 			}
 			modeName := "drag-race"
 			if mode == 2 {

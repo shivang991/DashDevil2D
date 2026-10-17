@@ -95,7 +95,7 @@ export class PairedConnection {
     }
     this.state.status = 'Connecting'; this.publish();
     try {
-      const response = await fetch(`${this.options.server}/admission${operation === 0 ? `?mode=${mode}` : ''}`, {
+      const response = await fetch(`${this.options.server}/admission${operation === 0 && !this.options.diagnostic ? `?mode=${mode}` : ''}`, {
         method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, signal: AbortSignal.timeout(5000),
         body: encodeMessage('AdmissionRequest', { operation, version: 1, code, name: operation === 2 ? '' : localName(), credential: operation === 2 ? this.credential() : new Uint8Array() }) as Uint8Array<ArrayBuffer>,
       });
@@ -151,7 +151,7 @@ export class PairedConnection {
           this.state.room = message.value;
           if (previous?.phase === 1 && message.value.phase === 0) this.state.notice = 'Countdown cancelled. Both players must ready again.';
           this.state.connectedSeats = message.value.seats.filter(seat => seat.flags & 1).length;
-          if ((message.value.seats[admission.identity.seat].flags & 1) && this.baseline) { this.state.status = 'Connected'; this.state.pending = undefined; this.recoverUntil = 0; this.state.recoveryMs = performance.now() - this.restoredAt; }
+          if ((message.value.seats[admission.identity.seat].flags & 1) && this.baseline) { this.state.status = 'Connected'; if (![...this.pendingCommands.values()].some(command => command.label !== 'Focus')) this.state.pending = undefined; this.recoverUntil = 0; this.state.recoveryMs = performance.now() - this.restoredAt; }
           this.publish();
           if (!this.options.diagnostic && this.state.status === 'Connected' && !((previous?.seats[admission.identity.seat]?.flags ?? 0) & 1)) this.focus(this.focused, this.hidden);
         } else if (message.type === 'RoomReply') { this.reply(message.value); } else throw new Error('Unexpected room message');
@@ -330,7 +330,8 @@ export class PairedConnection {
     if (command !== 4 && this.state.pending) return;
     if (this.roomSequence >= 0xffffffff) { this.fail(new Error('Room counter exhausted'), this.generation); return; }
     const sequence = ++this.roomSequence;
-    const timeout = setTimeout(() => this.fail(new Error('Room confirmation timed out'), this.generation), 5000);
+    const generation = this.generation;
+    const timeout = setTimeout(() => this.fail(new Error('Room confirmation timed out'), generation), 5000);
     this.pendingCommands.set(sequence, { label, timeout });
     if (command !== 4) this.state.pending = label;
     this.socket.send(encodeMessage('RoomCommand', { identity: this.admission.identity, sequence, revision: this.revision, command, mode, ready }));

@@ -4,8 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"crypto/rand"
-	"encoding/binary"
 	"github.com/gofiber/contrib/websocket"
 	wt "github.com/quic-go/webtransport-go"
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
@@ -344,15 +342,12 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			s.mu.Unlock()
 			return fmt.Errorf("Round counter exhausted")
 		}
-		var seed [4]byte
-		if _, err := rand.Read(seed[:]); err != nil {
+		seed, err := newTrackSeed()
+		if err != nil {
 			s.mu.Unlock()
 			return err
 		}
-		r.seed = binary.BigEndian.Uint32(seed[:])
-		if r.seed == 0 {
-			r.seed = 1
-		}
+		r.seed = seed
 		for _, seat := range r.seats {
 			seat.inputGeneration++
 		}

@@ -129,3 +129,31 @@ test('host mode changes clear readiness and a reloaded tab recovers its authenti
     await info.attach('recovery-identities.json', { body: JSON.stringify({ original, recovered }), contentType: 'application/json' });
   } finally { await Promise.all(contexts.map(context => context.close())); }
 });
+
+test('readiness stays pending until its own command reply despite a room-state broadcast', async ({ page }) => {
+  let waitingReply: (() => void) | undefined;
+  let sequence = 0;
+  await page.routeWebSocket('**/room?ticket=*', route => {
+    const server = route.connectToServer();
+    route.onMessage(message => {
+      // v1 wire offsets: prefix/type 5, Identity 13, sequence 4,
+      // revision 4, command 1. Hold only a Ready command's explicit reply.
+      if (Buffer.isBuffer(message) && message[4] === 6 && message[26] === 1) sequence = message.readUInt32BE(18);
+      server.send(message);
+    });
+    server.onMessage(message => {
+      if (Buffer.isBuffer(message) && message[4] === 21 && message.readUInt32BE(18) === sequence) waitingReply = () => route.send(message);
+      else route.send(message);
+    });
+  });
+  await page.goto('/');
+  await page.getByRole('button', { name: /Drag Race/ }).click();
+  await page.getByRole('button', { name: 'Create Room', exact: true }).click();
+  await expect(page.getByTestId('connection-state')).toHaveText('Connected');
+  await page.getByRole('button', { name: 'Ready', exact: true }).click();
+  await expect.poll(() => Boolean(waitingReply)).toBe(true);
+  await expect(page.getByText('Confirming readiness…', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Cancel ready', exact: true })).toBeDisabled();
+  waitingReply!();
+  await expect(page.getByRole('button', { name: 'Cancel ready', exact: true })).toBeEnabled();
+});
