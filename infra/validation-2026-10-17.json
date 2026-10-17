@@ -1,0 +1,590 @@
+{
+  "version": 1,
+  "date": "2026-10-17",
+  "implementationCommits": [
+    "70b549e",
+    "b7f2ebd"
+  ],
+  "sourceNote": "Runs started on 70b549e with the cutoff fix and regression already present in the worktree; those source changes were subsequently committed unchanged as b7f2ebd. Existing unrelated App.tsx formatting was preserved and is included in source hashes. Later changes only correct evidence descriptions.",
+  "sourceSha256": {
+    ".github/workflows/preservation.yml": "b7609e390820bf38aee6e7cec52fe7e594b62a97770f4e33b90ccd99d10fd3ca",
+    "README.md": "a388454f14523a118b2d919ee93c3b3f1e5acdd45f3263e1074b628eb013e686",
+    "apps/client/playwright.config.ts": "f5110bb002489d711211b2aca39c572a22020404790d317416cc665e4fbaf677",
+    "apps/client/playwright.transport.config.ts": "764ac87853d2bde72b1d8f726c02ecb1ad6e863179160b36e1bf71ccbdf35ce8",
+    "apps/client/scripts/transport.mjs": "4e1b397b6d7a7b31f84410bb2e40857ddc7ea66e8bdc9dbca63a64886d2ba654",
+    "apps/client/src/App.tsx": "a7398597429c3d3f981d79c049f0544f2fc13a15a5f9241ac39e20c0c2692b4b",
+    "apps/client/src/components/RoundResult.tsx": "186869711680b9a3ad207c37826a82da5a46c193a46540a6fe4edca6745c4570",
+    "apps/client/src/transport/PairedConnection.ts": "ace49253df0b369978471b2f6af88248e86e48295aed8c1db0cd557bade2dce2",
+    "apps/client/tests/browser/maintenance.spec.ts": "0111b4f574253952fcd75355cf1b5e881f8ac4ba5a85d56f3d34f0014df1ee83",
+    "apps/client/tests/simulation/protocol.test.ts": "cc2ff56c33ef24044979dde4e32a80768656c15032fa45811cc0846af966f776",
+    "apps/server/cmd/diagnostic/main.go": "575f80317f5593ce74e6538498b88662d9cdd3fe1805afde9fa00ce214db8cb4",
+    "apps/server/operations/check.go": "ece0009fcd75e2dfe206fe8a00a3a2e439f5737bb595488a823094cafd0c572f",
+    "apps/server/protocol/generated.go": "341bdc05d420ccdcb41438b186f913d16228db5cdf28a1b25f072959df4cdbd4",
+    "apps/server/protocol/protocol_test.go": "f086f2a614914b2ade718c173ad97fbcbc3f62fdc57fdedbe7eeb798141ae2e0",
+    "apps/server/simulation/simulation.go": "b5231bed65f5479ba8d1818c58794cd8d7119d0577ead8a06021dcd9454f6402",
+    "apps/server/transport/README.md": "5062570d0dbfc6e312e7b5303e6a07ef86f4e2c6c35bbe5e426e8875e4fe40f2",
+    "apps/server/transport/gameplay.go": "0bd0cd484d92bd945ddf6bebbf6982404a03ef630129ef671f50559c06adc934",
+    "apps/server/transport/maintenance.go": "46622c1baac35a7dbdbcf211c1c05ab1e2bb6c9f519fe69b2d46fdc2c2fe538f",
+    "apps/server/transport/maintenance_boundary_test.go": "9ab1418116256c24529a57b46a2b595c230ade84ae8e419b7883f337d078c04d",
+    "apps/server/transport/maintenance_test.go": "593d7cdb99905f9678c6d3ab95f5d445bc504a7c164fc4923bfe4390d28f86cf",
+    "apps/server/transport/operator.go": "c5cf35c5bdb146bdedee0418a721a5402ee0a9a38893bd68ddfcdc93c161ffd9",
+    "apps/server/transport/operator_test.go": "1fa5ebbea4ca9f6d0489f49b0b2feee71bf124effb4246bea0e1f970c725d2a6",
+    "apps/server/transport/pair.go": "eeadf682950bb8b6a44664a5f3b6451afbd2f066e95a3ea82ad2d18a2809ce4c",
+    "apps/server/transport/race.go": "85f44b40504f73ce8c5f0bcea0bf206fc9484a4180a40b08f329f1d7355bf3eb",
+    "apps/server/transport/room_gameplay.go": "00a27ed8bd175c58f69e641468797e873132e53a3c6599f8ea1127a63a667bef",
+    "apps/server/transport/rooms_test.go": "cabf67d420457c943261597f7cdd768f92761d82ea58c7b8a4032c7f53e0a44b",
+    "apps/server/transport/server.go": "ea672d7e997bf89d9ba93c37e31af04d741c2f0c5943d78e4e170f84a06779b3",
+    "apps/server/transport/server_test.go": "4c76aeb2be5964ea4130eeee9ab6bca0cea3d95601ff9c5883f5f66c90426e11",
+    "infra/.env.example": "4f03063c71b199723f9c14351b05da0dca0d950c2f34841974e10eb7b8e1fec3",
+    "infra/README.md": "b73cd4b80358266ee959c4a3035d7c766895b8fed8a2e9cc842b838160aeee9d",
+    "infra/client/Dockerfile": "4cbd468c54307bbb1d52f6162e7906b22ef99d29808fcebdbe79981c91e360dd",
+    "infra/client/nginx.conf": "beabe0ed2d678d9b0e2466f4963003454e7261c390bc9f8e94d6f935cfb8efa2",
+    "infra/compose.yml": "0b81eacf69fd61df045923a9fecab44f4503e087e41b1b4945d9c62dbf6f3520",
+    "infra/nginx/Dockerfile": "f4616daf761896d3f8e4f00f19478eed29d24f3f5015f1c402c313e863dce727",
+    "infra/nginx/default.conf.template": "dfefe397606a75d47185c3d7ea223574ee1ab74f5d31237836f65317309a0534",
+    "infra/review-2026-10-17.md": "9075dbc39d0767e4172fb3ef032beef0bd55abd9ed210136c83d838f68055fb7",
+    "infra/server/Dockerfile": "16c27f37e71e7733be5d6cca89f56a1657aa2139c5c7e3f3785a1daf2d76b098",
+    "infra/server/start.sh": "b3780afb9b3f2dd20826cb4a109c55257f0edd619b9a29ea0ab51a0115f33694",
+    "infra/up.sh": "afd4fc1e7b762d152b6ce730d705d1589eb8555250b05008ddbc534d1e8d7992",
+    "package.json": "c9bc021db3ef7edd6a99dcce06eed163db419bf6071daa8fafb9c90136d12611",
+    "packages/contracts/generated/protocol.ts": "fc99dcba65582f61476ce91cafdb6cd951f5b2040da0ad086b2e84eaf7472087",
+    "packages/contracts/protocol/README.md": "309604343638f692e3c91cf91f3eac733127e3be16fae30428bafb04d0a33866",
+    "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+    "packages/contracts/protocol/schema.json": "39fb5cec8019375deb201e2a5f763a5baabf48b777e75645fd1a1c12014e1ff2",
+    "packages/contracts/protocol/validation.ts": "b0b3085ee4fefd2eb50e3d3fc8251c6c4c0f496de9a3c3ad3d27d6ad48208e94",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "platform": "Docker Desktop 28.0.1; linux/arm64 containers; Apple M2/macOS; Go1.26.0, Node26.10.0, pnpm8.15.9",
+  "images": [
+    {
+      "tags": [
+        "dashdevil-client:latest"
+      ],
+      "id": "sha256:60f7bd7360519799be90cb91b909956853c1259fcf235d727f3a7203999e0257",
+      "architecture": "arm64",
+      "os": "linux"
+    },
+    {
+      "tags": [
+        "dashdevil-server:latest"
+      ],
+      "id": "sha256:b1a51edde1002b8342cb9e3c3ddca0561df881099e58d712f298aafac3db3f4b",
+      "architecture": "arm64",
+      "os": "linux"
+    },
+    {
+      "tags": [
+        "dashdevil-nginx:latest"
+      ],
+      "id": "sha256:4c275865fdcd6795fc110d4e316fb517df944a4cb7f3531debfbc162a82cac1c",
+      "architecture": "arm64",
+      "os": "linux"
+    }
+  ],
+  "checks": [
+    {
+      "command": [
+        "pnpm",
+        "check:generated"
+      ],
+      "exitCode": 0,
+      "started": 1792263884.110657,
+      "elapsed": 0.9382491111755371,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-check-generated.log",
+      "revision": "70b549e2a955d89a6af59fbf8431873098c04ff2"
+    },
+    {
+      "command": [
+        "pnpm",
+        "exec",
+        "turbo",
+        "run",
+        "typecheck",
+        "lint",
+        "test",
+        "build",
+        "--env-mode=loose",
+        "--force"
+      ],
+      "exitCode": 0,
+      "started": 1792263885.055228,
+      "elapsed": 38.12620687484741,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-workspace.log",
+      "revision": "70b549e2a955d89a6af59fbf8431873098c04ff2"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:maintenance"
+      ],
+      "exitCode": 0,
+      "started": 1792263923.191882,
+      "elapsed": 26.372013092041016,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-maintenance.log",
+      "revision": "70b549e2a955d89a6af59fbf8431873098c04ff2"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:lifecycle"
+      ],
+      "exitCode": 0,
+      "started": 1792263949.5717492,
+      "elapsed": 35.73619365692139,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-lifecycle.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:race"
+      ],
+      "exitCode": 0,
+      "started": 1792263985.314914,
+      "elapsed": 41.81666803359985,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-race.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:objects"
+      ],
+      "exitCode": 0,
+      "started": 1792264027.138782,
+      "elapsed": 14.273313999176025,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-objects.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:hearts"
+      ],
+      "exitCode": 0,
+      "started": 1792264041.419363,
+      "elapsed": 16.715222120285034,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-hearts.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:contacts"
+      ],
+      "exitCode": 0,
+      "started": 1792264058.1452339,
+      "elapsed": 30.92676091194153,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-contacts.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:rooms"
+      ],
+      "exitCode": 0,
+      "started": 1792264089.084267,
+      "elapsed": 14.025333166122437,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-rooms.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:transport"
+      ],
+      "exitCode": 0,
+      "started": 1792264103.1195562,
+      "elapsed": 8.042733669281006,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-transport.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:browser"
+      ],
+      "exitCode": 0,
+      "started": 1792264111.1722372,
+      "elapsed": 77.28819990158081,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/verified-test-browser.log",
+      "revision": "b7f2ebdf127c8542cc6f8e4ec4de2c4bc5d9ea4a"
+    }
+  ],
+  "browserEvidence": [
+    {
+      "command": [
+        "pnpm",
+        "test:maintenance"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-05-49.319Z/manifest.json",
+      "fixture": "default Drag Race; completed and active rooms under a two-second test maintenance deadline",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-05-49.319Z/browser-1792263925325/results.json",
+          "startTime": "2026-10-17T19:05:25.328Z",
+          "duration": 23937.415,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:lifecycle"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-06-25.063Z/manifest.json",
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-06-25.063Z/browser-1792263951761/results.json",
+          "startTime": "2026-10-17T19:05:51.770Z",
+          "duration": 33240.205,
+          "expected": 2,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:race"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-07-06.875Z/manifest.json",
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-07-06.875Z/browser-1792263987573/results.json",
+          "startTime": "2026-10-17T19:06:27.577Z",
+          "duration": 39240.717000000004,
+          "expected": 4,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:objects"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-07-21.167Z/manifest.json",
+      "fixture": "shipped default Drag Race configuration; random server seed; obstacles and HP elimination",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-07-21.167Z/browser-1792264029247/results.json",
+          "startTime": "2026-10-17T19:07:09.250Z",
+          "duration": 11865.628999999999,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:hearts"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-07-37.827Z/manifest.json",
+      "fixture": "validated infra/hearts-track.json; reserved heart contention and confirmed finish",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-07-37.827Z/browser-1792264043581/results.json",
+          "startTime": "2026-10-17T19:07:23.583Z",
+          "duration": 14183.032000000001,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:contacts"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-08-08.672Z/manifest.json",
+      "fixture": "validated infra/contacts-track.json; swept returns, overtaking and persistent tailgating",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-08-08.672Z/browser-1792264060766/results.json",
+          "startTime": "2026-10-17T19:07:40.775Z",
+          "duration": 27774.423,
+          "expected": 2,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:rooms"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-08-22.831Z/manifest.json",
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-08-22.831Z/browser-1792264091741/results.json",
+          "startTime": "2026-10-17T19:08:11.752Z",
+          "duration": 11017.179999999998,
+          "expected": 5,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    },
+    {
+      "command": [
+        "pnpm",
+        "test:transport"
+      ],
+      "manifest": "apps/client/test-results/transport-2026-10-17T19-08-30.905Z/manifest.json",
+      "fixture": "protocol-v1 diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass",
+      "stats": [
+        {
+          "report": "apps/client/test-results/transport-2026-10-17T19-08-30.905Z/browser-1792264105336/results.json",
+          "startTime": "2026-10-17T19:08:25.347Z",
+          "duration": 5500.276000000001,
+          "expected": 3,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      ]
+    }
+  ],
+  "diagnosticFixtureLabelNote": "The transport manifest label protocol-v1 was stale descriptive text; generated codecs and actual traffic use protocol 2. Only that label was corrected after tests.",
+  "maintenanceBrowserResult": {
+    "maintenance": {
+      "draining": true,
+      "complete": false,
+      "activeRounds": 1,
+      "deadlineUs": 21248124
+    },
+    "abandoned": [
+      {
+        "identity": {
+          "roomId": 4,
+          "seatSession": 5,
+          "pairGeneration": 1,
+          "seat": 0
+        },
+        "roundId": 2,
+        "outcomeId": 1,
+        "tick": 141,
+        "timeUs": 2344308,
+        "result": 3,
+        "reason": 7,
+        "cars": [
+          {
+            "progress": 937.7231999999991,
+            "lateral": -120,
+            "hp": 3,
+            "score": 0
+          },
+          {
+            "progress": 937.7231999999991,
+            "lateral": 120,
+            "hp": 3,
+            "score": 0
+          }
+        ],
+        "progress": {
+          "authority": 19,
+          "event": 0,
+          "processed1": 23,
+          "processed2": 22,
+          "disposed1": 23,
+          "disposed2": 22
+        }
+      },
+      {
+        "identity": {
+          "roomId": 4,
+          "seatSession": 6,
+          "pairGeneration": 1,
+          "seat": 1
+        },
+        "roundId": 2,
+        "outcomeId": 1,
+        "tick": 141,
+        "timeUs": 2344308,
+        "result": 3,
+        "reason": 7,
+        "cars": [
+          {
+            "progress": 937.7231999999991,
+            "lateral": -120,
+            "hp": 3,
+            "score": 0
+          },
+          {
+            "progress": 937.7231999999991,
+            "lateral": 120,
+            "hp": 3,
+            "score": 0
+          }
+        ],
+        "progress": {
+          "authority": 19,
+          "event": 0,
+          "processed1": 23,
+          "processed2": 22,
+          "disposed1": 23,
+          "disposed2": 22
+        }
+      }
+    ],
+    "finished": {
+      "identity": {
+        "roomId": 1,
+        "seatSession": 2,
+        "pairGeneration": 1,
+        "seat": 0
+      },
+      "roundId": 2,
+      "outcomeId": 1,
+      "tick": 411,
+      "timeUs": 6850000,
+      "result": 1,
+      "reason": 1,
+      "cars": [
+        {
+          "progress": 2739.999999999999,
+          "lateral": -120,
+          "hp": 0,
+          "score": 0
+        },
+        {
+          "progress": 2739.999999999999,
+          "lateral": 120,
+          "hp": 2,
+          "score": 0
+        }
+      ],
+      "progress": {
+        "authority": 59,
+        "event": 4,
+        "processed1": 41,
+        "processed2": 40,
+        "disposed1": 41,
+        "disposed2": 40
+      }
+    },
+    "environments": [
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "viewport": [
+          1280,
+          900
+        ]
+      },
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "viewport": [
+          1280,
+          900
+        ]
+      },
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "viewport": [
+          1280,
+          900
+        ]
+      },
+      {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+        "viewport": [
+          1280,
+          900
+        ]
+      }
+    ],
+    "before": {
+      "roundId": 2,
+      "startUs": 18903816,
+      "timeUs": 283333,
+      "seed": 1785673473
+    }
+  },
+  "containerSmoke": {
+    "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/infra-update/container-smoke-1792263905453396000.log",
+    "checks": [
+      "empty-certificate HTTP bootstrap, challenge and redirect",
+      "public mapped TCP and UDP probes with explicit local-CA trust and no TLS bypass",
+      "private operator route not exposed through edge",
+      "container private readiness and completed drain",
+      "unchanged-image force recreation restores readiness",
+      "certificate rotation: nginx activation and Go drain/restart"
+    ],
+    "certificateRestartSeconds": 26.604679875075817,
+    "trust": "isolated local CA; native Go standard TLS verification; no public ACME or browser certificate acceptance claim",
+    "ports": {
+      "http": 18080,
+      "httpsAndUDP": 18443
+    },
+    "project": "dashdevil-infra-update",
+    "privateKeysExcluded": true
+  },
+  "additionalChecks": [
+    "sh -n for up.sh/server start/nginx start/render-config passed",
+    "Compose config passed",
+    "safe default maintenance config accepted by built image; stop-grace-period10s rejected before listeners",
+    "isolated smoke containers and volumes removed",
+    "git diff --check passed"
+  ],
+  "review": "infra/review-2026-10-17.md",
+  "retainedFailures": [
+    "maintenance-red.log: missing public maintenance API before implementation",
+    "version-red.log: prior protocol accepted before version bump; contains expired fixture tokens, never copied into tracked evidence",
+    "operator-tests.log: fixture assumed Fiber would stop serving cached deleted assets; replaced with fresh missing-assets server",
+    "full-check-1.log: historical-version semantic assumptions caught and corrected",
+    "final-*.log: sandbox disallowed loopback listeners; superseded by network-enabled verified logs",
+    "container-smoke.log: native Darwin test client needed explicit local CA roots",
+    "container-smoke-1792263853495480000.log: Python strict TLS rejected incomplete test-CA keyUsage; fixture CA corrected, no TLS bypass",
+    "docker-build-reviewed.log: Docker daemon was stopped; started Docker Desktop and rebuilt"
+  ],
+  "limits": [
+    "No live deployment modified; no public ACME issuance or renewal dry-run performed",
+    "Local mapped TCP/UDP18443 proves container routing, not public443 ingress/DNS/firewall/NAT",
+    "Native container TLS uses explicitly trusted fixture CA; browser fixtures use process-scoped HTTPS SPKI and WebTransport certificate hash pins, not production public-known-root acceptance",
+    "No linux/amd64, wider supported browser/reference hardware/network/capacity/observability or human production acceptance established",
+    "Independent Standards review failed due account usage limit; primary inspection is recorded separately"
+  ],
+  "privateKeysExcluded": true,
+  "singlePlayerBrowserEvidence": {
+    "manifest": "apps/client/test-results/run-2026-10-17T19-08-32.148Z-pzHUrX/manifest.json",
+    "passed": 12,
+    "failed": 0,
+    "retries": 0,
+    "log": "apps/client/test-results/infra-update/verified-test-browser.log"
+  },
+  "browserTotal": {
+    "passed": 31,
+    "failed": 0,
+    "flaky": 0,
+    "retries": 0
+  }
+}
