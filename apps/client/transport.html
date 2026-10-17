@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="referrer" content="no-referrer"><title>DashDevil transport diagnostic</title></head>
+<body>
+<main>
+<h1>Transport diagnostic</h1>
+<p>Connect two browser tabs to test secure admission, reliable streams, verification datagrams and seat recovery. The cars are a stationary fixture; this page does not run a multiplayer game.</p>
+<p><a href="/">Play Long Drive</a></p>
+<div class="actions"><button id="create">Create diagnostic room</button><label>Room code <input id="code" maxlength="4" pattern="[0-9]{4}" inputmode="numeric"></label><button id="join">Join diagnostic room</button><button id="recover">Recover pair</button><button id="leave">Leave room</button></div>
+<p role="status" data-testid="status">Disconnected</p>
+<dl>
+<dt>Room code</dt><dd data-testid="room-code">—</dd>
+<dt>Seat session</dt><dd data-testid="seat-session">—</dd>
+<dt>Pair generation</dt><dd data-testid="pair-generation">—</dd>
+<dt>Connected seats</dt><dd data-testid="connected-seats">0</dd>
+<dt>Verified datagrams</dt><dd data-testid="verified">0</dd>
+<dt>Authority barriers</dt><dd data-testid="barriers">0</dd>
+<dt>Clock samples</dt><dd data-testid="clock-samples">0</dd>
+<dt>Fixture positions</dt><dd data-testid="positions">—</dd>
+</dl>
+<div class="actions"><button id="drop-room">Drop room channel</button><button id="drop-gameplay">Drop gameplay channel</button><button id="baseline">Request fresh baseline</button><button id="replace">Replace connected pair</button></div>
+<h2>Connection evidence</h2><pre id="evidence"></pre>
+</main><script type="module" src="/src/transport/diagnostic.ts"></script>
+</body></html>

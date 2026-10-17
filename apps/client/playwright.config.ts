@@ -16,7 +16,7 @@ if (path.dirname(outputDirectory) !== path.resolve('test-results') || !path.base
   throw new Error('Capture run directory must be inside test-results');
 }
 export default defineConfig({
-  testDir: './tests/browser', retries: 0, workers: 1,
+  testDir: './tests/browser', testIgnore: 'transport.spec.ts', retries: 0, workers: 1,
   outputDir: outputDirectory,
   metadata: { captureProvenance: capture.provenance },
   reporter: [['list'], ['./tests/browser/capture-reporter.ts']],

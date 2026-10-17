@@ -1,0 +1,78 @@
+name: dashdevil
+
+services:
+  client:
+    build:
+      context: ..
+      dockerfile: infra/client/Dockerfile
+    restart: unless-stopped
+    networks: [app]
+
+  server:
+    build:
+      context: ..
+      dockerfile: infra/server/Dockerfile
+    command:
+      - --address
+      - 0.0.0.0:8443
+      - --origin
+      - https://${PUBLIC_HOST:?Set PUBLIC_HOST to your DNS hostname}
+      - --cert
+      - /run/tls/live/dashdevil/fullchain.pem
+      - --key
+      - /run/tls/live/dashdevil/privkey.pem
+    volumes:
+      - letsencrypt:/run/tls:ro
+    # TCP 8443 stays private. QUIC/HTTP3 reaches the Go listener directly.
+    ports:
+      - "443:8443/udp"
+    restart: unless-stopped
+    init: true
+    stop_grace_period: 10s
+    networks: [app]
+
+  nginx:
+    build:
+      context: ..
+      dockerfile: infra/nginx/Dockerfile
+    environment:
+      PUBLIC_HOST: ${PUBLIC_HOST:?Set PUBLIC_HOST to your DNS hostname}
+    volumes:
+      - letsencrypt:/etc/letsencrypt:ro
+      - acme-webroot:/var/www/certbot:ro
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+    depends_on:
+      client:
+        condition: service_healthy
+    restart: unless-stopped
+    init: true
+    networks: [app]
+
+  certbot:
+    image: certbot/certbot:v5.8.0
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - |
+        trap 'exit 0' TERM INT
+        while :; do
+          certbot renew --webroot --webroot-path /var/www/certbot --non-interactive
+          sleep 43200 &
+          wait $$!
+        done
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - acme-webroot:/var/www/certbot
+    restart: unless-stopped
+    init: true
+    networks: [app]
+
+volumes:
+  letsencrypt:
+  acme-webroot:
+
+networks:
+  app:
+    driver: bridge

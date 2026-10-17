@@ -21,6 +21,7 @@ jobs:
       - run: pnpm check
       - run: pnpm --filter @dashdevil/client exec playwright install --with-deps chrome ffmpeg
       - run: pnpm test:browser
+      - run: pnpm test:transport
       - uses: actions/upload-artifact@v4
         if: always()
         with:
