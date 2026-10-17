@@ -1496,6 +1496,14 @@
     {
       "seconds": 10.009,
       "expected": 10009000
+    },
+    {
+      "seconds": 0.016667499,
+      "expected": 16667
+    },
+    {
+      "seconds": 0.0166675,
+      "expected": 16668
     }
   ],
   "geometry": [

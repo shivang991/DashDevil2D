@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "configuration": "infra/clear-track.json with finishDistance 400",
   "expectations": "Worked examples: front edge = center + 40; normal 400 units/s; NOS 800 units/s; lateral speed 800 units/s. Event timestamps use half-up microseconds.",
   "scenarios": [
@@ -143,6 +143,60 @@
       "phase": 0,
       "nos": false,
       "timeUs": 25000,
+      "tick": 2,
+      "result": 2,
+      "lateral": -120
+    },
+    {
+      "name": "equal canonical finishes straddle the raw tick boundary",
+      "progress": [
+        353.33336,
+        353.33328
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 16667,
+      "tick": 2,
+      "result": 2,
+      "lateral": -120
+    },
+    {
+      "name": "finish above the exclusive upper bound is a later canonical group",
+      "progress": [
+        353.33336,
+        353.33296
+      ],
+      "phase": 0,
+      "nos": false,
+      "timeUs": 16667,
+      "tick": 2,
+      "result": 0,
+      "lateral": -120
+    },
+    {
+      "name": "shift completion inside a split finish group",
+      "progress": [
+        353.33336,
+        353.33328
+      ],
+      "phase": 1,
+      "nos": false,
+      "movementEndUs": 16667,
+      "timeUs": 16667,
+      "tick": 2,
+      "result": 2,
+      "lateral": 0
+    },
+    {
+      "name": "return completion inside a split finish group",
+      "progress": [
+        353.33336,
+        353.33328
+      ],
+      "phase": 2,
+      "nos": false,
+      "movementEndUs": 16667,
+      "timeUs": 16667,
       "tick": 2,
       "result": 2,
       "lateral": -120

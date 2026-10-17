@@ -1,0 +1,15 @@
+{
+  "gameplay": {
+    "finishDistance": 440,
+    "tickRate": 1,
+    "initialClearDistance": 0,
+    "reservedHearts": 0,
+    "emptyWeight": 1,
+    "obstacleWeight": 0,
+    "coinWeight": 0,
+    "heartWeight": 0
+  },
+  "operational": {
+    "simulationLagThreshold": 2
+  }
+}

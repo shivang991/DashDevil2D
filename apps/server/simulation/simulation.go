@@ -45,6 +45,14 @@ type State struct {
 	Cars        [2]protocol.Car        `json:"cars"`
 	LatestPress *Press                 `json:"latestPress"`
 }
+type eventGroup struct {
+	sampleTime float64
+	timeUs     uint64
+	contacts   []objectContact
+	finishMask uint8
+	sample     [2]protocol.Car
+	hasSample  bool
+}
 type queued struct {
 	seat  uint8
 	input protocol.Input
@@ -52,7 +60,16 @@ type queued struct {
 }
 
 // Engine is owned by one round coordinator. No method may run concurrently.
+type seatReset struct {
+	identity             protocol.Identity
+	generation, sequence uint32
+}
 type Engine struct {
+	frozen      *State
+	resets      [2]*seatReset
+	group       *eventGroup
+	committed   *State
+	held        []Observation
 	consumption map[uint32]uint8
 	tracks      [2]*track.Multiplayer
 	context     protocol.Context
@@ -100,7 +117,29 @@ func New(config configuration.Configuration, seed uint32, identities [2]protocol
 	}
 	return e, nil
 }
+func cloneState(state State) State {
+	if state.Finish != nil {
+		copy := *state.Finish
+		state.Finish = &copy
+	}
+	if state.LatestPress != nil {
+		copy := *state.LatestPress
+		state.LatestPress = &copy
+	}
+	state.Objects = append([]protocol.ObjectState{}, state.Objects...)
+	state.Track.Slices = append([]track.Slice{}, state.Track.Slices...)
+	return state
+}
 func (e *Engine) Snapshot() State {
+	if e.frozen != nil {
+		return cloneState(*e.frozen)
+	}
+	if e.committed != nil {
+		return cloneState(*e.committed)
+	}
+	return e.currentSnapshot()
+}
+func (e *Engine) currentSnapshot() State {
 	result := e.state
 	if result.Finish != nil {
 		copy := *result.Finish
@@ -304,8 +343,58 @@ func (e *Engine) StopAt(seconds float64) ([]Observation, error) {
 	}
 	return events, err
 }
+func (e *Engine) PendingGroup() bool { return e.committed != nil }
+
+func (e *Engine) move(start, end float64) {
+	g := e.context.Gameplay
+	multipliers := [2]float64{e.multiplier(0), e.multiplier(1)}
+	for seat := range e.state.Cars {
+		car := &e.state.Cars[seat]
+		distance := forwardDistance(g, start, end-start)
+		car.Progress = car.Progress + float64(distance*multipliers[seat])
+		car.NormalSpeed = math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*end))
+		if car.Phase != 0 {
+			fraction := math.Max(0, math.Min(1, (float64(end*1e6)-float64(car.MovementStartUs))/float64(car.MovementEndUs-car.MovementStartUs)))
+			car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
+		}
+	}
+}
+
+type crossing struct {
+	seat   int
+	time   float64
+	timeUs uint64
+}
+
+func (e *Engine) crossings(start, end float64) []crossing {
+	result := []crossing{}
+	g := e.context.Gameplay
+	for seat, car := range e.state.Cars {
+		if e.group != nil && e.group.finishMask&(1<<seat) != 0 {
+			continue
+		}
+		remaining := g.FinishDistance - g.CarHeight/2 - car.Progress
+		multiplier := e.multiplier(seat)
+		if forwardDistance(g, start, end-start)*multiplier < remaining {
+			continue
+		}
+		low, high := start, end
+		for n := 0; n < 52; n++ {
+			middle := low + (high-low)/2
+			if forwardDistance(g, start, middle-start)*multiplier < remaining {
+				low = middle
+			} else {
+				high = middle
+			}
+		}
+		us, _ := CanonicalTime(high)
+		result = append(result, crossing{seat, high, us})
+	}
+	return result
+}
 func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) {
-	if _, err := CanonicalTime(seconds); err != nil {
+	stopUs, err := CanonicalTime(seconds)
+	if err != nil {
 		return nil, err
 	}
 	if seconds < e.wallTime {
@@ -319,19 +408,30 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 	}
 	e.wallTime = seconds
 	g := e.context.Gameplay
-	events := e.releases
+	events := append(append([]Observation{}, e.held...), e.releases...)
+	e.held = nil
 	e.releases = nil
-	if events == nil {
-		events = []Observation{}
+	withheldStart := -1
+	if e.committed != nil {
+		withheldStart = 0
 	}
 	if seconds-float64(e.state.Tick)/g.TickRate > e.context.Operational.SimulationLagThreshold {
+		hadPending := e.committed != nil
+		if e.committed != nil {
+			e.state = cloneState(*e.committed)
+		}
 		e.state.Abandoned = true
 		e.pending = nil
+		e.group = nil
+		e.committed = nil
 		for seat := range e.state.Cars {
 			clear(&e.state.Cars[seat])
 		}
-		events = append(events, Observation{Type: "abandoned", Tick: e.state.Tick, TimeUs: e.state.TimeUs})
-		return events, nil
+		if hadPending {
+			copy := cloneState(e.state)
+			e.frozen = &copy
+		}
+		return []Observation{{Type: "abandoned", Tick: e.state.Tick, TimeUs: e.state.TimeUs}}, nil
 	}
 	if err := e.updateTrack(); err != nil {
 		return nil, err
@@ -340,28 +440,33 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 		if e.state.Tick == math.MaxUint32 {
 			return nil, fmt.Errorf("tick exhausted")
 		}
+		before := e.currentSnapshot()
+		eventStart := len(events)
+		if e.committed != nil {
+			before = cloneState(*e.committed)
+			eventStart = 0
+		}
 		time := float64(e.state.Tick) / g.TickRate
 		end := float64(uint64(e.state.Tick)+1) / g.TickRate
 		if stopping {
 			end = math.Min(end, seconds)
 		}
-		timeUs, _ := CanonicalTime(time)
-		e.boundaries(timeUs, &events)
-		e.apply(timeUs, &events)
+		e.boundaries(uint64(math.Floor(time*1e6)), &events)
+		applicationUs, _ := CanonicalTime(time)
+		e.apply(applicationUs, &events)
 		for time < end {
-			startUs, _ := CanonicalTime(time)
 			for seat := range e.state.Cars {
-				e.shift(&e.state.Cars[seat], uint8(seat), startUs, &events)
+				e.shift(&e.state.Cars[seat], uint8(seat), uint64(math.Floor(time*1e6)), &events)
 			}
 			next := end
 			for _, car := range e.state.Cars {
-				if car.Effective != 0 && car.FreshnessUs > startUs {
+				if car.Effective != 0 && float64(car.FreshnessUs)/1e6 > time {
 					next = math.Min(next, float64(car.FreshnessUs)/1e6)
 				}
-				if car.Phase != 0 && car.MovementEndUs > startUs {
+				if car.Phase != 0 && float64(car.MovementEndUs)/1e6 > time {
 					next = math.Min(next, float64(car.MovementEndUs)/1e6)
 				}
-				if car.Phase == 0 && (car.Effective == 1 || car.Effective == 2) && car.NextShiftUs > startUs {
+				if car.Phase == 0 && (car.Effective == 1 || car.Effective == 2) && float64(car.NextShiftUs)/1e6 > time {
 					next = math.Min(next, float64(car.NextShiftUs)/1e6)
 				}
 			}
@@ -369,108 +474,157 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 			next = math.Min(next, collision)
 			next = e.clearance(time, next)
 			contacts := e.objectContacts(time, next)
-			finishTime := math.Inf(1)
-			finishMask := uint8(0)
+			finishes := []crossing{}
 			if e.context.Mode == 1 {
-				for seat, car := range e.state.Cars {
-					remaining := g.FinishDistance - g.CarHeight/2 - car.Progress
-					multiplier := e.multiplier(seat)
-					if forwardDistance(g, time, next-time)*multiplier < remaining {
-						continue
+				finishes = e.crossings(time, next)
+			}
+			if e.group == nil {
+				first := uint64(math.MaxUint64)
+				if len(contacts) > 0 {
+					first = contacts[0].timeUs
+				}
+				for _, finish := range finishes {
+					first = min(first, finish.timeUs)
+				}
+				if first != math.MaxUint64 {
+					boundary := math.Round(float64(first)*g.TickRate/1e6) / g.TickRate
+					boundaryUs, _ := CanonicalTime(boundary)
+					sampleTime := float64(first) / 1e6
+					if boundaryUs == first {
+						sampleTime = boundary
 					}
-					low, high := time, next
-					for n := 0; n < 52; n++ {
-						middle := low + (high-low)/2
-						if forwardDistance(g, time, middle-time)*multiplier < remaining {
-							low = middle
-						} else {
-							high = middle
+					e.group = &eventGroup{timeUs: first, sampleTime: sampleTime}
+				}
+			}
+			group := e.group
+			if group != nil {
+				next = math.Min(next, (float64(group.timeUs)+.5)/1e6)
+				center := group.sampleTime
+				if !group.hasSample && center > time {
+					next = math.Min(next, center)
+				}
+				if !group.hasSample && center <= time {
+					group.sample = e.state.Cars
+					elapsed := time - center
+					for seat := range group.sample {
+						car := &group.sample[seat]
+						car.Progress -= forwardDistance(g, center, elapsed) * e.multiplier(seat)
+						car.NormalSpeed = math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*group.sampleTime))
+						if car.Phase != 0 {
+							fraction := math.Max(0, math.Min(1, (group.sampleTime*1e6-float64(car.MovementStartUs))/float64(car.MovementEndUs-car.MovementStartUs)))
+							car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
 						}
 					}
-					crossing := high
-					crossingUs, _ := CanonicalTime(crossing)
-					firstUs, _ := CanonicalTime(finishTime)
-					if math.IsInf(finishTime, 1) || crossingUs < firstUs {
-						finishTime = crossing
-						finishMask = 1 << seat
-					} else if crossingUs == firstUs {
-						finishMask |= 1 << seat
+					group.hasSample = true
+				}
+				contacts = e.objectContacts(time, next)
+				for _, contact := range contacts {
+					if contact.timeUs == group.timeUs {
+						group.contacts = append(group.contacts, contact)
 					}
 				}
-				if finishMask != 0 {
-					next = finishTime
-				}
-			}
-			if len(contacts) > 0 {
-				nextUs, _ := CanonicalTime(next)
-				if contacts[0].timeUs <= nextUs {
-					if contacts[0].timeUs < nextUs {
-						finishMask = 0
+				if e.context.Mode == 1 {
+					for _, finish := range e.crossings(time, next) {
+						if finish.timeUs == group.timeUs {
+							group.finishMask |= 1 << finish.seat
+						}
 					}
-					next = math.Min(next, math.Max(time, float64(contacts[0].timeUs)/1e6))
 				}
 			}
-			elapsed := next - time
-			multipliers := [2]float64{e.multiplier(0), e.multiplier(1)}
-			for seat := range e.state.Cars {
-				car := &e.state.Cars[seat]
-				distance := forwardDistance(g, time, elapsed)
-				multiplier := multipliers[seat]
-				car.Progress = car.Progress + float64(distance*multiplier)
-				car.NormalSpeed = math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*next))
-				if car.Phase != 0 {
-					fraction := (float64(next*1e6) - float64(car.MovementStartUs)) / float64(car.MovementEndUs-car.MovementStartUs)
-					car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
-				}
-			}
+			e.move(time, next)
+			closing := group != nil && next >= (float64(group.timeUs)+.5)/1e6
 			nextUs, _ := CanonicalTime(next)
-			if math.Abs(next-collision) < 1e-12 {
-				e.resolvePlayers(next, &events)
-			}
-			if len(contacts) > 0 && contacts[0].timeUs == nextUs {
-				e.resolveObjects(contacts, &events, nextUs)
-			}
-			deadMask := uint8(0)
-			for seat, car := range e.state.Cars {
-				if car.Hp == 0 {
-					deadMask |= 1 << seat
+			if !closing || nextUs == group.timeUs {
+				if math.Abs(next-collision) < 1e-12 {
+					e.resolvePlayers(next, &events)
 				}
+				e.boundaries(uint64(math.Floor(next*1e6)), &events)
 			}
-			if deadMask != 0 {
-				result := uint8(2)
-				if deadMask == 1 {
-					result = 1
-				}
-				if deadMask == 2 {
-					result = 0
-				}
-				e.state.Tick = uint32(math.Ceil(float64(nextUs) * g.TickRate / 1e6))
-				e.state.TimeUs = nextUs
-				e.state.Finish = &Finish{Tick: e.state.Tick, TimeUs: nextUs, Result: result, Reason: 1}
-				return events, nil
+			if group != nil && !group.hasSample && next >= group.sampleTime {
+				group.sample = e.state.Cars
+				group.hasSample = true
 			}
-			if finishMask != 0 {
-				result := uint8(2)
-				if finishMask == 1 {
-					result = 0
+			if closing {
+				positions := e.state.Cars
+				for seat := range e.state.Cars {
+					car := &e.state.Cars[seat]
+					car.Progress = group.sample[seat].Progress
+					if car.Phase == group.sample[seat].Phase && car.MovementStartUs == group.sample[seat].MovementStartUs {
+						car.Lateral = group.sample[seat].Lateral
+					} else if car.Phase == 0 {
+						car.Lateral = car.MovementTarget
+					} else {
+						car.Lateral = car.MovementOrigin
+					}
+					car.NormalSpeed = group.sample[seat].NormalSpeed
 				}
-				if finishMask == 2 {
-					result = 1
+				if len(group.contacts) > 0 {
+					sort.SliceStable(group.contacts, func(i, j int) bool {
+						a, b := group.contacts[i], group.contacts[j]
+						if a.object.Id != b.object.Id {
+							return a.object.Id < b.object.Id
+						}
+						return a.seat < b.seat
+					})
+					e.resolveObjects(group.contacts, &events, group.timeUs)
+				}
+				deadMask := uint8(0)
+				for seat, car := range e.state.Cars {
+					if car.Hp == 0 {
+						deadMask |= 1 << seat
+					}
+				}
+				if deadMask != 0 || group.finishMask != 0 {
+					result, reason := uint8(2), uint8(0)
+					if deadMask != 0 {
+						reason = 1
+						if deadMask == 1 {
+							result = 1
+						}
+						if deadMask == 2 {
+							result = 0
+						}
+					} else {
+						if group.finishMask == 1 {
+							result = 0
+						}
+						if group.finishMask == 2 {
+							result = 1
+						}
+						for seat := range e.state.Cars {
+							if group.finishMask&(1<<seat) != 0 {
+								e.state.Cars[seat].Progress = g.FinishDistance - g.CarHeight/2
+							}
+						}
+					}
+					e.state.Tick = uint32(math.Ceil(float64(group.timeUs) * g.TickRate / 1e6))
+					e.state.TimeUs = group.timeUs
+					e.state.Finish = &Finish{Tick: e.state.Tick, TimeUs: group.timeUs, Result: result, Reason: reason}
+					e.resets = [2]*seatReset{}
+					e.group = nil
+					e.committed = nil
+					return events, nil
 				}
 				for seat := range e.state.Cars {
-					if finishMask&(1<<seat) != 0 {
-						e.state.Cars[seat].Progress = g.FinishDistance - g.CarHeight/2
+					car := &e.state.Cars[seat]
+					car.Progress = positions[seat].Progress
+					car.Lateral = positions[seat].Lateral
+					car.NormalSpeed = positions[seat].NormalSpeed
+				}
+				e.group = nil
+				e.committed = nil
+				for seat, reset := range e.resets {
+					if reset != nil {
+						e.resetSeat(reset.identity, reset.generation, reset.sequence)
+						events = append(events, e.event("release", uint8(seat), group.timeUs+1))
+						e.resets[seat] = nil
 					}
 				}
-				terminalUs, _ := CanonicalTime(next)
-				e.state.Tick = uint32(math.Ceil(float64(terminalUs) * g.TickRate / 1e6))
-				e.state.TimeUs = terminalUs
-				e.state.Finish = &Finish{Tick: e.state.Tick, TimeUs: terminalUs, Result: result}
-				return events, nil
 			}
 			time = next
-			timeUs, _ = CanonicalTime(time)
-			e.boundaries(timeUs, &events)
+			if stopping && group != nil && e.group != nil && time >= end && group.timeUs <= stopUs {
+				end = (float64(group.timeUs) + .5) / 1e6
+			}
 		}
 		if err := e.updateTrack(); err != nil {
 			return nil, err
@@ -482,6 +636,25 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 		}
 		e.state.Tick++
 		e.state.TimeUs, _ = CanonicalTime(float64(e.state.Tick) / g.TickRate)
+		if e.group != nil {
+			if e.committed == nil {
+				copy := cloneState(before)
+				e.committed = &copy
+			}
+			if withheldStart < 0 {
+				withheldStart = eventStart
+			}
+		}
+	}
+	if e.group != nil && e.committed != nil {
+		if withheldStart < 0 {
+			withheldStart = 0
+		}
+		e.held = append([]Observation{}, events[withheldStart:]...)
+		if len(e.held) > 1024 {
+			return nil, fmt.Errorf("uncommitted authority history exhausted")
+		}
+		events = events[:withheldStart]
 	}
 	return events, nil
 }
@@ -489,6 +662,16 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 // ResetSeat is the authoritative fresh-generation barrier, also used after a
 // countdown has discarded keys. It never queues or reactivates those controls.
 func (e *Engine) ResetSeat(identity protocol.Identity, generation, sequence uint32) {
+	if e.state.Finish != nil || e.state.Abandoned {
+		return
+	}
+	if e.committed != nil {
+		e.resets[identity.Seat] = &seatReset{identity, generation, sequence}
+		return
+	}
+	e.resetSeat(identity, generation, sequence)
+}
+func (e *Engine) resetSeat(identity protocol.Identity, generation, sequence uint32) {
 	seat := identity.Seat
 	e.identities[seat] = identity
 	e.connected[seat] = true
@@ -518,6 +701,11 @@ func (e *Engine) Restore(cars [2]protocol.Car, tick uint32) {
 	e.state.Tick = tick
 	e.state.TimeUs, _ = CanonicalTime(float64(tick) / e.context.Gameplay.TickRate)
 	e.state.Finish = nil
+	e.frozen = nil
+	e.group = nil
+	e.committed = nil
+	e.held = nil
+	e.resets = [2]*seatReset{}
 	e.state.Abandoned = false
 	e.wallTime = float64(tick) / e.context.Gameplay.TickRate
 	e.pending = nil

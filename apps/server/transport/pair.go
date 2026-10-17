@@ -291,7 +291,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 				result = 1 - participant.index
 				reason = 3
 			}
-			s.finalizeRaceLocked(r, result, reason, r.zero.Tick, r.zero.TimeUs)
+			s.finalizeLifecycleLocked(r, result, reason, s.nowUs())
 		}
 		s.cancelCountdownLocked(r)
 		delete(s.credentials, token(participant.credential))

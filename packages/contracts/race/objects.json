@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "precision": {
     "absolute": 1e-06,
     "relative": 1e-12
@@ -947,7 +947,7 @@
       "derivation": "At time zero both fronts reach450 while both centers410 overlap left obstacle400 (extent60). Each loses its last HP, obstacle spends both seats, tie by elimination before finish."
     },
     {
-      "name": "fatal contact at exact tick endpoint is not deferred",
+      "name": "fatal endpoint group commits after closure without changing its event time",
       "seed": 1,
       "overrides": {
         "gameplay": {
@@ -967,7 +967,7 @@
           "progress": 0
         }
       ],
-      "advance": 0.015625,
+      "advance": 0.03125,
       "expected": {
         "hp": [
           0,
@@ -1001,7 +1001,192 @@
           "result": 1
         }
       },
-      "derivation": "At64Hz tick1 is exactly0.015625s. 333.75+400/64=340: center340 reaches obstacle400 minus extent60 at15625us. Damage removes lastHP at the endpoint; the later finish450 cannot occur."
+      "derivation": "At64Hz tick1 is exactly0.015625s. 333.75+400/64=340: center340 reaches obstacle400 minus extent60 at15625us. Damage removes lastHP at the endpoint; the later finish450 cannot occur. The group crosses the endpoint and commits on the next advance under the approved #11/#14 amendment."
+    },
+    {
+      "name": "heart after raw tick boundary heals before same-group fatal obstacle",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 2400,
+          "initialClearDistance": 0,
+          "reservedHearts": 2,
+          "sliceSpacing": 397,
+          "heartExclusionDistance": 0,
+          "heartSize": 51.99984
+        }
+      },
+      "cars": [
+        {
+          "progress": 727.33336,
+          "lateral": 0,
+          "lane": 1,
+          "hp": 1
+        },
+        {
+          "progress": 0
+        }
+      ],
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          1,
+          3
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "events": [
+          {
+            "timeUs": 16667,
+            "objects": [
+              {
+                "id": 8,
+                "sliceId": 2,
+                "lane": 1,
+                "distance": 794,
+                "flags": 10
+              },
+              {
+                "id": 11,
+                "sliceId": 3,
+                "lane": 1,
+                "distance": 800,
+                "flags": 7
+              }
+            ]
+          }
+        ],
+        "progress": [
+          747.33336,
+          20
+        ]
+      },
+      "derivation": "Obstacle entry center734 at16666.6us. Heart size51.99984 gives entry center734.00008 at16666.8us. Both round16667 across raw boundary16666.666us: HP1 heals2 then damage1 yields1.",
+      "tick": 0
+    },
+    {
+      "name": "shared heart contention straddles raw tick boundary",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "finishDistance": 2400,
+          "initialClearDistance": 0,
+          "reservedHearts": 2
+        }
+      },
+      "cars": [
+        {
+          "progress": 739.33336,
+          "lateral": 0,
+          "lane": 1,
+          "hp": 1
+        },
+        {
+          "progress": 739.33328,
+          "lateral": 0,
+          "lane": 1,
+          "hp": 1
+        }
+      ],
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          1,
+          1
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "events": [
+          {
+            "timeUs": 16667,
+            "objects": [
+              {
+                "id": 8,
+                "sliceId": 2,
+                "lane": 1,
+                "distance": 800,
+                "flags": 7
+              }
+            ]
+          }
+        ],
+        "progress": [
+          759.33336,
+          759.33328
+        ]
+      },
+      "derivation": "Heart800 size28 enters at center746. Centers739.33336/739.33328 contact at16666.6/16666.8us, both canonical16667 across tick1. Shared heart consumed, neither healed.",
+      "tick": 0
+    },
+    {
+      "name": "distinct obstacle damage straddles raw tick boundary within one canonical group",
+      "seed": 1,
+      "overrides": {
+        "gameplay": {
+          "initialClearDistance": 0,
+          "reservedHearts": 0,
+          "sliceSpacing": 20
+        }
+      },
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 13.33328,
+          "lateral": -64.87502756248622,
+          "lane": 0,
+          "phase": 2,
+          "departure": 0,
+          "target": 0,
+          "movementOrigin": -64.87502756248622,
+          "movementTarget": -120,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        },
+        {
+          "progress": 0
+        }
+      ],
+      "advance": 0.03333333333333333,
+      "expected": {
+        "hp": [
+          1,
+          3
+        ],
+        "score": [
+          0,
+          0
+        ],
+        "progress": [
+          26.66661333333333,
+          13.333333333333334
+        ],
+        "events": [
+          {
+            "timeUs": 16667,
+            "objects": [
+              {
+                "id": 4,
+                "sliceId": 1,
+                "lane": 0,
+                "distance": 20,
+                "flags": 10
+              },
+              {
+                "id": 13,
+                "sliceId": 4,
+                "lane": 0,
+                "distance": 80,
+                "flags": 10
+              }
+            ]
+          }
+        ]
+      },
+      "derivation": "Return origin -64.87502756248622 with target-120 and duration.15 enters left obstacle lateral bounds(-71) at16666.6us; obstacle20 already overlaps longitudinally. From13.33328, obstacle80 entry center20 occurs16666.8us. Both canonical16667 across tick1; sum two damage, spend both IDs, HP3->1."
     }
   ]
 }

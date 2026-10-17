@@ -44,14 +44,23 @@ func (e *Engine) objectContacts(start, end float64) []objectContact {
 		return contacts
 	}
 	g := e.context.Gameplay
-	for _, object := range e.Snapshot().Objects {
+	for _, object := range e.currentSnapshot().Objects {
 		for seat, car := range e.state.Cars {
 			kind := object.Flags & 3
 			spent := uint8(4)
 			if kind == 2 {
 				spent = 8 << seat
 			}
-			if object.Flags&spent != 0 {
+			pending := false
+			if e.group != nil {
+				for _, contact := range e.group.contacts {
+					if contact.object.Id == object.Id && contact.seat == uint8(seat) {
+						pending = true
+						break
+					}
+				}
+			}
+			if object.Flags&spent != 0 || pending {
 				continue
 			}
 			width, height := g.HeartSize, g.HeartSize

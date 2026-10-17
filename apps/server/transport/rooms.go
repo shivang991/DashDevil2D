@@ -1,8 +1,10 @@
 package transport
 
 import (
+	"errors"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"github.com/shivang991/DashDevil2D/apps/server/simulation"
+	"time"
 )
 
 // Called only under the room owner mutex. Countdown never calls AdvanceTo.
@@ -84,8 +86,32 @@ func (s *Server) advanceCountdownsLocked() []*room {
 }
 func (pair *pair) roomBaseline() (p.Baseline, error) {
 	s := pair.server
-	s.mu.Lock()
-	defer s.mu.Unlock()
+	deadline := time.NewTimer(time.Second)
+	defer deadline.Stop()
+	waiting := false
+	for {
+		s.mu.Lock()
+		r := pair.seat.room
+		if r.engine == nil || !r.engine.PendingGroup() {
+			defer s.mu.Unlock()
+			return pair.roomBaselineLocked()
+		}
+		if !waiting {
+			s.config.Logger.Info("baseline_waiting_group", "room", r.id, "seat", pair.identity.Seat)
+			waiting = true
+		}
+		s.mu.Unlock()
+		select {
+		case <-pair.done:
+			return p.Baseline{}, errors.New("pair closed while waiting for committed baseline")
+		case <-deadline.C:
+			return p.Baseline{}, errors.New("committed baseline capture timed out")
+		case <-time.After(time.Millisecond):
+		}
+	}
+}
+func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
+	s := pair.server
 	r := pair.seat.room
 	if r.zero == nil || r.zero.Context.Mode != r.mode {
 		if err := s.prepareRoundLocked(r); err != nil {

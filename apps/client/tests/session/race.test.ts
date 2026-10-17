@@ -44,7 +44,7 @@ for (const scenario of fixtures.scenarios) test(`shared finish: ${scenario.name}
   const b = baseline();
   scenario.progress.forEach((progress, seat) => { b.cars[seat].progress = progress; });
   const car = b.cars[0]; car.phase = scenario.phase;
-  if (scenario.phase) { car.target = scenario.phase === 1 ? 1 : 0; car.movementOrigin = scenario.phase === 1 ? -120 : -40; car.movementTarget = scenario.phase === 1 ? 0 : -120; car.lateral = car.movementOrigin; car.movementEndUs = 150000; }
+  if (scenario.phase) { car.target = scenario.phase === 1 ? 1 : 0; car.movementOrigin = scenario.phase === 1 ? -120 : -40; car.movementTarget = scenario.phase === 1 ? 0 : -120; car.lateral = car.movementOrigin; car.movementEndUs = 'movementEndUs' in scenario ? scenario.movementEndUs! : 150000; }
   if (scenario.nos) { car.controls = 3; car.effective = 3; car.heldMask = 4; car.flags = 1; car.freshnessUs = 1000000; }
   const config = captureConfiguration('drag-race', { gameplay: { finishDistance: 400, initialClearDistance: 0, reservedHearts: 0, obstacleWeight: 0, emptyWeight: 1 } });
   const game = new Multiplayer(config, 1, [b.identity, { ...b.identity, seat: 1 }]);
@@ -306,4 +306,34 @@ test('predicted fatal damage remains provisional and authority can repair it', (
   race.install(repaired);
   expect(race.frame(150000, 0).cars[0].hp).toBe(1);
   expect(race.frame(150000, 0).outcome).toBeUndefined();
+});
+
+test('an open canonical group withholds its tick and admits the next boundary input before finality', () => {
+  const b = baseline(), game = new Multiplayer(captureConfiguration('drag-race', { gameplay: { finishDistance: 400, initialClearDistance: 0, reservedHearts: 0, obstacleWeight: 0, emptyWeight: 1 } }), 1, [b.identity, { ...b.identity, seat: 1 }]);
+  const cars = game.snapshot().cars;
+  cars[0].progress = 353.33336; cars[1].progress = 353.33328;
+  game.restore(cars, 0);
+  const checkpoint = game.snapshot();
+  expect(game.advanceTo(1 / 60)).toEqual([]);
+  expect(game.snapshot()).toEqual(checkpoint);
+  expect(game.pendingGroup).toBe(true);
+  game.submit(b.identity, { identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 3, heldMask: 4 });
+  const events = game.advanceTo(2 / 60);
+  expect(events.filter(event => event.type === 'input')).toMatchObject([{ timeUs: 16667, seat: 0, disposition: 'accepted' }]);
+  expect(game.snapshot().finish).toEqual({ tick: 2, timeUs: 16667, result: 2 });
+  expect(game.snapshot().cars[0].lastInput).toBe(1);
+  expect(game.pendingGroup).toBe(false);
+});
+
+test('ordered boundary authority reconstructs both cars before the grouped object record', () => {
+  const config = captureConfiguration('drag-race', { gameplay: { finishDistance: 2400, initialClearDistance: 0, reservedHearts: 2, sliceSpacing: 397, heartExclusionDistance: 0, heartSize: 51.99984 } });
+  const b = initialBaseline(configurationContext(config, 1, 1000000));
+  Object.assign(b.cars[0], { progress: 727.33336, lateral: 0, lane: 1, departure: 1, target: 1, movementOrigin: 0, movementTarget: 0, hp: 1 });
+  b.windows = [{ start: -200, end: 5000, firstSlice: 2, lastSlice: 3, objects: [{ id: 8, sliceId: 2, lane: 1, distance: 794, flags: 2 }, { id: 11, sliceId: 3, lane: 1, distance: 800, flags: 3 }] }];
+  b.generator.nextSlice = 4; b.generator.nextObject = 13;
+  const race = new RaceSession(b);
+  const car = { ...b.cars[0], progress: 734.0000266666666, controls: 3, effective: 3, flags: 1, heldMask: 4, lastInput: 1, freshnessUs: 1016667 };
+  race.disposition({ identity: b.identity, round: b.round, authority: 1, tick: 1, timeUs: 16667, seat: 0, sequence: 1, processed: 1, disposition: 0, intent: 0, control: 3, car, contact: b.contact });
+  expect(race.snapshot().cars[1].progress).toBeCloseTo(6.666666666666667, 6);
+  expect(race.snapshot().cars[0].hp).toBe(1);
 });

@@ -98,8 +98,8 @@ export class RaceSession {
     if (tick <= baseline.tick) return baseline;
     const { game } = this.engine();
     // Replay in bounded steps: a late network record is not a server overload.
-    while (game.snapshot().tick < tick) game.advanceTo(Math.min(tick, game.snapshot().tick + 30) / this.configuration.gameplay.tickRate, true);
-    const state = game.snapshot();
+    while (game.processedTick < tick) game.advanceTo(Math.min(tick, game.processedTick + 30) / this.configuration.gameplay.tickRate, true);
+    const state = game.preview();
     baseline.windows.forEach(window => { window.objects = window.objects.map(object => state.objects.find(current => current.id === object.id) ?? object); });
     baseline.cars = state.cars; baseline.tick = tick;
     baseline.timeUs = canonicalTime(tick / this.configuration.gameplay.tickRate);
@@ -205,8 +205,8 @@ export class RaceSession {
     const covered = (cars: readonly Car[]) => cars.every(car => baseline.windows.some(window => window.start <= car.progress - extent && window.end >= car.progress + extent));
     const step = (publish = observe) => {
       const previous = game.snapshot();
-      const events = game.advanceTo((previous.tick + 1) / rate, true);
-      if (!covered(game.snapshot().cars)) {
+      const events = game.advanceTo((game.processedTick + 1) / rate, true);
+      if (!covered(game.preview().cars)) {
         game.restore(previous.cars, previous.tick, previous.objects, previous.timeUs);
         needsRecovery = true; return;
       }
@@ -214,7 +214,7 @@ export class RaceSession {
     };
     const advance = (us: number) => {
       const tick = Math.floor(us * rate / 1e6);
-      while (!needsRecovery && game.snapshot().tick < tick) step();
+      while (!needsRecovery && game.processedTick < tick) step();
     };
     for (const pending of inputs) {
       if (pending.timeUs > target) break;
@@ -227,9 +227,9 @@ export class RaceSession {
       game.submit(ids[pending.input.identity.seat], { ...pending.input, identity: ids[pending.input.identity.seat] });
     }
     advance(target);
-    const state = game.snapshot();
+    const state = game.preview();
     if (!needsRecovery) step(false);
-    const next = game.snapshot();
+    const next = game.preview();
     const fraction = Math.max(0, Math.min(1, target * rate / 1e6 - state.tick));
     const renderedCars = state.cars.map((car, seat) => ({ progress: car.progress + (next.cars[seat].progress - car.progress) * fraction, lateral: car.lateral + (next.cars[seat].lateral - car.lateral) * fraction }));
     return { ...state, renderedCars, needsRecovery };

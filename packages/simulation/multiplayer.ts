@@ -22,6 +22,11 @@ export class Multiplayer {
  private readonly context: Context;
  private represented?: readonly ObjectState[];
  private continuationUs?: number;
+ private rawTime = 0;
+ private group?: { timeUs: number; sampleTime: number; contacts: { object: ObjectState; seat: number; timeUs: number }[]; finishMask: number; sample?: [Car, Car] };
+ private heldEvents: Observation[] = [];
+ private committed?: ReturnType<Multiplayer['currentSnapshot']>;
+ private frozen?: ReturnType<Multiplayer['currentSnapshot']>;
  private consumption = new Map<number, number>();
  private readonly tracks: readonly [MultiplayerTrack, MultiplayerTrack];
  private tick = 0;
@@ -71,8 +76,8 @@ export class Multiplayer {
   this.represented = objects?.map(object => ({ ...object })); this.continuationUs = timeUs === canonicalTime(tick / this.configuration.gameplay.tickRate) ? undefined : timeUs;
   this.consumption = new Map((objects ?? []).map(object => [object.id, object.flags & 28]));
   if (!Number.isSafeInteger(tick) || tick < 0 || cars.length !== 2) throw new Error('Invalid continuation');
-  this.tick = tick; this.wallTime = tick / this.configuration.gameplay.tickRate;
-  this.pending = []; this.releases = []; this.abandoned = false; this.finish = undefined;
+  this.tick = tick; this.wallTime = tick / this.configuration.gameplay.tickRate; this.rawTime = this.continuationUs === undefined ? this.wallTime : timeUs / 1e6;
+  this.pending = []; this.releases = []; this.abandoned = false; this.finish = undefined; this.group = undefined; this.heldEvents = []; this.committed = undefined; this.frozen = undefined;
   cars.forEach((car, seat) => { this.cars[seat] = { ...car }; this.sequences[seat] = car.lastInput; this.connected[seat] = true; });
   this.updateTrack();
  }
@@ -141,81 +146,128 @@ export class Multiplayer {
   }
   this.pending = [];
  }
+ /** Raw completed ticks can lead the last committed checkpoint while a group closes. */
+ get processedTick() { return this.tick; }
+ get pendingGroup() { return this.committed !== undefined; }
+ private move(start: number, end: number): void {
+  const g = this.configuration.gameplay, multipliers = this.cars.map((_, seat) => this.multiplier(seat));
+  for (const [seat, car] of this.cars.entries()) {
+   car.progress += this.forwardDistance(start, end - start) * multipliers[seat];
+   car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * end);
+   if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * Math.max(0, Math.min(1, (end * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs)));
+  }
+ }
+ private crossings(start: number, end: number) {
+  const result: { seat: number; time: number; timeUs: number }[] = [];
+  for (const [seat, car] of this.cars.entries()) {
+   if ((this.group?.finishMask ?? 0) & (1 << seat)) continue;
+   const remaining = this.context.gameplay.finishDistance - this.configuration.gameplay.carHeight / 2 - car.progress;
+   const multiplier = this.multiplier(seat);
+   if (this.forwardDistance(start, end - start) * multiplier < remaining) continue;
+   let low = start, high = end;
+   for (let n = 0; n < 52; n++) { const middle = low + (high - low) / 2; if (this.forwardDistance(start, middle - start) * multiplier < remaining) low = middle; else high = middle; }
+   result.push({ seat, time: high, timeUs: canonicalTime(high) });
+  }
+  return result;
+ }
  advanceTo(seconds: number, provisional = false): Observation[] {
   canonicalTime(seconds);
   if (seconds < this.wallTime) throw new Error('Monotonic clock moved backwards');
-  if (this.abandoned || this.finish && !provisional) return [];
+  if (this.abandoned || this.finish) return [];
   this.tokens.forEach((tokens, seat) => { this.tokens[seat] = Math.min(this.configuration.connection.inputBurst, tokens + (seconds - this.wallTime) * this.configuration.connection.inputRate); });
   this.wallTime = seconds;
   const g = this.configuration.gameplay;
-  const events = this.releases; this.releases = [];
+  const events = [...this.heldEvents, ...this.releases]; this.heldEvents = []; this.releases = [];
+  let withheldStart: number | undefined = this.committed ? 0 : undefined;
   if (seconds - this.tick / g.tickRate > this.configuration.operational.simulationLagThreshold) {
-   this.abandoned = true; this.pending = []; this.cars.forEach(car => this.clear(car));
-   events.push({ type: 'abandoned', tick: this.tick, timeUs: canonicalTime(this.tick / g.tickRate) }); return events;
+   const checkpoint = this.committed;
+   if (checkpoint) {
+    this.cars.splice(0, 2, ...checkpoint.cars.map(car => ({ ...car })));
+    this.tick = checkpoint.tick;
+   }
+   this.abandoned = true; this.pending = []; this.group = undefined; this.committed = undefined; this.cars.forEach(car => this.clear(car));
+   if (checkpoint) this.frozen = { ...structuredClone(checkpoint), abandoned: true, cars: this.cars.map(car => ({ ...car })) as [Car, Car] };
+   return [{ type: 'abandoned', tick: this.tick, timeUs: checkpoint?.timeUs ?? canonicalTime(this.tick / g.tickRate) }];
   }
   while ((this.tick + 1) / g.tickRate <= seconds) {
    if (this.tick === 0xffffffff) throw new Error('Tick exhausted');
-   let time = Math.max(this.tick / g.tickRate, (this.continuationUs ?? 0) / 1e6);
-   this.continuationUs = undefined;
+   const before = this.committed ?? this.currentSnapshot(), eventStart = this.committed ? 0 : events.length;
+   let time = Math.max(this.tick / g.tickRate, this.rawTime);
    const end = (this.tick + 1) / g.tickRate;
-   this.boundaries(canonicalTime(time), events); this.apply(events, canonicalTime(time));
+   this.boundaries(Math.floor(time * 1e6), events); this.apply(events, canonicalTime(time));
    while (time < end) {
-    const startUs = canonicalTime(time);
-    this.cars.forEach((car, seat) => this.shift(car, seat, startUs, events));
+    this.cars.forEach((car, seat) => this.shift(car, seat, Math.floor(time * 1e6), events));
     let next = end;
     for (const car of this.cars) {
-     if (car.effective !== 0 && car.freshnessUs > startUs) next = Math.min(next, car.freshnessUs / 1e6);
-     if (car.phase !== 0 && car.movementEndUs > startUs) next = Math.min(next, car.movementEndUs / 1e6);
-     if (car.phase === 0 && (car.effective === 1 || car.effective === 2) && car.nextShiftUs > startUs) next = Math.min(next, car.nextShiftUs / 1e6);
+     if (car.effective !== 0 && car.freshnessUs / 1e6 > time) next = Math.min(next, car.freshnessUs / 1e6);
+     if (car.phase !== 0 && car.movementEndUs / 1e6 > time) next = Math.min(next, car.movementEndUs / 1e6);
+     if (car.phase === 0 && (car.effective === 1 || car.effective === 2) && car.nextShiftUs / 1e6 > time) next = Math.min(next, car.nextShiftUs / 1e6);
     }
     const collision = this.playerContact(time, next);
     if (collision !== undefined) next = Math.min(next, collision);
     next = this.clearance(time, next);
-    const contacts = this.objectContacts(time, next);
-    let finishTime = Infinity, finishMask = 0;
-    if (!provisional && this.configuration.mode === 'drag-race') {
-     const finish = this.context.gameplay.finishDistance;
-     for (let seat = 0; seat < this.cars.length; seat++) {
-      const car = this.cars[seat], remaining = finish - g.carHeight / 2 - car.progress;
-      const multiplier = this.multiplier(this.cars.indexOf(car));
-      if (this.forwardDistance(time, next - time) * multiplier < remaining) continue;
-      let low = time, high = next;
-      for (let n = 0; n < 52; n++) { const middle = low + (high - low) / 2; if (this.forwardDistance(time, middle - time) * multiplier < remaining) low = middle; else high = middle; }
-      if (finishTime === Infinity || canonicalTime(high) < canonicalTime(finishTime)) { finishTime = high; finishMask = 1 << seat; }
-      else if (canonicalTime(high) === canonicalTime(finishTime)) finishMask |= 1 << seat;
+    let contacts = this.objectContacts(time, next);
+    let finishes = !provisional && this.configuration.mode === 'drag-race' ? this.crossings(time, next) : [];
+    if (!this.group) {
+     const firstUs = Math.min(contacts[0]?.timeUs ?? Infinity, ...finishes.map(finish => finish.timeUs));
+     if (firstUs !== Infinity) {
+      const boundary = Math.round(firstUs * g.tickRate / 1e6) / g.tickRate;
+      this.group = { timeUs: firstUs, sampleTime: canonicalTime(boundary) === firstUs ? boundary : firstUs / 1e6, contacts: [], finishMask: 0 };
      }
-     if (finishMask) next = finishTime;
     }
-    const first = contacts[0];
-    if (first && first.timeUs <= canonicalTime(next)) {
-     if (finishMask && first.timeUs < canonicalTime(next)) finishMask = 0;
-     next = Math.min(next, Math.max(time, first.timeUs / 1e6));
+    const group = this.group;
+    if (group) {
+     next = Math.min(next, (group.timeUs + .5) / 1e6);
+     // Sampling does not round or replace the raw integration boundaries.
+     if (!group.sample && group.sampleTime > time) next = Math.min(next, group.sampleTime);
+     if (!group.sample && group.sampleTime <= time) {
+      const sample = this.cars.map(car => ({ ...car })) as [Car, Car];
+      const elapsed = time - group.sampleTime;
+      sample.forEach((car, seat) => {
+       car.progress -= this.forwardDistance(group.sampleTime, elapsed) * this.multiplier(seat);
+       car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * group.sampleTime);
+       if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * Math.max(0, Math.min(1, (group.sampleTime * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs)));
+      });
+      group.sample = sample;
+     }
+     contacts = this.objectContacts(time, next).filter(contact => contact.timeUs === group.timeUs);
+     finishes = !provisional && this.configuration.mode === 'drag-race' ? this.crossings(time, next).filter(finish => finish.timeUs === group.timeUs) : [];
+     group.contacts.push(...contacts);
+     for (const finish of finishes) group.finishMask |= 1 << finish.seat;
     }
-    const elapsed = next - time;
-    const multipliers = this.cars.map((_, seat) => this.multiplier(seat));
-    for (const [seat, car] of this.cars.entries()) {
-     car.progress += this.forwardDistance(time, elapsed) * multipliers[seat];
-     car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * next);
-     if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * ((next * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs));
+    this.move(time, next);
+    const closing = group && next >= (group.timeUs + .5) / 1e6;
+    if (!closing || canonicalTime(next) === group.timeUs) {
+     if (collision !== undefined && Math.abs(next - collision) < 1e-12) this.resolvePlayers(next, events);
+     this.boundaries(Math.floor(next * 1e6), events);
     }
-    if (collision !== undefined && Math.abs(next - collision) < 1e-12) this.resolvePlayers(next, events);
-    if (first && first.timeUs === canonicalTime(next)) this.resolveObjects(contacts.filter(c => c.timeUs === first.timeUs), events, first.timeUs);
-    const deadMask = this.cars.reduce((mask, car, seat) => mask | (car.hp === 0 ? 1 << seat : 0), 0);
-    if (!provisional && deadMask) {
-     this.tick = Math.ceil(canonicalTime(next) * g.tickRate / 1e6);
-     this.finish = { tick: this.tick, timeUs: canonicalTime(next), result: deadMask === 1 ? 1 : deadMask === 2 ? 0 : 2, reason: 1 };
-     return events;
+    if (group && !group.sample && next >= group.sampleTime) group.sample = this.cars.map(car => ({ ...car })) as [Car, Car];
+    if (closing) {
+     const positions = this.cars.map(car => ({ progress: car.progress, lateral: car.lateral, normalSpeed: car.normalSpeed }));
+     this.cars.forEach((car, seat) => Object.assign(car, { progress: group.sample![seat].progress, lateral: car.phase === group.sample![seat].phase && car.movementStartUs === group.sample![seat].movementStartUs ? group.sample![seat].lateral : car.phase === 0 ? car.movementTarget : car.movementOrigin, normalSpeed: group.sample![seat].normalSpeed }));
+     if (group.contacts.length) this.resolveObjects(group.contacts.sort((a, b) => a.object.id - b.object.id || a.seat - b.seat), events, group.timeUs);
+     const deadMask = this.cars.reduce((mask, car, seat) => mask | (car.hp === 0 ? 1 << seat : 0), 0);
+     if (!provisional && (deadMask || group.finishMask)) {
+      this.tick = Math.ceil(group.timeUs * g.tickRate / 1e6);
+      const result = deadMask ? deadMask === 1 ? 1 : deadMask === 2 ? 0 : 2 : group.finishMask === 1 ? 0 : group.finishMask === 2 ? 1 : 2;
+      if (!deadMask) this.cars.forEach((car, seat) => { if (group.finishMask & (1 << seat)) car.progress = this.context.gameplay.finishDistance - g.carHeight / 2; });
+      this.finish = { tick: this.tick, timeUs: group.timeUs, result, reason: deadMask ? 1 : 0 };
+      this.group = undefined; this.committed = undefined;
+      return events;
+     }
+     this.cars.forEach((car, seat) => Object.assign(car, positions[seat]));
+     this.group = undefined; this.committed = undefined;
     }
-    if (finishMask) {
-     this.cars.forEach((car, seat) => { if (finishMask & (1 << seat)) car.progress = this.context.gameplay.finishDistance - g.carHeight / 2; });
-     this.tick = Math.ceil(canonicalTime(next) * g.tickRate / 1e6); this.finish = { tick: this.tick, timeUs: canonicalTime(next), result: finishMask === 1 ? 0 : finishMask === 2 ? 1 : 2, reason: 0 };
-     return events;
-    }
-    time = next; this.boundaries(canonicalTime(time), events);
+    time = next; this.rawTime = next; this.continuationUs = undefined;
    }
    this.updateTrack();
    this.tick++;
+   if (this.group) {
+    this.committed ??= structuredClone(before);
+    withheldStart ??= eventStart;
+   }
   }
+  if (this.group && this.committed) { this.heldEvents = events.splice(withheldStart ?? 0); if (this.heldEvents.length > 1024) throw new Error('Uncommitted authority history exhausted'); }
   return events;
  }
  /** Contact restrictions are derived from world rectangles, never presentation or
@@ -299,7 +351,7 @@ export class Multiplayer {
   const contacts: { object: ObjectState; seat: number; timeUs: number }[] = [];
   for (const object of this.objects()) for (let seat = 0; seat < 2; seat++) {
    const kind = object.flags & 3, car = this.cars[seat];
-   if (object.flags & (kind === 2 ? 8 << seat : 4)) continue;
+   if (object.flags & (kind === 2 ? 8 << seat : 4) || this.group?.contacts.some(contact => contact.object.id === object.id && contact.seat === seat)) continue;
    const width = kind === 2 ? g.obstacleW : kind === 1 ? g.coinSize : g.heartSize;
    const height = kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize;
    const lateralExtent = (g.carWidth + width) / 2, forwardExtent = (g.carHeight + height) / 2;
@@ -359,6 +411,9 @@ export class Multiplayer {
   const slices = new Map(states.flatMap(state => state.slices).map(slice => [slice.id, slice]));
   return { ...leading, slices: [...slices.values()].sort((a,b) => a.id - b.id) };
  }
- snapshot() { return { finish: this.finish ? { tick: this.finish.tick, timeUs: this.finish.timeUs, result: this.finish.result } : undefined, reason: this.finish?.reason, objects: this.objects(), tick: this.tick, timeUs: this.finish?.timeUs ?? this.continuationUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
+ /** Uncommitted prediction view; never send it as an authoritative checkpoint. */
+ preview() { return this.currentSnapshot(); }
+ snapshot() { return structuredClone(this.frozen ?? this.committed ?? this.currentSnapshot()); }
+ private currentSnapshot() { return { finish: this.finish ? { tick: this.finish.tick, timeUs: this.finish.timeUs, result: this.finish.result } : undefined, reason: this.finish?.reason, objects: this.objects(), tick: this.tick, timeUs: this.finish?.timeUs ?? this.continuationUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
   cars: this.cars.map(car => ({ ...car })) as [Car, Car], latestPress: this.latestPress ? { ...this.latestPress } : null }; }
 }

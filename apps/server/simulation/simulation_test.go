@@ -276,15 +276,16 @@ func TestSharedFinishContinuations(t *testing.T) {
 	}
 	var fixture struct {
 		Scenarios []struct {
-			Name      string
-			Progress  [2]float64
-			Phase     uint8
-			Nos       bool
-			TimeUs    uint64
-			Tick      uint32
-			Result    uint8
-			Lateral   float64
-			Position0 *float64
+			Name          string
+			Progress      [2]float64
+			Phase         uint8
+			Nos           bool
+			TimeUs        uint64
+			Tick          uint32
+			Result        uint8
+			Lateral       float64
+			Position0     *float64
+			MovementEndUs *uint64
 		}
 	}
 	if err = json.Unmarshal(data, &fixture); err != nil {
@@ -305,6 +306,9 @@ func TestSharedFinishContinuations(t *testing.T) {
 			car.Phase = scenario.Phase
 			if scenario.Phase != 0 {
 				car.MovementEndUs = 150000
+				if scenario.MovementEndUs != nil {
+					car.MovementEndUs = *scenario.MovementEndUs
+				}
 				if scenario.Phase == 1 {
 					car.Target = 1
 					car.MovementOrigin = -120

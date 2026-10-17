@@ -493,7 +493,7 @@ func (s *Server) expireLocked(now time.Time) []*room {
 						result = uint8(1 - i)
 						reason = 4
 					}
-					s.finalizeRaceLocked(r, result, reason, r.zero.Tick, r.zero.TimeUs)
+					s.finalizeLifecycleLocked(r, result, reason, uint64(max(0, seat.deadline.Sub(s.start).Microseconds())))
 				}
 				r.seats[i] = nil
 				s.cancelCountdownLocked(r)

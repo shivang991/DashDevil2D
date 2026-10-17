@@ -41,6 +41,49 @@ func (s *Server) finalizeRaceLocked(r *room, result, reason uint8, tick uint32, 
 	s.config.Logger.Info("race_finalized", "room", r.id, "round", r.roundID, "time_us", timeUs, "server_us", s.nowUs(), "result", result, "reason", reason)
 }
 
+// A lifecycle terminal instant cannot overtake gameplay in an unfinished group.
+// StopAt resolves the exact partial interval without advancing past the cutoff.
+func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs uint64) {
+	if r.phase != 2 || r.outcome != nil {
+		return
+	}
+	if r.engine != nil && r.mode == 1 {
+		elapsed := uint64(0)
+		if cutoffUs > r.startUs {
+			elapsed = cutoffUs - r.startUs
+		}
+		events, err := r.engine.StopAt(float64(elapsed) / 1e6)
+		if err != nil {
+			s.finalizeRaceLocked(r, 3, 6, r.zero.Tick, r.zero.TimeUs)
+			return
+		}
+		lag := false
+		halted := false
+		for _, event := range events {
+			if event.Type == "abandoned" {
+				lag = true
+			}
+			if event.Type == "maintenance" {
+				halted = true
+			}
+			s.recordRaceLocked(r, event)
+		}
+		state := r.engine.Snapshot()
+		r.zero.Cars = state.Cars
+		r.zero.Tick = state.Tick
+		r.zero.TimeUs = state.TimeUs
+		if state.Finish != nil {
+			s.finalizeRaceLocked(r, state.Finish.Result, state.Finish.Reason, state.Finish.Tick, state.Finish.TimeUs)
+			return
+		}
+		if lag || state.Abandoned && !halted {
+			result = 3
+			reason = 6
+		}
+	}
+	s.finalizeRaceLocked(r, result, reason, r.zero.Tick, r.zero.TimeUs)
+}
+
 // One room owner advances both cars. Per-connection loops only drain records.
 func (s *Server) advanceRacesLocked() []*room {
 	var changed []*room
@@ -57,6 +100,32 @@ func (s *Server) advanceRacesLocked() []*room {
 				stopping = true
 			}
 		}
+		wasPending := r.engine.PendingGroup()
+		// A grace deadline also caps catch-up, so a later finish cannot replace
+		// the already-due lifecycle result. Maintenance wins equal cutoffs.
+		expired := -1
+		expiryUs := targetUs
+		for i, seat := range r.seats {
+			if seat != nil && !seat.deadline.IsZero() {
+				cutoff := uint64(max(0, seat.deadline.Sub(s.start).Microseconds()))
+				if cutoff <= targetUs && (!stopping || cutoff < targetUs) {
+					expired = i
+					expiryUs = cutoff
+					targetUs = cutoff
+					stopping = false
+				}
+			}
+		}
+		if expired >= 0 {
+			result, reason := uint8(3), uint8(5)
+			if other := r.seats[1-expired]; other != nil && other.connected {
+				result = uint8(1 - expired)
+				reason = 4
+			}
+			s.finalizeLifecycleLocked(r, result, reason, expiryUs)
+			changed = append(changed, r)
+			continue
+		}
 		var events []simulation.Observation
 		var err error
 		if stopping {
@@ -68,6 +137,9 @@ func (s *Server) advanceRacesLocked() []*room {
 			s.finalizeRaceLocked(r, 3, 6, r.zero.Tick, r.zero.TimeUs)
 			changed = append(changed, r)
 			continue
+		}
+		if !wasPending && r.engine.PendingGroup() {
+			s.config.Logger.Info("race_group_pending", "room", r.id, "round", r.roundID)
 		}
 		maintenanceEnded := false
 		for _, event := range events {
@@ -126,6 +198,15 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 		value := p.Disposition{Authority: b.Progress.Authority, Tick: event.Tick, TimeUs: event.TimeUs, Seat: seat, Sequence: sequence, Processed: sequence, Disposition: disposition, Intent: input.Intent, Control: input.Control, Car: *event.Car, Contact: b.Contact}
 		r.history = append(r.history, raceRecord{b.Progress.Authority, value})
 	} else if event.Car != nil || (event.Type == "objects" || event.Type == "contact") {
+		if event.Car != nil && event.Seat != nil && event.Car.InputGeneration != b.Cars[*event.Seat].InputGeneration {
+			if *event.Seat == 0 {
+				b.Progress.Processed1 = event.Car.LastInput
+				b.Progress.Disposed1 = event.Car.LastInput
+			} else {
+				b.Progress.Processed2 = event.Car.LastInput
+				b.Progress.Disposed2 = event.Car.LastInput
+			}
+		}
 		b.Progress.Event++
 		cars := event.Cars
 		kind := uint8(8)
