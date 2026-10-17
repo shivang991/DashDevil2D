@@ -55,3 +55,10 @@ for (const scenario of fixtures.scenarios) test(`shared finish: ${scenario.name}
   expect(game.snapshot().cars[0].lateral).toBeCloseTo(scenario.lateral, 6);
   const final = game.snapshot(); game.advanceTo(2); expect(game.snapshot()).toEqual(final);
 });
+
+test('rendered positions interpolate at current time without changing tick geometry', () => {
+  const race = new RaceSession(baseline());
+  const frame = race.frame(25000, 0);
+  expect(frame.cars[0].progress).toBeCloseTo(6.666666666666667, 6);
+  expect(frame.renderedCars[0].progress).toBeCloseTo(10, 6);
+});

@@ -12,14 +12,14 @@ import (
 )
 
 type Observation struct {
- Cars [2]protocol.Car `json:"-"`
-	Car         *protocol.Car `json:"car,omitempty"`
-	Type        string        `json:"type"`
-	Tick        uint32        `json:"tick"`
-	TimeUs      uint64        `json:"timeUs"`
-	Seat        *uint8        `json:"seat,omitempty"`
-	Sequence    *uint32       `json:"sequence,omitempty"`
-	Disposition string        `json:"disposition,omitempty"`
+	Cars        [2]protocol.Car `json:"-"`
+	Car         *protocol.Car   `json:"car,omitempty"`
+	Type        string          `json:"type"`
+	Tick        uint32          `json:"tick"`
+	TimeUs      uint64          `json:"timeUs"`
+	Seat        *uint8          `json:"seat,omitempty"`
+	Sequence    *uint32         `json:"sequence,omitempty"`
+	Disposition string          `json:"disposition,omitempty"`
 }
 type Press struct {
 	Seat     uint8  `json:"seat"`
@@ -98,6 +98,10 @@ func New(config configuration.Configuration, seed uint32, identities [2]protocol
 }
 func (e *Engine) Snapshot() State {
 	result := e.state
+	if result.Finish != nil {
+		copy := *result.Finish
+		result.Finish = &copy
+	}
 	states := [2]track.PlacementState{e.tracks[0].Snapshot(), e.tracks[1].Snapshot()}
 	result.Track = states[0]
 	if states[1].Through > states[0].Through {
@@ -160,7 +164,7 @@ func clear(car *protocol.Car) {
 func (e *Engine) event(kind string, seat uint8, timeUs uint64) Observation {
 	copy := seat
 	car := e.state.Cars[seat]
-	return Observation{Type: kind, Tick: e.state.Tick, TimeUs: timeUs, Seat: &copy, Car: &car, Cars:e.state.Cars}
+	return Observation{Type: kind, Tick: e.state.Tick, TimeUs: timeUs, Seat: &copy, Car: &car, Cars: e.state.Cars}
 }
 func (e *Engine) Disconnect(auth protocol.Identity) {
 	seat := auth.Seat
@@ -369,14 +373,7 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 			elapsed := next - time
 			for seat := range e.state.Cars {
 				car := &e.state.Cars[seat]
-				// Explicit conversions prevent Go fused multiply-add from changing JS operation order.
-				normal := math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*time))
-				ramp := 0.0
-				if g.SpeedGrowth != 0 {
-					ramp = math.Min(elapsed, math.Max(0, (g.MaxRoadSpeed-normal)/g.SpeedGrowth))
-				}
-				rampDistance := float64(normal*ramp) + float64(float64(float64(.5*g.SpeedGrowth)*ramp)*ramp)
-				distance := rampDistance + float64(math.Min(g.MaxRoadSpeed, normal+float64(g.SpeedGrowth*ramp))*(elapsed-ramp))
+				distance := forwardDistance(g, time, elapsed)
 				multiplier := 1.0
 				if car.Effective == 3 {
 					multiplier = g.AccelSpeedMultiplier
@@ -463,8 +460,13 @@ func (e *Engine) Restore(cars [2]protocol.Car, tick uint32) {
 
 // Coverage extends only the represented reachable windows, leaving headless
 // mechanics' placement retention independent of transport prediction horizons.
-func (e *Engine) Coverage() State {
- g:=e.context.Gameplay;extent:=(g.CarHeight+math.Max(g.ObstacleH,math.Max(g.CoinSize,g.HeartSize)))/2
- for seat,placements:=range e.tracks {placements.EnsureThrough(e.state.Cars[seat].Progress+g.MaxRoadSpeed*g.AccelSpeedMultiplier+extent+g.SliceSpacing)}
- return e.Snapshot()
+func (e *Engine) Coverage() (State, error) {
+	g := e.context.Gameplay
+	extent := (g.CarHeight + math.Max(g.ObstacleH, math.Max(g.CoinSize, g.HeartSize))) / 2
+	for seat, placements := range e.tracks {
+		if err := placements.EnsureThrough(e.state.Cars[seat].Progress + g.MaxRoadSpeed*g.AccelSpeedMultiplier + extent + g.SliceSpacing); err != nil {
+			return State{}, err
+		}
+	}
+	return e.Snapshot(), nil
 }

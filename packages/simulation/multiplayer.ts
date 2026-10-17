@@ -177,12 +177,7 @@ export class Multiplayer {
     }
     const elapsed = next - time;
     for (const car of this.cars) {
-     // Integrate continuous normal-speed growth exactly, splitting at the cap.
-     const normal = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * time);
-     const ramp = g.speedGrowth === 0 ? 0 : Math.min(elapsed, Math.max(0, (g.maxRoadSpeed - normal) / g.speedGrowth));
-     const rampDistance = normal * ramp + .5 * g.speedGrowth * ramp * ramp;
-     const distance = rampDistance + Math.min(g.maxRoadSpeed, normal + g.speedGrowth * ramp) * (elapsed - ramp);
-     car.progress += distance * (car.effective === 3 ? g.accelSpeedMultiplier : 1);
+     car.progress += this.forwardDistance(time, elapsed) * (car.effective === 3 ? g.accelSpeedMultiplier : 1);
      car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * next);
      if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * ((next * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs));
     }

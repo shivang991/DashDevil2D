@@ -1,11 +1,35 @@
 import { test, expect } from '@playwright/test';
 
-test('two actual browsers predict NOS and steering, then display one confirmed front-edge result', async ({ browser, baseURL }, info) => {
+for (const delayedAuthority of [false, true]) test(`two actual browsers drive and confirm one finish${delayedAuthority ? ' with authority arriving after outcome' : ''}`,  async ({ browser, baseURL }, info) => {
   test.setTimeout(45000);
   const contexts = await Promise.all([browser.newContext({ baseURL }), browser.newContext({ baseURL })]);
   const pages = await Promise.all(contexts.map(c => c.newPage()));
   try {
-    for (const page of pages) { await page.goto('/'); await page.getByRole('button', { name: /Drag Race/ }).click(); }
+    for (const page of pages) {
+      if (delayedAuthority) await page.addInitScript(() => {
+        // Cross-stream delivery fixture over actual WebTransport. This adds
+        // authority-only application delivery delay, not a network-profile claim.
+        const Native = window.WebTransport;
+        window.WebTransport = class extends Native {
+          get incomingUnidirectionalStreams() {
+            return super.incomingUnidirectionalStreams.pipeThrough(new TransformStream({
+              transform(stream: ReadableStream<Uint8Array>, controller) {
+                const reader = stream.getReader();
+                controller.enqueue(new ReadableStream<Uint8Array>({
+                  start(output) {
+                    void (async () => { for (;;) {
+                      const { value, done } = await reader.read();
+                      if (done) break;
+                      setTimeout(() => output.enqueue(value), 250);
+                    } })().catch(error => output.error(error));
+                  },
+                }));
+              },
+            }));
+          }
+        };
+      });
+      await page.goto('/'); await page.getByRole('button', { name: /Drag Race/ }).click(); }
     await pages[0].getByRole('button', { name: 'Create Room', exact: true }).click();
     await expect(pages[0].getByTestId('connection-state')).toHaveText('Connected');
     const code = await pages[0].getByTestId('room-code').innerText();
@@ -20,12 +44,20 @@ test('two actual browsers predict NOS and steering, then display one confirmed f
     await expect(canvas).toBeVisible(); await canvas.focus();
     await pages[0].keyboard.down('ArrowUp');
     await expect(pages[0].getByTestId('nos-status')).toHaveText('NOS active');
+    // Platform event fixture for an off-window keyup: no W keyup is
+    // delivered between blur and a fresh press. Not physical OS-focus evidence.
+    await canvas.evaluate(element => element.dispatchEvent(new KeyboardEvent('keydown', { key: 'w', code: 'KeyW', bubbles: true })));
+    await pages[0].evaluate(() => window.dispatchEvent(new Event('blur')));
+    await expect(pages[0].getByTestId('nos-status')).toHaveText('NOS ready');
+    await canvas.evaluate(element => element.dispatchEvent(new KeyboardEvent('keydown', { key: 'w', code: 'KeyW', bubbles: true })));
+    await expect(pages[0].getByTestId('nos-status')).toHaveText('NOS active');
     await pages[0].keyboard.down('ArrowRight');
     await expect(pages[0].getByTestId('nos-status')).toHaveText('NOS ready');
     await pages[0].keyboard.up('ArrowRight'); await pages[0].keyboard.up('ArrowUp');
     await pages[0].keyboard.down('ArrowUp');
-    await info.attach('race.png', { body: await pages[0].screenshot(), contentType: 'image/png' });
+    await info.attach('race.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
     for (const page of pages) await expect(page.getByRole('heading', { name: 'Round result' })).toBeVisible({ timeout: 15000 });
+    if (delayedAuthority) await pages[0].waitForTimeout(1200); // Allow late authority to reach the already-finalized clients.
     const outcomes = await Promise.all(pages.map(p => p.getByTestId('outcome-evidence').textContent().then(v => JSON.parse(v!))));
     expect(outcomes[0].result).toBe(0); expect(outcomes[0].reason).toBe(0);
     expect(outcomes[0].timeUs).toBe(outcomes[1].timeUs); expect(outcomes[0].cars).toEqual(outcomes[1].cars);
@@ -38,6 +70,6 @@ test('two actual browsers predict NOS and steering, then display one confirmed f
     expect(evidence[0].diagnostics.localInputs).toBeGreaterThan(0);
     expect(evidence[1].diagnostics.remoteRecords).toBeGreaterThan(0);
     await info.attach('outcomes.json', { body: JSON.stringify({ outcomes, evidence }), contentType: 'application/json' });
-    for (let i = 0; i < pages.length; i++) await info.attach(`result-${i}.png`, { body: await pages[i].screenshot(), contentType: 'image/png' });
+    for (let i = 0; i < pages.length; i++) await info.attach(`result-${i}.png`, { body: await pages[i].screenshot({ fullPage: true }), contentType: 'image/png' });
   } finally { await Promise.all(contexts.map(c => c.close())); }
 });

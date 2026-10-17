@@ -1,0 +1,57 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-aKDO4K/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-aKDO4K
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T05:36:37Z
+[WebServer] (node:68980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68981) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:68981) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:68988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish (8.3s)
+  ✘  2 tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish with authority arriving after outcome (8.7s)
+
+
+  1) tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish with authority arriving after outcome 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 3
+
+    - Array []
+    + Array [
+    +   "Received RESET_STREAM.",
+    + ]
+
+      59 |     expect(evidence[0].startUs).toBe(evidence[1].startUs);
+      60 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);
+    > 61 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);
+         |                                ^
+      62 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);
+      63 |     expect(evidence[0].diagnostics.localInputs).toBeGreaterThan(0);
+      64 |     expect(evidence[1].diagnostics.remoteRecords).toBeGreaterThan(0);
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:61:32
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-aKDO4K/browser-1792215400275/race-two-actual-browsers-d-8fc11-rity-arriving-after-outcome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-aKDO4K/browser-1792215400275/race-two-actual-browsers-d-8fc11-rity-arriving-after-outcome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-aKDO4K/browser-1792215400275/race-two-actual-browsers-d-8fc11-rity-arriving-after-outcome/error-context.md
+
+  1 failed
+    tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish with authority arriving after outcome 
+  1 passed (20.2s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T05-36-59.358Z
+ ELIFECYCLE  Command failed with exit code 1.

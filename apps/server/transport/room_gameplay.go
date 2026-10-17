@@ -257,7 +257,11 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 						records = append(records, item)
 					}
 				}
-				state := r.engine.Coverage()
+				state, coverageErr := r.engine.Coverage()
+				if coverageErr != nil {
+					s.mu.Unlock()
+					return coverageErr
+				}
 				current.Generator, current.Windows = raceCoverage(current, state)
 			}
 			s.mu.Unlock()
@@ -266,6 +270,9 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 					return err
 				}
 				outcomeSent = true
+				// The self-contained result supersedes earlier authority. Its
+				// application acknowledgement uses the terminal watermark.
+				outstanding = []progressPoint{{outcome.Tick, outcome.Progress, now}}
 			}
 			if !installed {
 				if now.Sub(sentAt) >= time.Second {

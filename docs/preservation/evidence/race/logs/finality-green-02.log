@@ -1,0 +1,61 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EibKoA/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EibKoA
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-30T05:37:50Z
+[WebServer] (node:69234) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:69235) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:69235) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:69242) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish (8.5s)
+  ✘  2 tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish with authority arriving after outcome (20.7s)
+
+
+  1) tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish with authority arriving after outcome 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Round result' })
+    Expected: visible
+    Timeout: 15000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Round result' }) with timeout 15000ms
+      - waiting for getByRole('heading', { name: 'Round result' })
+        - waiting for "https://127.0.0.1:4173/" navigation to finish...
+        - navigated to "https://127.0.0.1:4173/"
+
+
+      50 |     await pages[0].keyboard.down('ArrowUp');
+      51 |     await info.attach('race.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
+    > 52 |     for (const page of pages) await expect(page.getByRole('heading', { name: 'Round result' })).toBeVisible({ timeout: 15000 });
+         |                                                                                                 ^
+      53 |     if (delayedAuthority) await pages[0].waitForTimeout(1200); // Allow late authority to reach the already-finalized clients.
+      54 |     const outcomes = await Promise.all(pages.map(p => p.getByTestId('outcome-evidence').textContent().then(v => JSON.parse(v!))));
+      55 |     expect(outcomes[0].result).toBe(0); expect(outcomes[0].reason).toBe(0);
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:52:97
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EibKoA/browser-1792215473616/race-two-actual-browsers-d-8fc11-rity-arriving-after-outcome/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EibKoA/browser-1792215473616/race-two-actual-browsers-d-8fc11-rity-arriving-after-outcome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-EibKoA/browser-1792215473616/race-two-actual-browsers-d-8fc11-rity-arriving-after-outcome/error-context.md
+
+  1 failed
+    tests/browser/race.spec.ts:3:47 › two actual browsers drive and confirm one finish with authority arriving after outcome 
+  1 passed (32.1s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-17T05-38-24.507Z
+ ELIFECYCLE  Command failed with exit code 1.

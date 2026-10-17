@@ -85,7 +85,7 @@ export class RaceSession {
     this.outcome = structuredClone(outcome); this.pending = [];
   }
   frame(estimatedUs: number, authorityAgeUs: number) {
-    if (this.outcome) return { cars: this.outcome.cars.map((c, seat) => ({ ...this.baseline.cars[seat], ...c, effective: 0, controls: 0, heldMask: 0, flags: 0 })) as Car[], timeUs: this.outcome.timeUs, outcome: this.outcome, awaiting: false, stale: false };
+    if (this.outcome) return { renderedCars: this.outcome.cars.map(c => ({ ...c })), cars: this.outcome.cars.map((c, seat) => ({ ...this.baseline.cars[seat], ...c, effective: 0, controls: 0, heldMask: 0, flags: 0 })) as Car[], timeUs: this.outcome.timeUs, outcome: this.outcome, awaiting: false, stale: false };
     const stale = authorityAgeUs >= 1000000 || estimatedUs - this.lastAuthorityUs > 1000000;
     const target = Math.max(this.baseline.timeUs, this.lastFrameUs, Math.min(estimatedUs, this.lastAuthorityUs + 1000000));
     this.lastFrameUs = target;
@@ -104,7 +104,11 @@ export class RaceSession {
     }
     advance(target);
     const state = game.snapshot();
-    return { cars: state.cars, timeUs: state.timeUs, outcome: undefined as Outcome | undefined,
+    game.advanceTo((state.tick + 1) / rate, true);
+    const next = game.snapshot();
+    const fraction = Math.max(0, Math.min(1, target * rate / 1e6 - state.tick));
+    const renderedCars = state.cars.map((car, seat) => ({ progress: car.progress + (next.cars[seat].progress - car.progress) * fraction, lateral: car.lateral + (next.cars[seat].lateral - car.lateral) * fraction }));
+    return { renderedCars, cars: state.cars, timeUs: state.timeUs, outcome: undefined as Outcome | undefined,
       awaiting: this.baseline.context.mode === 1 && state.cars.some(c => c.progress + this.configuration.gameplay.carHeight / 2 >= this.baseline.context.gameplay.finishDistance), stale };
   }
 }

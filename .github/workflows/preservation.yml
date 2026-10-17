@@ -23,6 +23,7 @@ jobs:
       - run: pnpm test:browser
       - run: pnpm test:transport
       - run: pnpm test:rooms
+      - run: pnpm test:race
       - uses: actions/upload-artifact@v4
         if: always()
         with:
