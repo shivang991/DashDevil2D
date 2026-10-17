@@ -27,6 +27,7 @@ test('two React participants adopt host mode, ready and share a physics-free cou
     await expect(pages[0].getByRole('button', { name: 'Start round' })).toBeEnabled();
     await pages[0].getByRole('button', { name: 'Start round' }).click();
     await expect(pages[1].getByTestId('countdown')).toBeVisible();
+    await expect(pages[0].getByTestId('countdown')).toBeVisible();
     await info.attach('countdown.png', { body: await pages[0].screenshot(), contentType: 'image/png' });
     // Platform visibility fixture: real UI and transport handling; this is not
     // evidence of OS/browser background-tab scheduling or supported-release coverage.
