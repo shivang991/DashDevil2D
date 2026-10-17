@@ -261,3 +261,18 @@ test('prediction stops at known track bounds and requests recovery', () => {
   expect(frame.needsRecovery).toBe(true);
   expect(frame.cars[0].progress).toBeLessThan(5000);
 });
+
+test('smoothing snaps when repaired cars would visually pass through each other', () => {
+  const b = baseline();
+  Object.assign(b.cars[1], { lateral: 0, lane: 1, departure: 1, target: 1, movementOrigin: 0, movementTarget: 0 });
+  const race = new RaceSession(b); race.frame(100000, 0);
+  const corrected = structuredClone(b); corrected.epoch++;
+  corrected.tick = 6; corrected.timeUs = 100000;
+  corrected.cars.forEach(car => { car.progress = 40; });
+  Object.assign(corrected.cars[0], { lateral: 0, lane: 1, departure: 1, target: 1, movementOrigin: 0, movementTarget: 0 });
+  Object.assign(corrected.cars[1], { lateral: -120, lane: 0, departure: 0, target: 0, movementOrigin: -120, movementTarget: -120 });
+  race.install(corrected);
+  const frame = race.frame(100000, 0);
+  expect(frame.renderedCars[0].lateral).toBe(0);
+  expect(frame.renderedCars[1].lateral).toBe(-120);
+});

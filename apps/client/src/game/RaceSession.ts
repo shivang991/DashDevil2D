@@ -1,4 +1,5 @@
 import { Multiplayer, canonicalTime, type MultiplayerConfiguration } from '@dashdevil/simulation/multiplayer';
+import { firstContact } from '@dashdevil/simulation/geometry';
 import { captureConfiguration } from '@dashdevil/simulation/config';
 import { validateBaseline, validateMessage } from '@dashdevil/contracts/validation';
 import type { Baseline, Car, Coverage, Disposition, Event, Input, Outcome } from '@dashdevil/contracts/protocol';
@@ -149,7 +150,12 @@ export class RaceSession {
       const delta = repaired.renderedCars.map((car, seat) => ({ progress: previous.renderedCars[seat].progress - car.progress, lateral: previous.renderedCars[seat].lateral - car.lateral }));
       const offset = delta.map((change, seat) => ({ progress: change.progress + (this.offset?.[seat].progress ?? 0) * remaining, lateral: change.lateral + (this.offset?.[seat].lateral ?? 0) * remaining }));
       const g = this.configuration.gameplay;
-      const snap = this.snapCorrection || offset.some(o => Math.abs(o.progress) > g.carHeight || Math.abs(o.lateral) > g.laneSpacing) || repaired.cars.some(c => c.phase === 2) ||
+      const bounds = (seat: number, corrected: boolean) => {
+        const car = repaired.renderedCars[seat], correction = corrected ? { progress: 0, lateral: 0 } : offset[seat];
+        return { left: car.lateral + correction.lateral - g.carWidth / 2, right: car.lateral + correction.lateral + g.carWidth / 2, top: car.progress + correction.progress - g.carHeight / 2, bottom: car.progress + correction.progress + g.carHeight / 2 };
+      };
+      const crossesCars = firstContact(bounds(0, false), bounds(0, true), bounds(1, false), bounds(1, true)) !== null;
+      const snap = crossesCars || this.snapCorrection || offset.some(o => Math.abs(o.progress) > g.carHeight || Math.abs(o.lateral) > g.laneSpacing) || repaired.cars.some(c => c.phase === 2) ||
         (Math.abs(repaired.renderedCars[0].progress - repaired.renderedCars[1].progress) <= g.carHeight && Math.abs(repaired.renderedCars[0].lateral - repaired.renderedCars[1].lateral) <= g.carWidth);
       const changed = delta.some(o => Math.abs(o.progress) > 1e-6 || Math.abs(o.lateral) > 1e-6);
       if (changed) {

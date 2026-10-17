@@ -13,7 +13,7 @@ export interface PairedState {
   status: string; code: string; identity?: Identity; connectedSeats: number;
   verified: number; barriers: number; clockSamples: number; clockOffsetUs: number;
   context?: Context; outcome?: Outcome;
-  diagnostics: { corrections?: RaceSession['diagnostics']; reliableSentBytes?: number; reliableReceivedBytes?: number; verificationReceivedBytes?: number; recoveryRequests?: number; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
+  diagnostics: { corrections?: RaceSession['diagnostics']; reliableAttemptedBytes?: number; reliableReceivedBytes?: number; verificationReceivedBytes?: number; recoveryRequests?: number; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
   objects?: Baseline['windows'][number]['objects'];
   room?: RoomState; pending?: string; notice?: string; roundId?: number; startUs?: number; timeUs?: number; cars?: Baseline['cars']; seed?: number; positions: string; errors: string[]; baselineBytes: number; recoveryMs?: number;
 }
@@ -178,7 +178,7 @@ export class PairedConnection {
     const writer = input ? this.inputs : this.control;
     if (!writer) throw new Error('Reliable writer unavailable');
     const bytes = encodeMessage(type, value);
-    this.state.diagnostics.reliableSentBytes = (this.state.diagnostics.reliableSentBytes ?? 0) + bytes.length;
+    this.state.diagnostics.reliableAttemptedBytes = (this.state.diagnostics.reliableAttemptedBytes ?? 0) + bytes.length;
     if (this.queuedBytes + bytes.length > 262144 || this.queuedMessages >= 512) throw new Error('Reliable queue overflow');
     this.queuedBytes += bytes.length; this.queuedMessages++;
     let timeout: ReturnType<typeof setTimeout> | undefined;
