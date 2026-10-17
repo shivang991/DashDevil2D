@@ -187,7 +187,7 @@ func (e *Engine) Disconnect(auth protocol.Identity) {
 }
 func (e *Engine) shift(car *protocol.Car, seat uint8, timeUs uint64, events *[]Observation) {
 	g := e.context.Gameplay
-	if car.Phase != 0 || (car.Effective != 1 && car.Effective != 2) || timeUs < car.NextShiftUs {
+	if e.tailgating(int(seat)) || car.Phase != 0 || (car.Effective != 1 && car.Effective != 2) || timeUs < car.NextShiftUs {
 		return
 	}
 	delta := 1
@@ -343,16 +343,16 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 					next = math.Min(next, float64(car.NextShiftUs)/1e6)
 				}
 			}
+			collision := e.playerContact(time, next)
+			next = math.Min(next, collision)
+			next = e.clearance(time, next)
 			contacts := e.objectContacts(time, next)
 			finishTime := math.Inf(1)
 			finishMask := uint8(0)
 			if e.context.Mode == 1 {
 				for seat, car := range e.state.Cars {
 					remaining := g.FinishDistance - g.CarHeight/2 - car.Progress
-					multiplier := 1.0
-					if car.Effective == 3 {
-						multiplier = g.AccelSpeedMultiplier
-					}
+					multiplier := e.multiplier(seat)
 					if forwardDistance(g, time, next-time)*multiplier < remaining {
 						continue
 					}
@@ -389,13 +389,11 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 				}
 			}
 			elapsed := next - time
+			multipliers := [2]float64{e.multiplier(0), e.multiplier(1)}
 			for seat := range e.state.Cars {
 				car := &e.state.Cars[seat]
 				distance := forwardDistance(g, time, elapsed)
-				multiplier := 1.0
-				if car.Effective == 3 {
-					multiplier = g.AccelSpeedMultiplier
-				}
+				multiplier := multipliers[seat]
 				car.Progress = car.Progress + float64(distance*multiplier)
 				car.NormalSpeed = math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*next))
 				if car.Phase != 0 {
@@ -404,6 +402,9 @@ func (e *Engine) AdvanceTo(seconds float64) ([]Observation, error) {
 				}
 			}
 			nextUs, _ := CanonicalTime(next)
+			if math.Abs(next-collision) < 1e-12 {
+				e.resolvePlayers(next, &events)
+			}
 			if len(contacts) > 0 && contacts[0].timeUs == nextUs {
 				e.resolveObjects(contacts, &events, nextUs)
 			}

@@ -1,0 +1,692 @@
+{
+  "version": 1,
+  "precision": {
+    "absolute": 1e-06,
+    "relative": 1e-12
+  },
+  "scenarios": [
+    {
+      "name": "boosted follower retains NOS at leader rear",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "progress": 0,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        },
+        {
+          "progress": 100,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "expected": {
+        "progress": [
+          100,
+          180
+        ],
+        "lateral": [
+          0,
+          0
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          3,
+          0
+        ],
+        "contactTimes": []
+      },
+      "overrides": {}
+    },
+    {
+      "name": "single shifter returns from swept side impact and cancels NOS",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "lateral": -120,
+          "lane": 0,
+          "departure": 0,
+          "target": 1,
+          "phase": 1,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        },
+        {
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "expected": {
+        "progress": [
+          115,
+          80
+        ],
+        "lateral": [
+          -102.5,
+          0
+        ],
+        "phase": [
+          2,
+          0
+        ],
+        "effective": [
+          0,
+          0
+        ],
+        "contactTimes": [
+          87500
+        ]
+      },
+      "overrides": {}
+    },
+    {
+      "name": "dual shifts return without damage",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "lateral": -120,
+          "lane": 0,
+          "departure": 0,
+          "target": 1,
+          "phase": 1,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        },
+        {
+          "lateral": 120,
+          "lane": 2,
+          "departure": 2,
+          "target": 1,
+          "phase": 1,
+          "movementOrigin": 120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        }
+      ],
+      "expected": {
+        "progress": [
+          80,
+          80
+        ],
+        "lateral": [
+          -76.45833333333333,
+          76.45833333333333
+        ],
+        "phase": [
+          2,
+          2
+        ],
+        "effective": [
+          0,
+          0
+        ],
+        "contactTimes": [
+          118750
+        ]
+      },
+      "overrides": {}
+    },
+    {
+      "name": "dual returns finish at original departure lanes",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.3,
+      "cars": [
+        {
+          "lateral": -120,
+          "lane": 0,
+          "departure": 0,
+          "target": 1,
+          "phase": 1,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        },
+        {
+          "lateral": 120,
+          "lane": 2,
+          "departure": 2,
+          "target": 1,
+          "phase": 1,
+          "movementOrigin": 120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        }
+      ],
+      "expected": {
+        "progress": [
+          120,
+          120
+        ],
+        "lateral": [
+          -120,
+          120
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          0,
+          0
+        ],
+        "contactTimes": [
+          118750
+        ]
+      },
+      "overrides": {}
+    },
+    {
+      "name": "contact with existing return preserves its timer",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.1,
+      "cars": [
+        {
+          "lateral": -50,
+          "lane": 0,
+          "departure": 0,
+          "target": 0,
+          "phase": 2,
+          "movementOrigin": -50,
+          "movementTarget": -120,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        },
+        {
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 0,
+          "phase": 1,
+          "movementOrigin": 0,
+          "movementTarget": -120,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        }
+      ],
+      "expected": {
+        "progress": [
+          40,
+          40
+        ],
+        "lateral": [
+          -96.66666666666667,
+          0
+        ],
+        "phase": [
+          2,
+          2
+        ],
+        "effective": [
+          0,
+          0
+        ],
+        "contactTimes": [
+          0
+        ]
+      },
+      "overrides": {}
+    },
+    {
+      "name": "touching returns separate without new collision",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "lateral": -50,
+          "lane": 0,
+          "departure": 0,
+          "target": 0,
+          "phase": 2,
+          "movementOrigin": -50,
+          "movementTarget": -120,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        },
+        {
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "phase": 2,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        }
+      ],
+      "expected": {
+        "progress": [
+          80,
+          80
+        ],
+        "lateral": [
+          -120,
+          0
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          0,
+          0
+        ],
+        "contactTimes": []
+      },
+      "overrides": {}
+    },
+    {
+      "name": "sideways clearance immediately releases boosted follower",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "progress": 0,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        },
+        {
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 2,
+          "phase": 1,
+          "movementOrigin": 0,
+          "movementTarget": 120,
+          "movementStartUs": 0,
+          "movementEndUs": 150000,
+          "progress": 80
+        }
+      ],
+      "expected": {
+        "progress": [
+          135,
+          160
+        ],
+        "lateral": [
+          0,
+          120
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          3,
+          0
+        ],
+        "contactTimes": []
+      },
+      "overrides": {}
+    },
+    {
+      "name": "leader acceleration opens positive longitudinal gap",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "progress": 0,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        },
+        {
+          "progress": 80,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        }
+      ],
+      "expected": {
+        "progress": [
+          80,
+          240
+        ],
+        "lateral": [
+          0,
+          0
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          0,
+          3
+        ],
+        "contactTimes": []
+      },
+      "overrides": {}
+    },
+    {
+      "name": "different lanes permit NOS overtake",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.3,
+      "cars": [
+        {
+          "progress": 0,
+          "lateral": -120,
+          "lane": 0,
+          "departure": 0,
+          "target": 0,
+          "movementOrigin": -120,
+          "movementTarget": -120,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        },
+        {
+          "progress": 80,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "expected": {
+        "progress": [
+          240,
+          200
+        ],
+        "lateral": [
+          -120,
+          0
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          3,
+          0
+        ],
+        "contactTimes": []
+      },
+      "overrides": {}
+    },
+    {
+      "name": "equal requested speeds intentionally lock follower",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.5,
+      "cars": [
+        {
+          "progress": 0,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        },
+        {
+          "progress": 80,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "expected": {
+        "progress": [
+          200,
+          280
+        ],
+        "lateral": [
+          0,
+          0
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          0,
+          0
+        ],
+        "contactTimes": []
+      },
+      "overrides": {}
+    },
+    {
+      "name": "forward impact exactly at tick boundary returns an active shifter",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "lateral": -120,
+          "lane": 0,
+          "departure": 0,
+          "target": 1,
+          "phase": 1,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        },
+        {
+          "progress": 100,
+          "lateral": -120,
+          "lane": 0,
+          "departure": 0,
+          "target": 0,
+          "movementOrigin": -120,
+          "movementTarget": -120
+        }
+      ],
+      "expected": {
+        "progress": [
+          100,
+          180
+        ],
+        "lateral": [
+          -120,
+          -120
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          0,
+          0
+        ],
+        "contactTimes": [
+          50000
+        ]
+      },
+      "overrides": {}
+    },
+    {
+      "name": "swept high speed cannot tunnel through leader",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.1,
+      "cars": [
+        {
+          "progress": 0,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        },
+        {
+          "progress": 100,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "expected": {
+        "progress": [
+          60,
+          140
+        ],
+        "lateral": [
+          0,
+          0
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          3,
+          0
+        ],
+        "contactTimes": [
+          2632
+        ]
+      },
+      "overrides": {
+        "gameplay": {
+          "accelSpeedMultiplier": 20
+        }
+      }
+    },
+    {
+      "name": "integrated speed growth preserves rear constraint",
+      "seed": 1,
+      "tick": 0,
+      "advance": 0.2,
+      "cars": [
+        {
+          "progress": 0,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "effective": 3,
+          "controls": 3,
+          "heldMask": 4,
+          "flags": 1,
+          "freshnessUs": 1000000
+        },
+        {
+          "progress": 100,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "expected": {
+        "progress": [
+          102,
+          182
+        ],
+        "lateral": [
+          0,
+          0
+        ],
+        "phase": [
+          0,
+          0
+        ],
+        "effective": [
+          3,
+          0
+        ],
+        "contactTimes": [
+          49691
+        ]
+      },
+      "overrides": {
+        "gameplay": {
+          "speedGrowth": 100,
+          "maxRoadSpeed": 900
+        }
+      }
+    }
+  ]
+}

@@ -65,10 +65,7 @@ func (e *Engine) objectContacts(start, end float64) []objectContact {
 			}
 			lateralExtent, forwardExtent := (g.CarWidth+width)/2, (g.CarHeight+height)/2
 			center := (float64(object.Lane) - 1) * g.LaneSpacing
-			multiplier := 1.0
-			if car.Effective == 3 {
-				multiplier = g.AccelSpeedMultiplier
-			}
+			multiplier := e.multiplier(seat)
 			progress := func(at float64) float64 { return car.Progress + forwardDistance(g, start, at-start)*multiplier }
 			if progress(end) <= object.Distance-forwardExtent || car.Progress >= object.Distance+forwardExtent {
 				continue

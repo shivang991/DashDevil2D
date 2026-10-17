@@ -16,6 +16,8 @@ test('authenticated NOS starts at the next unprocessed tick without backdating',
 });
 test('held steering shifts at constant speed and repeats only after completion', () => {
  const game = new Multiplayer(captureConfiguration('road-rage'), 1, [identity, { ...identity, seat: 1, seatSession: 22 }]);
+ // Isolate free steering from the opponent's newly implemented blocking.
+ const cars = game.snapshot().cars; cars[1].progress = 200; game.restore(cars, 0);
  game.submit(identity, { ...input, control: 2, heldMask: 2 });
  game.advanceTo(.1);
  expect(game.snapshot().cars[0].lateral).toBeCloseTo(-40, 9);

@@ -2,7 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import type { PairedState } from '../../src/transport/PairedConnection';
 const read = async (page: Page) => JSON.parse((await page.getByTestId('room-evidence').textContent())!) as PairedState;
 const hearts = Boolean(process.env.DASHDEVIL_HEART_TESTS);
-test(hearts ? 'two actual browsers contend for reserved hearts and confirm finish' : 'two actual browsers survive shipped default objects until HP elimination', async ({ browser, baseURL }, info) => {
+test(hearts ? 'two actual browsers collect and deny reserved hearts and confirm finish' : 'two actual browsers survive shipped default objects until HP elimination', async ({ browser, baseURL }, info) => {
   test.setTimeout(90000);
   const contexts = await Promise.all([browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } }), browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } })]);
   const pages = await Promise.all(contexts.map(context => context.newPage()));
@@ -25,17 +25,14 @@ test(hearts ? 'two actual browsers contend for reserved hearts and confirm finis
       // timing fixture or state mutation; both continue at the same normal speed.
       await expect.poll(async () => (await read(pages[0])).objects?.some(object => (object.flags & 3) === 3)).toBe(true);
       const heart = (await read(pages[0])).objects!.find(object => (object.flags & 3) === 3)!;
-      for (let seat = 0; seat < 2; seat++) {
-        const page = pages[seat], lane = seat === 0 ? 0 : 2;
-        if (lane !== heart.lane) {
-          const key = heart.lane > lane ? 'ArrowRight' : 'ArrowLeft';
-          await page.getByRole('img', { name: 'Multiplayer race' }).focus();
-          for (let step = lane; step !== heart.lane;) {
-            step += heart.lane > step ? 1 : -1;
-            await page.keyboard.press(key);
-            await expect.poll(async () => { const car = (await read(page)).cars?.[seat]; return car?.phase === 0 ? car.lane : -1; }, { intervals: [20], timeout: 1500 }).toBe(step);
-          }
-        }
+      // Car blocking forbids co-located cars. Only one legal collector enters
+      // the heart lane; both browsers must observe its full-health denial.
+      const seat = heart.lane === 2 ? 1 : 0;
+      const page = pages[seat], lane = seat === 0 ? 0 : 2;
+      if (lane !== heart.lane) {
+        await page.getByRole('img', { name: 'Multiplayer race' }).focus();
+        await page.keyboard.press(heart.lane > lane ? 'ArrowRight' : 'ArrowLeft');
+        await expect.poll(async () => { const car = (await read(page)).cars?.[seat]; return car?.phase === 0 ? car.lane : -1; }, { intervals: [20], timeout: 1500 }).toBe(heart.lane);
       }
       await expect.poll(async () => (await read(pages[0])).cars?.[0].progress ?? 0, { intervals: [20] }).toBeGreaterThanOrEqual(600);
       await info.attach('reserved-heart-visible.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });

@@ -1,0 +1,25 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/simulation/contacts.test.ts (13 tests | 1 failed) 21ms
+   × forward impact exactly at tick boundary returns an active shifter 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/contacts.test.ts > forward impact exactly at tick boundary returns an active shifter
+AssertionError: expected 55 to be less than or equal to 0.0000010001
+ ❯ tests/simulation/contacts.test.ts:14:152
+
+ ❯ tests/simulation/contacts.test.ts:14:67
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 12 passed (13)
+   Start at  23:24:51
+   Duration  185ms (transform 36%, tests 33%, import 26%, worker 5%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/contacts.test.ts

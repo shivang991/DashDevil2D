@@ -22,6 +22,7 @@
     "test:rooms": "node apps/client/scripts/transport.mjs --test --rooms",
     "test:race": "node apps/client/scripts/transport.mjs --test --race",
     "test:objects": "node apps/client/scripts/transport.mjs --test --objects",
+    "test:contacts": "node apps/client/scripts/transport.mjs --test --contacts",
     "test:hearts": "node apps/client/scripts/transport.mjs --test --hearts"
   },
   "devDependencies": {

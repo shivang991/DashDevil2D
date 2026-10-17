@@ -1,0 +1,11 @@
+{
+  "gameplay": {
+    "finishDistance": 4800,
+    "initialClearDistance": 0,
+    "reservedHearts": 0,
+    "emptyWeight": 1,
+    "obstacleWeight": 0,
+    "coinWeight": 0,
+    "heartWeight": 0
+  }
+}

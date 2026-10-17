@@ -95,7 +95,7 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 		delete(r.inputs[seat], sequence)
 		value := p.Disposition{Authority: b.Progress.Authority, Tick: event.Tick, TimeUs: event.TimeUs, Seat: seat, Sequence: sequence, Processed: sequence, Disposition: disposition, Intent: input.Intent, Control: input.Control, Car: *event.Car, Contact: b.Contact}
 		r.history = append(r.history, raceRecord{b.Progress.Authority, value})
-	} else if event.Car != nil || event.Type == "objects" {
+	} else if event.Car != nil || (event.Type == "objects" || event.Type == "contact") {
 		b.Progress.Event++
 		cars := event.Cars
 		kind := uint8(8)
