@@ -51,7 +51,7 @@ func (pair *pair) close(reason string) {
 				pair.seat.deadline = s.nowTime().Add(roomDuration(pair.seat.room, "reconnectGrace"))
 			}
 			s.cancelCountdownLocked(pair.seat.room)
-			if pair.seat.room.phase == 2 && pair.seat.room.engine != nil {
+			if pair.seat.room.phase == 2 && pair.seat.room.engine != nil && pair.seat.leaving.IsZero() {
 				pair.seat.room.engine.Disconnect(pair.identity)
 				pair.seat.room.primed[pair.identity.Seat] = false
 			}
@@ -291,14 +291,10 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		now := s.nowTime()
 		s.resolveDeparturesLocked(r, now)
 		if r.phase == 2 {
-			// Capture a group, release controls immediately, and resolve it once this
-			// authoritative instant closes. A pre-existing earlier cutoff still wins.
+			// Revoke input ownership immediately, but retain engine controls until
+			// StopAt integrates gameplay through this departure instant.
 			participant.leaving = now
 			participant.connected = false
-			if r.engine != nil {
-				r.engine.Disconnect(pair.identity)
-				r.primed[participant.index] = false
-			}
 			s.resolveDeparturesLocked(r, now)
 			if r.seats[0] != nil && r.seats[1] != nil && !r.seats[0].leaving.IsZero() && !r.seats[1].leaving.IsZero() {
 				s.resolveDeparturesLocked(r, now.Add(time.Microsecond))

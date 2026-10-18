@@ -358,6 +358,9 @@ func pairAtReady(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Ad
 		t.Fatal(err)
 	}
 	sendRecord(t, inputs, p.Input{Identity: a.Identity, Round: initialization.Round, Sequence: 1, Intent: 2})
+	if observe != nil {
+		observe(inputs)
+	}
 	authority, err := session.AcceptUniStream(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -427,6 +430,9 @@ func pairAtReady(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Ad
 				record, e := readTestFrame(authority)
 				if e != nil {
 					return
+				}
+				if observe != nil {
+					observe(record)
 				}
 				if pulse, ok := record.(p.RoomPulse); ok {
 					wire, _ := p.EncodeMessage(pulse, 65536)

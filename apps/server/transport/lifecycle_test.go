@@ -7,6 +7,8 @@ import (
 	wt "github.com/quic-go/webtransport-go"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"github.com/shivang991/DashDevil2D/apps/server/transport"
+	"io"
+	"math"
 	"net/http"
 	"sync/atomic"
 	"testing"
@@ -106,16 +108,18 @@ func receiveOutcome(t *testing.T, outcomes <-chan p.Outcome) p.Outcome {
 }
 
 type activeLifecycleRoom struct {
-	server     *transport.Server
-	client     *http.Client
-	roots      *x509.CertPool
-	code       string
-	admissions [2]p.Admission
-	sockets    [2]*ws.Conn
-	games      [2]*wt.Session
-	outcomes   [2]chan p.Outcome
-	advance    func(time.Duration)
-	state      p.RoomState
+	server       *transport.Server
+	client       *http.Client
+	roots        *x509.CertPool
+	code         string
+	admissions   [2]p.Admission
+	sockets      [2]*ws.Conn
+	games        [2]*wt.Session
+	outcomes     [2]chan p.Outcome
+	inputs       [2]io.Writer
+	dispositions [2]chan p.Disposition
+	advance      func(time.Duration)
+	state        p.RoomState
 }
 
 func activeLifecycle(t *testing.T, overrides string) activeLifecycleRoom {
@@ -132,9 +136,16 @@ func activeLifecycle(t *testing.T, overrides string) activeLifecycleRoom {
 		f.admissions[i] = v.(p.Admission)
 		outcomes := make(chan p.Outcome, 4)
 		f.outcomes[i] = outcomes
+		dispositions := make(chan p.Disposition, 16)
+		f.dispositions[i] = dispositions
 		f.sockets[i], f.games[i] = observedPair(t, s, roots, f.admissions[i], true, func(record any) {
-			if outcome, ok := record.(p.Outcome); ok {
-				outcomes <- outcome
+			switch value := record.(type) {
+			case p.Outcome:
+				outcomes <- value
+			case p.Disposition:
+				dispositions <- value
+			case io.Writer:
+				f.inputs[i] = value
 			}
 		})
 	}
@@ -398,6 +409,48 @@ func TestPairedBaselineAcknowledgementMustPrecedeGrace(t *testing.T) {
 				if status != 410 {
 					t.Fatalf("late baseline acknowledgement revived reservation: %d", status)
 				}
+			}
+		})
+	}
+}
+
+func TestQueuedLeavePreservesBoostedGameplayThroughCutoff(t *testing.T) {
+	for _, scenario := range []struct {
+		cutoff         time.Duration
+		result, reason uint8
+		timeUs         uint64
+		progress       float64
+	}{
+		{1499999 * time.Microsecond, 1, 3, 1499999, 1199.9992},
+		{1500000 * time.Microsecond, 0, 0, 1500000, 1200},
+		{1500001 * time.Microsecond, 0, 0, 1500000, 1200},
+	} {
+		t.Run(scenario.cutoff.String(), func(t *testing.T) {
+			f := activeLifecycle(t, `{"gameplay":{"finishDistance":1240,"tickRate":1,"initialClearDistance":0,"reservedHearts":0,"obstacleWeight":0,"emptyWeight":1},"connection":{"controlFreshnessExpiry":10},"operational":{"simulationLagThreshold":10}}`)
+			sendRecord(t, f.inputs[0], p.Input{Identity: f.admissions[0].Identity, Round: p.Round{RoundId: f.state.RoundId, InputGeneration: 2}, Sequence: 1, Intent: 0, Control: 3, HeldMask: 4})
+			// Let the real input reader queue the press before advancing its next tick.
+			time.Sleep(20 * time.Millisecond)
+			f.advance(time.Second)
+			select {
+			case disposition := <-f.dispositions[0]:
+				if disposition.Disposition != 0 || disposition.Car.Flags&1 == 0 {
+					t.Fatalf("NOS was not accepted: %+v", disposition)
+				}
+			case <-time.After(time.Second):
+				t.Fatal("no authoritative input disposition")
+			}
+			f.advance(scenario.cutoff - time.Second)
+			roomSend(t, f.sockets[0], f.admissions[0], 3, f.state, 3, 1, 0)
+			f.sockets[0].SetReadDeadline(time.Now().Add(time.Second))
+			for {
+				if _, _, err := f.sockets[0].ReadMessage(); err != nil {
+					break
+				}
+			}
+			f.advance(time.Microsecond)
+			outcome := receiveOutcome(t, f.outcomes[1])
+			if outcome.Result != scenario.result || outcome.Reason != scenario.reason || outcome.TimeUs != scenario.timeUs || math.Abs(outcome.Cars[0].Progress-scenario.progress) > 1e-6+1e-12*math.Abs(scenario.progress) {
+				t.Fatalf("leave erased boosted gameplay: %+v", outcome)
 			}
 		})
 	}
