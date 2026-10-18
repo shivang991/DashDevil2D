@@ -1,0 +1,3 @@
+{
+  "room": { "reconnectGrace": 2, "idleExpiry": 2, "idleWarning": 1 }
+}

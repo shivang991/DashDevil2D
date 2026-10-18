@@ -34,7 +34,7 @@ func (s *Server) finalizeRaceLocked(r *room, result, reason uint8, tick uint32, 
 			r.outcomeSessions[i] = seat.session
 		}
 	}
-	r.idle = time.Now().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
+	r.idle = s.nowTime().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
 	r.outcome = &outcome
 	r.phase = 3
 	r.revision++
@@ -81,6 +81,9 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 			reason = 6
 		}
 	}
+	if r.mode != 1 {
+		r.zero.TimeUs = cutoffUs - min(cutoffUs, r.startUs)
+	}
 	s.finalizeRaceLocked(r, result, reason, r.zero.Tick, r.zero.TimeUs)
 }
 
@@ -103,28 +106,16 @@ func (s *Server) advanceRacesLocked() []*room {
 		wasPending := r.engine.PendingGroup()
 		// A grace deadline also caps catch-up, so a later finish cannot replace
 		// the already-due lifecycle result. Maintenance wins equal cutoffs.
-		expired := -1
-		expiryUs := targetUs
-		for i, seat := range r.seats {
-			if seat != nil && !seat.deadline.IsZero() {
-				cutoff := uint64(max(0, seat.deadline.Sub(s.start).Microseconds()))
-				if cutoff <= targetUs && (!stopping || cutoff < targetUs) {
-					expired = i
-					expiryUs = cutoff
-					targetUs = cutoff
-					stopping = false
+		cutoff := earliestDeparture(r)
+		if !cutoff.IsZero() {
+			cutoffUs := uint64(max(0, cutoff.Sub(s.start).Microseconds()))
+			if cutoffUs <= targetUs && (!stopping || cutoffUs < targetUs) {
+				if s.resolveDeparturesLocked(r, s.nowTime()) {
+					changed = append(changed, r)
 				}
+				// Do not simulate past a departure group that is still open.
+				continue
 			}
-		}
-		if expired >= 0 {
-			result, reason := uint8(3), uint8(5)
-			if other := r.seats[1-expired]; other != nil && other.connected {
-				result = uint8(1 - expired)
-				reason = 4
-			}
-			s.finalizeLifecycleLocked(r, result, reason, expiryUs)
-			changed = append(changed, r)
-			continue
 		}
 		var events []simulation.Observation
 		var err error
@@ -234,7 +225,7 @@ func (pair *pair) submitRace(input p.Input) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	r := pair.seat.room
-	if pair.seat.pair != pair || r.phase != 2 || r.engine == nil || r.outcome != nil || !pair.seat.focused {
+	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.connected || !pair.seat.leaving.IsZero() || r.phase != 2 || r.engine == nil || r.outcome != nil || !pair.seat.focused {
 		return nil
 	}
 	if input.Round.RoundId != r.roundID || input.Round.InputGeneration != pair.seat.inputGeneration {

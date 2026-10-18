@@ -63,9 +63,13 @@ func server(t *testing.T) (*transport.Server, *http.Client, *x509.CertPool) {
 	return serverMode(t, true)
 }
 func serverMode(t *testing.T, diagnostic bool) (*transport.Server, *http.Client, *x509.CertPool) {
+	return configuredServer(t, transport.Config{Diagnostic: diagnostic})
+}
+func configuredServer(t *testing.T, config transport.Config) (*transport.Server, *http.Client, *x509.CertPool) {
 	t.Helper()
 	cert, key, roots := localCertificate(t)
-	s, err := transport.New(transport.Config{Address: "127.0.0.1:0", Origin: origin, Certificate: cert, Key: key, Diagnostic: diagnostic})
+	config.Address, config.Origin, config.Certificate, config.Key = "127.0.0.1:0", origin, cert, key
+	s, err := transport.New(config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -308,6 +312,9 @@ func TestRealQUICInitializesThreeStreamsAndVerifiesDiagnosticState(t *testing.T)
 
 // initializedPair exercises only public TLS endpoints, never server internals.
 func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, acknowledge bool) (*ws.Conn, *wt.Session) {
+	return observedPair(t, s, roots, a, acknowledge, nil)
+}
+func observedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, acknowledge bool, observe func(any)) (*ws.Conn, *wt.Session) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()
@@ -388,8 +395,12 @@ func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a 
 	if acknowledge {
 		go func() {
 			for {
-				if _, e := readTestFrame(control); e != nil {
+				record, e := readTestFrame(control)
+				if e != nil {
 					return
+				}
+				if observe != nil {
+					observe(record)
 				}
 			}
 		}()
@@ -412,7 +423,7 @@ func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a 
 					}
 				}
 				if barrier, ok := record.(p.Barrier); ok {
-					wire, e := p.EncodeMessage(p.AuthorityAck{Identity: a.Identity, Round: initialization.Round, Epoch: barrier.Epoch, Tick: barrier.Tick, Progress: barrier.Progress}, 65536)
+					wire, e := p.EncodeMessage(p.AuthorityAck{Identity: a.Identity, Round: barrier.Round, Epoch: barrier.Epoch, Tick: barrier.Tick, Progress: barrier.Progress}, 65536)
 					if e != nil {
 						return
 					}

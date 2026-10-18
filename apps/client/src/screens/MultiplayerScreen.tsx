@@ -87,7 +87,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
           {host && <label className="flex flex-col gap-2">Multiplayer mode<select className="rounded-lg bg-neutral-900 border border-neutral-600 p-3" value={room!.mode} disabled={!eligible} onChange={event => connection.current?.command(0, Number(event.target.value), 0, 'Changing mode')}><option value={1}>Drag Race</option><option value={2}>Road Rage</option></select></label>}
           <button className={button} disabled={!eligible || document.hidden || !document.hasFocus()} onClick={() => connection.current?.command(1, room!.mode, room!.seats[local].flags & 2 ? 0 : 1, 'Confirming readiness')}>{room!.seats[local].flags & 2 ? 'Cancel ready' : 'Ready'}</button>
           {host && <><button className={button} disabled={!canStart} onClick={() => connection.current?.command(2, room!.mode, 0, 'Starting round')}>Start round</button>{!canStart && <p className="text-sm text-neutral-400">Start requires two connected, initialized, focused and ready players.</p>}</>}
-          {room!.idleWarningUs > 0 && clock + (state?.clockOffsetUs ?? 0) >= room!.idleWarningUs && <p role="alert">This room expires in less than one minute without activity.</p>}
+          {room!.idleWarningUs > 0 && clock + (state?.clockOffsetUs ?? 0) >= room!.idleWarningUs && <p role="alert">This room will expire soon without activity.</p>}
         </>}
         {room!.phase === 0 && state?.outcome && dismissedResult !== state.outcome.roundId && <>
           <RoundResult outcome={state.outcome} local={local} />

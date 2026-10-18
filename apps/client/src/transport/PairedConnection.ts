@@ -82,9 +82,15 @@ export class PairedConnection {
     if (generation !== this.generation || this.terminal) return;
     const detail = error instanceof Error ? error.message : String(error);
     this.state.errors.push(detail); if (this.state.errors.length > 32) this.state.errors.shift();
-    this.teardown(); this.state.status = detail.includes('version') ? 'Version mismatch—reload' : `Unable to connect: ${detail}`; this.state.pending = undefined; this.publish();
-    if (!this.options.diagnostic && this.admission && this.credential().length && !/expired|rejected|superseded|replaced|version/i.test(detail)) {
-      if (!this.recoverUntil) this.recoverUntil = performance.now() + 15000;
+    const ended = /expired|rejected|superseded|replaced|version/i.test(detail);
+    this.teardown();
+    if (ended) {
+      try { sessionStorage.removeItem(this.storageKey()); } catch { /* storage optional */ }
+      this.admission = undefined; this.state.room = undefined; this.state.identity = undefined;
+    }
+    this.state.status = detail.includes('version') ? 'Version mismatch—reload' : `Unable to connect: ${detail}`; this.state.pending = undefined; this.publish();
+    if (!this.options.diagnostic && this.admission && this.credential().length && !ended) {
+      if (!this.recoverUntil) this.recoverUntil = performance.now() + (this.state.context?.room.reconnectGrace ?? 15) * 1000;
       if (performance.now() < this.recoverUntil) this.recoveryTimer = setTimeout(() => void this.connect(2), 500);
     }
   }
@@ -131,7 +137,9 @@ export class PairedConnection {
       await Promise.race([gameplay.ready, new Promise<never>((_, reject) => { const timeout = setTimeout(() => reject(new Error('WebTransport connection timed out')), 5000); void gameplay.ready.finally(() => clearTimeout(timeout)).catch(() => {}); })]);
       if (generation !== this.generation) { gameplay.close(); return; }
       if (gameplay.datagrams.maxDatagramSize < 10) throw new Error('Required datagram payload unavailable');
-      const control = await gameplay.createBidirectionalStream(); this.control = control.writable.getWriter();
+      const control = await gameplay.createBidirectionalStream();
+      if (generation !== this.generation) { void control.readable.cancel(); void control.writable.abort(); return; }
+      this.control = control.writable.getWriter();
       void this.read(control.readable, 'control', generation).catch(error => this.fail(error, generation));
       void this.readAuthority(gameplay, generation).catch(error => this.fail(error, generation));
       void this.readDatagrams(gameplay, generation).catch(error => this.fail(error, generation));

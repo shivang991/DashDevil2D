@@ -6,7 +6,7 @@ if (!file) throw new Error('Run pnpm test:transport so certificates and both lis
 const config = JSON.parse(fs.readFileSync(file, 'utf8')) as { spki: string };
 const runDirectory = path.join(path.dirname(file), `browser-${Date.now()}`);
 export default defineConfig({
-  testDir: './tests/browser', testMatch: process.env.DASHDEVIL_GROUP_TESTS ? 'groups.spec.ts' : process.env.DASHDEVIL_FINALITY_TESTS ? 'finality.spec.ts' : process.env.DASHDEVIL_MAINTENANCE_TESTS ? 'maintenance.spec.ts' : process.env.DASHDEVIL_LIFECYCLE_TESTS ? 'lifecycle.spec.ts' : process.env.DASHDEVIL_CONTACT_TESTS ? 'contacts.spec.ts' : process.env.DASHDEVIL_OBJECT_TESTS ? 'objects.spec.ts' : process.env.DASHDEVIL_RACE_TESTS ? 'race.spec.ts' : process.env.DASHDEVIL_ROOM_TESTS ? 'rooms.spec.ts' : 'transport.spec.ts', retries: 0, workers: 1,
+  testDir: './tests/browser', testMatch: process.env.DASHDEVIL_BOUNDARY_TESTS ? 'boundaries.spec.ts' : process.env.DASHDEVIL_GROUP_TESTS ? 'groups.spec.ts' : process.env.DASHDEVIL_FINALITY_TESTS ? 'finality.spec.ts' : process.env.DASHDEVIL_MAINTENANCE_TESTS ? 'maintenance.spec.ts' : process.env.DASHDEVIL_LIFECYCLE_TESTS ? 'lifecycle.spec.ts' : process.env.DASHDEVIL_CONTACT_TESTS ? 'contacts.spec.ts' : process.env.DASHDEVIL_OBJECT_TESTS ? 'objects.spec.ts' : process.env.DASHDEVIL_RACE_TESTS ? 'race.spec.ts' : process.env.DASHDEVIL_ROOM_TESTS ? 'rooms.spec.ts' : 'transport.spec.ts', retries: 0, workers: 1,
   outputDir: runDirectory,
   reporter: [['list'], ['json', { outputFile: path.join(runDirectory, 'results.json') }]],
   use: {

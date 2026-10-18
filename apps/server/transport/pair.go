@@ -46,8 +46,9 @@ func (pair *pair) close(reason string) {
 		s := pair.server
 		s.mu.Lock()
 		if pair.seat.pair == pair && pair.seat.room.seats[pair.seat.index] == pair.seat {
+			s.resolveDeparturesLocked(pair.seat.room, s.nowTime().Add(-time.Microsecond))
 			if pair.seat.deadline.IsZero() {
-				pair.seat.deadline = time.Now().Add(15 * time.Second)
+				pair.seat.deadline = s.nowTime().Add(roomDuration(pair.seat.room, "reconnectGrace"))
 			}
 			s.cancelCountdownLocked(pair.seat.room)
 			if pair.seat.room.phase == 2 && pair.seat.room.engine != nil {
@@ -112,9 +113,10 @@ func (s *Server) broadcast(r *room) {
 		if participant == nil || participant.pair == nil {
 			continue
 		}
-		state := p.RoomState{Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: s.nowUs() + uint64(max(time.Until(r.idle).Microseconds(), 0))}
-		if state.IdleExpiryUs >= 60000000 {
-			state.IdleWarningUs = state.IdleExpiryUs - 60000000
+		state := p.RoomState{Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: uint64(max(r.idle.Sub(s.start).Microseconds(), 0))}
+		warningUs := uint64(roomDuration(r, "idleWarning").Microseconds())
+		if state.IdleExpiryUs >= warningUs {
+			state.IdleWarningUs = state.IdleExpiryUs - warningUs
 		}
 		for i, seat := range r.seats {
 			if seat == nil {
@@ -129,7 +131,7 @@ func (s *Server) broadcast(r *room) {
 			}
 			reservation := uint64(0)
 			if !seat.deadline.IsZero() {
-				reservation = s.nowUs() + uint64(max(time.Until(seat.deadline).Microseconds(), 0))
+				reservation = uint64(max(seat.deadline.Sub(s.start).Microseconds(), 0))
 			}
 			state.Seats[i] = p.Seat{Session: seat.session, Name: seat.name, Flags: flags, ReservationUs: reservation}
 		}
@@ -243,20 +245,22 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 	}
 }
 func (pair *pair) connectIfReady() {
+	s := pair.server
+	s.mu.Lock()
 	pair.mu.Lock()
 	ready := pair.roomInitialized && pair.initialized && !pair.closed
 	pair.mu.Unlock()
 	if !ready {
+		s.mu.Unlock()
 		return
 	}
-	s := pair.server
-	s.mu.Lock()
 	participant := pair.seat
-	if participant.pair != pair || participant.room.seats[participant.index] != participant || (!participant.deadline.IsZero() && !time.Now().Before(participant.deadline)) {
+	if participant.pair != pair || participant.room.seats[participant.index] != participant || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !s.nowTime().Before(participant.deadline)) {
 		s.mu.Unlock()
 		pair.close("recovery deadline")
 		return
 	}
+	s.resolveDeparturesLocked(participant.room, s.nowTime().Add(-time.Microsecond))
 	participant.connected = true
 	participant.deadline = time.Time{}
 	participant.room.revision++
@@ -268,14 +272,14 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	s.mu.Lock()
 	participant := pair.seat
 	r := participant.room
-	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence {
+	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence || !participant.leaving.IsZero() {
 		s.mu.Unlock()
 		return fmt.Errorf("stale room command")
 	}
 	pair.roomSequence = command.Sequence
 	// Resolve the exact maintenance cutoff before any command can make a
 	// terminal result immutable between periodic sweeps.
-	if s.draining && !time.Now().Before(s.drainDeadline) {
+	if s.draining && !s.nowTime().Before(s.drainDeadline) {
 		changed := s.advanceRacesLocked()
 		defer func() {
 			for _, room := range changed {
@@ -284,28 +288,35 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		}()
 	}
 	if command.Command == 3 {
+		now := s.nowTime()
+		s.resolveDeparturesLocked(r, now.Add(-time.Microsecond))
 		if r.phase == 2 {
-			result := uint8(3)
-			reason := uint8(5)
-			if other := r.seats[1-participant.index]; other != nil && other.connected {
-				result = 1 - participant.index
-				reason = 3
+			// Capture a group, release controls immediately, and resolve it once this
+			// authoritative instant closes. A pre-existing earlier cutoff still wins.
+			participant.leaving = now
+			participant.connected = false
+			if r.engine != nil {
+				r.engine.Disconnect(pair.identity)
+				r.primed[participant.index] = false
 			}
-			s.finalizeLifecycleLocked(r, result, reason, s.nowUs())
-		}
-		s.cancelCountdownLocked(r)
-		delete(s.credentials, token(participant.credential))
-		r.seats[participant.index] = nil
-		for _, other := range r.seats {
-			if other != nil {
-				other.ready = false
+			s.resolveDeparturesLocked(r, now)
+			if r.seats[0] != nil && r.seats[1] != nil && !r.seats[0].leaving.IsZero() && !r.seats[1].leaving.IsZero() {
+				s.resolveDeparturesLocked(r, now.Add(time.Microsecond))
 			}
 		}
-		if r.host == participant.index {
-			r.host = 1 - r.host
-		}
-		if r.seats[0] == nil && r.seats[1] == nil {
-			delete(s.rooms, r.code)
+		if r.phase != 2 {
+			s.removeSeatLocked(r, participant.index)
+			for i, other := range r.seats {
+				if other != nil && !other.leaving.IsZero() {
+					s.removeSeatLocked(r, uint8(i))
+				}
+			}
+			if r.host == participant.index {
+				r.host = 1 - r.host
+			}
+			if r.seats[0] == nil && r.seats[1] == nil {
+				delete(s.rooms, r.code)
+			}
 		}
 		r.revision++
 		s.mu.Unlock()
@@ -315,10 +326,11 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	}
 	// Focus-loss and unready are safety actions: apply even against an older revision.
 	safety := command.Command == 4 || command.Command == 1 && command.Ready == 0
-	if !participant.connected || (!safety && command.Revision != r.revision) {
+	if !participant.connected || (!participant.deadline.IsZero() && !s.nowTime().Before(participant.deadline)) || ((r.phase == 0 || r.phase == 3) && !s.nowTime().Before(r.idle)) || (!safety && command.Revision != r.revision) {
 		s.mu.Unlock()
 		return fmt.Errorf("Room changed; try again")
 	}
+	resetIdle := false
 	switch command.Command {
 	case 0:
 		if r.phase != 0 || participant.index != r.host || (command.Mode != 1 && command.Mode != 2) {
@@ -326,6 +338,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			return fmt.Errorf("Only host may select a mode in the lobby")
 		}
 		if r.mode != command.Mode {
+			resetIdle = true
 			mode := "drag-race"
 			if command.Mode == 2 {
 				mode = "road-rage"
@@ -349,6 +362,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			s.mu.Unlock()
 			return fmt.Errorf("Ready requires a focused, visible lobby")
 		}
+		resetIdle = participant.ready != (command.Ready == 1)
 		participant.ready = command.Ready == 1
 	case 2:
 		if s.draining {
@@ -378,6 +392,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		for _, seat := range r.seats {
 			seat.inputGeneration++
 		}
+		resetIdle = true
 		r.roundID++
 		r.phase = 1
 		r.startUs = s.nowUs() + uint64(r.settings.Value("gameplay", "countdownDuration")*1e6)
@@ -423,8 +438,8 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		return fmt.Errorf("Unknown room command")
 	}
 	r.revision++
-	if command.Command <= 2 {
-		r.idle = time.Now().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
+	if resetIdle {
+		r.idle = s.nowTime().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
 	}
 	s.mu.Unlock()
 	s.broadcast(r)

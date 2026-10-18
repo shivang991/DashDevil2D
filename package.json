@@ -26,6 +26,7 @@
     "test:objects": "node apps/client/scripts/transport.mjs --test --objects",
     "test:contacts": "node apps/client/scripts/transport.mjs --test --contacts",
     "test:maintenance": "node apps/client/scripts/transport.mjs --test --maintenance",
+    "test:boundaries": "node apps/client/scripts/transport.mjs --test --boundaries",
     "test:lifecycle": "node apps/client/scripts/transport.mjs --test --lifecycle",
     "test:hearts": "node apps/client/scripts/transport.mjs --test --hearts"
   },

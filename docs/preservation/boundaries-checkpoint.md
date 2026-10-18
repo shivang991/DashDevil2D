@@ -1,0 +1,34 @@
+# #37 room lifecycle boundaries
+
+Issue: [Enforce room recovery, expiry and host lifecycle boundaries](https://github.com/shivang991/DashDevil2D/issues/37). Review baseline: `25a9a96af978a8423debac1e13a79f0b0c79785c`. The owner confirmed server room/paired transport, public client session commands, and two-browser real-transport flows as test seams. This checkpoint concerns Stage 6 lifecycle boundaries; it does not claim the complete Stage 6 or Stage 7 gate.
+
+## Governing decisions
+
+[Room lifecycle](https://github.com/shivang991/DashDevil2D/issues/8#issuecomment-6120278462), [protocol](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562), [screens/focus](https://github.com/shivang991/DashDevil2D/issues/19#issuecomment-6147750725), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139), [stage gates](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).
+
+## Requirement-to-evidence map
+
+| Requirement | Implementation and evidence |
+| --- | --- |
+| Strict recovery, configured grace and paired initialization | Immutable room configuration supplies reservation windows. Real HTTPS/WS/QUIC tests use an injected authoritative clock, with successful admission at deadline−1µs, rejection at deadline and deadline+1µs, ticket retries preserving the original deadline, and complete paired initialization just before grace clearing it. Existing pair replacement tests retain the same seat session with newer generations. |
+| Reservation and host protection | Public admission refuses a third guest while a host reservation exists, retains host through temporary disconnect, and admits a fresh session at exact expiry while transferring host to the remaining guest. Browser shows reserved host before transfer. |
+| Forfeit, abandonment and gameplay precedence | One room-owned resolver finds the earliest departure cutoff. Gameplay StopAt evaluates that instant first; the entire known departure group then determines remaining connected players. Same-microsecond explicit leaves wait for that clock instant to close, or resolve immediately when both seats explicitly leave. Real reliable Outcomes verify expiry at 999999µs gives forfeit, expiry at the 1000000µs finish gives gameplay tie, and expiry at 1000001µs preserves the 1000000µs result. Both explicit-departure orders release both credentials; retained server diagnostics show abandonment at 500000µs in each order. The latter result is diagnostic evidence, not a result delivered to players who already left. |
+| Returning finalized participant and guest isolation | Public server regression recovers a reserved disconnected opponent after explicit-leave abandonment, reading the self-contained authoritative result at 500000µs. Browser confirms abandonment on recovered authority. Existing lifecycle browser suite covers finalized reload, new-guest result isolation, shared results and rematch. |
+| Idle reset, warnings and exemptions | Joins and actual mode/readiness changes reset captured idle duration. Duplicate values, focus and recovery do not reset it; results establish a fresh window and Return to Lobby carries it. Public HTTP recovery fixtures cover idle deadline−1µs/deadline/deadline+1µs. Broadcasts use stable canonical deadlines and configured warning duration. Browser uses a labelled 2s idle/2s grace/1s warning fixture; countdown and gameplay both remain usable beyond idle. |
+| Cleanup and immediate code reuse | Removal invalidates all credentials/tickets for the seat. A deterministic code-choice boundary proves expired `0042` immediately identifies a fresh internal room identity; its previous credential cannot authorize that new room. Old pair baseline/input/initialization callbacks cannot restore or mutate the current seat. |
+| Clear failures, no invented winners | A terminal admission/expiry/replacement failure clears unusable local room ownership and credentials while preserving its explicit error. Client regression verifies no locally created outcome and stale socket callbacks cannot affect a fresh admission. Browser shows warning, expiry error and enabled fresh-admission controls. |
+| Long Drive preservation | No Long Drive source/configuration/assets or correction exceptions change. Retained unit and browser checks remain required. |
+
+## Fixture and evidence discipline
+
+The public server tests replace only the clock and random code starting point through constructor boundaries; the product admission, WebSocket and QUIC/WebTransport stack remain real. I/O deadlines and application-progress timers retain real time. Integer microseconds, decisions, result reasons, identities and bytes compare exactly. Existing Go/TypeScript position tolerance remains `1e-6 + 1e-12 * abs(expected)`; no simulation fixture tolerance or expected wire bytes changed.
+
+`infra/lifecycle-boundaries.json` is an explicit test override of the shipped default Drag Race configuration. It changes room timing only, not default-course mechanics. Browser seeds/configurations and environments are captured by each unique transport manifest; tests attach JSON and screenshots and retain video. Exact microsecond cutoff evidence comes from the public server clock fixtures; real-browser observations establish visible flows, not sub-microsecond browser timing measurements.
+
+Raw command attempts remain in `apps/client/test-results/issue37/`; every transport invocation retains a unique directory under `apps/client/test-results/transport-*`. Original failures are retained, including sandbox cache denial, consumed-broadcast fixture setup, a mistaken relative edit path, the initial expiry UI regression, and browser reload returning to the main menu before mode selection. The abandonment server fixture originally advanced its clock before the network leave was applied; it now waits for observed channel closure. Those setup failures are not claimed as product red tests. Timer/no-op/client-expiry regressions were observed failing before their fixes; other boundary cases extend coverage and are not mislabelled red-first.
+
+## Acceptance limits
+
+These local automated and agent-inspected visual checks do not establish a supported browser-release/OS matrix, physical suspension, reference-hardware/network samples, capacity or two-person manual acceptance. Those remain #42–#45. Road Rage mechanics remain their implementation ticket's responsibility; lifecycle policy is shared across room phases/modes. No failed gate authorizes progression, and this ticket does not claim full multiplayer acceptance.
+
+Final checks, independent reviews and evidence index will be recorded after completion.

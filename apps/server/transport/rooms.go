@@ -113,6 +113,9 @@ func (pair *pair) roomBaseline() (p.Baseline, error) {
 func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 	s := pair.server
 	r := pair.seat.room
+	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.leaving.IsZero() {
+		return p.Baseline{}, errors.New("superseded room seat")
+	}
 	if r.zero == nil || r.zero.Context.Mode != r.mode {
 		if err := s.prepareRoundLocked(r); err != nil {
 			return p.Baseline{}, err
@@ -134,4 +137,85 @@ func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 	}
 	b.Round.InputGeneration = b.Cars[pair.identity.Seat].InputGeneration
 	return b, p.ValidateBaseline(b, b.Context)
+}
+
+// Room timers use the immutable configuration captured for the selected mode.
+func roomDuration(r *room, key string) time.Duration {
+	return time.Duration(r.settings.Value("room", key) * float64(time.Second))
+}
+
+// The room owner resolves one earliest departure group, after gameplay at that
+// instant. Explicit leaves stay queued for the rest of their clock instant so
+// two same-time commands cannot choose a winner by arrival/seat iteration order.
+func departureAt(participant *seat) time.Time {
+	if participant == nil {
+		return time.Time{}
+	}
+	if !participant.leaving.IsZero() && (participant.deadline.IsZero() || participant.leaving.Before(participant.deadline)) {
+		return participant.leaving
+	}
+	return participant.deadline
+}
+func earliestDeparture(r *room) time.Time {
+	var earliest time.Time
+	for _, participant := range r.seats {
+		at := departureAt(participant)
+		if !at.IsZero() && (earliest.IsZero() || at.Before(earliest)) {
+			earliest = at
+		}
+	}
+	return earliest
+}
+func (s *Server) resolveDeparturesLocked(r *room, now time.Time) bool {
+	if r.phase != 2 {
+		return false
+	}
+	at := earliestDeparture(r)
+	if at.IsZero() || now.Before(at) {
+		return false
+	}
+	survivors := -1
+	reason := uint8(4)
+	for i, participant := range r.seats {
+		if participant == nil {
+			continue
+		}
+		if !participant.leaving.IsZero() && participant.leaving.Equal(at) {
+			if !now.After(at) {
+				return false
+			}
+			reason = 3
+		}
+		cutoff := departureAt(participant)
+		if participant.connected && (cutoff.IsZero() || cutoff.After(at)) {
+			survivors = i
+		}
+	}
+	result := uint8(3)
+	if survivors >= 0 {
+		result = uint8(survivors)
+	} else {
+		reason = 5
+	}
+	s.finalizeLifecycleLocked(r, result, reason, uint64(max(0, at.Sub(s.start).Microseconds())))
+	return true
+}
+func (s *Server) removeSeatLocked(r *room, index uint8) {
+	participant := r.seats[index]
+	if participant == nil {
+		return
+	}
+	delete(s.credentials, token(participant.credential))
+	for key, t := range s.tickets {
+		if t.seat == participant {
+			delete(s.tickets, key)
+		}
+	}
+	r.seats[index] = nil
+	s.cancelCountdownLocked(r)
+	for _, other := range r.seats {
+		if other != nil {
+			other.ready = false
+		}
+	}
 }

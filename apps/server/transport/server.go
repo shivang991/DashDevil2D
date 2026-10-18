@@ -37,6 +37,8 @@ const frameLimit = 65536
 type Config struct {
 	Address, Origin, Certificate, Key, QUICCertificate, QUICKey, StaticDirectory string
 	Logger                                                                       *slog.Logger
+	Now                                                                          func() time.Time       // authoritative clock; nil uses time.Now
+	CodeStart                                                                    func() (uint16, error) // nil uses cryptographic randomness
 	Diagnostic                                                                   bool
 	DragRaceOverrides                                                            []byte
 }
@@ -91,6 +93,7 @@ type seat struct {
 	generation       uint32
 	pair             *pair
 	deadline         time.Time
+	leaving          time.Time
 	connected, ready bool
 	focused          bool
 	installedRound   uint32
@@ -120,9 +123,24 @@ func New(config Config) (*Server, error) {
 	if config.Address == "" {
 		config.Address = ":443"
 	}
-	return &Server{config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: time.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
+	if config.CodeStart == nil {
+		config.CodeStart = func() (uint16, error) {
+			n, err := rand.Int(rand.Reader, big.NewInt(10000))
+			if err != nil {
+				return 0, err
+			}
+			return uint16(n.Uint64()), nil
+		}
+	}
+	if config.Now == nil {
+		config.Now = time.Now
+	}
+	return &Server{config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
 }
-func (s *Server) nowUs() uint64        { return uint64(time.Since(s.start).Microseconds()) }
+func (s *Server) nowUs() uint64 { return uint64(max(0, s.config.Now().Sub(s.start).Microseconds())) }
+
+// Room event times share the wire protocol's integer-microsecond clock.
+func (s *Server) nowTime() time.Time   { return s.start.Add(time.Duration(s.nowUs()) * time.Microsecond) }
 func (s *Server) URL() string          { return "https://" + s.tcp.Addr().String() }
 func (s *Server) Errors() <-chan error { return s.errors }
 func (s *Server) Start() error {
@@ -279,7 +297,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		return s.failure(c, 503, 2, "Unable to connect")
 	}
 	s.mu.Lock()
-	now := time.Now()
+	now := s.nowTime()
 	changedRooms := s.expireLocked(now)
 	defer func() {
 		for _, r := range changedRooms {
@@ -307,14 +325,14 @@ func (s *Server) admission(c *fiber.Ctx) error {
 				s.mu.Unlock()
 				return s.failure(c, 503, 4, "Server full. Try again later.")
 			}
-			n, e := rand.Int(rand.Reader, big.NewInt(10000))
-			if e != nil {
+			n, e := s.config.CodeStart()
+			if e != nil || n >= 10000 {
 				s.mu.Unlock()
 				return s.failure(c, 503, 2, "Unable to connect")
 			}
 			code := ""
 			for i := 0; i < 10000; i++ {
-				candidate := fmt.Sprintf("%04d", (int(n.Int64())+i)%10000)
+				candidate := fmt.Sprintf("%04d", (int(n)+i)%10000)
 				if s.rooms[candidate] == nil {
 					code = candidate
 					break
@@ -389,7 +407,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			return s.failure(c, 503, 2, "Identity exhausted")
 		}
 		s.nextID++
-		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(15 * time.Second)}
+		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(roomDuration(r, "reconnectGrace"))}
 		if r.phase == 3 {
 			r.phase = 0
 		}
@@ -399,7 +417,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			}
 		}
 		r.seats[index] = participant
-		r.idle = now.Add(15 * time.Minute)
+		r.idle = now.Add(roomDuration(r, "idleExpiry"))
 		s.credentials[token(credential)] = participant
 	case 2:
 		if len(request.Credential) != 32 {
@@ -407,7 +425,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			return s.failure(c, 403, 2, "Admission rejected")
 		}
 		participant = s.credentials[token(request.Credential)]
-		if participant == nil {
+		if participant == nil || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !now.Before(participant.deadline)) {
 			s.mu.Unlock()
 			return s.failure(c, 410, 7, "Room expired")
 		}
@@ -422,7 +440,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	old := participant.pair
 	// Ticket issuance alone cannot extend an existing disconnected reservation.
 	if participant.deadline.IsZero() {
-		participant.deadline = now.Add(15 * time.Second)
+		participant.deadline = now.Add(roomDuration(participant.room, "reconnectGrace"))
 	}
 	s.cancelCountdownLocked(participant.room)
 	participant.connected = false
@@ -468,7 +486,7 @@ func (s *Server) consume(key, channel, origin string) (*pair, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	t, ok := s.tickets[key]
-	if !ok || t.channel != channel || t.origin != origin || !time.Now().Before(t.expires) || t.seat.generation != t.generation || t.seat.pair == nil || (!t.seat.deadline.IsZero() && !time.Now().Before(t.seat.deadline)) {
+	if !ok || t.channel != channel || t.origin != origin || !s.nowTime().Before(t.expires) || t.seat.generation != t.generation || t.seat.pair == nil || t.seat.room.seats[t.seat.index] != t.seat || !t.seat.leaving.IsZero() || (!t.seat.deadline.IsZero() && !s.nowTime().Before(t.seat.deadline)) {
 		return nil, errors.New("admission rejected")
 	}
 	delete(s.tickets, key)
@@ -478,33 +496,34 @@ func (s *Server) expireLocked(now time.Time) []*room {
 	var changed []*room
 	for code, r := range s.rooms {
 		modified := false
-		for i, seat := range r.seats {
-			if seat != nil && (!seat.deadline.IsZero() && !now.Before(seat.deadline) || ((r.phase == 0 || r.phase == 3) && !now.Before(r.idle))) {
-				delete(s.credentials, token(seat.credential))
-				for k, t := range s.tickets {
-					if t.seat == seat {
-						delete(s.tickets, k)
-					}
-				}
-				if r.phase == 2 {
-					result := uint8(3)
-					reason := uint8(5)
-					if other := r.seats[1-i]; other != nil && other.connected {
-						result = uint8(1 - i)
-						reason = 4
-					}
-					s.finalizeLifecycleLocked(r, result, reason, uint64(max(0, seat.deadline.Sub(s.start).Microseconds())))
-				}
-				r.seats[i] = nil
-				s.cancelCountdownLocked(r)
+		s.resolveDeparturesLocked(r, now)
+		idleExpired := (r.phase == 0 || r.phase == 3) && !now.Before(r.idle)
+		for i, participant := range r.seats {
+			if participant == nil {
+				continue
+			}
+			expired := !participant.deadline.IsZero() && !now.Before(participant.deadline)
+			leaving := !participant.leaving.IsZero()
+			// Keep an active equal-time leave group open until the clock moves on.
+			if r.phase == 2 && leaving && !now.After(participant.leaving) {
+				continue
+			}
+			if expired || leaving || idleExpired {
+				s.removeSeatLocked(r, uint8(i))
 				modified = true
-				if seat.pair != nil {
-					go seat.pair.close("reservation expired")
+				reason := "Reconnect grace expired"
+				if idleExpired {
+					reason = "Room expired"
+				} else if leaving {
+					reason = "explicit leave"
 				}
-				r.revision++
+				if participant.pair != nil {
+					go participant.pair.close(reason)
+				}
 			}
 		}
 		if modified {
+			r.revision++
 			changed = append(changed, r)
 		}
 		if r.seats[r.host] == nil {
@@ -528,8 +547,9 @@ func (s *Server) sweep() {
 		select {
 		case <-s.stop:
 			return
-		case now := <-ticker.C:
+		case <-ticker.C:
 			s.mu.Lock()
+			now := s.nowTime()
 			changed := s.advanceCountdownsLocked()
 			changed = append(changed, s.advanceRacesLocked()...)
 			changed = append(changed, s.expireLocked(now)...)
