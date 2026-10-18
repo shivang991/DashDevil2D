@@ -1,0 +1,44 @@
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running typecheck in 4 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache hit, replaying logs b1be2d8153d28795
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:typecheck: cache hit, replaying logs 91f4f492fc36afa5
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/server:generate: cache miss, executing 12a38556ad32b760
+@dashdevil/simulation:typecheck: cache miss, executing de4b8cb11f8969fd
+@dashdevil/simulation:typecheck: 
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/server:generate: 
+@dashdevil/server:typecheck: cache miss, executing 930ad722ed9f407c
+@dashdevil/server:typecheck: 
+@dashdevil/server:typecheck: > @dashdevil/server@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:typecheck: > go vet ./...
+@dashdevil/server:typecheck: 
+@dashdevil/simulation:typecheck: multiplayer.ts(219,83): error TS2339: Property 'timeLimit' does not exist on type 'Numeric<{ maxHealth: number; carWidth: number; carHeight: number; accelSpeedMultiplier: number; invincibleDuration: number; coinSize: number; obstacleW: number; obstacleH: number; maxRoadSpeed: number; ... 18 more ...; heartExclusionDistance: number; } | { ...; }>'.
+@dashdevil/simulation:typecheck:   Property 'timeLimit' does not exist on type 'Numeric<{ maxHealth: number; carWidth: number; carHeight: number; accelSpeedMultiplier: number; invincibleDuration: number; coinSize: number; obstacleW: number; obstacleH: number; maxRoadSpeed: number; ... 18 more ...; heartExclusionDistance: number; }>'.
+@dashdevil/simulation:typecheck: multiplayer.ts(261,99): error TS2339: Property 'timeLimit' does not exist on type 'Numeric<{ maxHealth: number; carWidth: number; carHeight: number; accelSpeedMultiplier: number; invincibleDuration: number; coinSize: number; obstacleW: number; obstacleH: number; maxRoadSpeed: number; ... 18 more ...; heartExclusionDistance: number; } | { ...; }>'.
+@dashdevil/simulation:typecheck:   Property 'timeLimit' does not exist on type 'Numeric<{ maxHealth: number; carWidth: number; carHeight: number; accelSpeedMultiplier: number; invincibleDuration: number; coinSize: number; obstacleW: number; obstacleH: number; maxRoadSpeed: number; ... 18 more ...; heartExclusionDistance: number; }>'.
+@dashdevil/simulation:typecheck:  ELIFECYCLE  Command failed with exit code 2.
+ ERROR  @dashdevil/simulation#typecheck: command (/Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation) /Users/shivang/Library/pnpm/.tools/@pnpm+exe/8.15.9/bin/pnpm run typecheck exited (2)
+
+ Tasks:    3 successful, 5 total
+Cached:    2 cached, 5 total
+  Time:    859ms 
+Failed:    @dashdevil/simulation#typecheck
+
+ ERROR  run failed: command  exited (2)

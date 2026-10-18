@@ -1,0 +1,22 @@
+
+> dashdevil@ test:lifecycle /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --lifecycle
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-WQxFg8/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-WQxFg8
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-31T16:44:45Z
+[WebServer] (node:61994) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:61995) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:61995) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:62002) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/lifecycle.spec.ts:4:1 › default course: native menu controls, recovered authority, shared results and fresh rematch on reused pairs (20.9s)
+  ✓  2 tests/browser/lifecycle.spec.ts:119:1 › suspension restores a fresh generation; forfeit survives reload and replacement guest sees a clean lobby (6.1s)
+
+  2 passed (28.8s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T16-45-15.848Z

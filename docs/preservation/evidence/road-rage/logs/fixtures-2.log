@@ -1,0 +1,9 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+
+ Test Files  1 passed (1)
+      Tests  13 passed (13)
+   Start at  09:33:57
+   Duration  170ms (transform 52%, tests 22%, import 22%, worker 4%)
+

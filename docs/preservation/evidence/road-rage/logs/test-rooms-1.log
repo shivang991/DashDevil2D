@@ -1,0 +1,64 @@
+
+> dashdevil@ test:rooms /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --rooms
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qHTJQc/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qHTJQc
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-31T16:41:04Z
+[WebServer] (node:60327) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:60328) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:60328) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 5 tests using 1 worker
+
+(node:60336) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 tests/browser/rooms.spec.ts:3:1 › two React participants adopt host mode, ready and share a physics-free countdown and round zero (7.1s)
+(node:60365) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 tests/browser/rooms.spec.ts:67:1 › four-digit entry retains leading zeros and shows admission errors beside the native form (795ms)
+  ✓  3 tests/browser/rooms.spec.ts:86:1 › storage denial retains one local name across entry, admission and return (559ms)
+  ✓  4 tests/browser/rooms.spec.ts:99:1 › host mode changes clear readiness and a reloaded tab recovers its authenticated seat (1.2s)
+  ✓  5 tests/browser/rooms.spec.ts:141:1 › readiness stays pending until its own command reply despite a room-state broadcast (614ms)
+
+
+  1) tests/browser/rooms.spec.ts:3:1 › two React participants adopt host mode, ready and share a physics-free countdown and round zero 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Round ready' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Round ready' }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Round ready' })
+
+
+      49 |     }
+      50 |     for (const page of pages) {
+    > 51 |       await expect(page.getByRole('heading', { name: 'Round ready' })).toBeVisible();
+         |                                                                        ^
+      52 |       await expect(page.getByText('Countdown cancelled. Both players must ready again.')).toHaveCount(0);
+      53 |     }
+      54 |     const evidence = await Promise.all(pages.map(page => page.getByTestId('room-evidence').textContent().then(value => JSON.parse(value!))));
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/rooms.spec.ts:51:72
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qHTJQc/browser-1792341667053/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qHTJQc/browser-1792341667053/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-qHTJQc/browser-1792341667053/rooms-two-React-participan-f77aa-ee-countdown-and-round-zero/error-context.md
+
+  1 failed
+    tests/browser/rooms.spec.ts:3:1 › two React participants adopt host mode, ready and share a physics-free countdown and round zero 
+  4 passed (13.2s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T16-41-19.162Z
+ ELIFECYCLE  Command failed with exit code 1.

@@ -1,0 +1,40 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/simulation/road-rage.test.ts (14 tests | 1 failed) 16ms
+   × both fatal obstacles at deadline tie by zero HP precedence 4ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/road-rage.test.ts > both fatal obstacles at deadline tie by zero HP precedence
+AssertionError: expected [ 2000000, 2000000 ] to deeply equal [ 2005000, 2005000 ]
+
+- Expected
++ Received
+
+  [
+-   2005000,
+-   2005000,
++   2000000,
++   2000000,
+  ]
+
+ ❯ tests/simulation/road-rage.test.ts:16:51
+     14|   expect(state.cars.map(car => car.hp)).toEqual(expected.hp);
+     15|   if (expected.score) expect(state.cars.map(car => car.score)).toEqual…
+     16|   expect(state.cars.map(car => car.protectionUs)).toEqual(expected.pro…
+       |                                                   ^
+     17|   expect(state.finish ?? null).toEqual(expected.finish);
+     18|   expect(state.reason ?? null).toBe(expected.reason);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 1 passed (2)
+      Tests  1 failed | 54 passed (55)
+   Start at  09:35:07
+   Duration  183ms (tests 44%, transform 28%, import 24%, worker 4%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/road-rage.test.ts tests/simulation/multiplayer.test.ts

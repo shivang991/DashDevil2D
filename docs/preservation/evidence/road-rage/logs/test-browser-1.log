@@ -1,0 +1,154 @@
+
+> dashdevil@ test:browser /Users/shivang/Desktop/programs/test/claude-code-test
+> turbo run test:browser --filter=@dashdevil/client
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client
+   • Running test:browser in 1 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache miss, executing b9eca44e6948f3af
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:typecheck: cache miss, executing d2fb1f28bff3059a
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/simulation:typecheck: cache miss, executing aec756f4b116e31c
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/client:typecheck: cache miss, executing 3d3a2fd744f2c245
+@dashdevil/simulation:build: cache miss, executing 0a83afb69167cdf9
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > pnpm typecheck
+@dashdevil/simulation:build: 
+@dashdevil/client:typecheck: 
+@dashdevil/client:typecheck: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:typecheck: > tsc -b
+@dashdevil/client:typecheck: 
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > tsc -p tsconfig.json
+@dashdevil/simulation:build: 
+@dashdevil/client:build: cache miss, executing bb42631b535548d4
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > pnpm typecheck && vite build
+@dashdevil/client:build: 
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > tsc -b
+@dashdevil/client:build: 
+@dashdevil/client:build: vite v7.3.1 building client environment for production...
+@dashdevil/client:build: (node:59590) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@dashdevil/client:build: (Use `node --trace-deprecation ...` to show where the warning was created)
+@dashdevil/client:build: transforming...
+@dashdevil/client:build: ✓ 1759 modules transformed.
+@dashdevil/client:build: rendering chunks...
+@dashdevil/client:build: computing gzip size...
+@dashdevil/client:build: dist/index.html                                                  0.54 kB │ gzip:  0.33 kB
+@dashdevil/client:build: dist/transport.html                                              1.92 kB │ gzip:  0.87 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-BKRTx50S.woff      8.01 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-ext-wght-normal-BKihR4CZ.woff2    8.87 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-DoFJSI0R.woff2     9.30 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-wght-normal-BudczbaH.woff2       10.30 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-Dh0jW_6n.woff         13.91 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-D7DxpFcE.woff2        15.51 kB
+@dashdevil/client:build: dist/assets/transport-CMJqIDQr.css                               0.70 kB │ gzip:  0.42 kB
+@dashdevil/client:build: dist/assets/main-7hTW_quI.css                                   27.58 kB │ gzip:  5.88 kB
+@dashdevil/client:build: dist/assets/transport-CM6zBW-q.js                                1.26 kB │ gzip:  0.55 kB
+@dashdevil/client:build: dist/assets/PairedConnection-BAUKiZfx.js                        95.07 kB │ gzip: 26.41 kB
+@dashdevil/client:build: dist/assets/main-DGi4iZhv.js                                   243.00 kB │ gzip: 76.15 kB
+@dashdevil/client:build: ✓ built in 1.23s
+@dashdevil/client:test:browser: cache bypass, force executing cbba0c90cc5a5895
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: > @dashdevil/client@0.0.0 test:browser /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:test:browser: > playwright test
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: [WebServer] (node:59649) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+@dashdevil/client:test:browser: [WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+@dashdevil/client:test:browser: [WebServer] (node:59649) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: Running 12 tests using 1 worker
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: (node:59651) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+@dashdevil/client:test:browser: (Use `node --trace-warnings ...` to show where the warning was created)
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:   ✓   1 tests/browser/baseline.spec.ts:48:1 › public app: five-second start, actual canvas, keyboard pause and mute (5.7s)
+@dashdevil/client:test:browser:   ✘   2 tests/browser/baseline.spec.ts:71:1 › record real-time public presentation for later human comparison (58.3s)
+@dashdevil/client:test:browser: (node:59906) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+@dashdevil/client:test:browser: (Use `node --trace-warnings ...` to show where the warning was created)
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:   ✓   3 tests/browser/baseline.spec.ts:104:1 › audio unavailable still allows gameplay (2.8s)
+@dashdevil/client:test:browser:   ✓   4 tests/browser/baseline.spec.ts:115:1 › isolated coin cue from public seeded gameplay (5.6s)
+@dashdevil/client:test:browser:   ✓   5 tests/browser/baseline.spec.ts:139:1 › session focus lifecycle: away countdown freezes and active blur requires fresh resume (9.7s)
+@dashdevil/client:test:browser:   ✓   6 tests/browser/baseline.spec.ts:163:1 › native sound control keeps Space behavior and clears held movement (2.5s)
+@dashdevil/client:test:browser:   ✓   7 tests/browser/baseline.spec.ts:179:1 › early Enter is discarded; restart and menu-return use fresh three-second countdowns (8.3s)
+@dashdevil/client:test:browser:   ✓   8 tests/browser/configuration.spec.ts:9:1 › developer capture drives actual Long Drive HP HUD, heart drawing, healing and audio (3.7s)
+@dashdevil/client:test:browser:   ✓   9 tests/browser/multiplayer.spec.ts:6:1 › actual browser executes next-tick NOS and shift diagnostics with independent sessions (500ms)
+@dashdevil/client:test:browser:   ✓  10 tests/browser/track.spec.ts:7:3 › seeded high-speed contacts preserve exact HUD outcomes (2.7s)
+@dashdevil/client:test:browser:   ✓  11 tests/browser/track.spec.ts:7:3 › seeded high-speed contacts preserve exact HUD outcomes across resize (2.5s)
+@dashdevil/client:test:browser:   ✓  12 tests/browser/track.spec.ts:27:1 › seeded high-speed pickup adds exactly ten points (2.2s)
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:   1) tests/browser/baseline.spec.ts:71:1 › record real-time public presentation for later human comparison 
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     Error: expect(locator).toBeVisible() failed
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     Locator: getByText('GAME OVER', { exact: true })
+@dashdevil/client:test:browser:     Expected: visible
+@dashdevil/client:test:browser:     Timeout: 45000ms
+@dashdevil/client:test:browser:     Error: element(s) not found
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     Call log:
+@dashdevil/client:test:browser:       - Expect "toBeVisible" getByText('GAME OVER', { exact: true }) with timeout 45000ms
+@dashdevil/client:test:browser:       - waiting for getByText('GAME OVER', { exact: true })
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:       92 |   await page.keyboard.press('Space');
+@dashdevil/client:test:browser:       93 |   await page.keyboard.down('ArrowRight'); await page.waitForTimeout(50); await page.keyboard.up('ArrowRight');
+@dashdevil/client:test:browser:     > 94 |   await expect(page.getByText('GAME OVER', { exact: true })).toBeVisible({ timeout: 45000 });
+@dashdevil/client:test:browser:          |                                                              ^
+@dashdevil/client:test:browser:       95 |   await page.screenshot({ path: path.join(evidence, 'baseline-gameover.png') });
+@dashdevil/client:test:browser:       96 |   await page.getByRole('button', { name: 'Back to Menu' }).click();
+@dashdevil/client:test:browser:       97 |   await expect(page.getByText('Long Drive', { exact: true })).toBeVisible();
+@dashdevil/client:test:browser:         at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/baseline.spec.ts:94:62
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+@dashdevil/client:test:browser:     test-results/run-2026-10-18T16-39-01.469Z-pGasMV/baseline-record-real-time--8dd01--for-later-human-comparison/test-failed-1.png
+@dashdevil/client:test:browser:     ────────────────────────────────────────────────────────────────────────────────────────────────
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+@dashdevil/client:test:browser:     test-results/run-2026-10-18T16-39-01.469Z-pGasMV/baseline-record-real-time--8dd01--for-later-human-comparison/video.webm
+@dashdevil/client:test:browser:     ────────────────────────────────────────────────────────────────────────────────────────────────
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     Error Context: test-results/run-2026-10-18T16-39-01.469Z-pGasMV/baseline-record-real-time--8dd01--for-later-human-comparison/error-context.md
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+@dashdevil/client:test:browser:     test-results/run-2026-10-18T16-39-01.469Z-pGasMV/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip
+@dashdevil/client:test:browser:     Usage:
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:         pnpm exec playwright show-trace test-results/run-2026-10-18T16-39-01.469Z-pGasMV/baseline-record-real-time--8dd01--for-later-human-comparison/trace.zip
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:     ────────────────────────────────────────────────────────────────────────────────────────────────
+@dashdevil/client:test:browser: 
+@dashdevil/client:test:browser:   1 failed
+@dashdevil/client:test:browser:     tests/browser/baseline.spec.ts:71:1 › record real-time public presentation for later human comparison 
+@dashdevil/client:test:browser:   11 passed (1.9m)
+@dashdevil/client:test:browser:  ELIFECYCLE  Command failed with exit code 1.
+ ERROR  @dashdevil/client#test:browser: command (/Users/shivang/Desktop/programs/test/claude-code-test/apps/client) /Users/shivang/Library/pnpm/.tools/@pnpm+exe/8.15.9/bin/pnpm run test:browser exited (1)
+
+ Tasks:    6 successful, 7 total
+Cached:    0 cached, 7 total
+  Time:    1m59.167s 
+Failed:    @dashdevil/client#test:browser
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.

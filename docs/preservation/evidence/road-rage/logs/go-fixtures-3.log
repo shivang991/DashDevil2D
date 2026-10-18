@@ -1,0 +1,6 @@
+--- FAIL: TestSharedRoadRage (0.01s)
+    --- FAIL: TestSharedRoadRage/both_fatal_obstacles_at_deadline_tie_by_zero_HP_precedence (0.00s)
+        road_rage_test.go:64: seat 0 HP/protection: 0/2000000
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation	0.328s
+FAIL
