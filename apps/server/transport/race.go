@@ -237,7 +237,7 @@ func (pair *pair) submitRace(input p.Input) error {
 		return nil
 	}
 	if !r.primed[pair.identity.Seat] {
-		r.engine.ResetSeat(pair.identity, pair.seat.inputGeneration, input.Sequence-1)
+		r.engine.ResetSeat(pair.identity, pair.seat.inputGeneration, input.Sequence-1, pair.connectionLimits())
 		r.primed[pair.identity.Seat] = true
 	}
 	if r.inputs[pair.identity.Seat] == nil {

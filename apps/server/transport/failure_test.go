@@ -208,3 +208,82 @@ func TestMalformedAndExcessiveTrafficFailsBothChannels(t *testing.T) {
 		}
 	}
 }
+
+func TestReusedPairRetainsConnectionSettingsAcrossModeChange(t *testing.T) {
+	s, c, roots := configuredServer(t, transport.Config{RoadRageOverrides: []byte(`{"connection":{"controlRefreshInterval":0.1,"controlFreshnessExpiry":0.6}}`)})
+	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	a := value.(p.Admission)
+	initializations := make(chan p.Initialization, 4)
+	dispositions := make(chan p.Disposition, 16)
+	chunks := make(chan p.BaselineChunk, 4)
+	var input *wt.SendStream
+	host, _ := observedPair(t, s, roots, a, true, func(value any) {
+		switch x := value.(type) {
+		case *wt.SendStream:
+			input = x
+		case p.Initialization:
+			initializations <- x
+		case p.BaselineChunk:
+			chunks <- x
+		case p.Disposition:
+			dispositions <- x
+		}
+	})
+	_, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+	b := value.(p.Admission)
+	guest, _ := initializedPair(t, s, roots, b, true)
+	state := roomState(t, host, func(r p.RoomState) bool { return r.Seats[1].Flags&1 != 0 })
+	roomSend(t, host, a, 1, state, 0, 2, 0)
+	state = roomState(t, host, func(r p.RoomState) bool { return r.Mode == 2 })
+	roomSend(t, host, a, 2, state, 1, 2, 1)
+	state = roomState(t, guest, func(r p.RoomState) bool { return r.Seats[0].Flags&2 != 0 })
+	roomSend(t, guest, b, 1, state, 1, 2, 1)
+	state = roomState(t, host, func(r p.RoomState) bool { return r.Seats[1].Flags&2 != 0 })
+	roomSend(t, host, a, 3, state, 2, 2, 0)
+	state = roomState(t, host, func(r p.RoomState) bool { return r.Phase == 2 })
+	var init p.Initialization
+	select {
+	case init = <-initializations:
+	case <-time.After(time.Second):
+		t.Fatal("missing new-round initialization")
+	}
+	if init.Context.Connection.ControlFreshnessExpiry != 1 || init.Context.Connection.ControlRefreshInterval != .25 {
+		t.Fatal("reused pair lost captured connection settings")
+	}
+	var chunk p.BaselineChunk
+	select {
+	case chunk = <-chunks:
+	case <-time.After(time.Second):
+		t.Fatal("missing new-round baseline")
+	}
+	sendRecord(t, input, p.Input{Identity: a.Identity, Round: chunk.Round, Sequence: 1, Intent: 0, Control: 3, HeldMask: 4})
+	select {
+	case d := <-dispositions:
+		if d.Car.FreshnessUs-d.TimeUs != 1000000 {
+			t.Fatalf("authority used new-mode freshness instead of captured pair setting: %d", d.Car.FreshnessUs-d.TimeUs)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("missing input disposition")
+	}
+	// A replacement pair captures the now-selected mode's settings, while the
+	// reused pair above retained its original settings through the same round.
+	_, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+	replacement := value.(p.Admission)
+	_, _, _, replacementInput, authority, installed := failurePair(t, s, roots, replacement)
+	baseline, err := p.DecodeBaseline(installed.Data, 1048576)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if baseline.Context.Connection.ControlFreshnessExpiry != .6 {
+		t.Fatal("replacement did not capture current connection settings")
+	}
+	sendRecord(t, replacementInput, p.Input{Identity: replacement.Identity, Round: installed.Round, Sequence: 2, Intent: 0, Control: 3, HeldMask: 4})
+	for {
+		if d, ok := readRecord(t, authority).(p.Disposition); ok {
+			if d.Car.FreshnessUs-d.TimeUs != 600000 {
+				t.Fatal("replacement authority did not use its captured freshness")
+			}
+			break
+		}
+	}
+}

@@ -72,6 +72,7 @@ type queued struct {
 type seatReset struct {
 	identity             protocol.Identity
 	generation, sequence uint32
+	connection           protocol.Connection
 }
 type Engine struct {
 	segments    []physicalSegment
@@ -83,6 +84,7 @@ type Engine struct {
 	consumption map[uint32]uint8
 	tracks      [2]*track.Multiplayer
 	context     protocol.Context
+	connections [2]protocol.Connection
 	identities  [2]protocol.Identity
 	roundID     uint32
 	state       State
@@ -115,7 +117,7 @@ func New(config configuration.Configuration, seed uint32, identities [2]protocol
 	if context.Mode != 1 && context.Mode != 2 {
 		return nil, fmt.Errorf("multiplayer mode required")
 	}
-	e := &Engine{consumption: map[uint32]uint8{}, context: context, identities: identities, roundID: roundID, connected: [2]bool{true, true}, tokens: [2]float64{context.Connection.InputBurst, context.Connection.InputBurst}}
+	e := &Engine{consumption: map[uint32]uint8{}, context: context, connections: [2]protocol.Connection{context.Connection, context.Connection}, identities: identities, roundID: roundID, connected: [2]bool{true, true}, tokens: [2]float64{context.Connection.InputBurst, context.Connection.InputBurst}}
 	for seat, lane := range []uint8{0, 2} {
 		lateral := (float64(lane) - 1) * context.Gameplay.LaneSpacing
 		e.state.Cars[seat] = protocol.Car{Lane: lane, Departure: lane, Target: lane, Lateral: lateral, MovementOrigin: lateral, MovementTarget: lateral, NormalSpeed: context.Gameplay.StartingRoadSpeed, Hp: uint32(context.Gameplay.MaxHealth), InputGeneration: 1}
@@ -183,7 +185,7 @@ func (e *Engine) Submit(auth protocol.Identity, input protocol.Input) (bool, err
 	if seat > 1 || e.identities[seat] != auth || e.state.Finish != nil || e.state.Abandoned {
 		return false, nil
 	}
-	if e.tokens[seat] < 1 || len(e.pending) >= int(2*e.context.Connection.InputBurst) {
+	if e.tokens[seat] < 1 || len(e.pending) >= int(e.connections[0].InputBurst+e.connections[1].InputBurst) {
 		return false, fmt.Errorf("input rate/queue exceeded; recover connection")
 	}
 	e.tokens[seat]--
@@ -296,7 +298,7 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 					if input.Control == 3 {
 						car.Flags = 1
 					}
-					expiry, _ := CanonicalTime(e.context.Connection.ControlFreshnessExpiry)
+					expiry, _ := CanonicalTime(e.connections[q.seat].ControlFreshnessExpiry)
 					car.FreshnessUs = timeUs + expiry
 					if e.context.Mode == 2 {
 						e.order++
@@ -324,7 +326,7 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 				if car.Effective == 0 || input.Control != car.Controls || input.HeldMask != car.HeldMask {
 					disposition = "ignored"
 				} else {
-					expiry, _ := CanonicalTime(e.context.Connection.ControlFreshnessExpiry)
+					expiry, _ := CanonicalTime(e.connections[q.seat].ControlFreshnessExpiry)
 					car.FreshnessUs = timeUs + expiry
 				}
 			}
@@ -439,7 +441,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 		return []Observation{}, nil
 	}
 	for seat, tokens := range e.tokens {
-		e.tokens[seat] = math.Min(e.context.Connection.InputBurst, tokens+float64((seconds-e.wallTime)*e.context.Connection.InputRate))
+		e.tokens[seat] = math.Min(e.connections[seat].InputBurst, tokens+float64((seconds-e.wallTime)*e.connections[seat].InputRate))
 	}
 	e.wallTime = seconds
 	g := e.context.Gameplay
@@ -701,7 +703,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				e.committed = nil
 				for seat, reset := range e.resets {
 					if reset != nil {
-						e.resetSeat(reset.identity, reset.generation, reset.sequence)
+						e.resetSeat(reset.identity, reset.generation, reset.sequence, reset.connection)
 						events = append(events, e.event("release", uint8(seat), group.timeUs+1))
 						e.resets[seat] = nil
 					}
@@ -748,18 +750,28 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 
 // ResetSeat is the authoritative fresh-generation barrier, also used after a
 // countdown has discarded keys. It never queues or reactivates those controls.
-func (e *Engine) ResetSeat(identity protocol.Identity, generation, sequence uint32) {
+func (e *Engine) ResetSeat(identity protocol.Identity, generation, sequence uint32, limits ...protocol.Connection) {
+	connection := e.connections[identity.Seat]
+	if len(limits) > 0 {
+		connection = limits[0]
+	}
 	if e.state.Finish != nil || e.state.Abandoned {
 		return
 	}
 	if e.committed != nil {
-		e.resets[identity.Seat] = &seatReset{identity, generation, sequence}
+		e.resets[identity.Seat] = &seatReset{identity, generation, sequence, connection}
 		return
 	}
-	e.resetSeat(identity, generation, sequence)
+	e.resetSeat(identity, generation, sequence, connection)
 }
-func (e *Engine) resetSeat(identity protocol.Identity, generation, sequence uint32) {
+func (e *Engine) resetSeat(identity protocol.Identity, generation, sequence uint32, connection protocol.Connection) {
 	seat := identity.Seat
+	if e.identities[seat] != identity || e.state.Cars[seat].InputGeneration != generation {
+		e.tokens[seat] = connection.InputBurst
+	} else {
+		e.tokens[seat] = math.Min(e.tokens[seat], connection.InputBurst)
+	}
+	e.connections[seat] = connection
 	e.identities[seat] = identity
 	e.connected[seat] = true
 	e.sequences[seat] = sequence

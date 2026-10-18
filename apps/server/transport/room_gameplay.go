@@ -252,6 +252,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 			current := baseline
 			if r.zero != nil {
 				current = cloneBaseline(*r.zero)
+				current.Context.Connection = baseline.Context.Connection
 			}
 			if active && installed {
 				if len(r.history) > 0 && cursor+1 < r.history[0].authority {

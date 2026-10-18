@@ -22,7 +22,7 @@ func (s *Server) prepareRoundLocked(r *room) error {
 	}
 	for i, seat := range r.seats {
 		if seat != nil {
-			engine.ResetSeat(ids[i], seat.inputGeneration, 0)
+			engine.ResetSeat(ids[i], seat.inputGeneration, 0, seat.pair.connectionLimits())
 		}
 	}
 	r.engine = engine
@@ -122,6 +122,7 @@ func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 		}
 	}
 	b := cloneBaseline(*r.zero)
+	b.Context.Connection = pair.connectionLimits()
 	if r.engine != nil {
 		state, err := r.engine.Coverage()
 		if err != nil {

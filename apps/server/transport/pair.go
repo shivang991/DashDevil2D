@@ -359,11 +359,6 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			for _, other := range r.seats {
 				if other != nil {
 					other.ready = false
-					if other.pair != nil {
-						other.pair.mu.Lock()
-						other.pair.limits = config.Context(1).Connection
-						other.pair.mu.Unlock()
-					}
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package transport
 
 import (
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
@@ -156,7 +157,39 @@ func TestBothModesDenseSeparatedWindowsFitWithoutTruncation(t *testing.T) {
 					t.Fatal("coverage truncated on wire")
 				}
 			}
-			t.Logf("mode=%s seed=1 windows=%d objects=%d coverage_bytes=%d", mode, len(windows), len(windows[0].Objects)+len(windows[1].Objects), len(wire))
+			b.Identity, b.Round, b.Epoch = ids[0], p.Round{RoundId: 1, InputGeneration: 1}, 1
+			b.Cars, b.Contact, b.Generator, b.Windows = state.Cars, state.Contact, generator, windows
+			b.Windows[0].Objects[0].Flags |= 8
+			data, err := p.EncodeBaseline(b, int(b.Context.Connection.BaselineBytes))
+			if err != nil {
+				t.Fatal(err)
+			}
+			transfer := p.BaselineTransfer{Context: b.Context, Limit: int(b.Context.Connection.BaselineBytes)}
+			const payload = 512
+			count := (len(data) + payload - 1) / payload
+			var restored *p.Baseline
+			for i := count - 1; i >= 0; i-- {
+				chunk := p.BaselineChunk{Identity: b.Identity, Round: b.Round, Epoch: b.Epoch, TransferId: 1, Tick: b.Tick, Progress: b.Progress, Total: uint32(len(data)), Count: uint32(count), Index: uint32(i), Offset: uint32(i * payload), Data: data[i*payload : min((i+1)*payload, len(data))]}
+				frame, err := p.EncodeMessage(chunk, int(b.Context.Connection.ReliableFrameBytes))
+				if err != nil {
+					t.Fatal(err)
+				}
+				message, err := p.DecodeMessage(frame, int(b.Context.Connection.ReliableFrameBytes))
+				if err != nil {
+					t.Fatal(err)
+				}
+				restored, err = transfer.Accept(message.(p.BaselineChunk))
+				if err != nil {
+					t.Fatal(err)
+				}
+				if i > 0 && restored != nil {
+					t.Fatal("partial baseline exposed")
+				}
+			}
+			if restored == nil || !reflect.DeepEqual(*restored, b) {
+				t.Fatal("dense separated baseline changed during transfer")
+			}
+			t.Logf("mode=%s seed=1 windows=%d objects=%d coverage_bytes=%d baseline_bytes=%d chunks=%d", mode, len(windows), len(windows[0].Objects)+len(windows[1].Objects), len(wire), len(data), count)
 		})
 	}
 }

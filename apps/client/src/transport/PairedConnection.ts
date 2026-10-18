@@ -207,11 +207,16 @@ export class PairedConnection {
   }
   private sendRoom(bytes: Uint8Array) {
     if (!this.socket) throw new Error('Room writer unavailable');
-    this.drainRoomWrites();
-    if (this.queuedBytes + (this.socket.bufferedAmount ?? 0) + bytes.length > (this.context?.connection.queueBytes ?? 262144) || this.queuedMessages + this.roomWrites.length >= (this.context?.connection.queueMessages ?? 512)) throw new Error('Reliable room queue overflow');
+    this.checkQueue(bytes.length, 'Reliable room queue overflow');
     this.socket.send(bytes);
     this.roomWrites.push({ bytes: bytes.length, at: performance.now() });
     this.drainRoomWrites();
+  }
+  private checkQueue(bytes: number, detail: string) {
+    this.drainRoomWrites();
+    // Transport work includes buffered room messages and in-flight gameplay
+    // writes. Room application acknowledgements have their own bounded map.
+    if (this.queuedBytes + (this.socket?.bufferedAmount ?? 0) + bytes > (this.context?.connection.queueBytes ?? 262144) || this.queuedMessages + this.roomWrites.length >= (this.context?.connection.queueMessages ?? 512)) throw new Error(detail);
   }
   private async send<K extends keyof Messages>(type: K, value: Messages[K], generation: number, input = false) {
     if (generation !== this.generation) return;
@@ -219,7 +224,7 @@ export class PairedConnection {
     if (!writer) throw new Error('Reliable writer unavailable');
     const bytes = encodeMessage(type, value, this.context?.connection.reliableFrameBytes ?? 65536);
     this.state.diagnostics.reliableAttemptedBytes = (this.state.diagnostics.reliableAttemptedBytes ?? 0) + bytes.length;
-    if (this.queuedBytes + (this.socket?.bufferedAmount ?? 0) + bytes.length > (this.context?.connection.queueBytes ?? 262144) || this.queuedMessages + this.pendingCommands.size >= (this.context?.connection.queueMessages ?? 512)) throw new Error('Reliable queue overflow');
+    this.checkQueue(bytes.length, 'Reliable queue overflow');
     this.queuedBytes += bytes.length; this.queuedMessages++;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
@@ -505,8 +510,8 @@ export class PairedConnection {
     const sequence = ++this.roomSequence;
     const generation = this.generation;
     const bytes = encodeMessage('RoomCommand', { identity: this.admission.identity, sequence, revision: this.revision, command, mode, ready });
-    if (this.queuedBytes + this.socket.bufferedAmount + bytes.length > (this.context?.connection.queueBytes ?? 262144) || this.queuedMessages + this.pendingCommands.size >= (this.context?.connection.queueMessages ?? 512)) {
-      this.fail(new Error('Reliable room queue overflow'), generation); return;
+    if (this.pendingCommands.size >= (this.context?.connection.queueMessages ?? 512)) {
+      this.fail(new Error('Room confirmation backlog'), generation); return;
     }
     const timeout = setTimeout(() => this.fail(new Error('Room confirmation timed out'), generation), (this.context?.connection.essentialProgressDeadline ?? 1) * 1000);
     this.pendingCommands.set(sequence, { label, timeout });
