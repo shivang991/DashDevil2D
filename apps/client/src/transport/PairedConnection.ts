@@ -54,6 +54,7 @@ export class PairedConnection {
   private verifiedEpochBase = 0;
   private queuedBytes = 0;
   private queuedMessages = 0;
+  private roomWrites: { bytes: number; at: number }[] = [];
   private restoredAt = 0;
   private revision = 0;
   private roomSequence = 0;
@@ -106,6 +107,7 @@ export class PairedConnection {
     this.control = undefined; this.inputs = undefined; this.transfer?.cancel(); this.transfer = undefined;
     this.earlyChunks = []; this.baseline = undefined; this.context = undefined; this.recoveryOutstanding = false; this.verification = undefined; this.verifiedEpochBase = 0; this.clocks.clear(); this.samples = [];
     this.queuedBytes = 0; this.queuedMessages = 0;
+    this.roomWrites = [];
   }
   async connect(operation: 0 | 1 | 2, code = '', mode: 1 | 2 = 1): Promise<void> {
     this.teardown(); this.terminal = false;
@@ -150,6 +152,10 @@ export class PairedConnection {
       if (generation !== this.generation) return;
       const watchdog = setInterval(() => {
         if (generation !== this.generation) return;
+        this.drainRoomWrites();
+        if (this.roomWrites.length && performance.now() - this.roomWrites[0].at >= (this.context?.connection.essentialQueueWait ?? .5) * 1000) {
+          this.fail(new Error('Reliable room write stalled'), generation); return;
+        }
         if (this.lastUsable && performance.now() - this.lastUsable >= 1000) {
           this.state.status = 'Connection warning'; this.releaseControls(); this.publish();
           if (!this.options.diagnostic && this.state.room?.phase === 2 && !this.state.outcome) {
@@ -174,7 +180,7 @@ export class PairedConnection {
         if (message.type === 'ProtocolError') throw new Error(message.value.detail);
         if (message.type === 'RoomInitialization') {
           if (message.value.version !== protocolVersion || !sameIdentity(message.value.identity, admission.identity)) throw new Error('Room initialization mismatch');
-          socket.send(encodeMessage('RoomInitialization', message.value));
+          this.sendRoom(encodeMessage('RoomInitialization', message.value));
         } else if (message.type === 'RoomState') {
           if (!sameIdentity(message.value.identity, admission.identity)) throw new Error('Room state identity mismatch');
           if (message.value.revision < this.revision) return;
@@ -191,17 +197,33 @@ export class PairedConnection {
       } catch (error) { this.fail(error, generation); }
     };
   }
+  private drainRoomWrites() {
+    let drained = this.roomWrites.reduce((sum, item) => sum + item.bytes, 0) - (this.socket?.bufferedAmount ?? 0);
+    while (drained > 0 && this.roomWrites.length) {
+      const first = this.roomWrites[0], bytes = Math.min(drained, first.bytes);
+      first.bytes -= bytes; drained -= bytes;
+      if (!first.bytes) this.roomWrites.shift();
+    }
+  }
+  private sendRoom(bytes: Uint8Array) {
+    if (!this.socket) throw new Error('Room writer unavailable');
+    this.drainRoomWrites();
+    if (this.queuedBytes + (this.socket.bufferedAmount ?? 0) + bytes.length > (this.context?.connection.queueBytes ?? 262144) || this.queuedMessages + this.roomWrites.length >= (this.context?.connection.queueMessages ?? 512)) throw new Error('Reliable room queue overflow');
+    this.socket.send(bytes);
+    this.roomWrites.push({ bytes: bytes.length, at: performance.now() });
+    this.drainRoomWrites();
+  }
   private async send<K extends keyof Messages>(type: K, value: Messages[K], generation: number, input = false) {
     if (generation !== this.generation) return;
     const writer = input ? this.inputs : this.control;
     if (!writer) throw new Error('Reliable writer unavailable');
-    const bytes = encodeMessage(type, value);
+    const bytes = encodeMessage(type, value, this.context?.connection.reliableFrameBytes ?? 65536);
     this.state.diagnostics.reliableAttemptedBytes = (this.state.diagnostics.reliableAttemptedBytes ?? 0) + bytes.length;
-    if (this.queuedBytes + bytes.length > 262144 || this.queuedMessages >= 512) throw new Error('Reliable queue overflow');
+    if (this.queuedBytes + (this.socket?.bufferedAmount ?? 0) + bytes.length > (this.context?.connection.queueBytes ?? 262144) || this.queuedMessages + this.pendingCommands.size >= (this.context?.connection.queueMessages ?? 512)) throw new Error('Reliable queue overflow');
     this.queuedBytes += bytes.length; this.queuedMessages++;
     let timeout: ReturnType<typeof setTimeout> | undefined;
     try {
-      await Promise.race([writer.write(bytes), new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error('Reliable write stalled')), 500); })]);
+      await Promise.race([writer.write(bytes), new Promise<never>((_, reject) => { timeout = setTimeout(() => reject(new Error('Reliable write stalled')), (this.context?.connection.essentialQueueWait ?? .5) * 1000); })]);
     } finally { clearTimeout(timeout); if (generation === this.generation) { this.queuedBytes -= bytes.length; this.queuedMessages--; } }
   }
   private async read(stream: ReadableStream<Uint8Array>, channel: 'control' | 'authority', generation: number) {
@@ -240,7 +262,7 @@ export class PairedConnection {
         this.initialRound = message.value.round.roundId;
         this.context = message.value.context; this.state.context = this.context;
         this.race = undefined; this.heldMask = 0; this.winningControl = 0;
-        if (this.state.outcome && message.value.round.roundId > this.state.outcome.roundId) this.state.outcome = undefined; this.transfer?.cancel(); this.transfer = new BaselineTransfer(this.context, 1048576);
+        if (this.state.outcome && message.value.round.roundId > this.state.outcome.roundId) this.state.outcome = undefined; this.transfer?.cancel(); this.transfer = new BaselineTransfer(this.context, Math.min(1048576, this.context.connection.baselineBytes));
         this.baseline = undefined; this.inputSequence = 0;
         if (!this.inputs) {
           const inputs = await this.gameplay!.createUnidirectionalStream();
@@ -262,7 +284,7 @@ export class PairedConnection {
         if (!this.context) throw new Error('Baseline before initialization');
         if (!this.transfer) {
           if (!this.recoveryOutstanding || !this.baseline || message.value.epoch <= this.baseline.epoch) throw new Error('Unexpected baseline transfer');
-          this.transfer = new BaselineTransfer(this.context, 1048576);
+          this.transfer = new BaselineTransfer(this.context, Math.min(1048576, this.context.connection.baselineBytes));
         }
         const wasInitialized = this.timerStarted;
         const baseline = this.transfer.accept(message.value); this.state.baselineBytes += message.value.data.length;
@@ -371,14 +393,14 @@ export class PairedConnection {
       const input = { identity: this.admission!.identity, round: this.baseline.round, sequence: ++this.inputSequence, intent: 2, control: this.winningControl, heldMask: this.heldMask };
       if (this.race && (this.state.room?.phase === 2 || this.state.room?.phase === 3)) this.race.input(input, this.estimatedRoundUs());
       void this.send('Input', input, generation, true).catch(e => this.fail(e, generation));
-    }, 250));
+    }, (this.context?.connection.controlRefreshInterval ?? .25) * 1000));
     const clock = () => {
       if (generation !== this.generation) return;
       if (this.clocks.size >= 8 || this.clockSequence >= 0xffffffff) { this.fail(new Error('Clock progress exhausted'), generation); return; }
       const sequence = ++this.clockSequence, clientSendUs = nowUs(); this.clocks.set(sequence, clientSendUs);
       void this.send('ClockRequest', { sequence, clientSendUs }, generation).catch(e => this.fail(e, generation));
     };
-    clock(); this.timers.push(setInterval(clock, 1000));
+    clock(); this.timers.push(setInterval(clock, (this.context?.connection.clockSyncInterval ?? 1) * 1000));
   }
   private async barrier(value: Barrier, generation: number) {
     if (this.state.outcome) return;
@@ -482,10 +504,14 @@ export class PairedConnection {
     if (this.roomSequence >= 0xffffffff) { this.fail(new Error('Room counter exhausted'), this.generation); return; }
     const sequence = ++this.roomSequence;
     const generation = this.generation;
-    const timeout = setTimeout(() => this.fail(new Error('Room confirmation timed out'), generation), 5000);
+    const bytes = encodeMessage('RoomCommand', { identity: this.admission.identity, sequence, revision: this.revision, command, mode, ready });
+    if (this.queuedBytes + this.socket.bufferedAmount + bytes.length > (this.context?.connection.queueBytes ?? 262144) || this.queuedMessages + this.pendingCommands.size >= (this.context?.connection.queueMessages ?? 512)) {
+      this.fail(new Error('Reliable room queue overflow'), generation); return;
+    }
+    const timeout = setTimeout(() => this.fail(new Error('Room confirmation timed out'), generation), (this.context?.connection.essentialProgressDeadline ?? 1) * 1000);
     this.pendingCommands.set(sequence, { label, timeout });
     if (command !== 4) this.state.pending = label;
-    this.socket.send(encodeMessage('RoomCommand', { identity: this.admission.identity, sequence, revision: this.revision, command, mode, ready }));
+    try { this.sendRoom(bytes); } catch (error) { this.fail(error, generation); return; }
     this.publish();
   }
   private reply(value: RoomReply) {

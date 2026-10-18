@@ -72,6 +72,8 @@ export function configurationResources(config: ConfigurationDefinition): { objec
   const headerBytes = encodeMessage('BaselineChunk', chunk).length;
   const payloadBytes = Math.min(c.reliableFrameBytes, c.queueBytes, 1048576) - headerBytes;
   requireState(payloadBytes > 0, 'baseline chunk header leaves no payload in frame/queue');
+  try { encodeMessage('Initialization', { identity: baseline.identity, round: baseline.round, context: baseline.context }, c.reliableFrameBytes); }
+  catch { throw new WireError('initialization exceeds reliable frame limit'); }
   const chunks = Math.ceil(baselineBytes / payloadBytes);
   requireState(chunks <= 0xffffffff, 'baseline chunk count exceeds uint32');
   chunk.count = chunks; chunk.data = new Uint8Array(Math.min(baselineBytes, payloadBytes));

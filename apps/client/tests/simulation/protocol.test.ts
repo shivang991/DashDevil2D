@@ -17,6 +17,9 @@ describe('exact schema configuration resource gate', () => {
   it('rejects impossible chunk headers even when the frame fits the queue', () => {
     expect(() => captureConfiguration('road-rage', { connection: { reliableFrameBytes: 32 } })).toThrow(/chunk/);
   });
+  it('rejects a frame limit that fits coverage and chunks but cannot carry initialization', () => {
+    expect(() => captureConfiguration('drag-race', { connection: { reliableFrameBytes: 512 } })).toThrow(/initialization/);
+  });
   it('rejects signed projection overflow at the round maximum, beyond individual dimensions', () => {
     expect(() => captureConfiguration('road-rage', { gameplay: { timeLimit: 1e8, tickRate: 1, maxRoadSpeed: 1e8 } })).toThrow(/projection/);
   });
@@ -38,6 +41,13 @@ function hydrate(type: string, value: unknown): unknown {
 }
 const baseline = hydrate('Baseline', fixtures.records.find(r => r.type === 'Baseline')!.value) as Baseline;
 describe('shared versioned Go/TypeScript wire fixtures', () => {
+  for (const fixture of fixtures.records) it(`rejects every truncated prefix of ${fixture.name}`, () => {
+    const wire = bytes(fixture.hex);
+    for (let n = 0; n < wire.length; n++) {
+      const prefix = wire.subarray(0, n);
+      expect(() => fixture.type === 'Baseline' ? decodeBaseline(prefix) : fixture.type === 'Verification' ? decodeVerification(prefix) : decodeMessage(prefix)).toThrow();
+    }
+  });
   for (const fixture of fixtures.records) it(fixture.name, () => {
     const value = hydrate(fixture.type, fixture.value);
     if (fixture.type in messageTypes) {

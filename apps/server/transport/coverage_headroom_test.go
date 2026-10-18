@@ -102,3 +102,61 @@ func TestRaceCoverageRetainsPlacementInsideBackwardHeadroom(t *testing.T) {
 		t.Fatal("retired seeded obstacle30 inside backward replay headroom")
 	}
 }
+
+// The enclosure is independently derived: 1800 units/s * one second,
+// plus a 60-unit contact extent, one 10-unit slice, and one 30-unit tick.
+func TestBothModesDenseSeparatedWindowsFitWithoutTruncation(t *testing.T) {
+	for _, mode := range []string{"drag-race", "road-rage"} {
+		t.Run(mode, func(t *testing.T) {
+			override := `{"gameplay":{"maxRoadSpeed":900,"sliceSpacing":10,"initialClearDistance":0,"emptyWeight":0,"obstacleWeight":1,"coinWeight":0,"heartWeight":0,"maxHealth":100}}`
+			cfg, err := configuration.Capture([]byte(p.DefaultConfigurationJSON), mode, []byte(override))
+			if err != nil {
+				t.Fatal(err)
+			}
+			ids := [2]p.Identity{{RoomId: 1, SeatSession: 11, PairGeneration: 1, Seat: 0}, {RoomId: 1, SeatSession: 22, PairGeneration: 1, Seat: 1}}
+			engine, err := simulation.New(cfg, 1, ids, 1)
+			if err != nil {
+				t.Fatal(err)
+			}
+			cars := engine.Snapshot().Cars
+			cars[0].Progress = 1000
+			cars[1].Progress = 15000
+			engine.Restore(cars, 0)
+			state, err := engine.Coverage()
+			if err != nil {
+				t.Fatal(err)
+			}
+			b := p.Baseline{Context: cfg.Context(1)}
+			generator, windows := raceCoverage(b, state)
+			if len(windows) != 2 {
+				t.Fatalf("expected disjoint windows, got %d", len(windows))
+			}
+			for i, progress := range []float64{1000, 15000} {
+				if windows[i].Start != progress-90 || windows[i].End != progress+1900 {
+					t.Fatalf("window %d: [%g,%g]", i, windows[i].Start, windows[i].End)
+				}
+				// Every slice has one occupied opportunity in a chosen lane. No state in
+				// the omitted gap is needed or permitted to inflate the transfer.
+				expected := int(math.Floor(windows[i].End/10)) - int(math.Ceil(windows[i].Start/10)) + 1
+				if len(windows[i].Objects) != expected {
+					t.Fatalf("window %d lost objects: got%d want%d", i, len(windows[i].Objects), expected)
+				}
+			}
+			coverage := p.Coverage{Generator: generator, Windows: windows}
+			wire, err := p.EncodeMessage(coverage, int(b.Context.Connection.ReliableFrameBytes))
+			if err != nil {
+				t.Fatal(err)
+			}
+			decoded, err := p.DecodeMessage(wire, int(b.Context.Connection.ReliableFrameBytes))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for i, w := range decoded.(p.Coverage).Windows {
+				if len(w.Objects) != len(windows[i].Objects) {
+					t.Fatal("coverage truncated on wire")
+				}
+			}
+			t.Logf("mode=%s seed=1 windows=%d objects=%d coverage_bytes=%d", mode, len(windows), len(windows[0].Objects)+len(windows[1].Objects), len(wire))
+		})
+	}
+}

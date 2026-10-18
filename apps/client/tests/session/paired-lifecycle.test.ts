@@ -11,6 +11,7 @@ class RoomSocket {
   static latest: RoomSocket;
   readyState = 1;
   binaryType = '';
+  bufferedAmount = 0;
   onmessage?: (event: { data: ArrayBuffer }) => void;
   onclose?: (event: { reason: string }) => void;
   constructor() { RoomSocket.latest = this; }
@@ -37,6 +38,37 @@ class Gameplay {
   close() {}
 }
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); sessionStorage.clear(); Gameplay.instances = []; });
+
+test('an essential room command fails the pair when the browser room queue is full', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('WebSocket', RoomSocket); vi.stubGlobal('WebTransport', Gameplay);
+  const admission: Admission = { version: protocolVersion, identity, credential: new Uint8Array(32).fill(1), roomTicket: new Uint8Array(32).fill(2), gameplayTicket: new Uint8Array(32).fill(3), expiresUs: 10000000, origin: location.origin };
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(encodeMessage('Admission', admission) as Uint8Array<ArrayBuffer>, { status: 201 })));
+  const client = new PairedConnection({ server: 'https://localhost:8443', diagnostic: true }, () => {});
+  try {
+    await client.connect(0);
+    RoomSocket.latest.bufferedAmount = 262144;
+    client.command(4, 1, 1, 'Focus');
+    expect(client.state.errors).toContain('Reliable room queue overflow');
+    expect(client.state.status).toContain('Unable to connect');
+    expect(client.state.pending).toBeUndefined();
+  } finally { client.dispose(); }
+});
+
+test('a buffered essential room command fails within its queue-wait deadline', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('WebSocket', RoomSocket); vi.stubGlobal('WebTransport', Gameplay);
+  const admission: Admission = { version: protocolVersion, identity, credential: new Uint8Array(32).fill(1), roomTicket: new Uint8Array(32).fill(2), gameplayTicket: new Uint8Array(32).fill(3), expiresUs: 10000000, origin: location.origin };
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(encodeMessage('Admission', admission) as Uint8Array<ArrayBuffer>, { status: 201 })));
+  const client = new PairedConnection({ server: 'https://localhost:8443', diagnostic: true }, () => {});
+  try {
+    await client.connect(0);
+    RoomSocket.latest.bufferedAmount = 32;
+    client.command(4, 1, 1, 'Focus');
+    await vi.advanceTimersByTimeAsync(600);
+    expect(client.state.errors).toContain('Reliable room write stalled');
+  } finally { client.dispose(); }
+});
 
 test('expired authority clears the unusable room and credential without inventing a result; old callbacks cannot affect a new admission', async () => {
   vi.useFakeTimers();

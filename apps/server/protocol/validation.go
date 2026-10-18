@@ -235,6 +235,9 @@ func ConfigurationResources(context Context) (Resources, error) {
 	if payload <= 0 {
 		return result, invalid("baseline chunk header leaves no payload in frame/queue")
 	}
+	if _, e := EncodeMessage(Initialization{Context: context}, int(c.ReliableFrameBytes)); e != nil {
+		return result, invalid("initialization exceeds reliable frame limit")
+	}
 	chunks := (len(encoded) + payload - 1) / payload
 	chunk := BaselineChunk{Data: make([]byte, min(len(encoded), payload))}
 	frame, e := EncodeMessage(chunk, int(c.ReliableFrameBytes))

@@ -84,13 +84,17 @@ func admit(t *testing.T, s *transport.Server, c *http.Client, request p.Admissio
 	status, value, _ := admitWithCode(t, s, c, request, from)
 	return status, value
 }
-func admitWithCode(t *testing.T, s *transport.Server, c *http.Client, request p.AdmissionRequest, from string) (int, any, string) {
+func admitWithCode(t *testing.T, s *transport.Server, c *http.Client, request p.AdmissionRequest, from string, modes ...uint8) (int, any, string) {
 	t.Helper()
 	wire, err := p.EncodeMessage(request, 65536)
 	if err != nil {
 		t.Fatal(err)
 	}
-	req, err := http.NewRequestWithContext(context.Background(), "POST", s.URL()+"/admission", bytes.NewReader(wire))
+	endpoint := s.URL() + "/admission"
+	if len(modes) > 0 {
+		endpoint += fmt.Sprintf("?mode=%d", modes[0])
+	}
+	req, err := http.NewRequestWithContext(context.Background(), "POST", endpoint, bytes.NewReader(wire))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -18,7 +18,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 		return err
 	}
 	control.SetReadDeadline(time.Now().Add(3 * time.Second))
-	first, err := readFrame(control)
+	first, err := readFrame(control, int(pair.connectionLimits().ReliableFrameBytes))
 	if err != nil {
 		return err
 	}
@@ -56,8 +56,8 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 		return err
 	}
 	receivedMessages := make(chan received, 128)
-	go readMessages(session.Context(), control, "control", receivedMessages)
-	go readMessages(session.Context(), inputs, "inputs", receivedMessages)
+	go readMessages(session.Context(), control, "control", receivedMessages, pair.connectionLimits)
+	go readMessages(session.Context(), inputs, "inputs", receivedMessages, pair.connectionLimits)
 	go func() {
 		if _, e := session.AcceptStream(session.Context()); e == nil {
 			pair.close("extra control stream")
@@ -81,7 +81,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 	inputSequence := uint32(0)
 	clockSequence := uint32(0)
 	lastClock := time.Time{}
-	inputTokens := 120.0
+	inputTokens := baseline.Context.Connection.InputBurst
 	lastInput := time.Now()
 	cursor := baseline.Progress.Authority
 	var outstanding []progressPoint
@@ -122,20 +122,23 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 			if record.err != nil {
 				return record.err
 			}
+			if err = p.ValidateMessage(record.value, baseline.Context); err != nil {
+				return err
+			}
 			switch value := record.value.(type) {
 			case p.Input:
 				if record.channel != "inputs" || value.Identity != pair.identity {
 					return errors.New("input identity/channel mismatch")
 				}
-				if value.Round != baseline.Round {
-					continue
-				}
 				now := time.Now()
-				inputTokens = min(120, inputTokens+now.Sub(lastInput).Seconds()*60)
+				inputTokens = min(baseline.Context.Connection.InputBurst, inputTokens+now.Sub(lastInput).Seconds()*baseline.Context.Connection.InputRate)
 				lastInput = now
 				inputTokens--
 				if inputTokens < 0 {
 					return errors.New("input rate exceeded")
+				}
+				if value.Round != baseline.Round {
+					continue
 				}
 				if value.Sequence <= inputSequence {
 					continue
@@ -201,7 +204,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 					lastAck = time.Now()
 				}
 			case p.Recovery:
-				if record.channel != "control" || value.Identity != pair.identity || value.Round != baseline.Round || !installed || time.Since(lastRecovery) < time.Duration(float64(time.Second)/baseline.Context.Connection.RecoveryRequestRate) {
+				if record.channel != "control" || value.Identity != pair.identity || value.Round != baseline.Round || value.Epoch != baseline.Epoch || !installed || time.Since(lastRecovery) < time.Duration(float64(time.Second)/baseline.Context.Connection.RecoveryRequestRate) {
 					return errors.New("invalid recovery")
 				}
 				lastRecovery = time.Now()
@@ -222,7 +225,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 					return err
 				}
 			case p.ClockRequest:
-				if record.channel != "control" || value.Sequence <= clockSequence || time.Since(lastClock) < 400*time.Millisecond {
+				if record.channel != "control" || value.Sequence <= clockSequence || time.Since(lastClock) < time.Duration(float64(time.Second)/baseline.Context.Connection.ClockRequestRate) {
 					return errors.New("invalid clock request")
 				}
 				clockSequence = value.Sequence
@@ -278,12 +281,12 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				outstanding = []progressPoint{{outcome.Tick, outcome.Progress, now}}
 			}
 			if !installed {
-				if now.Sub(sentAt) >= time.Second {
+				if now.Sub(sentAt) >= time.Duration(baseline.Context.Connection.EssentialProgressDeadline*float64(time.Second)) {
 					return errors.New("baseline application timed out")
 				}
 				continue
 			}
-			if now.Sub(lastAck) >= time.Second {
+			if now.Sub(lastAck) >= time.Duration(baseline.Context.Connection.EssentialProgressDeadline*float64(time.Second)) {
 				return errors.New("room application progress timed out")
 			}
 			for _, item := range records {
@@ -302,10 +305,10 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				}
 				cursor = item.authority
 			}
-			if len(outstanding) > 0 && now.Sub(outstanding[0].at) >= time.Second {
+			if len(outstanding) > 0 && now.Sub(outstanding[0].at) >= time.Duration(baseline.Context.Connection.EssentialProgressDeadline*float64(time.Second)) {
 				return errors.New("authority application progress timed out")
 			}
-			if now.Sub(lastBarrier) < 100*time.Millisecond {
+			if now.Sub(lastBarrier) < time.Duration(baseline.Context.Connection.VerificationInterval*float64(time.Second)) {
 				continue
 			}
 			lastBarrier = now

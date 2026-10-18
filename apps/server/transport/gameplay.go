@@ -73,7 +73,7 @@ func writer(pair *pair, stream interface {
 			case <-pair.done:
 				return
 			case item := <-w.queue:
-				deadline := item.at.Add(500 * time.Millisecond)
+				deadline := item.at.Add(time.Duration(pair.connectionLimits().EssentialQueueWait * float64(time.Second)))
 				if !time.Now().Before(deadline) {
 					pair.close("essential queue wait exceeded")
 					return
@@ -94,7 +94,7 @@ func writer(pair *pair, stream interface {
 	return w
 }
 func (w *streamWriter) send(value any) error {
-	wire, err := p.EncodeMessage(value, frameLimit)
+	wire, err := p.EncodeMessage(value, int(w.pair.connectionLimits().ReliableFrameBytes))
 	if err != nil {
 		return err
 	}
@@ -118,13 +118,17 @@ func (w *streamWriter) send(value any) error {
 		return errors.New("essential queue count exceeded")
 	}
 }
-func readFrame(r io.Reader) (any, error) {
+func readFrame(r io.Reader, limits ...int) (any, error) {
+	limit := frameLimit
+	if len(limits) > 0 {
+		limit = min(limit, limits[0])
+	}
 	var prefix [4]byte
 	if _, err := io.ReadFull(r, prefix[:]); err != nil {
 		return nil, err
 	}
 	n := binary.BigEndian.Uint32(prefix[:])
-	if n < 1 || n > frameLimit-4 {
+	if n < 1 || uint64(n)+4 > uint64(limit) {
 		return nil, errors.New("advertised frame length exceeds bound")
 	}
 	bytes := make([]byte, int(n)+4)
@@ -132,7 +136,7 @@ func readFrame(r io.Reader) (any, error) {
 	if _, err := io.ReadFull(r, bytes[4:]); err != nil {
 		return nil, err
 	}
-	return p.DecodeMessage(bytes, frameLimit)
+	return p.DecodeMessage(bytes, limit)
 }
 func (s *Server) gameplay(w http.ResponseWriter, r *http.Request) {
 	// The HTTP/3 Origin check happens before ticket consumption as well as upgrade.
@@ -176,9 +180,13 @@ type received struct {
 	err     error
 }
 
-func readMessages(ctx context.Context, r io.Reader, channel string, out chan<- received) {
+func readMessages(ctx context.Context, r io.Reader, channel string, out chan<- received, limits ...func() p.Connection) {
 	for {
-		value, err := readFrame(r)
+		limit := frameLimit
+		if len(limits) > 0 {
+			limit = int(limits[0]().ReliableFrameBytes)
+		}
+		value, err := readFrame(r, limit)
 		select {
 		case out <- received{value, channel, err}:
 		case <-ctx.Done():
@@ -447,11 +455,18 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 }
 
 func queueBaseline(writer *streamWriter, baseline p.Baseline, transferID uint32) (int, error) {
-	data, err := p.EncodeBaseline(baseline, 1048576)
+	data, err := p.EncodeBaseline(baseline, int(baseline.Context.Connection.BaselineBytes))
 	if err != nil {
 		return 0, err
 	}
-	const payload = 60000
+	header, err := p.EncodeMessage(p.BaselineChunk{}, frameLimit)
+	if err != nil {
+		return 0, err
+	}
+	payload := min(int(baseline.Context.Connection.ReliableFrameBytes), int(baseline.Context.Connection.QueueBytes), frameLimit) - len(header)
+	if payload <= 0 {
+		return 0, errors.New("baseline chunk header exceeds frame/queue bound")
+	}
 	count := (len(data) + payload - 1) / payload
 	for i := 0; i < count; i++ {
 		start := i * payload
@@ -464,7 +479,7 @@ func queueBaseline(writer *streamWriter, baseline p.Baseline, transferID uint32)
 }
 
 func (w *streamWriter) sendChunk(value p.BaselineChunk) error {
-	deadline := time.NewTimer(500 * time.Millisecond)
+	deadline := time.NewTimer(time.Duration(w.pair.connectionLimits().EssentialQueueWait * float64(time.Second)))
 	defer deadline.Stop()
 	for {
 		err := w.send(value)

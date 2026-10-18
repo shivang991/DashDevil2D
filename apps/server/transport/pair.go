@@ -26,6 +26,7 @@ type pair struct {
 	queuedBytes     int
 	queuedMessages  int
 	capacity        chan struct{}
+	limits          p.Connection
 	roomSequence    uint32
 	closed          bool
 	once            sync.Once
@@ -34,7 +35,13 @@ type pair struct {
 }
 
 func newPair(s *Server, seat *seat) *pair {
-	return &pair{server: s, seat: seat, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), rounds: make(chan struct{}, 1), capacity: make(chan struct{}, 1)}
+	return &pair{server: s, seat: seat, limits: seat.room.settings.Context(1).Connection, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), rounds: make(chan struct{}, 1), capacity: make(chan struct{}, 1)}
+}
+
+func (pair *pair) connectionLimits() p.Connection {
+	pair.mu.Lock()
+	defer pair.mu.Unlock()
+	return pair.limits
 }
 func (pair *pair) close(reason string) {
 	pair.once.Do(func() {
@@ -82,7 +89,7 @@ type queued struct {
 }
 
 func (pair *pair) enqueueRoom(value any) error {
-	wire, err := p.EncodeMessage(value, frameLimit)
+	wire, err := p.EncodeMessage(value, int(pair.connectionLimits().ReliableFrameBytes))
 	if err != nil {
 		return err
 	}
@@ -91,7 +98,7 @@ func (pair *pair) enqueueRoom(value any) error {
 	if pair.closed {
 		return errors.New("pair closed")
 	}
-	if pair.queuedBytes+len(wire) > 262144 || pair.queuedMessages >= 512 {
+	if pair.queuedBytes+len(wire) > int(pair.limits.QueueBytes) || pair.queuedMessages >= int(pair.limits.QueueMessages) {
 		return errors.New("room queue overflow")
 	}
 	select {
@@ -164,8 +171,8 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 	pair.roomSocket = ws
 	pair.mu.Unlock()
 	defer pair.close("room channel lost")
-	ws.SetReadLimit(frameLimit)
-	roomTokens := 120.0
+	ws.SetReadLimit(int64(pair.connectionLimits().ReliableFrameBytes))
+	roomTokens := pair.connectionLimits().InputBurst
 	lastRoomMessage := time.Now()
 	go func() {
 		for {
@@ -173,11 +180,12 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 			case <-pair.done:
 				return
 			case q := <-pair.roomQueue:
-				if time.Since(q.at) > 500*time.Millisecond {
+				limit := time.Duration(pair.connectionLimits().EssentialQueueWait * float64(time.Second))
+				if time.Since(q.at) >= limit {
 					pair.close("room queue wait")
 					return
 				}
-				ws.SetWriteDeadline(time.Now().Add(500 * time.Millisecond))
+				ws.SetWriteDeadline(q.at.Add(limit))
 				err := ws.WriteMessage(websocket.BinaryMessage, q.bytes)
 				pair.release(len(q.bytes))
 				if err != nil {
@@ -202,13 +210,14 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 			return
 		}
 		now := time.Now()
-		roomTokens = min(120, roomTokens+now.Sub(lastRoomMessage).Seconds()*60)
+		limits := pair.connectionLimits()
+		roomTokens = min(limits.InputBurst, roomTokens+now.Sub(lastRoomMessage).Seconds()*limits.InputRate)
 		lastRoomMessage = now
 		roomTokens--
 		if roomTokens < 0 {
 			return
 		}
-		message, err := p.DecodeMessage(wire, frameLimit)
+		message, err := p.DecodeMessage(wire, int(pair.connectionLimits().ReliableFrameBytes))
 		if err != nil {
 			return
 		}
@@ -350,6 +359,11 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			for _, other := range r.seats {
 				if other != nil {
 					other.ready = false
+					if other.pair != nil {
+						other.pair.mu.Lock()
+						other.pair.limits = config.Context(1).Connection
+						other.pair.mu.Unlock()
+					}
 				}
 			}
 		}
@@ -451,7 +465,7 @@ func (pair *pair) reserve(n int) error {
 	if pair.closed {
 		return errors.New("pair closed")
 	}
-	if pair.queuedBytes+n > 262144 || pair.queuedMessages >= 512 {
+	if pair.queuedBytes+n > int(pair.limits.QueueBytes) || pair.queuedMessages >= int(pair.limits.QueueMessages) {
 		return errors.New("essential pair queue overflow")
 	}
 	pair.queuedBytes += n

@@ -159,6 +159,36 @@ func TestSharedWire(t *testing.T) {
 		}
 	}
 }
+
+func TestEveryFamilyRejectsEveryTruncatedWirePrefix(t *testing.T) {
+	for _, f := range fixtures(t).Records {
+		t.Run(f.Name, func(t *testing.T) {
+			wire := unhex(t, f.Hex)
+			for n := 0; n < len(wire); n++ {
+				var err error
+				switch f.Type {
+				case "Baseline":
+					_, err = DecodeBaseline(wire[:n], 1048576)
+				case "Verification":
+					_, err = DecodeVerification(wire[:n], 10)
+				default:
+					_, err = DecodeMessage(wire[:n], 65536)
+				}
+				if err == nil {
+					t.Fatalf("accepted prefix %d of %d", n, len(wire))
+				}
+			}
+		})
+	}
+}
+
+func TestResourceGateRequiresInitializationToFit(t *testing.T) {
+	context := baselineFixture(t).Context
+	context.Connection.ReliableFrameBytes = 512
+	if _, err := ConfigurationResources(context); err == nil {
+		t.Fatal("accepted an initialization frame that cannot fit")
+	}
+}
 func baselineFixture(t *testing.T) Baseline {
 	t.Helper()
 	for _, f := range fixtures(t).Records {
