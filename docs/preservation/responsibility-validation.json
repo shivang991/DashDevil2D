@@ -1,0 +1,533 @@
+{
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/39",
+  "date": "2026-10-18",
+  "timezone": "America/Phoenix",
+  "sourceRevision": "720df8d5839e9c0d955b50bee1f29c997cc1cae2",
+  "baseline": "5c145c05286aa60e64d4798ab973950f785d148d",
+  "fixtureVersion": 1,
+  "sha256": {
+    "packages/contracts/race/responsibility.json": "9465b40e02f7831113abdcf98f3797250ea7d4da7844551902d12b34b252319c",
+    "infra/responsibility-track.json": "1718584419c890dda49faaf499f064821fd92ead59ac88444095a61152991d78",
+    "packages/simulation/multiplayer.ts": "208c2194d9c69a7fe163883803082b490c24f2bc0578cf2a7e1bc0fe7b4b889c",
+    "apps/server/simulation/contacts.go": "bfcd92d298ce9ae1c28824de60a68b2d9277e4bf9ec027e10eddf3a058ffea43",
+    "apps/server/simulation/simulation.go": "3ff5484e214761b976d3fd95c814065cae79658bedef054f7d5849b37c9282c3",
+    "apps/server/simulation/objects.go": "dfffff2c81d69239f9bb1a3331994be0c3c52e37649100b6d478af3049f8960b",
+    "apps/server/transport/race.go": "0405473b1f31c8a71485e111b9652940e9ad1036d86670e968835ae201d1eb4b",
+    "apps/client/src/game/RaceSession.ts": "fa516944f52bec2c37db4ae4252a0d934907e8740f6ae95f19ec4515a637f3f7",
+    "apps/client/tests/browser/responsibility.spec.ts": "f86e6982c4bd723080ff633ada331fcaf6f72906afd6f1d2ef9265b58821d6b4",
+    "apps/client/tests/browser/responsibility.html": "5558da3dbfd8e1c2ffbcb2d6a17a05a0cc4afdcc219de4a6a8093e6bf9046f5f",
+    "apps/client/playwright.transport.config.ts": "a4b00a174798b94a69c78f1976b74e878cafa07c0c40449caa917a6f181e22f9",
+    "apps/client/scripts/transport.mjs": "df09fcd87fe883aea346d05721746d808d4bc64ffc96f3436f1454b6d496631b",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8"
+  },
+  "preservationPolicy": "Raw attempts and routine captures remain in ignored run folders; compact requirement/result index is committed.",
+  "finalSourceUnchangedFromTestedRevision": true,
+  "fixtureScenarios": 21,
+  "fixtureSeeds": [
+    1,
+    4
+  ],
+  "configuration": "infra/responsibility-track.json: empty Road Rage track, 6HP, 15s; inherited movement/protection defaults. Shipped defaults verified separately.",
+  "workspace": {
+    "command": "GOCACHE=/tmp/dashdevil-go-cache pnpm exec turbo run typecheck lint test build --force --env-mode=loose",
+    "exitCode": 0,
+    "tasks": 15,
+    "cacheHits": 0,
+    "vitest": 391,
+    "go": "all tests, go vet and build pass",
+    "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/full-check-2.log",
+    "logSha256": "3c71c64d3d220bef13a7b0c3a7be9174779eb42ce202fc09d1f6cefec3a67678",
+    "generated": {
+      "command": "pnpm check:generated",
+      "exitCode": 0,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/generated-final-2.log"
+    }
+  },
+  "browserTests": 45,
+  "browserChecks": [
+    {
+      "command": "pnpm test:browser",
+      "exitCode": 0,
+      "seconds": 81.589,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-browser-acceptance.log",
+      "browserTests": 12,
+      "logSha256": "111f8afbae2e0290e20e83d3ca5d974b41ae3f9ac61d1c74192ecb6b26f71685",
+      "rawRun": "apps/client/test-results/run-2026-10-18T17-55-29.469Z-92YAky",
+      "manifestSha256": "d53239926a73b288d7da162a3274d7e18af2f594f4fa88a125ccae6ecc17184d"
+    },
+    {
+      "command": "pnpm test:responsibility",
+      "exitCode": 0,
+      "seconds": 31.688,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-responsibility-acceptance.log",
+      "browserTests": 4,
+      "logSha256": "bd11b6347d5cf009125164dd7cd39a34d9c87cc0ca757b4b9f3e01ecde85c1fa",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T17-57-09.937Z",
+      "manifestSha256": "fac6b564db9a9095f43ebb74d66930f2da0cc87fa03a847b1cc9b289d6bbf555"
+    },
+    {
+      "command": "pnpm test:contacts",
+      "exitCode": 0,
+      "seconds": 30.515,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-contacts-acceptance.log",
+      "browserTests": 2,
+      "logSha256": "b30263769909755eb4378b13be40cde0926d53b046e2988aac9e958381e9edb2",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T17-57-40.386Z",
+      "manifestSha256": "22b1fc449821ec4fc23449839037b834d3e6b36e770687901b558f42ce9afe6c"
+    },
+    {
+      "command": "pnpm test:rage",
+      "exitCode": 0,
+      "seconds": 30.764,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-rage-acceptance.log",
+      "browserTests": 1,
+      "logSha256": "a0afa9e8fae25cd3a1fc9d056dd458863cf09dc98f9615db5f0e5130746748f1",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T17-58-11.231Z",
+      "manifestSha256": "ae3a03cdebd25e27cfd3b49ca9a46104e6c6d78ca83fad08e7ed67c234142db4"
+    },
+    {
+      "command": "pnpm test:rage-default",
+      "exitCode": 0,
+      "seconds": 18.248,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-rage-default-acceptance.log",
+      "browserTests": 1,
+      "logSha256": "bdaf75f309732065931bb7e00e1ecbb3da1d1b5f3b5d79a5c0bee68f2c061f33",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T17-58-29.503Z",
+      "manifestSha256": "b9feda5f39fbe3899f850e770f4f9f7370bb5d7a7661a234b0e89d4640452266"
+    },
+    {
+      "command": "pnpm test:race",
+      "exitCode": 0,
+      "seconds": 42.045,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-race-acceptance.log",
+      "browserTests": 4,
+      "logSha256": "435c7f7492cb208ddbcfa89b0b191954fe8613cb67adf037544cc3709a44dd18",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T17-59-11.515Z",
+      "manifestSha256": "6657670b8e63d50a5cec75c81f98d5ee1658a311b619b56341c064d597ef1ab2"
+    },
+    {
+      "command": "pnpm test:transport",
+      "exitCode": 0,
+      "seconds": 8.471,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-transport-acceptance.log",
+      "browserTests": 3,
+      "logSha256": "a4a1bf7394691174ee0b7ab3b8d9d5b75a7ac43509fee533e5eefdfc0fa44f01",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T17-59-20.013Z",
+      "manifestSha256": "27acabdb64e28228d24e999de622a3f77a4e66242039038d287d31009decbd94"
+    },
+    {
+      "command": "pnpm test:rooms",
+      "exitCode": 0,
+      "seconds": 12.39,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-rooms-acceptance.log",
+      "browserTests": 5,
+      "logSha256": "8a8f93ffaa87fbb5d775ab468f8f3014b0429cd3800dd4c6b5ad9128ee8c1bf2",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T17-59-32.411Z",
+      "manifestSha256": "b86eaf2aa094b46243edb124bb1d19f1ace733fa7d583330dd8c8ab60b8fea5d"
+    },
+    {
+      "command": "pnpm test:groups",
+      "exitCode": 0,
+      "seconds": 28.999,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-groups-acceptance.log",
+      "browserTests": 4,
+      "logSha256": "e43ab1c7e351d0480b7aa2dafcf9e700d5f27ff278d5ed3115b5022f0e38c0e0",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T18-00-01.386Z",
+      "manifestSha256": "a965632f4666847e1dd49d333f792ebb93a24d1644ea6eed7493de3c578d496c"
+    },
+    {
+      "command": "pnpm test:finality",
+      "exitCode": 0,
+      "seconds": 28.354,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-finality-acceptance.log",
+      "browserTests": 2,
+      "logSha256": "3c9fe1178cdb5505d775f02bea9cfc343c47aeddbc1cec6706861295c71ca98f",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T18-00-29.771Z",
+      "manifestSha256": "571f28a6f0eeaaefa5a816f54bf477b1f8b7a018a68eba0321fbaa0917ad17df"
+    },
+    {
+      "command": "pnpm test:objects",
+      "exitCode": 0,
+      "seconds": 16.754,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-objects-acceptance.log",
+      "browserTests": 1,
+      "logSha256": "07c09a4257ff80860f300aba990708bd9846e2350ad801e17bb01b70aaf41504",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T18-00-46.534Z",
+      "manifestSha256": "70ad9cbd7892dfb50abc5b5be09a3dc453abb6ffb8135b6d56ca755b37c62378"
+    },
+    {
+      "command": "pnpm test:hearts",
+      "exitCode": 0,
+      "seconds": 15.876,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-hearts-acceptance.log",
+      "browserTests": 1,
+      "logSha256": "ce03ad3d01c2eba9efecd301fe2a9f04ee614f072651ff47595626c7ba821e15",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T18-01-02.406Z",
+      "manifestSha256": "0583b6bb5ab996c5dc522ce08779a0609ea614e5d6135f3da521e202ad13c9ab"
+    },
+    {
+      "command": "pnpm test:maintenance",
+      "exitCode": 0,
+      "seconds": 28.16,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-maintenance-acceptance.log",
+      "browserTests": 1,
+      "logSha256": "390b07216e71e025486bfa81caf71dd261d07a9b492213fc6162e972c752b015",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T18-01-30.544Z",
+      "manifestSha256": "b13410d0838974d2e189d762c2f148451406ce72e242ec34f8b67d96ebcc8f15"
+    },
+    {
+      "command": "pnpm test:boundaries",
+      "exitCode": 0,
+      "seconds": 18.385,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-boundaries-acceptance.log",
+      "browserTests": 2,
+      "logSha256": "3a487491b0241ec6e46e1eabe2cbe04bf607fa3970cc482d61b504b5d8b60f9f",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T18-01-48.945Z",
+      "manifestSha256": "3bce5671aef8ebc59b0c51f4e7cfecd7cf2f98cbf7fb96825a53ad5da750ef59"
+    },
+    {
+      "command": "pnpm test:lifecycle",
+      "exitCode": 0,
+      "seconds": 38.108,
+      "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-lifecycle-acceptance.log",
+      "browserTests": 2,
+      "logSha256": "360a3b453fa516747b24d74ac7dfb27fd32af648f08654dd7bacde816a082004",
+      "rawRun": "apps/client/test-results/transport-2026-10-18T18-02-27.055Z",
+      "manifestSha256": "5d50862e82f9639411cc00ff7c394c78f2222295a682a3a75f6ca8d76e260f22"
+    }
+  ],
+  "responsibilityBrowser": {
+    "sourceRevision": "720df8d5839e9c0d955b50bee1f29c997cc1cae2",
+    "rawRun": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T17-57-09.937Z",
+    "manifestSha256": "fac6b564db9a9095f43ebb74d66930f2da0cc87fa03a847b1cc9b289d6bbf555",
+    "fixtureVersion": 1,
+    "sharedTimelineCount": 21,
+    "scenarios": [
+      {
+        "name": "protected-victim-0",
+        "environments": [
+          {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "width": 1280,
+            "height": 900
+          },
+          {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "width": 1280,
+            "height": 900
+          }
+        ],
+        "states": [
+          {
+            "roundId": 2,
+            "timeUs": 4233333,
+            "seed": 1172155418,
+            "identity": {
+              "roomId": 1,
+              "seatSession": 2,
+              "pairGeneration": 1,
+              "seat": 0
+            },
+            "contact": {
+              "episode": 3,
+              "flags": 0,
+              "blockedSeat": 0,
+              "latestSeat": 1,
+              "latestControl": 1,
+              "latestSequence": 31,
+              "latestTimeUs": 3316667,
+              "latestOrder": 4
+            },
+            "verified": 41,
+            "errors": [],
+            "hp": [
+              4,
+              6
+            ]
+          },
+          {
+            "roundId": 2,
+            "timeUs": 4283333,
+            "seed": 1172155418,
+            "identity": {
+              "roomId": 1,
+              "seatSession": 3,
+              "pairGeneration": 1,
+              "seat": 1
+            },
+            "contact": {
+              "episode": 3,
+              "flags": 0,
+              "blockedSeat": 0,
+              "latestSeat": 1,
+              "latestControl": 1,
+              "latestSequence": 31,
+              "latestTimeUs": 3316667,
+              "latestOrder": 4
+            },
+            "verified": 41,
+            "errors": [],
+            "hp": [
+              4,
+              6
+            ]
+          }
+        ]
+      },
+      {
+        "name": "protected-victim-1",
+        "environments": [
+          {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "width": 1280,
+            "height": 900
+          },
+          {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "width": 1280,
+            "height": 900
+          }
+        ],
+        "states": [
+          {
+            "roundId": 2,
+            "timeUs": 4183333,
+            "seed": 3428042405,
+            "identity": {
+              "roomId": 4,
+              "seatSession": 5,
+              "pairGeneration": 1,
+              "seat": 0
+            },
+            "contact": {
+              "episode": 3,
+              "flags": 0,
+              "blockedSeat": 0,
+              "latestSeat": 0,
+              "latestControl": 2,
+              "latestSequence": 32,
+              "latestTimeUs": 3316667,
+              "latestOrder": 4
+            },
+            "verified": 40,
+            "errors": [],
+            "hp": [
+              6,
+              4
+            ]
+          },
+          {
+            "roundId": 2,
+            "timeUs": 4266667,
+            "seed": 3428042405,
+            "identity": {
+              "roomId": 4,
+              "seatSession": 6,
+              "pairGeneration": 1,
+              "seat": 1
+            },
+            "contact": {
+              "episode": 3,
+              "flags": 0,
+              "blockedSeat": 0,
+              "latestSeat": 0,
+              "latestControl": 2,
+              "latestSequence": 32,
+              "latestTimeUs": 3316667,
+              "latestOrder": 4
+            },
+            "verified": 40,
+            "errors": [],
+            "hp": [
+              6,
+              4
+            ]
+          }
+        ]
+      },
+      {
+        "name": "reversal",
+        "environments": [
+          {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "width": 1280,
+            "height": 900
+          },
+          {
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/155.0.0.0 Safari/537.36",
+            "width": 1280,
+            "height": 900
+          }
+        ],
+        "states": [
+          {
+            "roundId": 2,
+            "timeUs": 2016667,
+            "seed": 2839062047,
+            "identity": {
+              "roomId": 7,
+              "seatSession": 8,
+              "pairGeneration": 1,
+              "seat": 0
+            },
+            "contact": {
+              "episode": 1,
+              "flags": 0,
+              "blockedSeat": 0,
+              "latestSeat": 0,
+              "latestControl": 3,
+              "latestSequence": 21,
+              "latestTimeUs": 1233333,
+              "latestOrder": 3
+            },
+            "verified": 20,
+            "errors": [],
+            "hp": [
+              6,
+              5
+            ]
+          },
+          {
+            "roundId": 2,
+            "timeUs": 1816667,
+            "seed": 2839062047,
+            "identity": {
+              "roomId": 7,
+              "seatSession": 9,
+              "pairGeneration": 1,
+              "seat": 1
+            },
+            "contact": {
+              "episode": 1,
+              "flags": 0,
+              "blockedSeat": 0,
+              "latestSeat": 0,
+              "latestControl": 3,
+              "latestSequence": 21,
+              "latestTimeUs": 1233333,
+              "latestOrder": 3
+            },
+            "verified": 18,
+            "errors": [],
+            "hp": [
+              6,
+              5
+            ]
+          }
+        ],
+        "provisionalVictimHPObserved": true,
+        "confirmedVictimHPObserved": true
+      }
+    ],
+    "runtime": {
+      "node": "v26.10.0",
+      "pnpm": "8.15.9",
+      "go": "go version go1.26.0 darwin/arm64",
+      "platform": "darwin",
+      "architecture": "arm64",
+      "cpu": "Apple M2",
+      "release": "25.5.0",
+      "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+    }
+  },
+  "independentReview": {
+    "path": "docs/preservation/responsibility-review.md",
+    "standardsRemaining": 0,
+    "specRemainingConfirmed": 0,
+    "originalFindings": [
+      "raw logs committed contrary to preservation policy",
+      "P1 blocked-return clearance",
+      "P2 browser continuous positions"
+    ],
+    "repair": "720df8d"
+  },
+  "failureRetention": {
+    "directory": "apps/client/test-results/responsibility-implementation-2026-10-18-1755",
+    "failedAttemptLogs": [
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/browser-1.log",
+        "sha256": "d0b07d9df3f59962e47653a7e4aefee488d9640b2662191ab1e0d3593e08558e"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/browser-2.log",
+        "sha256": "1a0b3e497d21ab684138033e89021fcfadb8266fa488da35effa9908cbcb4887"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/browser-3.log",
+        "sha256": "8b8f1f2bdc5ec4c0f94aad456a97bba2395c955f30dc8ac03d77a82bdc454211"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/browser-5.log",
+        "sha256": "a74e525317e7d6424840125577a695b70ff4b5ca040eeec8e71db7717e154292"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/first-green-2.log",
+        "sha256": "04cac4c4bd74afb4835b1b296c67e67d0612cfa088c5610faac4f53535b85750"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/first-green.log",
+        "sha256": "2ed12008b7bafc969a45a4e6bc731279c65493e760ebf0172971b9613fba4fde"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/first-red.log",
+        "sha256": "f739b5f5a3655ea85abf0a767f43d4caaa25bd9ab2a2916874b1c153e7f1a433"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/focused-5.log",
+        "sha256": "a1824239c29a11746ccf23f1c4968f437a6d64b9cd3327605cf16a2d0ba37afd"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/go-3.log",
+        "sha256": "c3fb5bb322e3894dab09ce56beef5a258f5557d52bd3bf06c0a0ab221e771ca4"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/go-exact-fixtures-1.log",
+        "sha256": "33e73b70cb191c220e3c96d72dc866af1d961d94d79e29d8dd52dd6b826b86e6"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/go-first.log",
+        "sha256": "95e35687b674f1d617e3e9eb057267d0483d57527f7737673e0e9f35627dfcb4"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/return-blocking-red.log",
+        "sha256": "132f2403db7bbc13baeedb261f893645516802ba65ae78185675165dd9a8e203"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/review-clearance-red.log",
+        "sha256": "b0844fd239678a06ba37b9a7e002a6e70646e376a71f405fbfb7c451c01bb17b"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-boundaries-acceptance.log",
+        "sha256": "3a487491b0241ec6e46e1eabe2cbe04bf607fa3970cc482d61b504b5d8b60f9f"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/test-transport-acceptance.log",
+        "sha256": "a4a1bf7394691174ee0b7ab3b8d9d5b75a7ac43509fee533e5eefdfc0fa44f01"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/types-1.log",
+        "sha256": "33b550baf713475be70c3883392e71e604b1a17581f1e454245e6a123119efa8"
+      },
+      {
+        "log": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/logs/valid-input-red.log",
+        "sha256": "9f43d605e4a8b852d9d0d55e6fa9e6a560c334e9fe9732b11a526f9c82e8d460"
+      }
+    ],
+    "policy": "Keep original full failed and successful ignored run folders. No failure was replaced by a retry."
+  },
+  "visualInspection": {
+    "path": "apps/client/test-results/responsibility-implementation-2026-10-18-1755/visual-final-reversal.png",
+    "by": "parent agent",
+    "observed": [
+      "Road Rage heading and connected room",
+      "both names and HP6/HP5 after corrected responsibility",
+      "remaining time and NOS status",
+      "both cars and road canvas"
+    ],
+    "scope": "Agent image inspection; not two-person or physical OS audiovisual signoff."
+  },
+  "acceptanceScope": {
+    "completed": "#39 technical implementation and applicable preservation/integration checks",
+    "remaining": "#40–#41 Stage6 resource/operating work and #42–#45 Stage7 platform, hardware/network, capacity and human acceptance. No broader full acceptance claimed."
+  }
+}
