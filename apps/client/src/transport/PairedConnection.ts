@@ -138,12 +138,13 @@ export class PairedConnection {
       if (generation !== this.generation) { gameplay.close(); return; }
       if (gameplay.datagrams.maxDatagramSize < 10) throw new Error('Required datagram payload unavailable');
       const control = await gameplay.createBidirectionalStream();
-      if (generation !== this.generation) { void control.readable.cancel(); void control.writable.abort(); return; }
+      if (generation !== this.generation) { void control.readable.cancel().catch(() => {}); void control.writable.abort().catch(() => {}); return; }
       this.control = control.writable.getWriter();
       void this.read(control.readable, 'control', generation).catch(error => this.fail(error, generation));
       void this.readAuthority(gameplay, generation).catch(error => this.fail(error, generation));
       void this.readDatagrams(gameplay, generation).catch(error => this.fail(error, generation));
       await this.send('Handshake', { version: protocolVersion, identity: message.value.identity, datagramBytes: gameplay.datagrams.maxDatagramSize }, generation);
+      if (generation !== this.generation) return;
       const watchdog = setInterval(() => {
         if (generation !== this.generation) return;
         if (this.lastUsable && performance.now() - this.lastUsable >= 1000) {
@@ -213,7 +214,9 @@ export class PairedConnection {
   private async readAuthority(gameplay: WebTransport, generation: number) {
     const reader = gameplay.incomingUnidirectionalStreams.getReader();
     try {
-      const { value, done } = await reader.read(); if (done || !value) throw new Error('Authority stream unavailable');
+      const { value, done } = await reader.read();
+      if (generation !== this.generation) return;
+      if (done || !value) throw new Error('Authority stream unavailable');
       const reading = this.read(value, 'authority', generation);
       void reader.read().then(extra => { if (!extra.done) this.fail(new Error('Unexpected extra authority stream'), generation); }).catch(error => this.fail(error, generation));
       await reading;
@@ -236,8 +239,13 @@ export class PairedConnection {
         this.race = undefined; this.heldMask = 0; this.winningControl = 0;
         if (this.state.outcome && message.value.round.roundId > this.state.outcome.roundId) this.state.outcome = undefined; this.transfer?.cancel(); this.transfer = new BaselineTransfer(this.context, 1048576);
         this.baseline = undefined; this.inputSequence = 0;
-        if (!this.inputs) { const inputs = await this.gameplay!.createUnidirectionalStream(); this.inputs = inputs.getWriter(); }
+        if (!this.inputs) {
+          const inputs = await this.gameplay!.createUnidirectionalStream();
+          if (generation !== this.generation) { void inputs.abort().catch(() => {}); return; }
+          this.inputs = inputs.getWriter();
+        }
         await this.send('Input', { identity, round: message.value.round, sequence: ++this.inputSequence, intent: 2, control: 0, heldMask: 0 }, generation, true);
+        if (generation !== this.generation) return;
         const waiting = this.earlyChunks; this.earlyChunks = [];
         for (const chunk of waiting) await this.record({ type: 'BaselineChunk', value: chunk }, 'authority', generation);
         break;
@@ -268,7 +276,9 @@ export class PairedConnection {
             this.state.cars = baseline.cars.map((car, seat) => ({ ...car, ...this.state.outcome!.cars[seat] })); this.state.positions = this.state.outcome.cars.map(car => car.progress).join(', '); }
         }
         await this.send('Ready', { identity, round: baseline.round, transferId: message.value.transferId, epoch: baseline.epoch, progress: baseline.progress }, generation);
+        if (generation !== this.generation) return;
         if (this.state.outcome) await this.ackOutcome(generation);
+        if (generation !== this.generation) return;
         if (!wasInitialized) { this.startTimers(generation); this.timerStarted = true; }
         if (!this.options.diagnostic) this.focus(this.focused, this.hidden);
         this.publish(); break;
@@ -278,7 +288,9 @@ export class PairedConnection {
         if (message.value.sequence <= this.pulseSequence) throw new Error('Stale room pulse');
         this.pulseSequence = message.value.sequence; if (this.state.room?.phase !== 2) this.lastUsable = performance.now();
         if (this.state.status === 'Connection warning') this.state.status = 'Connected';
-        await this.send('RoomPulse', message.value, generation); this.publish(); break;
+        await this.send('RoomPulse', message.value, generation);
+        if (generation !== this.generation) return;
+        this.publish(); break;
       }
       case 'Disposition': {
         if (this.state.outcome) break;
@@ -377,6 +389,7 @@ export class PairedConnection {
     this.lastUsable = performance.now(); this.state.barriers++;
     if (this.state.status === 'Connection warning') this.state.status = 'Connected';
     await this.send('AuthorityAck', { identity: b.identity, round: b.round, epoch: b.epoch, tick: b.tick, progress: b.progress }, generation);
+    if (generation !== this.generation) return;
     if (recover) this.requestBaseline();
     this.state.verified = this.verification?.verified ?? 0; this.publish();
   }

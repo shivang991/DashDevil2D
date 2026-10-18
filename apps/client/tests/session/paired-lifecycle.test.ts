@@ -1,5 +1,7 @@
 import { afterEach, expect, test, vi } from 'vitest';
 import { PairedConnection } from '../../src/transport/PairedConnection';
+import { captureConfiguration } from '@dashdevil/simulation/config';
+import { configurationContext } from '@dashdevil/contracts/validation';
 import { encodeMessage, protocolVersion, type Admission, type RoomState } from '@dashdevil/contracts/protocol';
 
 const identity = { roomId: 1, seatSession: 2, pairGeneration: 1, seat: 0 };
@@ -15,15 +17,21 @@ class RoomSocket {
   close() {}
 }
 class Gameplay {
+  static instances: Gameplay[] = [];
+  control!: ReadableStreamDefaultController<Uint8Array>;
+  inputStream?: Promise<WritableStream<Uint8Array>>;
+  inputWrites: Uint8Array[] = [];
+  inputCalls = 0;
+  constructor() { Gameplay.instances.push(this); }
   ready = Promise.resolve();
   closed = new Promise<never>(() => {});
   incomingUnidirectionalStreams = new ReadableStream<ReadableStream<Uint8Array>>();
   get datagrams() { return { maxDatagramSize: 1200, readable: new ReadableStream<Uint8Array>() }; }
-  createBidirectionalStream() { return Promise.resolve({ readable: new ReadableStream<Uint8Array>(), writable: new WritableStream<Uint8Array>() }); }
-  createUnidirectionalStream() { return Promise.resolve(new WritableStream<Uint8Array>()); }
+  createBidirectionalStream() { return Promise.resolve({ readable: new ReadableStream<Uint8Array>({ start: controller => { this.control = controller; } }), writable: new WritableStream<Uint8Array>() }); }
+  createUnidirectionalStream() { this.inputCalls++; return this.inputStream ?? Promise.resolve(new WritableStream<Uint8Array>({ write: bytes => { this.inputWrites.push(bytes); } })); }
   close() {}
 }
-afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); sessionStorage.clear(); });
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); sessionStorage.clear(); Gameplay.instances = []; });
 
 test('expired authority clears the unusable room and credential without inventing a result; old callbacks cannot affect a new admission', async () => {
   vi.useFakeTimers();
@@ -49,5 +57,35 @@ test('expired authority clears the unusable room and credential without inventin
     expect(client.state.status).toBe('Connecting');
     expect(client.state.room).toBeUndefined();
     expect(client.hasCredential).toBe(true);
+  } finally { client.dispose(); }
+});
+
+test('a delayed input stream from a superseded pair cannot capture inputs for the current pair', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('WebSocket', RoomSocket); vi.stubGlobal('WebTransport', Gameplay);
+  const admission: Admission = { version: protocolVersion, identity, credential: new Uint8Array(32).fill(1), roomTicket: new Uint8Array(32).fill(2), gameplayTicket: new Uint8Array(32).fill(3), expiresUs: 10000000, origin: location.origin };
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(encodeMessage('Admission', admission) as Uint8Array<ArrayBuffer>, { status: 201 })));
+  const client = new PairedConnection({ server: 'https://localhost:8443' }, () => {});
+  let resolveOld!: (stream: WritableStream<Uint8Array>) => void;
+  const oldWrites: Uint8Array[] = [];
+  const context = configurationContext(captureConfiguration('drag-race'), 1, 1000000);
+  const initialize = (gameplay: Gameplay, roundId: number) => gameplay.control.enqueue(encodeMessage('Initialization', { identity, round: { roundId, inputGeneration: roundId }, context }));
+  try {
+    await client.connect(0);
+    const old = Gameplay.instances[0];
+    old.inputStream = new Promise(resolve => { resolveOld = resolve; });
+    initialize(old, 1);
+    await vi.waitFor(() => expect(old.inputCalls).toBe(1));
+    await client.connect(2);
+    const current = Gameplay.instances[1];
+    initialize(current, 1);
+    await vi.waitFor(() => expect(current.inputWrites).toHaveLength(1));
+    resolveOld(new WritableStream<Uint8Array>({ write: bytes => { oldWrites.push(bytes); } }));
+    // Drain the superseded stream's promise continuation before a new round uses
+    // the current input channel. No private client state is inspected.
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    initialize(current, 2);
+    await vi.waitFor(() => expect(current.inputWrites).toHaveLength(2));
+    expect(oldWrites).toHaveLength(0);
   } finally { client.dispose(); }
 });
