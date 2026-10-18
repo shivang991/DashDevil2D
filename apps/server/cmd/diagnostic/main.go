@@ -14,7 +14,7 @@ import (
 
 func main() {
 	var c transport.Config
-	var roundConfig string
+	var roundConfig, roadRageConfig string
 	var operatorAddress string
 	var drainTimeout, stopGrace time.Duration
 	var checkReady, requestDrain, checkPublic, checkConfig bool
@@ -27,6 +27,7 @@ func main() {
 	flag.StringVar(&c.StaticDirectory, "static", "", "built client directory (production)")
 	flag.BoolVar(&c.Diagnostic, "diagnostic", false, "stationary Stage 4 diagnostic instead of product rooms")
 	flag.StringVar(&roundConfig, "drag-race-config", "", "explicit validated Drag Race configuration overrides JSON")
+	flag.StringVar(&roadRageConfig, "road-rage-config", "", "explicit validated Road Rage configuration overrides JSON")
 	flag.StringVar(&operatorAddress, "admin-address", "", "private loopback operator listener (disabled unless set)")
 	flag.DurationVar(&drainTimeout, "drain-timeout", 3*time.Minute, "maximum planned-maintenance wait for active rounds")
 	flag.BoolVar(&checkReady, "check-ready", false, "probe the private operator readiness endpoint and exit")
@@ -73,6 +74,14 @@ func main() {
 	if roundConfig != "" {
 		var err error
 		c.DragRaceOverrides, err = os.ReadFile(roundConfig)
+		if err != nil {
+			slog.Error("round configuration", "error", err)
+			os.Exit(1)
+		}
+	}
+	if roadRageConfig != "" {
+		var err error
+		c.RoadRageOverrides, err = os.ReadFile(roadRageConfig)
 		if err != nil {
 			slog.Error("round configuration", "error", err)
 			os.Exit(1)

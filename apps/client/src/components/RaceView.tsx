@@ -60,7 +60,7 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
         ctx.setLineDash([]);
         ctx.textAlign = 'left';
         const finishY = y(g.finishDistance);
-        if (finishY > -30 && finishY < height + 30) { ctx.fillStyle = '#f3f4f6'; ctx.fillRect(0, finishY - 6, width, 12); ctx.font = '18px sans-serif'; ctx.fillText('FINISH', 12, finishY - 18); }
+        if (context.mode === 1 && finishY > -30 && finishY < height + 30) { ctx.fillStyle = '#f3f4f6'; ctx.fillRect(0, finishY - 6, width, 12); ctx.font = '18px sans-serif'; ctx.fillText('FINISH', 12, finishY - 18); }
         for (const object of view.objects) {
           const kind = object.flags & 3;
           if (object.flags & (kind === 2 ? 8 << local : 4)) continue;
@@ -92,9 +92,10 @@ export function RaceView({ connection, state, onLeave, suspended }: { connection
   return <div className="relative flex flex-col gap-3">
     <div className="grid grid-cols-2 gap-3">{state.room?.seats.map((seat, i) => <div key={i} className="rounded border border-neutral-700 p-3">
       <p>{seat.name}{i === local ? ' (You)' : ''}</p><p data-testid={`hp-${i}`}>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</p><p>Score {frame?.cars[i].score ?? 0}</p>
-      <progress className="w-full" aria-label={`${i === local ? 'Your' : 'Opponent'} finish progress`} value={frame?.cars[i].progress ?? 0} max={context.gameplay.finishDistance - context.gameplay.carHeight / 2} />
-      <p>{Math.round((frame?.cars[i].progress ?? 0) / (context.gameplay.finishDistance - context.gameplay.carHeight / 2) * 100)}%</p>
+      {context.mode === 1 && <><progress className="w-full" aria-label={`${i === local ? 'Your' : 'Opponent'} finish progress`} value={frame?.cars[i].progress ?? 0} max={context.gameplay.finishDistance - context.gameplay.carHeight / 2} />
+      <p>{Math.round((frame?.cars[i].progress ?? 0) / (context.gameplay.finishDistance - context.gameplay.carHeight / 2) * 100)}%</p></>}
     </div>)}</div>
+    {context.mode === 2 && <p data-testid="time-remaining">Time remaining: {Math.max(0, context.gameplay.timeLimit - (frame?.timeUs ?? 0) / 1e6).toFixed(1)} s</p>}
     <p role="status" data-testid="object-feedback">{feedback}</p>
     <p data-testid="nos-status">{frame?.cars[local].effective === 3 ? 'NOS active' : 'NOS ready'}</p>
     {frame?.awaiting && !outcome && <p role="status">Awaiting confirmation</p>}

@@ -216,7 +216,9 @@ export class Multiplayer {
     let contacts = this.objectContacts(time, next);
     let finishes = !provisional && this.configuration.mode === 'drag-race' ? this.crossings(time, next) : [];
     if (!this.group) {
-     const firstUs = Math.min(contacts[0]?.timeUs ?? Infinity, ...finishes.map(finish => finish.timeUs));
+     const deadlineUs = 'timeLimit' in g ? canonicalTime(g.timeLimit) : Infinity;
+     const deadline = !provisional && this.configuration.mode === 'road-rage' && canonicalTime(next) >= deadlineUs ? deadlineUs : Infinity;
+     const firstUs = Math.min(contacts[0]?.timeUs ?? Infinity, ...finishes.map(finish => finish.timeUs), deadline);
      if (firstUs !== Infinity) {
       const boundary = Math.round(firstUs * g.tickRate / 1e6) / g.tickRate;
       this.group = { timeUs: firstUs, sampleTime: canonicalTime(boundary) === firstUs ? boundary : firstUs / 1e6, contacts: [], finishMask: 0 };
@@ -256,11 +258,12 @@ export class Multiplayer {
      this.cars.forEach((car, seat) => Object.assign(car, { progress: group.sample![seat].progress, lateral: car.phase === group.sample![seat].phase && car.movementStartUs === group.sample![seat].movementStartUs ? group.sample![seat].lateral : car.phase === 0 ? car.movementTarget : car.movementOrigin, normalSpeed: group.sample![seat].normalSpeed }));
      if (group.contacts.length) this.resolveObjects(group.contacts.sort((a, b) => a.object.id - b.object.id || a.seat - b.seat), events, group.timeUs);
      const deadMask = this.cars.reduce((mask, car, seat) => mask | (car.hp === 0 ? 1 << seat : 0), 0);
-     if (!provisional && (deadMask || group.finishMask)) {
+     const deadline = 'timeLimit' in g && group.timeUs === canonicalTime(g.timeLimit);
+     if (!provisional && (deadMask || group.finishMask || deadline)) {
       this.tick = Math.ceil(group.timeUs * g.tickRate / 1e6);
-      const result = deadMask ? deadMask === 1 ? 1 : deadMask === 2 ? 0 : 2 : group.finishMask === 1 ? 0 : group.finishMask === 2 ? 1 : 2;
-      if (!deadMask) this.cars.forEach((car, seat) => { if (group.finishMask & (1 << seat)) car.progress = this.context.gameplay.finishDistance - g.carHeight / 2; });
-      this.finish = { tick: this.tick, timeUs: group.timeUs, result, reason: deadMask ? 1 : 0 };
+      const result = deadMask ? deadMask === 1 ? 1 : deadMask === 2 ? 0 : 2 : deadline ? this.cars[0].hp > this.cars[1].hp ? 0 : this.cars[1].hp > this.cars[0].hp ? 1 : 2 : group.finishMask === 1 ? 0 : group.finishMask === 2 ? 1 : 2;
+      if (!deadMask && !deadline) this.cars.forEach((car, seat) => { if (group.finishMask & (1 << seat)) car.progress = this.context.gameplay.finishDistance - g.carHeight / 2; });
+      this.finish = { tick: this.tick, timeUs: group.timeUs, result, reason: deadMask ? 1 : deadline ? 2 : 0 };
       this.group = undefined; this.committed = undefined;
       return events;
      }
@@ -355,7 +358,6 @@ export class Multiplayer {
  /** Intersect monotone longitudinal overlap and linear lateral overlap. Bisection
   * uses the integrated speed ramp, so acceleration cannot tunnel through objects. */
  private objectContacts(start: number, end: number) {
-  if (this.configuration.mode !== 'drag-race') return [];
   const g = this.configuration.gameplay;
   const contacts: { object: ObjectState; seat: number; timeUs: number }[] = [];
   for (const object of this.objects()) for (let seat = 0; seat < 2; seat++) {
@@ -398,14 +400,18 @@ export class Multiplayer {
   for (const object of objects.values()) {
    const kind = object.flags & 3;
    const seats = contacts.filter(c => c.object.id === object.id).map(c => c.seat);
-   if (kind === 2) for (const seat of seats) { object.flags |= 8 << seat; damage[seat] += g.obstacleDamage; }
+   if (kind === 2) for (const seat of seats) { object.flags |= 8 << seat; damage[seat] = this.configuration.mode === 'road-rage' ? Math.max(damage[seat], g.obstacleDamage) : damage[seat] + g.obstacleDamage; }
    else {
     object.flags |= 4;
     if (seats.length === 1) { const car = this.cars[seats[0]]; if (kind === 3) car.hp = Math.min(g.maxHealth, car.hp + 1); else car.score += 10; }
    }
    this.consumption.set(object.id, object.flags & 28);
   }
-  this.cars.forEach((car, seat) => { car.hp = Math.max(0, car.hp - damage[seat]); });
+  this.cars.forEach((car, seat) => {
+   if (this.configuration.mode === 'road-rage' && car.protectionUs > timeUs) return;
+   car.hp = Math.max(0, car.hp - damage[seat]);
+   if (this.configuration.mode === 'road-rage' && damage[seat] > 0) car.protectionUs = timeUs + canonicalTime(g.invincibleDuration);
+  });
   events.push({ type: 'objects', tick: this.tick, timeUs, objects: [...objects.values()], cars: this.cars.map(car => ({ ...car })) });
  }
  private forwardDistance(start: number, elapsed: number) {

@@ -47,7 +47,7 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 	if r.phase != 2 || r.outcome != nil {
 		return
 	}
-	if r.engine != nil && r.mode == 1 {
+	if r.engine != nil {
 		elapsed := uint64(0)
 		if cutoffUs > r.startUs {
 			elapsed = cutoffUs - r.startUs
@@ -81,7 +81,7 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 			reason = 6
 		}
 	}
-	if r.mode != 1 {
+	if r.engine == nil {
 		r.zero.TimeUs = cutoffUs - min(cutoffUs, r.startUs)
 	}
 	s.finalizeRaceLocked(r, result, reason, r.zero.Tick, r.zero.TimeUs)
@@ -91,7 +91,7 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 func (s *Server) advanceRacesLocked() []*room {
 	var changed []*room
 	for _, r := range s.rooms {
-		if r.phase != 2 || r.mode != 1 || r.engine == nil {
+		if r.phase != 2 || r.engine == nil {
 			continue
 		}
 		targetUs := s.nowUs()

@@ -367,3 +367,17 @@ test('canonical group sample preserves the blocked segment before lateral cleara
   expect(state.cars[0].progress).toBeCloseTo(333.33304 + 400 / 60, 6);
   expect(state.cars.map(car => car.hp)).toEqual([0, 2]);
 });
+
+test('Road Rage deadline prediction waits for authority and accepts fresh controls', () => {
+  const config = captureConfiguration('road-rage', { gameplay: { timeLimit: .05, obstacleWeight: 0, emptyWeight: 1 } });
+  const b = initialBaseline(configurationContext(config, 1, 1000000));
+  b.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
+  const race = new RaceSession(b);
+  expect(race.frame(100000, 0)).toMatchObject({ awaiting: true, outcome: undefined });
+  race.input({ identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 3, heldMask: 4 }, 100000);
+  expect(race.frame(200000, 0).cars[0].effective).toBe(3);
+  const outcome: Outcome = { identity: b.identity, roundId: b.round.roundId, outcomeId: 1, tick: 3, timeUs: 50000, result: 2, reason: 2,
+    cars: b.cars.map(c => ({ progress: 20, lateral: c.lateral, hp: 3, score: 0 })), progress: b.progress };
+  race.finish(outcome);
+  expect(race.frame(300000, 0)).toMatchObject({ outcome, awaiting: false, timeUs: 50000 });
+});

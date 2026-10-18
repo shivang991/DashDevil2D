@@ -529,6 +529,11 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				for _, finish := range finishes {
 					first = min(first, finish.timeUs)
 				}
+				deadlineUs, _ := CanonicalTime(g.TimeLimit)
+				nextUs, _ := CanonicalTime(next)
+				if e.context.Mode == 2 && nextUs >= deadlineUs && (!stopping || deadlineUs <= stopUs) {
+					first = min(first, deadlineUs)
+				}
 				if first != math.MaxUint64 {
 					boundary := math.Round(float64(first)*g.TickRate/1e6) / g.TickRate
 					boundaryUs, _ := CanonicalTime(boundary)
@@ -623,7 +628,9 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 						deadMask |= 1 << seat
 					}
 				}
-				if deadMask != 0 || group.finishMask != 0 {
+				deadlineUs, _ := CanonicalTime(g.TimeLimit)
+				deadline := e.context.Mode == 2 && group.timeUs == deadlineUs
+				if deadMask != 0 || group.finishMask != 0 || deadline {
 					result, reason := uint8(2), uint8(0)
 					if deadMask != 0 {
 						reason = 1
@@ -632,6 +639,14 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 						}
 						if deadMask == 2 {
 							result = 0
+						}
+					} else if deadline {
+						reason = 2
+						if e.state.Cars[0].Hp > e.state.Cars[1].Hp {
+							result = 0
+						}
+						if e.state.Cars[1].Hp > e.state.Cars[0].Hp {
+							result = 1
 						}
 					} else {
 						if group.finishMask == 1 {

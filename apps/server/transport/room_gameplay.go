@@ -244,7 +244,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				copy.Identity = pair.identity
 				outcome = &copy
 			}
-			active := r.phase == 2 && r.mode == 1
+			active := r.phase == 2
 			var records []raceRecord
 			current := baseline
 			if r.zero != nil {

@@ -193,7 +193,7 @@ export class RaceSession {
     this.completeSettling(target);
     const feedback = this.feedback; this.feedback = [];
     return { feedback, objects: state.objects, renderedCars, cars: state.cars, timeUs: state.timeUs, outcome: undefined as Outcome | undefined, needsRecovery: state.needsRecovery,
-      awaiting: this.baseline.context.mode === 1 && state.cars.some(c => c.hp === 0 || c.progress + this.configuration.gameplay.carHeight / 2 >= this.baseline.context.gameplay.finishDistance), stale };
+      awaiting: state.cars.some(c => c.hp === 0) || (this.baseline.context.mode === 1 ? state.cars.some(c => c.progress + this.configuration.gameplay.carHeight / 2 >= this.baseline.context.gameplay.finishDistance) : state.timeUs >= this.baseline.context.gameplay.timeLimit * 1e6), stale };
   }
   private completeSettling(target: number) {
     if (this.settlingSince !== undefined && target >= this.settleEndUs) {

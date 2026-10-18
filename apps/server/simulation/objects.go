@@ -40,9 +40,6 @@ func (e *Engine) objects(placements track.PlacementState) []protocol.ObjectState
 // speed bisection preserves chronological contacts under configured acceleration.
 func (e *Engine) objectContacts(start, end float64) []objectContact {
 	contacts := []objectContact{}
-	if e.context.Mode != 1 {
-		return contacts
-	}
 	g := e.context.Gameplay
 	for _, object := range e.currentSnapshot().Objects {
 		for seat, car := range e.state.Cars {
@@ -153,7 +150,11 @@ func (e *Engine) resolveObjects(contacts []objectContact, events *[]Observation,
 		if kind == 2 {
 			for _, seat := range seats {
 				object.Flags |= 8 << seat
-				damage[seat] += uint64(g.ObstacleDamage)
+				if e.context.Mode == 2 {
+					damage[seat] = max(damage[seat], uint64(g.ObstacleDamage))
+				} else {
+					damage[seat] += uint64(g.ObstacleDamage)
+				}
 			}
 		} else {
 			object.Flags |= 4
@@ -171,7 +172,14 @@ func (e *Engine) resolveObjects(contacts []objectContact, events *[]Observation,
 	}
 	for seat := range e.state.Cars {
 		car := &e.state.Cars[seat]
+		if e.context.Mode == 2 && car.ProtectionUs > timeUs {
+			continue
+		}
 		car.Hp = uint32(max(0, int64(car.Hp)-int64(damage[seat])))
+		if e.context.Mode == 2 && damage[seat] > 0 {
+			duration, _ := CanonicalTime(g.InvincibleDuration)
+			car.ProtectionUs = timeUs + duration
+		}
 	}
 	*events = append(*events, Observation{Type: "objects", Tick: e.state.Tick, TimeUs: timeUs, Cars: e.state.Cars, Objects: objects})
 }

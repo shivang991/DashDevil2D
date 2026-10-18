@@ -1,0 +1,8 @@
+{
+  "gameplay": {
+    "timeLimit": 8,
+    "maxHealth": 6,
+    "sliceSpacing": 200,
+    "initialClearDistance": 0
+  }
+}

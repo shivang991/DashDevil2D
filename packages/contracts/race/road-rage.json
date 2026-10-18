@@ -1,0 +1,606 @@
+{
+  "version": 1,
+  "precision": {
+    "absolute": 1e-06,
+    "relative": 1e-12
+  },
+  "scenarios": [
+    {
+      "name": "deadline includes obstacle damage before HP comparison",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1138,
+          "hp": 2
+        },
+        {
+          "hp": 1
+        }
+      ],
+      "overrides": {
+        "gameplay": {
+          "timeLimit": 0.005
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          1,
+          1
+        ],
+        "protectionUs": [
+          2005000,
+          0
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 5000,
+          "result": 2
+        },
+        "reason": 2,
+        "spent": {
+          "4": 10
+        },
+        "progress": [
+          1140,
+          2
+        ]
+      }
+    },
+    {
+      "name": "damage one microsecond after deadline cannot change result",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1137.9996,
+          "hp": 2
+        },
+        {
+          "hp": 1
+        }
+      ],
+      "overrides": {
+        "gameplay": {
+          "timeLimit": 0.005
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          2,
+          1
+        ],
+        "protectionUs": [
+          0,
+          0
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 5000,
+          "result": 0
+        },
+        "reason": 2,
+        "spent": {},
+        "progress": [
+          1139.9996,
+          2
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "fatal deadline damage takes precedence over HP comparison",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1138,
+          "hp": 1
+        },
+        {
+          "hp": 2
+        }
+      ],
+      "overrides": {
+        "gameplay": {
+          "timeLimit": 0.005
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          0,
+          2
+        ],
+        "protectionUs": [
+          2005000,
+          0
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 5000,
+          "result": 1
+        },
+        "reason": 1,
+        "spent": {
+          "4": 10
+        },
+        "progress": [
+          1140,
+          2
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "protected contact is spent separately for both players",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1138,
+          "protectionUs": 6000
+        },
+        {
+          "progress": 1000,
+          "lane": 0,
+          "lateral": -120
+        }
+      ],
+      "overrides": {
+        "gameplay": {}
+      },
+      "advance": 0.4,
+      "expected": {
+        "hp": [
+          3,
+          2
+        ],
+        "protectionUs": [
+          6000,
+          2350000
+        ],
+        "finish": null,
+        "reason": null,
+        "spent": {
+          "4": 26
+        },
+        "progress": [
+          1298,
+          1160
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "hit exactly at protection expiry applies",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1138,
+          "protectionUs": 5000
+        },
+        {}
+      ],
+      "overrides": {
+        "gameplay": {}
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          2,
+          3
+        ],
+        "protectionUs": [
+          2005000,
+          0
+        ],
+        "finish": null,
+        "reason": null,
+        "spent": {
+          "4": 10
+        },
+        "progress": [
+          1158,
+          20
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "hit one microsecond before protection expiry is spent",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1138,
+          "protectionUs": 5001
+        },
+        {}
+      ],
+      "overrides": {
+        "gameplay": {}
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          3,
+          3
+        ],
+        "protectionUs": [
+          5001,
+          0
+        ],
+        "finish": null,
+        "reason": null,
+        "spent": {
+          "4": 10
+        },
+        "progress": [
+          1158,
+          20
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "simultaneous obstacles remove only one configured damage amount",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1800
+        },
+        {}
+      ],
+      "overrides": {
+        "gameplay": {
+          "carHeight": 2500
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          2,
+          3
+        ],
+        "protectionUs": [
+          2000000,
+          0
+        ],
+        "finish": null,
+        "reason": null,
+        "spent": {
+          "4": 10,
+          "13": 10
+        },
+        "progress": [
+          1820,
+          20
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "deadline healing precedes simultaneous damage",
+      "seed": 4,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1400,
+          "lateral": 0,
+          "lane": 1,
+          "departure": 1,
+          "target": 0,
+          "phase": 1,
+          "movementOrigin": 0,
+          "movementTarget": -120,
+          "movementStartUs": 0,
+          "movementEndUs": 150000,
+          "hp": 1
+        },
+        {
+          "hp": 1
+        }
+      ],
+      "overrides": {
+        "gameplay": {
+          "carHeight": 900,
+          "carWidth": 40,
+          "heartSize": 40,
+          "obstacleW": 40,
+          "obstacleH": 40,
+          "heartWeight": 1,
+          "timeLimit": 0.1
+        }
+      },
+      "advance": 0.15,
+      "expected": {
+        "hp": [
+          1,
+          1
+        ],
+        "protectionUs": [
+          2100000,
+          0
+        ],
+        "finish": {
+          "tick": 6,
+          "timeUs": 100000,
+          "result": 2
+        },
+        "reason": 2,
+        "spent": {
+          "4": 10,
+          "7": 7
+        },
+        "progress": [
+          1440,
+          40
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "zero protection still aggregates simultaneous obstacles once",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1800
+        },
+        {}
+      ],
+      "overrides": {
+        "gameplay": {
+          "carHeight": 2500,
+          "invincibleDuration": 0
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          2,
+          3
+        ],
+        "protectionUs": [
+          0,
+          0
+        ],
+        "finish": null,
+        "reason": null,
+        "spent": {
+          "4": 10,
+          "13": 10
+        },
+        "progress": [
+          1820,
+          20
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "deadline winner can be either seat",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "hp": 1
+        },
+        {
+          "hp": 2
+        }
+      ],
+      "overrides": {
+        "gameplay": {
+          "timeLimit": 0.005
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          1,
+          2
+        ],
+        "protectionUs": [
+          0,
+          0
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 5000,
+          "result": 1
+        },
+        "reason": 2,
+        "spent": {},
+        "progress": [
+          2,
+          2
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "deadline between tick boundaries is canonical",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {},
+        {}
+      ],
+      "overrides": {
+        "gameplay": {
+          "timeLimit": 0.020001
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          3,
+          3
+        ],
+        "protectionUs": [
+          0,
+          0
+        ],
+        "finish": {
+          "tick": 2,
+          "timeUs": 20001,
+          "result": 2
+        },
+        "reason": 2,
+        "spent": {},
+        "progress": [
+          8.0004,
+          8.0004
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "enabled coin score does not decide a deadline tie",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1144
+        },
+        {}
+      ],
+      "overrides": {
+        "gameplay": {
+          "coinWeight": 1,
+          "obstacleWeight": 0,
+          "timeLimit": 0.005
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          3,
+          3
+        ],
+        "protectionUs": [
+          0,
+          0
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 5000,
+          "result": 2
+        },
+        "reason": 2,
+        "spent": {
+          "4": 5
+        },
+        "progress": [
+          1146,
+          2
+        ],
+        "score": [
+          10,
+          0
+        ]
+      }
+    },
+    {
+      "name": "enabled heart heals before deadline HP comparison",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 1144,
+          "hp": 1
+        },
+        {
+          "hp": 1
+        }
+      ],
+      "overrides": {
+        "gameplay": {
+          "heartWeight": 1,
+          "obstacleWeight": 0,
+          "timeLimit": 0.005
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          2,
+          1
+        ],
+        "protectionUs": [
+          0,
+          0
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 5000,
+          "result": 0
+        },
+        "reason": 2,
+        "spent": {
+          "4": 7
+        },
+        "progress": [
+          1146,
+          2
+        ],
+        "score": null
+      }
+    },
+    {
+      "name": "both fatal obstacles at deadline tie by zero HP precedence",
+      "seed": 1,
+      "tick": 0,
+      "cars": [
+        {
+          "progress": 928,
+          "hp": 1
+        },
+        {
+          "progress": 1328,
+          "hp": 1,
+          "lane": 1,
+          "lateral": 0
+        }
+      ],
+      "overrides": {
+        "gameplay": {
+          "carHeight": 500,
+          "timeLimit": 0.005
+        }
+      },
+      "advance": 0.05,
+      "expected": {
+        "hp": [
+          0,
+          0
+        ],
+        "score": null,
+        "protectionUs": [
+          2005000,
+          2005000
+        ],
+        "finish": {
+          "tick": 1,
+          "timeUs": 5000,
+          "result": 2
+        },
+        "reason": 1,
+        "spent": {
+          "4": 10,
+          "8": 18
+        },
+        "progress": [
+          930,
+          1330
+        ]
+      }
+    }
+  ]
+}

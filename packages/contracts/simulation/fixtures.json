@@ -1066,7 +1066,12 @@
       "name": "independent windows avoid retaining empty separation span",
       "mode": "road-rage",
       "seed": 1,
-      "overrides": {},
+      "overrides": {
+        "gameplay": {
+          "obstacleWeight": 0,
+          "emptyWeight": 1
+        }
+      },
       "steps": [
         {
           "at": 0,
@@ -1468,7 +1473,7 @@
           8400,
           8800
         ],
-        "derivation": "Ten seconds at 800/400 gives 8000/4000. Each car retains 40 car-half +20 obstacle-half behind, and 800+60 ahead. 400-unit anchors in those two windows are exactly the six listed; no placement is stored in the 3200-unit gap. Refreshes each .5s preserve NOS without fresh history."
+        "derivation": "Ten seconds at 800/400 gives 8000/4000. Each car retains 40 car-half +20 obstacle-half behind, and 800+60 ahead. 400-unit anchors in those two windows are exactly the six listed; no placement is stored in the 3200-unit gap. Refreshes each .5s preserve NOS without fresh history. Track-only isolation now explicitly uses empty cells; Road Rage obstacle interactions are independently covered by race/road-rage.json. Placement draws and coverage anchors remain unchanged."
       }
     }
   ],

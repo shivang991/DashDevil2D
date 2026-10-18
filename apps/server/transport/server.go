@@ -41,6 +41,7 @@ type Config struct {
 	CodeStart                                                                    func() (uint16, error) // nil uses cryptographic randomness
 	Diagnostic                                                                   bool
 	DragRaceOverrides                                                            []byte
+	RoadRageOverrides                                                            []byte
 }
 type Server struct {
 	draining      bool
@@ -113,6 +114,12 @@ func New(config Config) (*Server, error) {
 		}
 	}
 	config.DragRaceOverrides = append([]byte(nil), config.DragRaceOverrides...)
+	if len(config.RoadRageOverrides) > 0 {
+		if _, err := configuration.Capture([]byte(p.DefaultConfigurationJSON), "road-rage", config.RoadRageOverrides); err != nil {
+			return nil, err
+		}
+	}
+	config.RoadRageOverrides = append([]byte(nil), config.RoadRageOverrides...)
 	u, err := url.Parse(config.Origin)
 	if err != nil || u.Scheme != "https" || u.Host == "" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
 		return nil, errors.New("one explicit HTTPS website origin is required")
@@ -569,6 +576,9 @@ func (s *Server) sweep() {
 func (s *Server) roundOverrides(mode uint8) []byte {
 	if mode == 1 {
 		return s.config.DragRaceOverrides
+	}
+	if mode == 2 {
+		return s.config.RoadRageOverrides
 	}
 	return nil
 }

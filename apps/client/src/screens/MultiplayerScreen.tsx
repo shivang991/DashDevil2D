@@ -51,7 +51,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
   const finalized = Boolean(state?.outcome && state.outcome.roundId === room?.roundId);
   const countdown = room?.phase === 1 && !finalized;
   const active = room?.phase === 2;
-  const race = (active || room?.phase === 3 || finalized && room?.phase !== 0) && room?.mode === 1;
+  const race = (active || room?.phase === 3 || finalized && room?.phase !== 0) && (room?.mode === 1 || room?.mode === 2);
   const installed = room && state?.roundId === room.roundId && state?.startUs === room.startUs;
   const remaining = room ? Math.max(1, Math.min(3, Math.ceil((room.startUs - (clock + (state?.clockOffsetUs ?? 0))) / 1e6))) : 3;
   const inRoom = Boolean(room && state?.identity && state.status !== 'Disconnected');
@@ -63,7 +63,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
     }
   }}>
     <section className="w-full max-w-lg flex flex-col gap-5 py-10">
-      <h1 className="text-2xl font-heading">{inRoom ? race ? 'Drag Race' : active ? 'Round ready' : countdown ? 'Starting round' : 'Private room' : modeName(mode)}</h1>
+      <h1 className="text-2xl font-heading">{inRoom ? race ? modeName(room!.mode) : active ? 'Round ready' : countdown ? 'Starting round' : 'Private room' : modeName(mode)}</h1>
       {!race && <p className="text-neutral-400">{localName()}</p>}
       {!inRoom ? <>
         <p>Create a private room or join a friend.</p>
