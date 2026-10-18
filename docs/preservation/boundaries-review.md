@@ -57,3 +57,11 @@ Repair `77fa1a5` makes only the public diagnostic total cumulative across verifi
 The public encoded-frame regression proves: an epoch-1 match is counted before a delayed acknowledgement completes; installing epoch 2 preserves the total; a matching epoch-2 comparison increments it; duplicate/obsolete-epoch datagrams do not increment; a CRC mismatch requests another recovery without incrementing. The actual diagnostic red is `verified-total-red-04.log`; preceding attempts exposed missing fixture coverage and are retained as setup failures.
 
 Both independent reviewers report zero remaining findings through `77fa1a5`. The browser assertions were not weakened.
+
+## Recovered-generation watermark follow-up
+
+The recovering diagnostic assertion passed after the counter repair. A later frozen delayed-authority run exposed `Coverage history unavailable`: the server rebased processed/disposed input watermarks when a release/reset event changed a car's input generation, but the client installed the new car while retaining its previous sequence-space watermarks.
+
+The public encoded transport regression reproduces the exact error without browser timing: remote generation 1 with watermarks 7 receives a generation-2 reset with lastInput 0; local watermarks remain 3; following Coverage and Barrier carry those authoritative values. Repair `e42f322` rebases only masked seats whose generation changed, before replacing cars. The regression and existing RaceSession suite pass (47 focused tests), without relaxing Coverage equality or browser assertions.
+
+Both independent reviews confirm matching producer/consumer semantics and zero remaining findings in this repair. Original frozen browser failure, deterministic red and green evidence are retained.
