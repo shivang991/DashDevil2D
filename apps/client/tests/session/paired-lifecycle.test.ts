@@ -1,8 +1,9 @@
 import { afterEach, expect, test, vi } from 'vitest';
 import { PairedConnection } from '../../src/transport/PairedConnection';
 import { captureConfiguration } from '@dashdevil/simulation/config';
-import { configurationContext } from '@dashdevil/contracts/validation';
-import { encodeMessage, protocolVersion, type Admission, type RoomState } from '@dashdevil/contracts/protocol';
+import { configurationContext, initialBaseline } from '@dashdevil/contracts/validation';
+import { crc32c } from '@dashdevil/contracts/wire';
+import { encodeBaseline, encodeVerification, projectBaseline, decodeMessage, encodeMessage, protocolVersion, type Admission, type RoomState } from '@dashdevil/contracts/protocol';
 
 const identity = { roomId: 1, seatSession: 2, pairGeneration: 1, seat: 0 };
 class RoomSocket {
@@ -19,15 +20,19 @@ class RoomSocket {
 class Gameplay {
   static instances: Gameplay[] = [];
   control!: ReadableStreamDefaultController<Uint8Array>;
+  authority!: ReadableStreamDefaultController<ReadableStream<Uint8Array>>;
+  verification!: ReadableStreamDefaultController<Uint8Array>;
+  controlWrite?: (bytes: Uint8Array) => void | Promise<void>;
+  verificationStream = new ReadableStream<Uint8Array>({ start: controller => { this.verification = controller; } });
   inputStream?: Promise<WritableStream<Uint8Array>>;
   inputWrites: Uint8Array[] = [];
   inputCalls = 0;
   constructor() { Gameplay.instances.push(this); }
   ready = Promise.resolve();
   closed = new Promise<never>(() => {});
-  incomingUnidirectionalStreams = new ReadableStream<ReadableStream<Uint8Array>>();
-  get datagrams() { return { maxDatagramSize: 1200, readable: new ReadableStream<Uint8Array>() }; }
-  createBidirectionalStream() { return Promise.resolve({ readable: new ReadableStream<Uint8Array>({ start: controller => { this.control = controller; } }), writable: new WritableStream<Uint8Array>() }); }
+  incomingUnidirectionalStreams = new ReadableStream<ReadableStream<Uint8Array>>({ start: controller => { this.authority = controller; } });
+  get datagrams() { return { maxDatagramSize: 1200, readable: this.verificationStream }; }
+  createBidirectionalStream() { return Promise.resolve({ readable: new ReadableStream<Uint8Array>({ start: controller => { this.control = controller; } }), writable: new WritableStream<Uint8Array>({ write: bytes => this.controlWrite?.(bytes) }) }); }
   createUnidirectionalStream() { this.inputCalls++; return this.inputStream ?? Promise.resolve(new WritableStream<Uint8Array>({ write: bytes => { this.inputWrites.push(bytes); } })); }
   close() {}
 }
@@ -88,4 +93,59 @@ test('a delayed input stream from a superseded pair cannot capture inputs for th
     await vi.waitFor(() => expect(current.inputWrites).toHaveLength(2));
     expect(oldWrites).toHaveLength(0);
   } finally { client.dispose(); }
+});
+
+test('verified diagnostics count successful comparisons across recovery epochs, including before a delayed acknowledgement', async () => {
+  vi.useFakeTimers();
+  vi.stubGlobal('WebSocket', RoomSocket); vi.stubGlobal('WebTransport', Gameplay);
+  const admission: Admission = { version: protocolVersion, identity, credential: new Uint8Array(32).fill(1), roomTicket: new Uint8Array(32).fill(2), gameplayTicket: new Uint8Array(32).fill(3), expiresUs: 10000000, origin: location.origin };
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(encodeMessage('Admission', admission) as Uint8Array<ArrayBuffer>, { status: 201 })));
+  const client = new PairedConnection({ server: 'https://localhost:8443', diagnostic: true }, () => {});
+  let releaseAck!: () => void;
+  try {
+    await client.connect(0);
+    const gameplay = Gameplay.instances[0];
+    let authority!: ReadableStreamDefaultController<Uint8Array>;
+    gameplay.authority.enqueue(new ReadableStream<Uint8Array>({ start: controller => { authority = controller; } }));
+    const baseline = initialBaseline(configurationContext(captureConfiguration('drag-race'), 1, 1000000));
+    baseline.identity = identity;
+    baseline.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
+    gameplay.control.enqueue(encodeMessage('Initialization', { identity, round: baseline.round, context: baseline.context }));
+    await vi.waitFor(() => expect(gameplay.inputCalls).toBe(1));
+    const install = (epoch: number) => {
+      baseline.epoch = epoch;
+      const data = encodeBaseline(baseline);
+      authority.enqueue(encodeMessage('BaselineChunk', { identity, round: baseline.round, transferId: epoch, epoch, tick: baseline.tick, progress: baseline.progress, total: data.length, offset: 0, index: 0, count: 1, data }));
+    };
+    install(1);
+    await vi.waitFor(() => expect(client.state.diagnostics.baselineEpochs, JSON.stringify(client.state.errors)).toEqual([1]));
+    const barrier = { identity, round: baseline.round, epoch: 1, tick: 1, timeUs: 16667, progress: baseline.progress };
+    const crc = crc32c(projectBaseline({ ...baseline, tick: 1, timeUs: 16667 }));
+    let blocked = false;
+    gameplay.controlWrite = bytes => {
+      if (decodeMessage(bytes).type === 'AuthorityAck' && !blocked) { blocked = true; return new Promise(resolve => { releaseAck = resolve; }); }
+    };
+    gameplay.verification.enqueue(encodeVerification({ epoch: 1, tick: 1, crc }));
+    authority.enqueue(encodeMessage('Barrier', barrier));
+    await vi.waitFor(() => expect(blocked).toBe(true));
+    expect(client.state.verified).toBe(1);
+    releaseAck(); gameplay.controlWrite = undefined;
+    client.requestBaseline();
+    baseline.tick = 1; baseline.timeUs = 16667;
+    install(2);
+    await vi.waitFor(() => expect(client.state.diagnostics.baselineEpochs).toEqual([1, 2]));
+    authority.enqueue(encodeMessage('Barrier', { ...barrier, epoch: 2, tick: 2, timeUs: 33333 }));
+    for (let i = 0; i < 10; i++) await Promise.resolve();
+    expect(client.state.verified).toBe(1);
+    const crc2 = crc32c(projectBaseline({ ...baseline, tick: 2, timeUs: 33333 }));
+    gameplay.verification.enqueue(encodeVerification({ epoch: 2, tick: 2, crc: crc2 }));
+    await vi.waitFor(() => expect(client.state.verified).toBe(2));
+    gameplay.verification.enqueue(encodeVerification({ epoch: 2, tick: 2, crc: crc2 }));
+    gameplay.verification.enqueue(encodeVerification({ epoch: 1, tick: 2, crc }));
+    authority.enqueue(encodeMessage('Barrier', { ...barrier, epoch: 2, tick: 3, timeUs: 50000 }));
+    const crc3 = crc32c(projectBaseline({ ...baseline, tick: 3, timeUs: 50000 }));
+    gameplay.verification.enqueue(encodeVerification({ epoch: 2, tick: 3, crc: (crc3 ^ 1) >>> 0 }));
+    await vi.waitFor(() => expect(client.state.diagnostics.recoveryRequests).toBe(2));
+    expect(client.state.verified).toBe(2);
+  } finally { releaseAck?.(); client.dispose(); }
 });

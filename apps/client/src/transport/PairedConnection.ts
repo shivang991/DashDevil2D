@@ -49,6 +49,8 @@ export class PairedConnection {
   private clocks = new Map<number, number>();
   private samples: { rtt: number; offset: number }[] = [];
   private verification?: RaceVerification;
+  // Diagnostic total survives epoch replacement; CRC history remains epoch-local.
+  private verifiedEpochBase = 0;
   private queuedBytes = 0;
   private queuedMessages = 0;
   private restoredAt = 0;
@@ -101,7 +103,7 @@ export class PairedConnection {
     this.timers.forEach(clearInterval); this.timers = [];
     this.socket?.close(); this.gameplay?.close(); this.socket = undefined; this.gameplay = undefined;
     this.control = undefined; this.inputs = undefined; this.transfer?.cancel(); this.transfer = undefined;
-    this.earlyChunks = []; this.baseline = undefined; this.context = undefined; this.recoveryOutstanding = false; this.verification = undefined; this.clocks.clear(); this.samples = [];
+    this.earlyChunks = []; this.baseline = undefined; this.context = undefined; this.recoveryOutstanding = false; this.verification = undefined; this.verifiedEpochBase = 0; this.clocks.clear(); this.samples = [];
     this.queuedBytes = 0; this.queuedMessages = 0;
   }
   async connect(operation: 0 | 1 | 2, code = '', mode: 1 | 2 = 1): Promise<void> {
@@ -265,7 +267,7 @@ export class PairedConnection {
         const baseline = this.transfer.accept(message.value); this.state.baselineBytes += message.value.data.length;
         if (!baseline) break;
         clearTimeout(this.recoveryRequestTimer); this.recoveryRequestTimer = undefined;
-        this.baseline = baseline; this.transfer = undefined; this.recoveryOutstanding = false; this.verification = new RaceVerification(baseline.epoch, baseline.context.gameplay.tickRate, baseline.context.connection.replayHistory); this.lastUsable = performance.now();
+        this.baseline = baseline; this.transfer = undefined; this.recoveryOutstanding = false; this.verifiedEpochBase = this.state.verified; this.verification = new RaceVerification(baseline.epoch, baseline.context.gameplay.tickRate, baseline.context.connection.replayHistory); this.lastUsable = performance.now();
         (this.state.diagnostics.baselineEpochs ??= []).push(baseline.epoch);
         this.state.positions = baseline.cars.map(car => car.progress).join(', ');
         this.state.roundId = baseline.round.roundId; this.state.startUs = baseline.context.startUs;
@@ -386,12 +388,13 @@ export class PairedConnection {
     this.state.objects = b.windows.flatMap(window => window.objects);
     this.state.timeUs = b.timeUs; this.state.cars = structuredClone(b.cars); this.state.positions = b.cars.map(c => c.progress).join(', ');
     const recover = this.verification?.barrier(value.tick, crc32c(projectBaseline(b)));
+    if (this.verification) this.state.verified = this.verifiedEpochBase + this.verification.verified;
     this.lastUsable = performance.now(); this.state.barriers++;
     if (this.state.status === 'Connection warning') this.state.status = 'Connected';
     await this.send('AuthorityAck', { identity: b.identity, round: b.round, epoch: b.epoch, tick: b.tick, progress: b.progress }, generation);
     if (generation !== this.generation) return;
     if (recover) this.requestBaseline();
-    this.state.verified = this.verification?.verified ?? 0; this.publish();
+    this.publish();
   }
   private async readDatagrams(gameplay: WebTransport, generation: number) {
     const reader = gameplay.datagrams.readable.getReader();
@@ -402,7 +405,7 @@ export class PairedConnection {
       const verification = decodeVerification(value);
       if (this.state.outcome) continue;
       if (this.verification?.datagram(verification)) this.requestBaseline();
-      this.state.verified = this.verification?.verified ?? 0; this.publish();
+      if (this.verification) this.state.verified = this.verifiedEpochBase + this.verification.verified; this.publish();
     } } finally { reader.releaseLock(); }
   }
   requestBaseline() {
