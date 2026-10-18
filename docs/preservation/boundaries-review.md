@@ -37,3 +37,13 @@ Standards reviewer `/root/standards_review`: zero actionable findings through `a
 Spec reviewer `/root/spec_review`: zero remaining findings through `ab502fc`; every identified stale-generation continuation gap is repaired, with no additional implementation mismatch or scope creep identified.
 
 Final totals: Standards **0** findings; Spec **0** remaining findings. The original Spec P1 and later independently audited callback gaps remain documented above with their reproductions and repairs.
+
+## Boosted leave-cutoff follow-up
+
+The interrupted final review was retried at the owner's request. It confirmed that queued leave cleared engine NOS before `StopAt` caught up to the departure instant. The public transport regression reproduced the consequence: a legitimate boosted finish at 1500000µs became an opponent forfeit, and final progress was short by 200 units.
+
+Repair `ee3ba3e` immediately revokes admission/input ownership but preserves accepted engine controls through cutoff integration, including the subsequent pair-close callback. `StopAt` owns terminal control cleanup. The preexisting nonterminal disconnect release path remains unchanged; this repair does not claim a new timestamp-aware catch-up design for that path.
+
+The independently reviewed clear-track fixture has 400 units/s normal speed, 2× NOS, car front offset 40 and finish distance 1240. An authoritative disposition confirms the press was accepted at time zero. At 1499999µs, center 1199.9992 remains short of the finish and leaving forfeits; at 1500000µs or one microsecond later, center 1200 yields the gameplay win at 1500000µs. These expectations pass through public real input/outcome streams, with the existing continuous-position tolerance.
+
+Both independent reviewers found zero remaining findings in `7980bbe...ee3ba3e`. The original red, fixture compile error, green regression and subsequent gates remain retained.
