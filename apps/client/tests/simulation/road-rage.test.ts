@@ -16,7 +16,7 @@ for (const scenario of fixtures.scenarios) test(scenario.name, () => {
   expect(state.cars.map(car => car.protectionUs)).toEqual(expected.protectionUs);
   expect(state.finish ?? null).toEqual(expected.finish);
   expect(state.reason ?? null).toBe(expected.reason);
-  for (const [id, flags] of Object.entries(expected.spent)) expect(state.objects.find(object => object.id === Number(id))?.flags).toBe(flags);
+  expect(Object.fromEntries(state.objects.filter(object => object.flags & 28).map(object => [object.id, object.flags]))).toEqual(expected.spent);
   if (expected.progress) state.cars.forEach((car, seat) => expect(Math.abs(car.progress - expected.progress![seat])).toBeLessThanOrEqual(fixtures.precision.absolute + fixtures.precision.relative * Math.abs(expected.progress![seat])));
   if (state.finish) {
     expect(game.submit(ids[0], { identity: ids[0], round: { roundId: 1, inputGeneration: 1 }, sequence: 1, intent: 0, control: 3, heldMask: 4 })).toBe(false);

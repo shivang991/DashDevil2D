@@ -2,12 +2,12 @@ package simulation
 
 import (
 	"encoding/json"
+	"fmt"
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
 	"github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"math"
 	"os"
 	"reflect"
-	"strconv"
 	"testing"
 )
 
@@ -76,19 +76,16 @@ func TestSharedRoadRage(t *testing.T) {
 			if expected.Finish != nil && (state.Finish.Tick != expected.Finish.Tick || state.Finish.TimeUs != expected.Finish.TimeUs || state.Finish.Result != expected.Finish.Result || state.Finish.Reason != *expected.Reason) {
 				t.Fatalf("finish %#v expected %#v reason %d", state.Finish, expected.Finish, *expected.Reason)
 			}
-			for id, flags := range expected.Spent {
-				number, _ := strconv.ParseUint(id, 10, 32)
-				found := false
-				for _, object := range state.Objects {
-					if object.Id == uint32(number) {
-						found = object.Flags == flags
-						break
-					}
-				}
-				if !found {
-					t.Fatalf("object %s expected flags %d", id, flags)
+			spent := map[string]uint8{}
+			for _, object := range state.Objects {
+				if object.Flags&28 != 0 {
+					spent[fmt.Sprint(object.Id)] = object.Flags
 				}
 			}
+			if !reflect.DeepEqual(spent, expected.Spent) {
+				t.Fatalf("spent objects %v expected %v", spent, expected.Spent)
+			}
+
 			if state.Finish != nil {
 				accepted, err := game.Submit(ids[0], protocol.Input{Identity: ids[0], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: 1, Intent: 0, Control: 3, HeldMask: 4})
 				if err != nil || accepted {
