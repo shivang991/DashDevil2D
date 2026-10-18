@@ -46,7 +46,7 @@ func (pair *pair) close(reason string) {
 		s := pair.server
 		s.mu.Lock()
 		if pair.seat.pair == pair && pair.seat.room.seats[pair.seat.index] == pair.seat {
-			s.resolveDeparturesLocked(pair.seat.room, s.nowTime().Add(-time.Microsecond))
+			s.resolveDeparturesLocked(pair.seat.room, s.nowTime())
 			if pair.seat.deadline.IsZero() {
 				pair.seat.deadline = s.nowTime().Add(roomDuration(pair.seat.room, "reconnectGrace"))
 			}
@@ -260,7 +260,7 @@ func (pair *pair) connectIfReady() {
 		pair.close("recovery deadline")
 		return
 	}
-	s.resolveDeparturesLocked(participant.room, s.nowTime().Add(-time.Microsecond))
+	s.resolveDeparturesLocked(participant.room, s.nowTime())
 	participant.connected = true
 	participant.deadline = time.Time{}
 	participant.room.revision++
@@ -289,7 +289,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	}
 	if command.Command == 3 {
 		now := s.nowTime()
-		s.resolveDeparturesLocked(r, now.Add(-time.Microsecond))
+		s.resolveDeparturesLocked(r, now)
 		if r.phase == 2 {
 			// Capture a group, release controls immediately, and resolve it once this
 			// authoritative instant closes. A pre-existing earlier cutoff still wins.

@@ -504,8 +504,8 @@ func (s *Server) expireLocked(now time.Time) []*room {
 			}
 			expired := !participant.deadline.IsZero() && !now.Before(participant.deadline)
 			leaving := !participant.leaving.IsZero()
-			// Keep an active equal-time leave group open until the clock moves on.
-			if r.phase == 2 && leaving && !now.After(participant.leaving) {
+			// Keep every active equal-time departure group open until its instant closes.
+			if r.phase == 2 && !earliestDeparture(r).IsZero() && !now.After(earliestDeparture(r)) {
 				continue
 			}
 			if expired || leaving || idleExpired {

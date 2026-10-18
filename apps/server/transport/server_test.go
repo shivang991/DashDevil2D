@@ -315,6 +315,9 @@ func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a 
 	return observedPair(t, s, roots, a, acknowledge, nil)
 }
 func observedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, acknowledge bool, observe func(any)) (*ws.Conn, *wt.Session) {
+	return pairAtReady(t, s, roots, a, acknowledge, observe, nil, true)
+}
+func pairAtReady(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, acknowledge bool, observe func(any), beforeReady func(), wantConnected bool) (*ws.Conn, *wt.Session) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()
@@ -377,10 +380,22 @@ func observedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.A
 			break
 		}
 	}
-	sendRecord(t, control, p.Ready{Identity: a.Identity, Round: initialization.Round, TransferId: 1, Epoch: chunk.Epoch, Progress: chunk.Progress})
+	if beforeReady != nil {
+		beforeReady()
+	}
+	ready := p.Ready{Identity: a.Identity, Round: initialization.Round, TransferId: 1, Epoch: chunk.Epoch, Progress: chunk.Progress}
+	if wantConnected {
+		sendRecord(t, control, ready)
+	} else {
+		wire, _ := p.EncodeMessage(ready, 65536)
+		_, _ = control.Write(wire)
+	}
 	for {
 		_, wire, err = socket.ReadMessage()
 		if err != nil {
+			if !wantConnected {
+				return socket, session
+			}
 			t.Fatal(err)
 		}
 		value, e := p.DecodeMessage(wire, 65536)
@@ -388,6 +403,9 @@ func observedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.A
 			t.Fatal(e)
 		}
 		if state, ok := value.(p.RoomState); ok && state.Seats[a.Identity.Seat].Flags&1 != 0 {
+			if !wantConnected {
+				t.Fatal("connected at/after grace without timely paired initialization")
+			}
 			break
 		}
 	}

@@ -171,7 +171,7 @@ func (s *Server) resolveDeparturesLocked(r *room, now time.Time) bool {
 		return false
 	}
 	at := earliestDeparture(r)
-	if at.IsZero() || now.Before(at) {
+	if at.IsZero() || !now.After(at) {
 		return false
 	}
 	survivors := -1
@@ -181,9 +181,6 @@ func (s *Server) resolveDeparturesLocked(r *room, now time.Time) bool {
 			continue
 		}
 		if !participant.leaving.IsZero() && participant.leaving.Equal(at) {
-			if !now.After(at) {
-				return false
-			}
 			reason = 3
 		}
 		cutoff := departureAt(participant)

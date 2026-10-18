@@ -156,7 +156,7 @@ func TestGraceExpirySendsCanonicalForfeit(t *testing.T) {
 	f.sockets[1].Close()
 	f.games[1].CloseWithError(1, "disconnect")
 	roomState(t, f.sockets[0], func(r p.RoomState) bool { return r.Seats[1].Flags&4 != 0 })
-	f.advance(2 * time.Second)
+	f.advance(2*time.Second + time.Microsecond)
 	outcome := receiveOutcome(t, f.outcomes[0])
 	if outcome.Result != 0 || outcome.Reason != 4 || outcome.TimeUs != 2000000 {
 		t.Fatalf("grace outcome: %+v", outcome)
@@ -234,7 +234,7 @@ func TestGameplayPrecedesGraceAtCanonicalBoundary(t *testing.T) {
 			f.sockets[1].Close()
 			f.games[1].CloseWithError(1, "disconnect")
 			roomState(t, f.sockets[0], func(r p.RoomState) bool { return r.Seats[1].Flags&4 != 0 })
-			f.advance(scenario.elapsed)
+			f.advance(scenario.elapsed + time.Microsecond)
 			outcome := receiveOutcome(t, f.outcomes[0])
 			if outcome.Result != scenario.result || outcome.Reason != scenario.reason || outcome.TimeUs != scenario.timeUs {
 				t.Fatalf("boundary outcome: %+v", outcome)
@@ -339,6 +339,65 @@ func TestSameInstantExplicitDeparturesReleaseBothSeats(t *testing.T) {
 			status, _ := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: f.code, Name: "Guest"}, origin)
 			if status != 404 {
 				t.Fatalf("empty room still joinable: %d", status)
+			}
+		})
+	}
+}
+
+func TestEqualTimeGraceAndDisconnectAreOrderIndependent(t *testing.T) {
+	for _, expiryFirst := range []bool{true, false} {
+		t.Run(fmt.Sprint(expiryFirst), func(t *testing.T) {
+			f := activeLifecycle(t, `{"room":{"reconnectGrace":2},"operational":{"simulationLagThreshold":10}}`)
+			f.sockets[1].Close()
+			f.games[1].CloseWithError(1, "disconnect")
+			roomState(t, f.sockets[0], func(r p.RoomState) bool { return r.Seats[1].Flags&4 != 0 })
+			f.advance(2 * time.Second)
+			sweepThroughAdmission := func() {
+				admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: make([]byte, 32)}, origin)
+			}
+			if expiryFirst {
+				sweepThroughAdmission()
+			}
+			f.sockets[0].Close()
+			f.games[0].CloseWithError(1, "equal-time disconnect")
+			// Replacement admission synchronously closes the old pair at the same clock
+			// instant, establishing disconnection even if QUIC/WS close delivery is pending.
+			status, value := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: f.admissions[0].Credential}, origin)
+			if status != 201 {
+				t.Fatalf("remaining reservation lost: %d %+v", status, value)
+			}
+			replacement := value.(p.Admission)
+			if !expiryFirst {
+				sweepThroughAdmission()
+			}
+			f.advance(time.Microsecond)
+			outcomes := make(chan p.Outcome, 2)
+			observedPair(t, f.server, f.roots, replacement, true, func(record any) {
+				if outcome, ok := record.(p.Outcome); ok {
+					outcomes <- outcome
+				}
+			})
+			outcome := receiveOutcome(t, outcomes)
+			if outcome.Result != 3 || outcome.Reason != 5 || outcome.TimeUs != 2000000 {
+				t.Fatalf("equal-time order changed result: %+v", outcome)
+			}
+		})
+	}
+}
+
+func TestPairedBaselineAcknowledgementMustPrecedeGrace(t *testing.T) {
+	for _, offset := range []time.Duration{-time.Microsecond, 0, time.Microsecond} {
+		t.Run(offset.String(), func(t *testing.T) {
+			now, advance := lifecycleClock()
+			s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
+			_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
+			a := value.(p.Admission)
+			pairAtReady(t, s, roots, a, false, nil, func() { advance(2*time.Second + offset) }, offset < 0)
+			if offset >= 0 {
+				status, _ := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+				if status != 410 {
+					t.Fatalf("late baseline acknowledgement revived reservation: %d", status)
+				}
 			}
 		})
 	}

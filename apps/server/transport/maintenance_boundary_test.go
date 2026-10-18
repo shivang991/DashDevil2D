@@ -72,7 +72,9 @@ func TestGraceExpiryCannotOvertakePendingFinish(t *testing.T) {
 	}
 	r.seats[1].deadline = s.start.Add(1100 * time.Millisecond)
 	s.rooms[r.code] = r
+	s.mu.Lock()
 	s.expireLocked(time.Now())
+	s.mu.Unlock()
 	if r.outcome == nil || r.outcome.Result != 2 || r.outcome.Reason != 0 || r.outcome.TimeUs != 1000000 {
 		t.Fatalf("expiry overtook pending finish: %+v", r.outcome)
 	}
