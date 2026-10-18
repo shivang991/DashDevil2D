@@ -1,0 +1,31 @@
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO race_finalized room=1 round=2 time_us=2000000 server_us=5000000 result=0 reason=4
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO race_finalized room=1 round=2 time_us=999999 server_us=3999999 result=0 reason=4
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO race_finalized room=1 round=2 time_us=1000000 server_us=4000000 result=2 reason=0
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO race_finalized room=1 round=2 time_us=1000000 server_us=4000001 result=2 reason=0
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:39:25 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:39:25 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:39:28 INFO pair_closed room=1 seat=1 generation=2 reason="room channel lost"
+2026/10/17 19:39:28 INFO gameplay_failure room=1 seat=1 generation=2 reason="pair closed"
+--- FAIL: TestAbandonmentIsRecoverableBeforeRemainingReservationExpires (3.06s)
+    lifecycle_test.go:264: no authoritative outcome
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	3.869s
+FAIL

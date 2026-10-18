@@ -1,0 +1,5 @@
+# github.com/shivang991/DashDevil2D/apps/server/transport_test [github.com/shivang991/DashDevil2D/apps/server/transport.test]
+transport/server_test.go:234:5: undefined: observe
+transport/server_test.go:235:3: undefined: observe
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport [build failed]
+FAIL

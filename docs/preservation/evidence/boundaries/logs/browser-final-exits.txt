@@ -1,0 +1,12 @@
+test:race 0
+test:boundaries 0
+test:transport 0
+test:rooms 0
+test:groups 0
+test:finality 0
+test:objects 0
+test:contacts 0
+test:hearts 0
+test:maintenance 0
+test:lifecycle 0
+test:browser 0

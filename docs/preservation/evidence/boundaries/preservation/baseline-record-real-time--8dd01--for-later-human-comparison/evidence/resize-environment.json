@@ -1,0 +1,11 @@
+{
+  "viewport": {
+    "width": 800,
+    "height": 600
+  },
+  "canvas": {
+    "width": 606,
+    "height": 506
+  },
+  "collisionEquivalence": "not established; #26 owns corrected geometry"
+}

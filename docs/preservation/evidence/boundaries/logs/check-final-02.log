@@ -1,0 +1,181 @@
+
+> dashdevil@ check /Users/shivang/Desktop/programs/test/claude-code-test
+> pnpm check:generated && turbo run typecheck lint test build
+
+
+> dashdevil@ check:generated /Users/shivang/Desktop/programs/test/claude-code-test
+> pnpm --filter @dashdevil/contracts check:generated
+
+
+> @dashdevil/contracts@0.0.0 check:generated /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+> node protocol/generate.mjs --check
+
+• turbo 2.8.19
+
+   • Packages in scope: @dashdevil/client, @dashdevil/contracts, @dashdevil/server, @dashdevil/simulation
+   • Running typecheck, lint, test, build in 4 packages
+   • Remote caching disabled
+
+@dashdevil/contracts:generate: cache hit, replaying logs fcc95c930112ab44
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:generate: > @dashdevil/contracts@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:generate: > node protocol/generate.mjs --target=ts
+@dashdevil/contracts:generate: 
+@dashdevil/contracts:test: cache bypass, force executing cb04faa9af0faa05
+@dashdevil/contracts:typecheck: cache hit, replaying logs 93415fbf344b723f
+@dashdevil/contracts:typecheck: 
+@dashdevil/contracts:typecheck: > @dashdevil/contracts@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:typecheck: > tsc -p tsconfig.json
+@dashdevil/contracts:typecheck: 
+@dashdevil/server:generate: cache miss, executing a13f0a2e9a9e716f
+@dashdevil/contracts:lint: cache hit, replaying logs 896556a89e6046e8
+@dashdevil/contracts:lint: 
+@dashdevil/contracts:lint: > @dashdevil/contracts@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:lint: > eslint .
+@dashdevil/contracts:lint: 
+@dashdevil/simulation:lint: cache hit, replaying logs 2c44dcb844066c7b
+@dashdevil/simulation:lint: 
+@dashdevil/simulation:lint: > @dashdevil/simulation@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:lint: > eslint .
+@dashdevil/simulation:lint: 
+@dashdevil/simulation:typecheck: cache hit, replaying logs 78c4a4558fae90d2
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:typecheck: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:typecheck: > tsc -p tsconfig.json
+@dashdevil/simulation:typecheck: 
+@dashdevil/simulation:build: cache hit, replaying logs 1cb8a5f3f61cd112
+@dashdevil/client:test: cache bypass, force executing c311f5f98a305a21
+@dashdevil/client:typecheck: cache hit, replaying logs 634a786c0f7a5ad1
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > pnpm typecheck
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: 
+@dashdevil/simulation:build: > @dashdevil/simulation@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/packages/simulation
+@dashdevil/simulation:build: > tsc -p tsconfig.json
+@dashdevil/simulation:build: 
+@dashdevil/client:typecheck: 
+@dashdevil/client:typecheck: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:typecheck: > tsc -b
+@dashdevil/client:typecheck: 
+@dashdevil/client:lint: cache hit, replaying logs 5b325841bf30e4a5
+@dashdevil/client:lint: 
+@dashdevil/client:lint: > @dashdevil/client@0.0.0 lint /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:lint: > eslint .
+@dashdevil/client:lint: 
+@dashdevil/client:build: cache hit, replaying logs ea32ac5174cc89e2
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > pnpm typecheck && vite build
+@dashdevil/client:build: 
+@dashdevil/client:build: 
+@dashdevil/client:build: > @dashdevil/client@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:build: > tsc -b
+@dashdevil/client:build: 
+@dashdevil/client:build: vite v7.3.1 building client environment for production...
+@dashdevil/client:build: (node:38803) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+@dashdevil/client:build: (Use `node --trace-deprecation ...` to show where the warning was created)
+@dashdevil/client:build: transforming...
+@dashdevil/client:build: ✓ 1759 modules transformed.
+@dashdevil/client:build: rendering chunks...
+@dashdevil/client:build: computing gzip size...
+@dashdevil/client:build: dist/index.html                                                  0.54 kB │ gzip:  0.33 kB
+@dashdevil/client:build: dist/transport.html                                              1.92 kB │ gzip:  0.87 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-BKRTx50S.woff      8.01 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-ext-wght-normal-BKihR4CZ.woff2    8.87 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-ext-400-normal-DoFJSI0R.woff2     9.30 kB
+@dashdevil/client:build: dist/assets/bitcount-ink-latin-wght-normal-BudczbaH.woff2       10.30 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-Dh0jW_6n.woff         13.91 kB
+@dashdevil/client:build: dist/assets/bruno-ace-sc-latin-400-normal-D7DxpFcE.woff2        15.51 kB
+@dashdevil/client:build: dist/assets/transport-CMJqIDQr.css                               0.70 kB │ gzip:  0.42 kB
+@dashdevil/client:build: dist/assets/main-7hTW_quI.css                                   27.58 kB │ gzip:  5.88 kB
+@dashdevil/client:build: dist/assets/transport-De2nUfZs.js                                1.26 kB │ gzip:  0.55 kB
+@dashdevil/client:build: dist/assets/PairedConnection-H5yVXImp.js                        93.83 kB │ gzip: 26.14 kB
+@dashdevil/client:build: dist/assets/main-C4dLy0mj.js                                   242.78 kB │ gzip: 76.09 kB
+@dashdevil/client:build: ✓ built in 1.10s
+@dashdevil/server:generate: 
+@dashdevil/server:generate: > @dashdevil/server@0.0.0 generate /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:generate: > node ../../packages/contracts/protocol/generate.mjs --target=go
+@dashdevil/server:generate: 
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > pnpm check:generated
+@dashdevil/contracts:test: 
+@dashdevil/client:test: 
+@dashdevil/client:test: > @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:test: > vitest run
+@dashdevil/client:test: 
+@dashdevil/server:test: cache bypass, force executing d6eeaaed4fbcb367
+@dashdevil/server:typecheck: cache miss, executing 01769216b92b9bca
+@dashdevil/contracts:test: 
+@dashdevil/contracts:test: > @dashdevil/contracts@0.0.0 check:generated /Users/shivang/Desktop/programs/test/claude-code-test/packages/contracts
+@dashdevil/contracts:test: > node protocol/generate.mjs --check
+@dashdevil/contracts:test: 
+@dashdevil/server:typecheck: 
+@dashdevil/server:typecheck: > @dashdevil/server@0.0.0 typecheck /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:typecheck: > go vet ./...
+@dashdevil/server:typecheck: 
+@dashdevil/server:test: 
+@dashdevil/server:test: > @dashdevil/server@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:test: > go test -count=1 ./...
+@dashdevil/server:test: 
+@dashdevil/client:test: 
+@dashdevil/client:test:  RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+@dashdevil/client:test: 
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server	[no test files]
+@dashdevil/client:test:  ✓ tests/simulation/multiplayer.test.ts (41 tests) 80ms
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server/cmd/devcert	[no test files]
+@dashdevil/client:test:  ✓ tests/simulation/track.test.ts (12 tests) 445ms
+@dashdevil/client:test:  ✓ tests/session/race.test.ts (43 tests) 857ms
+@dashdevil/client:test:  ✓ tests/simulation/objects.test.ts (20 tests) 191ms
+@dashdevil/client:test:  ✓ tests/simulation/contacts.test.ts (15 tests) 174ms
+@dashdevil/client:test:  ✓ tests/simulation/configuration.test.ts (52 tests) 125ms
+@dashdevil/client:test:  ✓ tests/simulation/longDrive.test.ts (15 tests) 215ms
+@dashdevil/server:build: cache miss, executing c33328ed3e3ea100
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server/cmd/diagnostic	[no test files]
+@dashdevil/client:test:  ✓ tests/simulation/geometry.test.ts (2 tests) 4ms
+@dashdevil/server:build: 
+@dashdevil/server:build: > @dashdevil/server@0.0.0 build /Users/shivang/Desktop/programs/test/claude-code-test/apps/server
+@dashdevil/server:build: > go build -buildvcs=false ./...
+@dashdevil/server:build: 
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/configuration	0.340s
+@dashdevil/server:test: ?   	github.com/shivang991/DashDevil2D/apps/server/operations	[no test files]
+@dashdevil/client:test:  ✓ tests/simulation/protocol.test.ts (78 tests) 333ms
+@dashdevil/client:test:  ✓ tests/session/verification.test.ts (3 tests) 2ms
+@dashdevil/client:test: stdout | tests/preservation/retained.test.tsx > 30 FPS: nonfatal protection expires within 50 ms
+@dashdevil/client:test: First invincibility expiry: 30 FPS, 1966.666667 ms active time after damage
+@dashdevil/client:test: 
+@dashdevil/client:test: stdout | tests/preservation/retained.test.tsx > 60 FPS: nonfatal protection expires within 50 ms
+@dashdevil/client:test: First invincibility expiry: 60 FPS, 1983.333333 ms active time after damage
+@dashdevil/client:test: 
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/protocol	1.031s
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/simulation	0.786s
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/track	0.545s
+@dashdevil/client:test: stdout | tests/preservation/retained.test.tsx > 120 FPS: nonfatal protection expires within 50 ms
+@dashdevil/client:test: First invincibility expiry: 120 FPS, 1991.666667 ms active time after damage
+@dashdevil/client:test: 
+@dashdevil/client:test:  ✓ tests/preservation/retained.test.tsx (48 tests) 1099ms
+@dashdevil/client:test:    ✓ 30 FPS: reset gives three-second stationary countdown within 50 ms 465ms
+@dashdevil/client:test:  ✓ tests/preservation/capture.test.tsx (2 tests) 884ms
+@dashdevil/client:test:    ✓ capture result keeps earlier runs and identifies the actual tested source and bytes 420ms
+@dashdevil/client:test:    ✓ capture provenance accepts a dirty asset patch larger than the process stdout buffer 463ms
+@dashdevil/client:test:  ✓ tests/session/session.test.ts (17 tests) 841ms
+@dashdevil/client:test:    ✓ independent sessions keep countdown, pause and reset state separate 541ms
+@dashdevil/client:test:  ✓ tests/session/paired-lifecycle.test.ts (1 test) 14ms
+@dashdevil/client:test:  ✓ tests/simulation/audio.test.ts (2 tests) 6ms
+@dashdevil/client:test: 
+@dashdevil/client:test:  Test Files  15 passed (15)
+@dashdevil/client:test:       Tests  351 passed (351)
+@dashdevil/client:test:    Start at  19:43:30
+@dashdevil/client:test:    Duration  4.75s (environment 69%, tests 24%, import 5%, transform 1%, worker 1%)
+@dashdevil/client:test: 
+@dashdevil/client:test: Environment  jsdom was created 15 times · 15.18s total, 69% of tracked time
+@dashdevil/client:test:              create it once per worker with pool: 'vmThreads' (keeps per-file isolation) or isolate: false (shares it across files)
+@dashdevil/client:test:              learn more: https://vitest.dev/guide/improving-performance#test-environments
+@dashdevil/client:test: 
+@dashdevil/server:test: ok  	github.com/shivang991/DashDevil2D/apps/server/transport	34.719s
+
+ Tasks:    15 successful, 15 total
+Cached:    9 cached, 15 total
+  Time:    40.683s 
+

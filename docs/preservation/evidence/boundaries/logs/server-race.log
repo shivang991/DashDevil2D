@@ -1,0 +1,193 @@
+2026/10/17 19:41:47 INFO race_finalized room=1 round=1 time_us=50000 server_us=100062 result=3 reason=7
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:41:47 INFO race_finalized room=1 round=1 time_us=1000000 server_us=1200042 result=2 reason=0
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=1 generation=1 reason="Reconnect grace expired"
+==================
+WARNING: DATA RACE
+Read at 0x00c0001d9770 by goroutine 21:
+  github.com/shivang991/DashDevil2D/apps/server/transport.(*Server).broadcast()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/pair.go:116 +0x21c
+  github.com/shivang991/DashDevil2D/apps/server/transport.(*Server).expireLocked.gowrap1.(*pair).close.1()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/pair.go:75 +0x7a0
+  sync.(*Once).doSlow()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/sync/once.go:78 +0x94
+  sync.(*Once).Do()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/sync/once.go:69 +0x40
+  github.com/shivang991/DashDevil2D/apps/server/transport.(*pair).close()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/pair.go:40 +0x84
+  github.com/shivang991/DashDevil2D/apps/server/transport.(*Server).expireLocked.gowrap1()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/server.go:521 +0x18
+
+Previous write at 0x00c0001d9770 by goroutine 20:
+  github.com/shivang991/DashDevil2D/apps/server/transport.(*Server).expireLocked()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/server.go:526 +0x490
+  github.com/shivang991/DashDevil2D/apps/server/transport.TestGraceExpiryCannotOvertakePendingFinish()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/maintenance_boundary_test.go:75 +0xd24
+  testing.tRunner()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2036 +0x164
+  testing.(*T).Run.gowrap1()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2101 +0x34
+
+Goroutine 21 (running) created at:
+  github.com/shivang991/DashDevil2D/apps/server/transport.(*Server).expireLocked()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/server.go:521 +0x438
+  github.com/shivang991/DashDevil2D/apps/server/transport.TestGraceExpiryCannotOvertakePendingFinish()
+      /Users/shivang/Desktop/programs/test/claude-code-test/apps/server/transport/maintenance_boundary_test.go:75 +0xd24
+  testing.tRunner()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2036 +0x164
+  testing.(*T).Run.gowrap1()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2101 +0x34
+
+Goroutine 20 (finished) created at:
+  testing.(*T).Run()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2101 +0x7bc
+  testing.runTests.func1()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2585 +0x78
+  testing.tRunner()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2036 +0x164
+  testing.runTests()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2583 +0x7a0
+  testing.(*M).Run()
+      /Users/shivang/go/pkg/mod/golang.org/toolchain@v0.0.1-go1.26.0.darwin-arm64/src/testing/testing.go:2443 +0xb38
+  main.main()
+      _testmain.go:110 +0x100
+==================
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:41:47 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=1 generation=1 reason="server shutdown"
+2026/10/17 19:41:47 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+--- FAIL: TestRoomUsesConfiguredIdleAndReconnectWindows (0.15s)
+    testing.go:1712: race detected during execution of test
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:47 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=2 reason="Reconnect grace expired"
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason="Reconnect grace expired"
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason="Reconnect grace expired"
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:47 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:47 INFO race_finalized room=1 round=2 time_us=2000000 server_us=5000000 result=0 reason=4
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:47 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:41:47 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:47 INFO pair_closed room=1 seat=0 generation=2 reason="Room expired"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="Room expired"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="Room expired"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=1 generation=1 reason="server shutdown"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO race_finalized room=1 round=2 time_us=999999 server_us=3999999 result=0 reason=4
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO race_finalized room=1 round=2 time_us=1000000 server_us=4000000 result=2 reason=0
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO race_finalized room=1 round=2 time_us=1000000 server_us=4000001 result=2 reason=0
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:48 INFO race_finalized room=1 round=2 time_us=500000 server_us=3500001 result=3 reason=5
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=1 generation=2 reason="room channel lost"
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=1 generation=2 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason="Reconnect grace expired"
+2026/10/17 19:41:48 INFO pair_closed room=3 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=2 reason=replaced
+2026/10/17 19:41:48 INFO gameplay_failure room=1 seat=0 generation=2 reason="pair closed"
+2026/10/17 19:41:48 INFO pair_closed room=1 seat=0 generation=3 reason="server shutdown"
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:41:49 INFO race_finalized room=1 round=2 time_us=500000 server_us=3500000 result=3 reason=5
+2026/10/17 19:41:49 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=1 generation=1 reason="explicit leave"
+2026/10/17 19:41:49 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=1 generation=1 reason="explicit leave"
+2026/10/17 19:41:49 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:49 INFO race_finalized room=1 round=2 time_us=500000 server_us=3500000 result=3 reason=5
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:41:49 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:49 INFO maintenance_started deadline=2026-10-17T19:44:49.417-07:00
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=0 generation=2 reason="server shutdown"
+2026/10/17 19:41:49 INFO maintenance_started deadline=2026-10-17T19:42:49.556-07:00
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:49 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:49 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:49 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:49 INFO maintenance_started deadline=2026-10-17T19:42:49.673-07:00
+2026/10/17 19:41:50 INFO maintenance_complete closed_pairs=0
+2026/10/17 19:41:50 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:50 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:50 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:50 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:50 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:50 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:50 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:50 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:50 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:41:50 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:41:50 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:41:50 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:51 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=2 reason="server shutdown"
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:51 INFO baseline_installed room=1 seat=0 generation=1 bytes=1057 duration_us=1197
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:41:51 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:51 INFO baseline_installed room=1 seat=0 generation=1 bytes=1057 duration_us=366
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:41:51 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:41:51 INFO baseline_installed room=1 seat=0 generation=2 bytes=1057 duration_us=361
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=2 reason=replaced
+2026/10/17 19:41:51 INFO gameplay_failure room=1 seat=0 generation=2 reason="pair closed"
+2026/10/17 19:41:51 INFO baseline_installed room=1 seat=0 generation=3 bytes=1057 duration_us=474
+2026/10/17 19:41:51 INFO pair_closed room=1 seat=0 generation=3 reason="server shutdown"
+2026/10/17 19:41:51 INFO gameplay_failure room=1 seat=0 generation=3 reason="pair closed"
+2026/10/17 19:41:51 INFO baseline_installed room=1 seat=0 generation=1 bytes=1057 duration_us=399
+2026/10/17 19:41:52 INFO application_progress room=1 seat=0 generation=1 sent_tick=70 acknowledged_tick=0 outstanding_records=10 oldest_ack_age_us=899999 authority_queue_bytes=64
+2026/10/17 19:41:52 INFO pair_closed room=1 seat=0 generation=1 reason="essential application progress timed out"
+2026/10/17 19:41:52 INFO gameplay_failure room=1 seat=0 generation=1 reason="essential application progress timed out"
+2026/10/17 19:42:00 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:42:07 INFO pair_closed room=1 seat=0 generation=2 reason="Reconnect grace expired"
+2026/10/17 19:42:08 INFO baseline_installed room=1 seat=0 generation=1 bytes=1057 duration_us=843
+2026/10/17 19:42:08 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:42:08 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:42:08 INFO baseline_installed room=1 seat=0 generation=1 bytes=1057 duration_us=760
+2026/10/17 19:42:08 INFO baseline_installed room=1 seat=1 generation=1 bytes=1057 duration_us=509
+2026/10/17 19:42:08 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:42:08 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:42:09 INFO application_progress room=1 seat=1 generation=1 sent_tick=70 acknowledged_tick=69 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:10 INFO application_progress room=1 seat=1 generation=1 sent_tick=80 acknowledged_tick=79 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:11 INFO application_progress room=1 seat=1 generation=1 sent_tick=90 acknowledged_tick=89 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:12 INFO application_progress room=1 seat=1 generation=1 sent_tick=100 acknowledged_tick=99 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:13 INFO application_progress room=1 seat=1 generation=1 sent_tick=110 acknowledged_tick=109 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:14 INFO application_progress room=1 seat=1 generation=1 sent_tick=120 acknowledged_tick=119 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:15 INFO application_progress room=1 seat=1 generation=1 sent_tick=130 acknowledged_tick=129 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:16 INFO application_progress room=1 seat=1 generation=1 sent_tick=140 acknowledged_tick=139 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:17 INFO application_progress room=1 seat=1 generation=1 sent_tick=150 acknowledged_tick=149 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:18 INFO application_progress room=1 seat=1 generation=1 sent_tick=160 acknowledged_tick=159 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:19 INFO application_progress room=1 seat=1 generation=1 sent_tick=170 acknowledged_tick=169 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:20 INFO application_progress room=1 seat=1 generation=1 sent_tick=180 acknowledged_tick=179 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:21 INFO application_progress room=1 seat=1 generation=1 sent_tick=190 acknowledged_tick=189 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:22 INFO application_progress room=1 seat=1 generation=1 sent_tick=200 acknowledged_tick=199 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:23 INFO application_progress room=1 seat=1 generation=1 sent_tick=210 acknowledged_tick=209 outstanding_records=1 oldest_ack_age_us=0 authority_queue_bytes=64
+2026/10/17 19:42:23 INFO pair_closed room=1 seat=1 generation=1 reason="control stream ended or malformed"
+2026/10/17 19:42:23 INFO gameplay_failure room=1 seat=1 generation=1 reason="control stream ended or malformed"
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	37.008s
+FAIL

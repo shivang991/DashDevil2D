@@ -1,0 +1,20 @@
+[
+  {
+    "title": "two admitted browser seats verify real streams/datagrams and recover either lost channel",
+    "status": "passed",
+    "durationMs": 2960,
+    "errors": []
+  },
+  {
+    "title": "missing WebTransport features produce Browser unsupported",
+    "status": "passed",
+    "durationMs": 362,
+    "errors": []
+  },
+  {
+    "title": "an admission/network failure is Unable to connect on a supported browser",
+    "status": "passed",
+    "durationMs": 366,
+    "errors": []
+  }
+]

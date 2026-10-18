@@ -1,0 +1,14 @@
+[
+  {
+    "title": "default course: native menu controls, recovered authority, shared results and fresh rematch on reused pairs",
+    "status": "passed",
+    "durationMs": 20833,
+    "errors": []
+  },
+  {
+    "title": "suspension restores a fresh generation; forfeit survives reload and replacement guest sees a clean lobby",
+    "status": "passed",
+    "durationMs": 7023,
+    "errors": []
+  }
+]

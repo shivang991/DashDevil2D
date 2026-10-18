@@ -1,0 +1,22 @@
+
+> dashdevil@ test:boundaries /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --boundaries
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-YByJHN/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-YByJHN
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-31T02:50:19Z
+[WebServer] (node:43988) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:43989) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:43989) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:43996) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/boundaries.spec.ts:4:1 › idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer (7.0s)
+  ✓  2 tests/browser/boundaries.spec.ts:47:1 › countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery (7.6s)
+
+  2 passed (17.2s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T02-50-38.429Z

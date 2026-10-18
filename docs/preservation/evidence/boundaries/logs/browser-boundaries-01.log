@@ -1,0 +1,59 @@
+
+> dashdevil@ test:boundaries /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --boundaries
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-c6Xkgj/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-c6Xkgj
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-31T02:38:10Z
+[WebServer] (node:37599) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37603) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:37603) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:37621) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/boundaries.spec.ts:4:1 › idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer (7.5s)
+  ✘  2 tests/browser/boundaries.spec.ts:47:1 › countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery (12.3s)
+
+
+  1) tests/browser/boundaries.spec.ts:47:1 › countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Round result' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Round result' }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Round result' })
+
+
+      75 |     await expect(pages[0].getByRole('button', { name: 'Create Room', exact: true })).toBeVisible();
+      76 |     await contexts[1].unroute('**/admission*'); await pages[1].reload();
+    > 77 |     await expect(pages[1].getByRole('heading', { name: 'Round result' })).toBeVisible();
+         |                                                                           ^
+      78 |     const outcome = JSON.parse((await pages[1].getByTestId('outcome-evidence').textContent())!);
+      79 |     expect(outcome.result).toBe(3); expect(outcome.reason).toBe(5);
+      80 |     records.push({ recovered: await evidence(pages[1]), outcome });
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/boundaries.spec.ts:77:75
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-c6Xkgj/browser-1792291093532/boundaries-countdown-and-g-1babc-rms-abandonment-on-recovery/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-c6Xkgj/browser-1792291093532/boundaries-countdown-and-g-1babc-rms-abandonment-on-recovery/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-c6Xkgj/browser-1792291093532/boundaries-countdown-and-g-1babc-rms-abandonment-on-recovery/error-context.md
+
+  1 failed
+    tests/browser/boundaries.spec.ts:47:1 › countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery 
+  1 passed (23.6s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T02-38-35.952Z
+ ELIFECYCLE  Command failed with exit code 1.

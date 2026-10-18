@@ -1,0 +1,35 @@
+[
+  {
+    "title": "two actual browsers drive and confirm one finish (clean)",
+    "status": "passed",
+    "durationMs": 9995,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (delayed)",
+    "status": "passed",
+    "durationMs": 10425,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (recovering)",
+    "status": "failed",
+    "durationMs": 11092,
+    "errors": [
+      {
+        "location": {
+          "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+          "column": 34,
+          "line": 109
+        },
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);\n  108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);\n> 109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);\n      |                                  ^\n  110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {\n  111 |       const state = evidence[seat];\n  112 |       const corruptedEpoch = Number(await pages[seat].locator('html').getAttribute('data-race-recovery-epoch'));\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:109:34"
+      }
+    ]
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (unordered)",
+    "status": "passed",
+    "durationMs": 10742,
+    "errors": []
+  }
+]

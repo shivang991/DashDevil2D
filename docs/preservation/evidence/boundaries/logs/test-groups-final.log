@@ -1,0 +1,24 @@
+
+> dashdevil@ test:groups /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --groups
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-H5BAa1/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-H5BAa1
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-31T02:51:02Z
+[WebServer] (node:44604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:44606) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:44606) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 4 tests using 1 worker
+
+(node:44615) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/groups.spec.ts:6:77 › recover respects a complete tick-boundary event group (seat 0) (8.1s)
+  ✓  2 tests/browser/groups.spec.ts:6:77 › recover respects a complete tick-boundary event group (seat 1) (6.9s)
+  ✓  3 tests/browser/groups.spec.ts:6:77 › leave respects a complete tick-boundary event group (seat 0) (5.5s)
+  ✓  4 tests/browser/groups.spec.ts:6:77 › leave respects a complete tick-boundary event group (seat 1) (5.4s)
+
+  4 passed (28.4s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T02-51-32.488Z

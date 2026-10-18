@@ -1,0 +1,40 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/paired-lifecycle.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/paired-lifecycle.test.ts (2 tests | 1 failed) 1130ms
+   × a delayed input stream from a superseded pair cannot capture inputs for the current pair 1117ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/paired-lifecycle.test.ts > a delayed input stream from a superseded pair cannot capture inputs for the current pair
+AssertionError: expected [ Array(1) ] to have a length of 2 but got 1
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ tests/session/paired-lifecycle.test.ts:88:56
+     86|     for (let i = 0; i < 10; i++) await Promise.resolve();
+     87|     initialize(current, 2);
+     88|     await vi.waitFor(() => expect(current.inputWrites).toHaveLength(2)…
+       |                                                        ^
+     89|     expect(oldWrites).toHaveLength(0);
+     90|   } finally { client.dispose(); }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  19:44:24
+   Duration  1.75s (tests 69%, environment 27%, transform 2%, import 1%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/paired-lifecycle.test.ts"`
+Exit status 1

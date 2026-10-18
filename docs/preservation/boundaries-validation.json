@@ -1,0 +1,1757 @@
+{
+  "version": 1,
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/37",
+  "reviewBaseline": "25a9a96af978a8423debac1e13a79f0b0c79785c",
+  "finalTestedSourceRevision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+  "timezone": "America/Phoenix",
+  "fixture": "infra/lifecycle-boundaries.json (version 1); shipped default course; exact public-server clock fixtures in lifecycle_test.go",
+  "hashes": {
+    ".github/workflows/preservation.yml": "d6f188143eedfa50c39353e43a056d7a9d09f937a0e2f5fb7ba991df850bc73c",
+    "apps/client/playwright.config.ts": "c7a3fb463a3eb74a4df10621ab68cdd8ecfa17490ac14640eef2d17e60e77649",
+    "apps/client/playwright.transport.config.ts": "4111fc18f8bfe39509ececb1e9328dff4d68499c3e07b94203d3616fecd985e0",
+    "apps/client/scripts/transport.mjs": "ba3344958f1be97ae268ab68c0f34692616800efbe879563643b8c6366e09a0f",
+    "apps/client/src/game/RaceSession.ts": "287965cfc62610c274c44456d2376f7c89cd59835bfc70ea57985085b7d2e5c1",
+    "apps/client/src/screens/MultiplayerScreen.tsx": "eaad7bee18d6648ad865ec3d0920c65377e71cb27d22a04ef49094c7270bc218",
+    "apps/client/src/transport/PairedConnection.ts": "7d903d47d312db5b9820bcc0a82a170c4eb6f7708ac1e384c3411a3559f5e67a",
+    "apps/client/tests/browser/boundaries.spec.ts": "17ee404a9de7e69c3853f6128a9237701d0ae39303993a73fa30831b59d9b7f3",
+    "apps/client/tests/session/paired-lifecycle.test.ts": "a1fab3c385ef8ed145f502f9593f99763e5ae03ae3590b9bd8e874a5985f84a4",
+    "apps/server/transport/lifecycle_test.go": "18f643877624a6f07fbee73f3b210e6cbd37b7d3038249e2dc343523e68a1933",
+    "apps/server/transport/maintenance_boundary_test.go": "0276b7c597d50bed47c5da158eff493ce7258ccfdc6290721de9871914fad21d",
+    "apps/server/transport/pair.go": "b7e0374073577e62481b0af82b38683956ba3f1a8f6213dcd34f1291479f5856",
+    "apps/server/transport/race.go": "866ebd1d1c6de5433a70d6473237fbae47aea3cc54983566af9ae3aecbab3196",
+    "apps/server/transport/rooms.go": "a2d0c361ca7244eae8a05ce807fdd0327e25a70220aca82c952ae1a8d073a8b5",
+    "apps/server/transport/server.go": "d914af037dbdd3a0dc9de8c7af33a0b3a7339f699ac865d66a029b6464969d5a",
+    "apps/server/transport/server_test.go": "52d68e74036ca01f6f77ef70e9068524e17d4189fd2d6ce39a253eba438e04e2",
+    "docs/preservation/boundaries-checkpoint.md": "8fd456f79e36705bcc0599f1c649bc848b013b697b06f4a792c9b5f9426227a6",
+    "docs/preservation/boundaries-review.md": "f84d1b86bc13d9b8085bc43e9ccbf04622613a61089f87738fce7e728ba32714",
+    "infra/lifecycle-boundaries.json": "5bcdca750e60441bb21647b38a0f85e00158fed8c9816e338c4990127efaf059",
+    "package.json": "1ed8dcba4b6d00d25b1b1b28e4eb11f8ec4e1a52f2eb859e6bae6168704de09d",
+    "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+    "packages/contracts/race/fixtures.json": "fccd7bed0ae53b63a7ffb7c9c2d34db5074943e8a5e7a7aa1b8194eb4050a378",
+    "packages/contracts/race/objects.json": "66220a32fed438786d3e636ea9d744463733a0d6a49aea3f70ef832446fef367",
+    "packages/contracts/race/contacts.json": "f0697785862fcf6e0fd1ea6bdb05943a534666c552a1dc0f016a5915ee586aa9",
+    "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+    "pnpm-lock.yaml": "29a771a263994c2dc795bd941d505056130221b50a0f66a89aec6e0a47a0d3f8",
+    ".go-version": "acef448c3973160e815171b20f8788735d99b01e7bf551b3619bbde1ae1db7a8",
+    ".node-version": "10e4e07fe7b63d3da1d899ea0f9a7a3d78c116051fae44b9f245a53d6f665a41"
+  },
+  "workspace": {
+    "command": "pnpm check:generated && pnpm exec turbo run typecheck lint test build --force",
+    "log": "docs/preservation/evidence/boundaries/logs/check-watermark-final.log",
+    "tasks": 15,
+    "cachedTasks": 0,
+    "vitestTests": 354,
+    "result": "passed"
+  },
+  "raceDetector": {
+    "command": "go test -race ./transport -count=1",
+    "log": "docs/preservation/evidence/boundaries/logs/server-race-leave-final.log",
+    "result": "passed",
+    "testedServerRevision": "ee3ba3e (no subsequent Go source changes)"
+  },
+  "reviews": {
+    "standards": "0 findings through e42f322",
+    "spec": "0 remaining findings through e42f322",
+    "expectations": "../../boundaries-review.md"
+  },
+  "runs": [
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/browser-boundaries-01.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-38-35.952Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/browser-boundaries-01",
+      "revision": "25a9a96af978a8423debac1e13a79f0b0c79785c",
+      "dirty": " M apps/client/playwright.config.ts\n M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/rooms.go\n M apps/server/transport/server.go\n M apps/server/transport/server_test.go\n M package.json\n?? apps/client/tests/browser/boundaries.spec.ts\n?? apps/client/tests/session/paired-lifecycle.test.ts\n?? apps/server/transport/lifecycle_test.go\n?? infra/lifecycle-boundaries.json\n",
+      "exitCode": 1,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer",
+          "status": "passed",
+          "durationMs": 7490,
+          "errors": []
+        },
+        {
+          "title": "countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery",
+          "status": "failed",
+          "durationMs": 12342,
+          "errors": [
+            {
+              "location": {
+                "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/boundaries.spec.ts",
+                "column": 75,
+                "line": 77
+              },
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Round result' })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Round result' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Round result' })\u001b[22m\n\n\n  75 |     await expect(pages[0].getByRole('button', { name: 'Create Room', exact: true })).toBeVisible();\n  76 |     await contexts[1].unroute('**/admission*'); await pages[1].reload();\n> 77 |     await expect(pages[1].getByRole('heading', { name: 'Round result' })).toBeVisible();\n     |                                                                           ^\n  78 |     const outcome = JSON.parse((await pages[1].getByTestId('outcome-evidence').textContent())!);\n  79 |     expect(outcome.result).toBe(3); expect(outcome.reason).toBe(5);\n  80 |     records.push({ recovered: await evidence(pages[1]), outcome });\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/boundaries.spec.ts:77:75"
+            }
+          ]
+        }
+      ],
+      "seeds": [
+        109263369,
+        619678472,
+        1083023041
+      ],
+      "fixture": "default Drag Race with validated infra/lifecycle-boundaries.json: 2s grace, 2s idle, 1s warning; native room actions and transport loss",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/browser-boundaries-02.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-39-15.804Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/browser-boundaries-02",
+      "revision": "25a9a96af978a8423debac1e13a79f0b0c79785c",
+      "dirty": " M apps/client/playwright.config.ts\n M apps/client/playwright.transport.config.ts\n M apps/client/scripts/transport.mjs\n M apps/client/src/screens/MultiplayerScreen.tsx\n M apps/client/src/transport/PairedConnection.ts\n M apps/server/transport/pair.go\n M apps/server/transport/race.go\n M apps/server/transport/rooms.go\n M apps/server/transport/server.go\n M apps/server/transport/server_test.go\n M package.json\n?? apps/client/tests/browser/boundaries.spec.ts\n?? apps/client/tests/session/paired-lifecycle.test.ts\n?? apps/server/transport/lifecycle_test.go\n?? infra/lifecycle-boundaries.json\n",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer",
+          "status": "passed",
+          "durationMs": 6629,
+          "errors": []
+        },
+        {
+          "title": "countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery",
+          "status": "passed",
+          "durationMs": 8002,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1813649803,
+        2364566996,
+        4267438762
+      ],
+      "fixture": "default Drag Race with validated infra/lifecycle-boundaries.json: 2s grace, 2s idle, 1s warning; native room actions and transport loss",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-boundaries-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-42-23.942Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-boundaries-acceptance",
+      "revision": "8db2a7e8110cbb2c7841489bf4353c325532aeea",
+      "dirty": " M apps/server/transport/lifecycle_test.go\n",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer",
+          "status": "passed",
+          "durationMs": 7058,
+          "errors": []
+        },
+        {
+          "title": "countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery",
+          "status": "passed",
+          "durationMs": 8311,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        148651566,
+        1858134390,
+        2230636022
+      ],
+      "fixture": "default Drag Race with validated infra/lifecycle-boundaries.json: 2s grace, 2s idle, 1s warning; native room actions and transport loss",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-boundaries-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-50-38.429Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-boundaries-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer",
+          "status": "passed",
+          "durationMs": 6986,
+          "errors": []
+        },
+        {
+          "title": "countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery",
+          "status": "passed",
+          "durationMs": 7638,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        2007048237,
+        2013815349,
+        4226732593
+      ],
+      "fixture": "default Drag Race with validated infra/lifecycle-boundaries.json: 2s grace, 2s idle, 1s warning; native room actions and transport loss",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-boundaries-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-49-41.025Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-boundaries-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer",
+          "status": "passed",
+          "durationMs": 6902,
+          "errors": []
+        },
+        {
+          "title": "countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery",
+          "status": "passed",
+          "durationMs": 6490,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1394965605,
+        2899272057,
+        4102960688
+      ],
+      "fixture": "default Drag Race with validated infra/lifecycle-boundaries.json: 2s grace, 2s idle, 1s warning; native room actions and transport loss",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-contacts-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-45-36.296Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-contacts-acceptance",
+      "revision": "7b85833cfbbfa26d3500ce9750fe6960b0420024",
+      "dirty": " M apps/client/tests/session/paired-lifecycle.test.ts\n",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "two browsers return, overtake and release tailgating (leader seat 0)",
+          "status": "passed",
+          "durationMs": 12859,
+          "errors": []
+        },
+        {
+          "title": "two browsers return, overtake and release tailgating (leader seat 1)",
+          "status": "passed",
+          "durationMs": 12258,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1816966318,
+        2301655660
+      ],
+      "fixture": "validated infra/contacts-track.json; swept returns, overtaking and persistent tailgating",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-contacts-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-52-56.545Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-contacts-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two browsers return, overtake and release tailgating (leader seat 0)",
+          "status": "passed",
+          "durationMs": 13793,
+          "errors": []
+        },
+        {
+          "title": "two browsers return, overtake and release tailgating (leader seat 1)",
+          "status": "passed",
+          "durationMs": 13547,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1059282878,
+        1891368777
+      ],
+      "fixture": "validated infra/contacts-track.json; swept returns, overtaking and persistent tailgating",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-contacts-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-51-48.992Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-contacts-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two browsers return, overtake and release tailgating (leader seat 0)",
+          "status": "passed",
+          "durationMs": 12978,
+          "errors": []
+        },
+        {
+          "title": "two browsers return, overtake and release tailgating (leader seat 1)",
+          "status": "passed",
+          "durationMs": 12227,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        2413756519,
+        3560922928
+      ],
+      "fixture": "validated infra/contacts-track.json; swept returns, overtaking and persistent tailgating",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-finality-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-44-05.315Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-finality-acceptance",
+      "revision": "7b85833cfbbfa26d3500ce9750fe6960b0420024",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "outcome precedes old room state and a recovery baseline (seat 0)",
+          "status": "passed",
+          "durationMs": 12548,
+          "errors": []
+        },
+        {
+          "title": "outcome precedes old room state and a recovery baseline (seat 1)",
+          "status": "passed",
+          "durationMs": 12321,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1963349901,
+        2751770347
+      ],
+      "fixture": "validated infra/clear-track.json; delayed room state, outcome before incomplete recovery baseline, swapped seats",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-finality-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-52-03.077Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-finality-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "outcome precedes old room state and a recovery baseline (seat 0)",
+          "status": "passed",
+          "durationMs": 13077,
+          "errors": []
+        },
+        {
+          "title": "outcome precedes old room state and a recovery baseline (seat 1)",
+          "status": "passed",
+          "durationMs": 11809,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        2111633161,
+        3540740541
+      ],
+      "fixture": "validated infra/clear-track.json; delayed room state, outcome before incomplete recovery baseline, swapped seats",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-finality-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-51-00.051Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-finality-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "outcome precedes old room state and a recovery baseline (seat 0)",
+          "status": "passed",
+          "durationMs": 12499,
+          "errors": []
+        },
+        {
+          "title": "outcome precedes old room state and a recovery baseline (seat 1)",
+          "status": "passed",
+          "durationMs": 11867,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        2409627068,
+        2466803420
+      ],
+      "fixture": "validated infra/clear-track.json; delayed room state, outcome before incomplete recovery baseline, swapped seats",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-groups-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-43-33.085Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-groups-acceptance",
+      "revision": "7b85833cfbbfa26d3500ce9750fe6960b0420024",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "recover respects a complete tick-boundary event group (seat 0)",
+          "status": "passed",
+          "durationMs": 7188,
+          "errors": []
+        },
+        {
+          "title": "recover respects a complete tick-boundary event group (seat 1)",
+          "status": "passed",
+          "durationMs": 6720,
+          "errors": []
+        },
+        {
+          "title": "leave respects a complete tick-boundary event group (seat 0)",
+          "status": "passed",
+          "durationMs": 5847,
+          "errors": []
+        },
+        {
+          "title": "leave respects a complete tick-boundary event group (seat 1)",
+          "status": "passed",
+          "durationMs": 6953,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1049464463,
+        1693850967,
+        2365145210,
+        2384934166,
+        2443925383,
+        2804887929,
+        3559869580,
+        3608752141
+      ],
+      "fixture": "validated infra/finality-track.json; 1Hz test tick-boundary finish, pending-group recovery baseline capture",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-groups-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-51-32.488Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-groups-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "recover respects a complete tick-boundary event group (seat 0)",
+          "status": "passed",
+          "durationMs": 8106,
+          "errors": []
+        },
+        {
+          "title": "recover respects a complete tick-boundary event group (seat 1)",
+          "status": "passed",
+          "durationMs": 6913,
+          "errors": []
+        },
+        {
+          "title": "leave respects a complete tick-boundary event group (seat 0)",
+          "status": "passed",
+          "durationMs": 5494,
+          "errors": []
+        },
+        {
+          "title": "leave respects a complete tick-boundary event group (seat 1)",
+          "status": "passed",
+          "durationMs": 5426,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        909590627,
+        1333737065,
+        1642571607,
+        2685662602,
+        2888270026,
+        3005928078,
+        3849311357,
+        3952838560
+      ],
+      "fixture": "validated infra/finality-track.json; 1Hz test tick-boundary finish, pending-group recovery baseline capture",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-groups-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-50-31.230Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-groups-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "recover respects a complete tick-boundary event group (seat 0)",
+          "status": "passed",
+          "durationMs": 7328,
+          "errors": []
+        },
+        {
+          "title": "recover respects a complete tick-boundary event group (seat 1)",
+          "status": "passed",
+          "durationMs": 6733,
+          "errors": []
+        },
+        {
+          "title": "leave respects a complete tick-boundary event group (seat 0)",
+          "status": "passed",
+          "durationMs": 5148,
+          "errors": []
+        },
+        {
+          "title": "leave respects a complete tick-boundary event group (seat 1)",
+          "status": "passed",
+          "durationMs": 5254,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        953081123,
+        1125989887,
+        2193505621,
+        3173448616,
+        3278192314,
+        3821087712,
+        3931632310,
+        4219666280
+      ],
+      "fixture": "validated infra/finality-track.json; 1Hz test tick-boundary finish, pending-group recovery baseline capture",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-hearts-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-45-52.307Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-hearts-acceptance",
+      "revision": "7b85833cfbbfa26d3500ce9750fe6960b0420024",
+      "dirty": " M apps/client/tests/session/paired-lifecycle.test.ts\n",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "two actual browsers collect and deny reserved hearts and confirm finish",
+          "status": "passed",
+          "durationMs": 11446,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        3779239743
+      ],
+      "fixture": "validated infra/hearts-track.json; reserved heart contention and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-hearts-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-53-14.736Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-hearts-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers collect and deny reserved hearts and confirm finish",
+          "status": "passed",
+          "durationMs": 11593,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1811154199
+      ],
+      "fixture": "validated infra/hearts-track.json; reserved heart contention and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-hearts-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-52-07.409Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-hearts-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers collect and deny reserved hearts and confirm finish",
+          "status": "passed",
+          "durationMs": 11696,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1436515141
+      ],
+      "fixture": "validated infra/hearts-track.json; reserved heart contention and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-lifecycle-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-42-58.434Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-lifecycle-acceptance",
+      "revision": "8db2a7e8110cbb2c7841489bf4353c325532aeea",
+      "dirty": " M apps/server/transport/lifecycle_test.go\n M apps/server/transport/maintenance_boundary_test.go\n M apps/server/transport/pair.go\n M apps/server/transport/rooms.go\n M apps/server/transport/server.go\n",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "default course: native menu controls, recovered authority, shared results and fresh rematch on reused pairs",
+          "status": "passed",
+          "durationMs": 20833,
+          "errors": []
+        },
+        {
+          "title": "suspension restores a fresh generation; forfeit survives reload and replacement guest sees a clean lobby",
+          "status": "passed",
+          "durationMs": 7023,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1283289340,
+        2605489936,
+        4237471626
+      ],
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-lifecycle-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-54-19.561Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-lifecycle-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "default course: native menu controls, recovered authority, shared results and fresh rematch on reused pairs",
+          "status": "passed",
+          "durationMs": 28046,
+          "errors": []
+        },
+        {
+          "title": "suspension restores a fresh generation; forfeit survives reload and replacement guest sees a clean lobby",
+          "status": "passed",
+          "durationMs": 6638,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        991890843,
+        2643665563,
+        3367502884
+      ],
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-lifecycle-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-53-16.513Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-lifecycle-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "default course: native menu controls, recovered authority, shared results and fresh rematch on reused pairs",
+          "status": "passed",
+          "durationMs": 25831,
+          "errors": []
+        },
+        {
+          "title": "suspension restores a fresh generation; forfeit survives reload and replacement guest sees a clean lobby",
+          "status": "passed",
+          "durationMs": 7189,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        764827876,
+        2365358390,
+        2494320623
+      ],
+      "fixture": "shipped default Drag Race; menu/focus, paired recovery, shared results and reused-connection rematch",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-maintenance-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-46-16.482Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-maintenance-acceptance",
+      "revision": "7b85833cfbbfa26d3500ce9750fe6960b0420024",
+      "dirty": " M apps/client/tests/session/paired-lifecycle.test.ts\n",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "planned maintenance keeps active play and final results, then abandons unfinished rounds and closes rooms",
+          "status": "passed",
+          "durationMs": 19590,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        407048746,
+        883214816
+      ],
+      "fixture": "default Drag Race; completed and active rooms under a two-second test maintenance deadline",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-maintenance-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-53-40.008Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-maintenance-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "planned maintenance keeps active play and final results, then abandons unfinished rounds and closes rooms",
+          "status": "passed",
+          "durationMs": 20048,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        595692286,
+        1801138237
+      ],
+      "fixture": "default Drag Race; completed and active rooms under a two-second test maintenance deadline",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-maintenance-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-52-37.406Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-maintenance-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "planned maintenance keeps active play and final results, then abandons unfinished rounds and closes rooms",
+          "status": "passed",
+          "durationMs": 23520,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        429786823,
+        1032297941
+      ],
+      "fixture": "default Drag Race; completed and active rooms under a two-second test maintenance deadline",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-objects-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-45-06.711Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-objects-acceptance",
+      "revision": "7b85833cfbbfa26d3500ce9750fe6960b0420024",
+      "dirty": " M apps/client/tests/session/paired-lifecycle.test.ts\n",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "two actual browsers survive shipped default objects until HP elimination",
+          "status": "passed",
+          "durationMs": 12068,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        718129601
+      ],
+      "fixture": "shipped default Drag Race configuration; random server seed; obstacles and HP elimination",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-objects-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-52-22.632Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-objects-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers survive shipped default objects until HP elimination",
+          "status": "passed",
+          "durationMs": 14515,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        2704877476
+      ],
+      "fixture": "shipped default Drag Race configuration; random server seed; obstacles and HP elimination",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-objects-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-51-19.147Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-objects-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers survive shipped default objects until HP elimination",
+          "status": "passed",
+          "durationMs": 13963,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1252638655
+      ],
+      "fixture": "shipped default Drag Race configuration; random server seed; obstacles and HP elimination",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-race-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-44-49.952Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-race-acceptance",
+      "revision": "7b85833cfbbfa26d3500ce9750fe6960b0420024",
+      "dirty": " M apps/client/tests/session/paired-lifecycle.test.ts\n",
+      "exitCode": 1,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "two actual browsers drive and confirm one finish (clean)",
+          "status": "passed",
+          "durationMs": 8614,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (delayed)",
+          "status": "failed",
+          "durationMs": 6643,
+          "errors": [
+            {
+              "location": {
+                "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+                "column": 107,
+                "line": 78
+              },
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Drag Race', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Drag Race', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Drag Race', exact: true })\u001b[22m\n\n\n  76 |     await pages[0].getByRole('button', { name: 'Start round' }).click();\n  77 |     for (const page of pages) { await expect(page.getByTestId('countdown')).toBeVisible(); await page.keyboard.press('ArrowUp'); }\n> 78 |     for (const page of pages) await expect(page.getByRole('heading', { name: 'Drag Race', exact: true })).toBeVisible();\n     |                                                                                                           ^\n  79 |     const canvas = pages[0].getByRole('img', { name: 'Multiplayer race' });\n  80 |     await expect(canvas).toBeVisible(); await canvas.focus();\n  81 |     await pages[0].keyboard.down('ArrowUp');\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:78:107"
+            }
+          ]
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (recovering)",
+          "status": "failed",
+          "durationMs": 10961,
+          "errors": [
+            {
+              "location": {
+                "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+                "column": 83,
+                "line": 109
+              },
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);\n  108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);\n> 109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);\n      |                                                                                   ^\n  110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {\n  111 |       const state = evidence[seat];\n  112 |       const corruptedEpoch = Number(await pages[seat].locator('html').getAttribute('data-race-recovery-epoch'));\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:109:83"
+            }
+          ]
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (unordered)",
+          "status": "passed",
+          "durationMs": 9728,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        2662847471,
+        3616377463,
+        3990035925
+      ],
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-race-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-50-18.420Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-race-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers drive and confirm one finish (clean)",
+          "status": "passed",
+          "durationMs": 8785,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (delayed)",
+          "status": "passed",
+          "durationMs": 9915,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (recovering)",
+          "status": "passed",
+          "durationMs": 10264,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (unordered)",
+          "status": "passed",
+          "durationMs": 9560,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        214400367,
+        919254865,
+        1006665194,
+        3052012829
+      ],
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-race-leave-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-40-06.802Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-race-leave-final",
+      "revision": "07638d8d90e21fb9212534c0ff80166988d9fe20",
+      "dirty": "",
+      "exitCode": 1,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers drive and confirm one finish (clean)",
+          "status": "passed",
+          "durationMs": 9995,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (delayed)",
+          "status": "passed",
+          "durationMs": 10425,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (recovering)",
+          "status": "failed",
+          "durationMs": 11092,
+          "errors": [
+            {
+              "location": {
+                "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+                "column": 34,
+                "line": 109
+              },
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);\n  108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);\n> 109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);\n      |                                  ^\n  110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {\n  111 |       const state = evidence[seat];\n  112 |       const corruptedEpoch = Number(await pages[seat].locator('html').getAttribute('data-race-recovery-epoch'));\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:109:34"
+            }
+          ]
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (unordered)",
+          "status": "passed",
+          "durationMs": 10742,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        458083829,
+        1366434191,
+        1965035021,
+        3371991848
+      ],
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-race-verified-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-45-20.695Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-race-verified-final",
+      "revision": "6431fec4278cbc43528d5069fb0d5a8898aaad35",
+      "dirty": "",
+      "exitCode": 1,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers drive and confirm one finish (clean)",
+          "status": "passed",
+          "durationMs": 8582,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (delayed)",
+          "status": "failed",
+          "durationMs": 11415,
+          "errors": [
+            {
+              "location": {
+                "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+                "column": 32,
+                "line": 108
+              },
+              "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Coverage history unavailable\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  106 |     expect(evidence[0].startUs).toBe(evidence[1].startUs);\n  107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);\n> 108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);\n      |                                ^\n  109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);\n  110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {\n  111 |       const state = evidence[seat];\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:108:32"
+            }
+          ]
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (recovering)",
+          "status": "passed",
+          "durationMs": 9667,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (unordered)",
+          "status": "passed",
+          "durationMs": 9375,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        431991386,
+        1121956603,
+        2815478101,
+        2934976595
+      ],
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-race-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-49-23.241Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-race-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two actual browsers drive and confirm one finish (clean)",
+          "status": "passed",
+          "durationMs": 8608,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (delayed)",
+          "status": "passed",
+          "durationMs": 9673,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (recovering)",
+          "status": "passed",
+          "durationMs": 9611,
+          "errors": []
+        },
+        {
+          "title": "two actual browsers drive and confirm one finish (unordered)",
+          "status": "passed",
+          "durationMs": 9474,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1393829358,
+        2060168313,
+        3278669159,
+        3715012444
+      ],
+      "fixture": "validated infra/clear-track.json; real room driving and confirmed finish",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-rooms-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-42-02.757Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-rooms-acceptance",
+      "revision": "8db2a7e8110cbb2c7841489bf4353c325532aeea",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "two React participants adopt host mode, ready and share a physics-free countdown and round zero",
+          "status": "passed",
+          "durationMs": 5883,
+          "errors": []
+        },
+        {
+          "title": "four-digit entry retains leading zeros and shows admission errors beside the native form",
+          "status": "passed",
+          "durationMs": 809,
+          "errors": []
+        },
+        {
+          "title": "storage denial retains one local name across entry, admission and return",
+          "status": "passed",
+          "durationMs": 641,
+          "errors": []
+        },
+        {
+          "title": "host mode changes clear readiness and a reloaded tab recovers its authenticated seat",
+          "status": "passed",
+          "durationMs": 1308,
+          "errors": []
+        },
+        {
+          "title": "readiness stays pending until its own command reply despite a room-state broadcast",
+          "status": "passed",
+          "durationMs": 679,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1307867964
+      ],
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-rooms-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-51-00.742Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-rooms-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two React participants adopt host mode, ready and share a physics-free countdown and round zero",
+          "status": "passed",
+          "durationMs": 5489,
+          "errors": []
+        },
+        {
+          "title": "four-digit entry retains leading zeros and shows admission errors beside the native form",
+          "status": "passed",
+          "durationMs": 543,
+          "errors": []
+        },
+        {
+          "title": "storage denial retains one local name across entry, admission and return",
+          "status": "passed",
+          "durationMs": 623,
+          "errors": []
+        },
+        {
+          "title": "host mode changes clear readiness and a reloaded tab recovers its authenticated seat",
+          "status": "passed",
+          "durationMs": 1378,
+          "errors": []
+        },
+        {
+          "title": "readiness stays pending until its own command reply despite a room-state broadcast",
+          "status": "passed",
+          "durationMs": 722,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        150520518
+      ],
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-rooms-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-50-02.336Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-rooms-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two React participants adopt host mode, ready and share a physics-free countdown and round zero",
+          "status": "passed",
+          "durationMs": 5345,
+          "errors": []
+        },
+        {
+          "title": "four-digit entry retains leading zeros and shows admission errors beside the native form",
+          "status": "passed",
+          "durationMs": 526,
+          "errors": []
+        },
+        {
+          "title": "storage denial retains one local name across entry, admission and return",
+          "status": "passed",
+          "durationMs": 586,
+          "errors": []
+        },
+        {
+          "title": "host mode changes clear readiness and a reloaded tab recovers its authenticated seat",
+          "status": "passed",
+          "durationMs": 1735,
+          "errors": []
+        },
+        {
+          "title": "readiness stays pending until its own command reply despite a room-state broadcast",
+          "status": "passed",
+          "durationMs": 728,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        3833737682
+      ],
+      "fixture": "React private rooms; random server seed; round zero and released controls",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-transport-acceptance.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-41-48.695Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-transport-acceptance",
+      "revision": "8db2a7e8110cbb2c7841489bf4353c325532aeea",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": false,
+      "scenarios": [
+        {
+          "title": "two admitted browser seats verify real streams/datagrams and recover either lost channel",
+          "status": "passed",
+          "durationMs": 3473,
+          "errors": []
+        },
+        {
+          "title": "missing WebTransport features produce Browser unsupported",
+          "status": "passed",
+          "durationMs": 483,
+          "errors": []
+        },
+        {
+          "title": "an admission/network failure is Unable to connect on a supported browser",
+          "status": "passed",
+          "durationMs": 398,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1
+      ],
+      "fixture": "current-protocol diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-transport-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T02-50-47.048Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-transport-final",
+      "revision": "7980bbe50a92aa790ab1572e3da2e5304d1e2e5d",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two admitted browser seats verify real streams/datagrams and recover either lost channel",
+          "status": "passed",
+          "durationMs": 3015,
+          "errors": []
+        },
+        {
+          "title": "missing WebTransport features produce Browser unsupported",
+          "status": "passed",
+          "durationMs": 611,
+          "errors": []
+        },
+        {
+          "title": "an admission/network failure is Unable to connect on a supported browser",
+          "status": "passed",
+          "durationMs": 420,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1
+      ],
+      "fixture": "current-protocol diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    },
+    {
+      "commandLog": "docs/preservation/evidence/boundaries/logs/test-transport-watermark-final.log",
+      "directory": "apps/client/test-results/transport-2026-10-18T07-49-49.067Z",
+      "retained": "docs/preservation/evidence/boundaries/runs/test-transport-watermark-final",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "dirty": "",
+      "exitCode": 0,
+      "finalSourceFrozenRun": true,
+      "scenarios": [
+        {
+          "title": "two admitted browser seats verify real streams/datagrams and recover either lost channel",
+          "status": "passed",
+          "durationMs": 2960,
+          "errors": []
+        },
+        {
+          "title": "missing WebTransport features produce Browser unsupported",
+          "status": "passed",
+          "durationMs": 362,
+          "errors": []
+        },
+        {
+          "title": "an admission/network failure is Unable to connect on a supported browser",
+          "status": "passed",
+          "durationMs": 366,
+          "errors": []
+        }
+      ],
+      "seeds": [
+        1
+      ],
+      "fixture": "current-protocol diagnostic continuation, seed 1, frozen positions 100.125/20000.5, released controls",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "pnpm": "8.15.9",
+        "node": "v26.10.0",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0",
+        "trust": "Chrome process-scoped HTTPS SPKI pin; WebTransport certificate SHA-256 pin; no global trust bypass"
+      }
+    }
+  ],
+  "browserFinalExits": "test:race 0\ntest:boundaries 0\ntest:transport 0\ntest:rooms 0\ntest:groups 0\ntest:finality 0\ntest:objects 0\ntest:contacts 0\ntest:hearts 0\ntest:maintenance 0\ntest:lifecycle 0\ntest:browser 0\n",
+  "affectedBrowserReruns": "test:race 1\n",
+  "verifiedFinalExits": "test:race 1\n",
+  "watermarkFinalExits": "test:race 0\ntest:boundaries 0\ntest:transport 0\ntest:rooms 0\ntest:groups 0\ntest:finality 0\ntest:objects 0\ntest:contacts 0\ntest:hearts 0\ntest:maintenance 0\ntest:lifecycle 0\ntest:browser 0\n",
+  "preservation": [
+    {
+      "directory": "apps/client/test-results/run-2026-10-18T07-53-17.927Z-hCbU19",
+      "retained": "docs/preservation/evidence/boundaries/preservation",
+      "result": {
+        "status": "passed",
+        "startedAt": "2026-10-18T07:53:17.963Z",
+        "durationMs": 73375.608
+      },
+      "scenarios": 12,
+      "baselineReference": "a68f27efd1d79ec8eea7ef0b0a6d8567606189dd"
+    }
+  ],
+  "limits": [
+    "Exact microsecond deadlines are established by clock-controlled public server fixtures, not browser timer precision.",
+    "Browser contexts and application delivery fixtures do not establish physical OS suspension or the supported browser/OS/network matrix.",
+    "Reference-hardware/network metrics, capacity, two-person manual playtests and full Stage 6/7 acceptance remain later tickets."
+  ],
+  "failureRetention": {
+    "raw": "apps/client/test-results/issue37",
+    "firstRaceAttempt": "Initial delayed scenario returned to the main menu while other work ran; that exact interference cause was not measured. Recovering verified0 recurred under frozen source and was traced to epoch-local diagnostics overwriting the total. Public regression reproduced it; cumulative diagnostic repair retains epoch-local CRC rules and all original browser assertions. Original failures remain retained.",
+    "equalTime": "Independent Spec finding reproduced before repair; expiry-first produced forfeit at 2000000us instead of abandonment. Both permutations pass after repair.",
+    "staleInput": "Old stream overwrote replacement input ownership before repair; public regression now proves current stream receives both rounds and obsolete stream zero frames.",
+    "raceDetector": "Existing maintenance fixture called expireLocked without mutex. It now holds the owner mutex, and full transport race detection passes.",
+    "boostedLeave": "Public input/outcome regression reproduced NOS cleared at the previous tick before cutoff. At1500000us a legitimate gameplay win became opponentforfeit. Fixed by retaining controls through StopAt integration, with just-before/exact/after cases independently reviewed."
+  },
+  "acceptedBrowserRuns": [
+    {
+      "suite": "test-boundaries",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 2,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-boundaries-watermark-final"
+    },
+    {
+      "suite": "test-contacts",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 2,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-contacts-watermark-final"
+    },
+    {
+      "suite": "test-finality",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 2,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-finality-watermark-final"
+    },
+    {
+      "suite": "test-groups",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 4,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-groups-watermark-final"
+    },
+    {
+      "suite": "test-hearts",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 1,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-hearts-watermark-final"
+    },
+    {
+      "suite": "test-lifecycle",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 2,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-lifecycle-watermark-final"
+    },
+    {
+      "suite": "test-maintenance",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 1,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-maintenance-watermark-final"
+    },
+    {
+      "suite": "test-objects",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 1,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-objects-watermark-final"
+    },
+    {
+      "suite": "test-race",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 4,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-race-watermark-final"
+    },
+    {
+      "suite": "test-rooms",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 5,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-rooms-watermark-final"
+    },
+    {
+      "suite": "test-transport",
+      "revision": "35b4aeb7cf775a396cbf8eed2eb9df91d00688e0",
+      "exitCode": 0,
+      "scenarios": 3,
+      "evidence": "docs/preservation/evidence/boundaries/runs/test-transport-watermark-final"
+    }
+  ],
+  "acceptedBrowserScenarios": 39
+}

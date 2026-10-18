@@ -1,0 +1,14 @@
+[
+  {
+    "title": "two browsers return, overtake and release tailgating (leader seat 0)",
+    "status": "passed",
+    "durationMs": 12978,
+    "errors": []
+  },
+  {
+    "title": "two browsers return, overtake and release tailgating (leader seat 1)",
+    "status": "passed",
+    "durationMs": 12227,
+    "errors": []
+  }
+]

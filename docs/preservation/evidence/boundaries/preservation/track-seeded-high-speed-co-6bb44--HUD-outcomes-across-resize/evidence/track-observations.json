@@ -1,0 +1,18 @@
+{
+  "seed": 5410,
+  "generationVersion": 1,
+  "configurationVersion": 1,
+  "dimensions": {
+    "width": 302,
+    "height": 530
+  },
+  "resized": true,
+  "acceleration": "held w, 4000 world units/s; spawn cadence 1 s",
+  "health": [
+    4,
+    3,
+    4
+  ],
+  "score": 0,
+  "manualReview": "pending"
+}

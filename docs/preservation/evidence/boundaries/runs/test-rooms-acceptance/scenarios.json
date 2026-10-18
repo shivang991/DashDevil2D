@@ -1,0 +1,32 @@
+[
+  {
+    "title": "two React participants adopt host mode, ready and share a physics-free countdown and round zero",
+    "status": "passed",
+    "durationMs": 5883,
+    "errors": []
+  },
+  {
+    "title": "four-digit entry retains leading zeros and shows admission errors beside the native form",
+    "status": "passed",
+    "durationMs": 809,
+    "errors": []
+  },
+  {
+    "title": "storage denial retains one local name across entry, admission and return",
+    "status": "passed",
+    "durationMs": 641,
+    "errors": []
+  },
+  {
+    "title": "host mode changes clear readiness and a reloaded tab recovers its authenticated seat",
+    "status": "passed",
+    "durationMs": 1308,
+    "errors": []
+  },
+  {
+    "title": "readiness stays pending until its own command reply despite a room-state broadcast",
+    "status": "passed",
+    "durationMs": 679,
+    "errors": []
+  }
+]

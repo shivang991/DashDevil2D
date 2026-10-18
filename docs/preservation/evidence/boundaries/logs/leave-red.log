@@ -1,0 +1,10 @@
+2026/10/17 19:34:48 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:34:48 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:34:48 INFO race_finalized room=1 round=2 time_us=0 server_us=5000000 result=3 reason=6
+2026/10/17 19:34:48 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:34:48 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+--- FAIL: TestLeaveCannotOvertakeEarlierGraceExpiry (3.05s)
+    lifecycle_test.go:121: no authoritative outcome
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	3.621s
+FAIL

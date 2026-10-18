@@ -1,0 +1,69 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/paired-lifecycle.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/paired-lifecycle.test.ts (1 test | 1 failed) 12ms
+   × expired authority clears the unusable room and credential without inventing a result; old callbacks cannot affect a new admission 11ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/paired-lifecycle.test.ts > expired authority clears the unusable room and credential without inventing a result; old callbacks cannot affect a new admission
+AssertionError: expected { identity: { roomId: 1, …(3) }, …(9) } to be undefined
+
+- Expected:
+undefined
+
++ Received:
+{
+  "host": 0,
+  "identity": {
+    "pairGeneration": 1,
+    "roomId": 1,
+    "seat": 0,
+    "seatSession": 2,
+  },
+  "idleExpiryUs": 2000000,
+  "idleWarningUs": 1000000,
+  "mode": 1,
+  "phase": 0,
+  "revision": 1,
+  "roundId": 1,
+  "seats": [
+    {
+      "flags": 1,
+      "name": "Driver",
+      "reservationUs": 0,
+      "session": 2,
+    },
+    {
+      "flags": 0,
+      "name": "",
+      "reservationUs": 0,
+      "session": 0,
+    },
+  ],
+  "startUs": 0,
+}
+
+ ❯ tests/session/paired-lifecycle.test.ts:43:31
+     41|     old.onclose?.({ reason: 'Room expired' });
+     42|     expect(client.state.status).toContain('Room expired');
+     43|     expect(client.state.room).toBeUndefined();
+       |                               ^
+     44|     expect(client.state.outcome).toBeUndefined();
+     45|     expect(client.hasCredential).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed (1)
+   Start at  19:36:36
+   Duration  758ms (environment 80%, transform 14%, import 3%, tests 2%, worker 1%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/paired-lifecycle.test.ts"`
+Exit status 1

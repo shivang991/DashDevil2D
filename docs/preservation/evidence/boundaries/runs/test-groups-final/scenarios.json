@@ -1,0 +1,26 @@
+[
+  {
+    "title": "recover respects a complete tick-boundary event group (seat 0)",
+    "status": "passed",
+    "durationMs": 8106,
+    "errors": []
+  },
+  {
+    "title": "recover respects a complete tick-boundary event group (seat 1)",
+    "status": "passed",
+    "durationMs": 6913,
+    "errors": []
+  },
+  {
+    "title": "leave respects a complete tick-boundary event group (seat 0)",
+    "status": "passed",
+    "durationMs": 5494,
+    "errors": []
+  },
+  {
+    "title": "leave respects a complete tick-boundary event group (seat 1)",
+    "status": "passed",
+    "durationMs": 5426,
+    "errors": []
+  }
+]

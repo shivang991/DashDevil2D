@@ -1,0 +1,5 @@
+# ./transport
+open /Users/shivang/Library/Caches/go-build/0b/0b94a737e213125544279174cd3efcbba8d857c60d2b6a41a6601cd39823ea39-d: operation not permitted
+FAIL	./transport [setup failed]
+FAIL
+go: failed to trim cache: open /Users/shivang/Library/Caches/go-build/trim.txt: operation not permitted

@@ -1,0 +1,44 @@
+[
+  {
+    "title": "two actual browsers drive and confirm one finish (clean)",
+    "status": "passed",
+    "durationMs": 8614,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (delayed)",
+    "status": "failed",
+    "durationMs": 6643,
+    "errors": [
+      {
+        "location": {
+          "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+          "column": 107,
+          "line": 78
+        },
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Drag Race', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Drag Race', exact: true }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Drag Race', exact: true })\u001b[22m\n\n\n  76 |     await pages[0].getByRole('button', { name: 'Start round' }).click();\n  77 |     for (const page of pages) { await expect(page.getByTestId('countdown')).toBeVisible(); await page.keyboard.press('ArrowUp'); }\n> 78 |     for (const page of pages) await expect(page.getByRole('heading', { name: 'Drag Race', exact: true })).toBeVisible();\n     |                                                                                                           ^\n  79 |     const canvas = pages[0].getByRole('img', { name: 'Multiplayer race' });\n  80 |     await expect(canvas).toBeVisible(); await canvas.focus();\n  81 |     await pages[0].keyboard.down('ArrowUp');\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:78:107"
+      }
+    ]
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (recovering)",
+    "status": "failed",
+    "durationMs": 10961,
+    "errors": [
+      {
+        "location": {
+          "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+          "column": 83,
+          "line": 109
+        },
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);\n  108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);\n> 109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);\n      |                                                                                   ^\n  110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {\n  111 |       const state = evidence[seat];\n  112 |       const corruptedEpoch = Number(await pages[seat].locator('html').getAttribute('data-race-recovery-epoch'));\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:109:83"
+      }
+    ]
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (unordered)",
+    "status": "passed",
+    "durationMs": 9728,
+    "errors": []
+  }
+]

@@ -1,0 +1,92 @@
+
+> dashdevil@ test:race /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --race
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-31T02:44:06Z
+[WebServer] (node:41577) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:41579) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:41579) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 4 tests using 1 worker
+
+(node:41586) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (clean) (8.6s)
+  ✘  2 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (delayed) (6.6s)
+(node:41646) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  3 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (recovering) (11.0s)
+(node:41685) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (unordered) (9.7s)
+
+
+  1) tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (delayed) ──
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Drag Race', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Drag Race', exact: true }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Drag Race', exact: true })
+
+
+      76 |     await pages[0].getByRole('button', { name: 'Start round' }).click();
+      77 |     for (const page of pages) { await expect(page.getByTestId('countdown')).toBeVisible(); await page.keyboard.press('ArrowUp'); }
+    > 78 |     for (const page of pages) await expect(page.getByRole('heading', { name: 'Drag Race', exact: true })).toBeVisible();
+         |                                                                                                           ^
+      79 |     const canvas = pages[0].getByRole('img', { name: 'Multiplayer race' });
+      80 |     await expect(canvas).toBeVisible(); await canvas.focus();
+      81 |     await pages[0].keyboard.down('ArrowUp');
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:78:107
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2/browser-1792291449219/race-two-actual-browsers-d-f7341-confirm-one-finish-delayed-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2/browser-1792291449219/race-two-actual-browsers-d-f7341-confirm-one-finish-delayed-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2/browser-1792291449219/race-two-actual-browsers-d-f7341-confirm-one-finish-delayed-/error-context.md
+
+  2) tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (recovering) 
+
+    Error: expect(received).toBeGreaterThan(expected)
+
+    Expected: > 0
+    Received:   0
+
+      107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);
+      108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);
+    > 109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);
+          |                                                                                   ^
+      110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {
+      111 |       const state = evidence[seat];
+      112 |       const corruptedEpoch = Number(await pages[seat].locator('html').getAttribute('data-race-recovery-epoch'));
+        at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:109:83
+
+    attachment #3: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2/browser-1792291466593/race-two-actual-browsers-d-effad-firm-one-finish-recovering-/test-failed-2.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2/browser-1792291466593/race-two-actual-browsers-d-effad-firm-one-finish-recovering-/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../../../../../../../../var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-sFU3r2/browser-1792291466593/race-two-actual-browsers-d-effad-firm-one-finish-recovering-/error-context.md
+
+  2 failed
+    tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (delayed) ───
+    tests/browser/race.spec.ts:3:73 › two actual browsers drive and confirm one finish (recovering) 
+  2 passed (41.9s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T02-44-49.952Z
+ ELIFECYCLE  Command failed with exit code 1.

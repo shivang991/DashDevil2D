@@ -1,0 +1,14 @@
+[
+  {
+    "title": "idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer",
+    "status": "passed",
+    "durationMs": 7058,
+    "errors": []
+  },
+  {
+    "title": "countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery",
+    "status": "passed",
+    "durationMs": 8311,
+    "errors": []
+  }
+]

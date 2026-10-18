@@ -31,4 +31,12 @@ Raw command attempts remain in `apps/client/test-results/issue37/`; every transp
 
 These local automated and agent-inspected visual checks do not establish a supported browser-release/OS matrix, physical suspension, reference-hardware/network samples, capacity or two-person manual acceptance. Those remain #42–#45. Road Rage mechanics remain their implementation ticket's responsibility; lifecycle policy is shared across room phases/modes. No failed gate authorizes progression, and this ticket does not claim full multiplayer acceptance.
 
-Independent reviews are recorded in [boundaries-review.md](boundaries-review.md). Final checks and the evidence index are recorded after completion.
+## Final validation
+
+The complete final gate tested frozen source `35b4aeb7cf775a396cbf8eed2eb9df91d00688e0`. Generated outputs and all 15 uncached workspace tasks passed: typechecking, lint, production build, 354 Vitest tests, and all Go tests. Transport race detection also passed; Go source has not changed since that run.
+
+All 12 browser commands passed, covering 39 scenarios: race 4, boundaries 2, transport 3, rooms 5, groups 4, finality 2, objects 1, contacts 2, hearts 1, maintenance 1, lifecycle 2, and Long Drive preservation 12. The captured environment was Apple M2, Darwin 25.5.0 arm64, Node 26.10.0, pnpm 8.15.9, Go 1.26.0, and Chrome 155. Local certificates used process-scoped trust.
+
+Independent Standards and Spec reviews report zero remaining findings; their findings, fixes and rechecks are recorded in [boundaries-review.md](boundaries-review.md). The [validation index](boundaries-validation.json) identifies accepted runs separately from retained failed attempts, records tested-source hashes and environment, and links command logs and scenario evidence. Hashes describe the tested source revision; this final documentation/evidence commit does not change executable source.
+
+Agent visual inspection confirmed the expiry admission/error state and server-confirmed abandonment result. Automated Long Drive preservation passed; human audiovisual acceptance remains pending under the limits above.

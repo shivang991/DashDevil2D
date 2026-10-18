@@ -1,0 +1,13 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/paired-lifecycle.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+
+ Test Files  1 passed (1)
+      Tests  1 passed (1)
+   Start at  19:38:43
+   Duration  620ms (environment 92%, import 3%, transform 3%, tests 2%, worker 1%)
+

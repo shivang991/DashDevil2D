@@ -1,0 +1,12 @@
+{
+  "configurationVersion": 1,
+  "fixtureVersion": 1,
+  "maximumHP": 4,
+  "damageHP": 3,
+  "healedHP": 4,
+  "finalScore": 0,
+  "randomness": "xorshift32 seed 5410",
+  "heartAudio": "oscillator cue observed; human audition pending",
+  "heartRendering": "screenshot retained; human comparison pending",
+  "activeOverrideMutation": "HUD remains captured at 4"
+}

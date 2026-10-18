@@ -1,0 +1,26 @@
+[
+  {
+    "title": "two actual browsers drive and confirm one finish (clean)",
+    "status": "passed",
+    "durationMs": 8785,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (delayed)",
+    "status": "passed",
+    "durationMs": 9915,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (recovering)",
+    "status": "passed",
+    "durationMs": 10264,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (unordered)",
+    "status": "passed",
+    "durationMs": 9560,
+    "errors": []
+  }
+]

@@ -1,0 +1,9 @@
+2026/10/17 19:33:24 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:33:24 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:33:24 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:33:24 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+--- FAIL: TestRoomUsesConfiguredIdleAndReconnectWindows (0.02s)
+    lifecycle_test.go:19: configured warning: {Identity:{RoomId:1 SeatSession:3 PairGeneration:1 Seat:1} Revision:4 Mode:1 Phase:0 Host:0 Seats:[{Session:2 Name:Host Flags:1 ReservationUs:0} {Session:3 Name:Guest Flags:1 ReservationUs:0}] RoundId:1 StartUs:0 IdleWarningUs:840010512 IdleExpiryUs:900010512}
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	0.593s
+FAIL

@@ -1,0 +1,37 @@
+=== RUN   TestAbandonmentIsRecoverableBeforeRemainingReservationExpires
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:40:15 INFO race_finalized room=1 round=2 time_us=500000 server_us=3500001 result=3 reason=5
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=1 generation=2 reason="server shutdown"
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=1 generation=2 reason="pair closed"
+--- PASS: TestAbandonmentIsRecoverableBeforeRemainingReservationExpires (0.06s)
+=== RUN   TestExpiredEmptyRoomCodeIsImmediatelyReusableWithNewIdentity
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=0 generation=1 reason="Reconnect grace expired"
+2026/10/17 19:40:15 INFO pair_closed room=3 seat=0 generation=1 reason="server shutdown"
+--- PASS: TestExpiredEmptyRoomCodeIsImmediatelyReusableWithNewIdentity (0.01s)
+=== RUN   TestBothChannelsInitializedJustBeforeGraceClearReservation
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=0 generation=2 reason=replaced
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=0 generation=2 reason="pair closed"
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=0 generation=3 reason="server shutdown"
+--- PASS: TestBothChannelsInitializedJustBeforeGraceClearReservation (0.01s)
+=== RUN   TestSameInstantExplicitDeparturesReleaseBothSeats
+=== RUN   TestSameInstantExplicitDeparturesReleaseBothSeats/[0_1]
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:40:15 INFO race_finalized room=1 round=2 time_us=500000 server_us=3500000 result=3 reason=5
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=1 generation=1 reason="explicit leave"
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+=== RUN   TestSameInstantExplicitDeparturesReleaseBothSeats/[1_0]
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=1 generation=1 reason="explicit leave"
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:40:15 INFO race_finalized room=1 round=2 time_us=500000 server_us=3500000 result=3 reason=5
+2026/10/17 19:40:15 INFO pair_closed room=1 seat=0 generation=1 reason="explicit leave"
+2026/10/17 19:40:15 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+--- PASS: TestSameInstantExplicitDeparturesReleaseBothSeats (0.08s)
+    --- PASS: TestSameInstantExplicitDeparturesReleaseBothSeats/[0_1] (0.04s)
+    --- PASS: TestSameInstantExplicitDeparturesReleaseBothSeats/[1_0] (0.04s)
+PASS
+ok  	github.com/shivang991/DashDevil2D/apps/server/transport	0.820s

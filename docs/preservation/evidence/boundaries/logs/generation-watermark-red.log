@@ -1,0 +1,42 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/paired-lifecycle.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/paired-lifecycle.test.ts (4 tests | 1 failed) 1492ms
+   × a remote generation reset rebases its input watermarks before following coverage 227ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/paired-lifecycle.test.ts > a remote generation reset rebases its input watermarks before following coverage
+AssertionError: expected [ 'Coverage history unavailable' ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "Coverage history unavailable",
++ ]
+
+ ❯ tests/session/paired-lifecycle.test.ts:182:33
+    180|     authority.enqueue(encodeMessage('Barrier', { identity, round: base…
+    181|     await vi.waitFor(() => expect(client.state.barriers > 0 || client.…
+    182|     expect(client.state.errors).toEqual([]);
+       |                                 ^
+    183|     expect(client.state.barriers).toBe(1);
+    184|     expect(client.state.diagnostics.recoveryRequests ?? 0).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 3 passed (4)
+   Start at  00:47:02
+   Duration  2.13s (tests 74%, environment 23%, transform 2%, import 1%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/paired-lifecycle.test.ts"`
+Exit status 1

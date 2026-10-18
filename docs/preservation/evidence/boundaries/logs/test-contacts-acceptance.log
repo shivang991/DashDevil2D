@@ -1,0 +1,22 @@
+
+> dashdevil@ test:contacts /Users/shivang/Desktop/programs/test/claude-code-test
+> node apps/client/scripts/transport.mjs --test --contacts
+
+/var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-o5AKsH/config.json
+Transport evidence directory: /var/folders/5z/7hvtf7d91fq11j0_kvlfl9gm0000gn/T/dashdevil-transport-o5AKsH
+HTTPS private rooms: https://127.0.0.1:4173/; certificate expires 2026-10-31T02:45:07Z
+[WebServer] (node:42037) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `pnpm --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:42038) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] (node:42038) [DEP0205] DeprecationWarning: `module.register()` is deprecated. Use `module.registerHooks()` instead.
+
+Running 2 tests using 1 worker
+
+(node:42045) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 tests/browser/contacts.spec.ts:4:30 › two browsers return, overtake and release tailgating (leader seat 0) (12.9s)
+  ✓  2 tests/browser/contacts.spec.ts:4:30 › two browsers return, overtake and release tailgating (leader seat 1) (12.3s)
+
+  2 passed (27.1s)
+Retained transport evidence: /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T02-45-36.296Z

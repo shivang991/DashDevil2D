@@ -1,0 +1,20 @@
+2026/10/17 19:42:19 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:42:19 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:42:19 INFO race_finalized room=1 round=2 time_us=2000000 server_us=5000000 result=0 reason=4
+2026/10/17 19:42:19 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:42:19 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:42:19 INFO pair_closed room=1 seat=0 generation=2 reason="server shutdown"
+2026/10/17 19:42:19 INFO gameplay_failure room=1 seat=0 generation=2 reason="pair closed"
+2026/10/17 19:42:19 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:42:19 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+2026/10/17 19:42:19 INFO pair_closed room=1 seat=0 generation=1 reason="room channel lost"
+2026/10/17 19:42:19 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:42:19 INFO race_finalized room=1 round=2 time_us=2000000 server_us=5000000 result=3 reason=5
+2026/10/17 19:42:19 INFO pair_closed room=1 seat=0 generation=2 reason="server shutdown"
+2026/10/17 19:42:19 INFO gameplay_failure room=1 seat=0 generation=2 reason="pair closed"
+--- FAIL: TestEqualTimeGraceAndDisconnectAreOrderIndependent (0.11s)
+    --- FAIL: TestEqualTimeGraceAndDisconnectAreOrderIndependent/true (0.06s)
+        lifecycle_test.go:382: equal-time order changed result: {Identity:{RoomId:1 SeatSession:2 PairGeneration:2 Seat:0} RoundId:2 OutcomeId:1 Tick:120 TimeUs:2000000 Result:0 Reason:4 Cars:[{Progress:799.9999999999993 Lateral:-120 Hp:3 Score:0} {Progress:799.9999999999993 Lateral:120 Hp:3 Score:0}] Progress:{Authority:1 Event:1 Processed1:0 Processed2:0 Disposed1:0 Disposed2:0}}
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	0.705s
+FAIL

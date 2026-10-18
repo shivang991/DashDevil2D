@@ -1,0 +1,23 @@
+[
+  {
+    "title": "idle warning, explicit expiry failure, fresh room, reserved host and expiry transfer",
+    "status": "passed",
+    "durationMs": 7490,
+    "errors": []
+  },
+  {
+    "title": "countdown and gameplay outlive idle expiry; leaving a disconnected opponent confirms abandonment on recovery",
+    "status": "failed",
+    "durationMs": 12342,
+    "errors": [
+      {
+        "location": {
+          "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/boundaries.spec.ts",
+          "column": 75,
+          "line": 77
+        },
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('heading', { name: 'Round result' })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" getByRole('heading', { name: 'Round result' }) with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('heading', { name: 'Round result' })\u001b[22m\n\n\n  75 |     await expect(pages[0].getByRole('button', { name: 'Create Room', exact: true })).toBeVisible();\n  76 |     await contexts[1].unroute('**/admission*'); await pages[1].reload();\n> 77 |     await expect(pages[1].getByRole('heading', { name: 'Round result' })).toBeVisible();\n     |                                                                           ^\n  78 |     const outcome = JSON.parse((await pages[1].getByTestId('outcome-evidence').textContent())!);\n  79 |     expect(outcome.result).toBe(3); expect(outcome.reason).toBe(5);\n  80 |     records.push({ recovered: await evidence(pages[1]), outcome });\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/boundaries.spec.ts:77:75"
+      }
+    ]
+  }
+]

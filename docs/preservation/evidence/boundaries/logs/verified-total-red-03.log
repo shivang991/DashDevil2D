@@ -1,0 +1,42 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/paired-lifecycle.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/paired-lifecycle.test.ts (3 tests | 1 failed) 1231ms
+   × verified diagnostics count successful comparisons across recovery epochs, including before a delayed acknowledgement 1065ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/paired-lifecycle.test.ts > verified diagnostics count successful comparisons across recovery epochs, including before a delayed acknowledgement
+AssertionError: ["missing track coverage"]: expected undefined to deeply equal [ 1 ]
+
+- Expected:
+[
+  1,
+]
+
++ Received:
+undefined
+
+ ❯ tests/session/paired-lifecycle.test.ts:120:113
+    118|     };
+    119|     install(1);
+    120|     await vi.waitFor(() => expect(client.state.diagnostics.baselineEpo…
+       |                                                                                                                 ^
+    121|     const barrier = { identity, round: baseline.round, epoch: 1, tick:…
+    122|     const crc = crc32c(projectBaseline({ ...baseline, tick: 1, timeUs:…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  00:42:11
+   Duration  1.84s (tests 72%, environment 24%, transform 3%, import 1%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/paired-lifecycle.test.ts"`
+Exit status 1

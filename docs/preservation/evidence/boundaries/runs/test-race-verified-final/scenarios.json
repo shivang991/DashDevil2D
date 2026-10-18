@@ -1,0 +1,35 @@
+[
+  {
+    "title": "two actual browsers drive and confirm one finish (clean)",
+    "status": "passed",
+    "durationMs": 8582,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (delayed)",
+    "status": "failed",
+    "durationMs": 11415,
+    "errors": [
+      {
+        "location": {
+          "file": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts",
+          "column": 32,
+          "line": 108
+        },
+        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 3\u001b[39m\n\n\u001b[32m- Array []\u001b[39m\n\u001b[31m+ Array [\u001b[39m\n\u001b[31m+   \"Coverage history unavailable\",\u001b[39m\n\u001b[31m+ ]\u001b[39m\n\n  106 |     expect(evidence[0].startUs).toBe(evidence[1].startUs);\n  107 |     expect(evidence[0].roundId).toBe(evidence[1].roundId);\n> 108 |     expect(evidence[0].errors).toEqual([]); expect(evidence[1].errors).toEqual([]);\n      |                                ^\n  109 |     expect(evidence[0].verified).toBeGreaterThan(0); expect(evidence[1].verified).toBeGreaterThan(0);\n  110 |     if (recovering) for (let seat = 0; seat < pages.length; seat++) {\n  111 |       const state = evidence[seat];\n    at /Users/shivang/Desktop/programs/test/claude-code-test/apps/client/tests/browser/race.spec.ts:108:32"
+      }
+    ]
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (recovering)",
+    "status": "passed",
+    "durationMs": 9667,
+    "errors": []
+  },
+  {
+    "title": "two actual browsers drive and confirm one finish (unordered)",
+    "status": "passed",
+    "durationMs": 9375,
+    "errors": []
+  }
+]

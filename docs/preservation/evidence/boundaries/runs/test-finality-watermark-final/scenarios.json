@@ -1,0 +1,14 @@
+[
+  {
+    "title": "outcome precedes old room state and a recovery baseline (seat 0)",
+    "status": "passed",
+    "durationMs": 12499,
+    "errors": []
+  },
+  {
+    "title": "outcome precedes old room state and a recovery baseline (seat 1)",
+    "status": "passed",
+    "durationMs": 11867,
+    "errors": []
+  }
+]

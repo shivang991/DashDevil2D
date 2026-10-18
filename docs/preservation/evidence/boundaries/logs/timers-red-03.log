@@ -1,0 +1,9 @@
+2026/10/17 19:33:20 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:33:20 INFO pair_closed room=1 seat=1 generation=1 reason="room channel lost"
+2026/10/17 19:33:20 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+2026/10/17 19:33:20 INFO gameplay_failure room=1 seat=1 generation=1 reason="pair closed"
+--- FAIL: TestRoomUsesConfiguredIdleAndReconnectWindows (5.01s)
+    lifecycle_test.go:17: read tcp 127.0.0.1:54955->127.0.0.1:54950: i/o timeout
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	5.311s
+FAIL

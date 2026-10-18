@@ -1,0 +1,18 @@
+{
+  "recordedBytes": 233818,
+  "method": "parallel Web Audio MediaStreamDestination",
+  "captures": [
+    "countdown/GO",
+    "engine",
+    "acceleration/release",
+    "lane change",
+    "pause/resume",
+    "damage",
+    "gameover"
+  ],
+  "missing": [
+    "coin cue not independently isolated",
+    "hidden-tab mute"
+  ],
+  "humanAudition": "pending"
+}

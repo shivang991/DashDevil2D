@@ -1,0 +1,11 @@
+2026/10/17 19:34:14 INFO pair_closed room=1 seat=0 generation=1 reason="server shutdown"
+2026/10/17 19:34:14 INFO gameplay_failure room=1 seat=0 generation=1 reason="pair closed"
+--- FAIL: TestDuplicateLobbyActionsDoNotExtendIdleExpiry (0.01s)
+    lifecycle_test.go:58: no-op command 0 extended idle: 901000000 != 900000000
+2026/10/17 19:34:14 INFO pair_closed room=1 seat=0 generation=1 reason=replaced
+2026/10/17 19:34:14 INFO pair_closed room=1 seat=0 generation=2 reason="reservation expired"
+2026/10/17 19:34:14 INFO pair_closed room=1 seat=0 generation=1 reason="reservation expired"
+2026/10/17 19:34:14 INFO pair_closed room=1 seat=0 generation=1 reason="reservation expired"
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/transport	0.658s
+FAIL

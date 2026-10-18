@@ -1,0 +1,23 @@
+{"time":"2026-10-17T19:50:40.739123-07:00","level":"INFO","msg":"listeners_ready","address":"https://127.0.0.1:8443","origin":"https://127.0.0.1:4173"}
+{"time":"2026-10-17T19:50:43.633328-07:00","level":"INFO","msg":"baseline_installed","room":1,"seat":0,"generation":1,"bytes":1057,"duration_us":2149}
+{"time":"2026-10-17T19:50:43.734693-07:00","level":"INFO","msg":"baseline_installed","room":1,"seat":1,"generation":1,"bytes":1057,"duration_us":1194}
+{"time":"2026-10-17T19:50:44.190677-07:00","level":"INFO","msg":"baseline_installed","room":1,"seat":0,"generation":1,"bytes":1057,"duration_us":942}
+{"time":"2026-10-17T19:50:44.224343-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T19:50:44.224473-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T19:50:44.276304-07:00","level":"INFO","msg":"baseline_installed","room":1,"seat":0,"generation":2,"bytes":1057,"duration_us":977}
+{"time":"2026-10-17T19:50:44.322483-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":2,"reason":"control stream ended or malformed"}
+{"time":"2026-10-17T19:50:44.322538-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":2,"reason":"control stream ended or malformed"}
+{"time":"2026-10-17T19:50:44.375495-07:00","level":"INFO","msg":"baseline_installed","room":1,"seat":0,"generation":3,"bytes":1057,"duration_us":680}
+{"time":"2026-10-17T19:50:44.397961-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":3,"reason":"room channel lost"}
+{"time":"2026-10-17T19:50:44.398105-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":3,"reason":"pair closed"}
+{"time":"2026-10-17T19:50:44.476111-07:00","level":"INFO","msg":"baseline_installed","room":1,"seat":0,"generation":4,"bytes":1057,"duration_us":969}
+{"time":"2026-10-17T19:50:44.522498-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":4,"reason":"room channel lost"}
+{"time":"2026-10-17T19:50:44.522583-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":4,"reason":"pair closed"}
+{"time":"2026-10-17T19:50:44.541977-07:00","level":"INFO","msg":"baseline_installed","room":1,"seat":0,"generation":5,"bytes":1057,"duration_us":604}
+{"time":"2026-10-17T19:50:44.733968-07:00","level":"INFO","msg":"application_progress","room":1,"seat":1,"generation":1,"sent_tick":70,"acknowledged_tick":69,"outstanding_records":1,"oldest_ack_age_us":0,"authority_queue_bytes":64}
+{"time":"2026-10-17T19:50:45.541609-07:00","level":"INFO","msg":"application_progress","room":1,"seat":0,"generation":5,"sent_tick":70,"acknowledged_tick":69,"outstanding_records":1,"oldest_ack_age_us":0,"authority_queue_bytes":64}
+{"time":"2026-10-17T19:50:45.734048-07:00","level":"INFO","msg":"application_progress","room":1,"seat":1,"generation":1,"sent_tick":80,"acknowledged_tick":79,"outstanding_records":1,"oldest_ack_age_us":0,"authority_queue_bytes":64}
+{"time":"2026-10-17T19:50:45.816039-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":1,"generation":1,"reason":"room channel lost"}
+{"time":"2026-10-17T19:50:45.816177-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":1,"generation":1,"reason":"pair closed"}
+{"time":"2026-10-17T19:50:45.829389-07:00","level":"INFO","msg":"pair_closed","room":1,"seat":0,"generation":5,"reason":"room channel lost"}
+{"time":"2026-10-17T19:50:45.829465-07:00","level":"INFO","msg":"gameplay_failure","room":1,"seat":0,"generation":5,"reason":"pair closed"}

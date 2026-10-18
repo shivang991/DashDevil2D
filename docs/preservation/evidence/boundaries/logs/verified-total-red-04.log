@@ -1,0 +1,40 @@
+
+> @dashdevil/client@0.0.0 test /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+> vitest run "tests/session/paired-lifecycle.test.ts"
+
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/session/paired-lifecycle.test.ts (3 tests | 1 failed) 338ms
+   × verified diagnostics count successful comparisons across recovery epochs, including before a delayed acknowledgement 171ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/session/paired-lifecycle.test.ts > verified diagnostics count successful comparisons across recovery epochs, including before a delayed acknowledgement
+AssertionError: expected +0 to be 1 // Object.is equality
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/session/paired-lifecycle.test.ts:131:35
+    129|     authority.enqueue(encodeMessage('Barrier', barrier));
+    130|     await vi.waitFor(() => expect(blocked).toBe(true));
+    131|     expect(client.state.verified).toBe(1);
+       |                                   ^
+    132|     releaseAck(); gameplay.controlWrite = undefined;
+    133|     client.requestBaseline();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  00:42:26
+   Duration  923ms (environment 51%, tests 42%, transform 4%, import 2%)
+
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_RUN_FIRST_FAIL  @dashdevil/client@0.0.0 test: `vitest run "tests/session/paired-lifecycle.test.ts"`
+Exit status 1
