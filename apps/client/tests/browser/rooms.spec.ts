@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('two React participants adopt host mode, ready and share a physics-free countdown and round zero', async ({ browser, baseURL }, info) => {
+test('two React participants adopt host mode, ready and share a physics-free countdown before playable Road Rage', async ({ browser, baseURL }, info) => {
   const contexts = await Promise.all([browser.newContext({ baseURL }), browser.newContext({ baseURL })]);
   const pages = await Promise.all(contexts.map(context => context.newPage()));
   try {
@@ -46,18 +46,22 @@ test('two React participants adopt host mode, ready and share a physics-free cou
       await expect(page.getByTestId('countdown')).toContainText(/3|2|1/);
       await page.keyboard.press('ArrowUp');
       await expect(page.getByTestId('round-time')).toHaveText('0');
+      const waiting = JSON.parse((await page.getByTestId('room-evidence').textContent())!);
+      expect(waiting.cars.map((car: { progress: number; heldMask: number; effective: number }) => [car.progress, car.heldMask, car.effective])).toEqual([[0, 0, 0], [0, 0, 0]]);
     }
     for (const page of pages) {
-      await expect(page.getByRole('heading', { name: 'Round ready' })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Road Rage', exact: true })).toBeVisible();
+      await expect(page.getByRole('img', { name: 'Multiplayer race' })).toBeVisible();
+      await expect.poll(async () => Number(await page.getByTestId('round-time').textContent())).toBeGreaterThan(0);
       await expect(page.getByText('Countdown cancelled. Both players must ready again.')).toHaveCount(0);
     }
     const evidence = await Promise.all(pages.map(page => page.getByTestId('room-evidence').textContent().then(value => JSON.parse(value!))));
     expect(evidence[0].startUs).toBe(evidence[1].startUs);
     expect(evidence[0].roundId).toBe(evidence[1].roundId);
-    expect(evidence[0].cars).toEqual(evidence[1].cars);
     for (let i = 0; i < pages.length; i++) {
-      expect(evidence[i].timeUs).toBe(0);
-      expect(evidence[i].cars.map((car: { progress: number; heldMask: number; effective: number }) => [car.progress, car.heldMask, car.effective])).toEqual([[0, 0, 0], [0, 0, 0]]);
+      expect(evidence[i].timeUs).toBeGreaterThan(0);
+      expect(evidence[i].cars.map((car: { heldMask: number; effective: number }) => [car.heldMask, car.effective])).toEqual([[0, 0], [0, 0]]);
+      for (const car of evidence[i].cars) expect(car.progress).toBeCloseTo(evidence[i].timeUs / 1e6 * 400, 3);
       await info.attach(`room-seat-${i}.json`, { body: JSON.stringify({ ...evidence[i], browser: await pages[i].evaluate(() => navigator.userAgent) }), contentType: 'application/json' });
       await info.attach(`room-seat-${i}.png`, { body: await pages[i].screenshot(), contentType: 'image/png' });
     }

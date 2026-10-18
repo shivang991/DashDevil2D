@@ -30,7 +30,13 @@ test(defaults ? 'shipped Road Rage survives obstacles until authoritative elimin
       await pages[0].getByRole('img', { name: 'Multiplayer race' }).focus(); await pages[0].keyboard.down('ArrowUp');
       await expect(pages[0].getByTestId('nos-status')).toHaveText('NOS active');
       await expect.poll(async () => { const s = await read(pages[0]); return s.cars[0].progress - s.cars[1].progress; }, { timeout: 6000 }).toBeGreaterThan(1200);
-      records.push({ separated: await Promise.all(pages.map(read)) });
+      const separated = await Promise.all(pages.map(read));
+      records.push({ separated });
+      const initialIds = new Set<number>(initial[0].objects.map((object: { id: number }) => object.id));
+      expect(initialIds.size).toBeGreaterThan(0);
+      expect(separated[0].objects.some((object: { id: number }) => initialIds.has(object.id))).toBe(false);
+      expect(Math.max(...separated[0].objects.map((object: { id: number }) => object.id))).toBeGreaterThan(Math.max(...initialIds));
+      for (const car of separated[0].cars) expect(separated[0].objects.some((object: { distance: number }) => object.distance > car.progress && object.distance < car.progress + 800)).toBe(true);
       await info.attach('separated.png', { body: await pages[0].screenshot({ fullPage: true }), contentType: 'image/png' });
     }
     await expect.poll(async () => (await read(pages[0])).cars?.some((car: { hp: number }) => car.hp < (defaults ? 3 : 6)), { timeout: 25000 }).toBe(true);
@@ -70,7 +76,7 @@ test(defaults ? 'shipped Road Rage survives obstacles until authoritative elimin
     expect(errors).toEqual([]);
     const final = await Promise.all(pages.map(read));
     for (const state of final) { expect(state.errors).toEqual([]); expect(state.verified).toBeGreaterThan(0); }
-    const environments = await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, width: innerWidth, height: innerHeight }))));
+    const environments = await Promise.all(pages.map(page => page.evaluate(() => ({ userAgent: navigator.userAgent, width: innerWidth, height: innerHeight, canvas: (() => { const c = document.querySelector('canvas')!; const rect = c.getBoundingClientRect(); return { width: c.width, height: c.height, displayedWidth: rect.width, displayedHeight: rect.height }; })() }))));
     await info.attach('road-rage.json', { body: JSON.stringify({ defaults, records, final, environments }), contentType: 'application/json' });
   } finally { await Promise.all(contexts.map(context => context.close())); }
 });
