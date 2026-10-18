@@ -313,7 +313,7 @@ export class Multiplayer {
  private lateralBlocked(seat: number): boolean {
   const a = this.cars[seat], b = this.cars[1-seat], g = this.configuration.gameplay;
   const x = a.lateral - b.lateral;
-  return (this.contact.flags & 1) !== 0 && a.phase === 2 && Math.abs(a.progress-b.progress) < g.carHeight - 1e-8 && Math.abs(x) <= g.carWidth + 1e-8 && x * this.rawLateralSpeed(a) < 0;
+  return (this.contact.flags & 1) !== 0 && a.phase === 2 && Math.abs(a.progress-b.progress) < g.carHeight - 1e-8 && Math.abs(x) <= g.carWidth + 1e-8 && x * this.rawLateralSpeed(a) < 0 && x * (this.rawLateralSpeed(a) - this.rawLateralSpeed(b)) < 0;
  }
  private lateralSpeed(car: Car): number { return this.lateralBlocked(this.cars.indexOf(car)) ? 0 : this.rawLateralSpeed(car); }
  private rawLateralSpeed(car: Car): number {
@@ -322,6 +322,18 @@ export class Multiplayer {
  /** Split at the instant a leader clears sideways, releasing the follower within
   * the tick rather than delaying its requested speed until the next tick. */
  private clearance(start: number, end: number): number {
+  // Release a laterally blocked return at the swept longitudinal boundary,
+  // including when it lies between ticks or inside an event-time group.
+  for (let seat = 0; seat < 2; seat++) if (this.lateralBlocked(seat)) {
+   const y = this.cars[seat].progress - this.cars[1-seat].progress;
+   const m = this.multiplier(seat) - this.multiplier(1-seat), extent = this.configuration.gameplay.carHeight;
+   const at = (time: number) => y + this.forwardDistance(start, time-start) * m;
+   if (m !== 0 && Math.abs(at(end)) >= extent) {
+    let low = start, high = end;
+    for (let n=0; n<52; n++) { const mid = low + (high-low)/2; if (Math.abs(at(mid)) < extent) low = mid; else high = mid; }
+    if (high > start + 1e-12) end = Math.min(end, high);
+   }
+  }
   for (let seat = 0; seat < 2; seat++) if (this.tailgating(seat)) {
    const a = this.cars[seat], b = this.cars[1-seat];
    const x = a.lateral - b.lateral, v = this.lateralSpeed(a) - this.lateralSpeed(b);

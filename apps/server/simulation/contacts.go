@@ -31,6 +31,30 @@ func rawLateralSpeed(car protocol.Car) float64 {
 
 // Release a follower at sideways clearance inside a tick.
 func (e *Engine) clearance(start, end float64) float64 {
+	// Release a blocked return exactly at swept longitudinal clearance.
+	for seat := range e.state.Cars {
+		if e.lateralBlocked(seat) {
+			y := e.state.Cars[seat].Progress - e.state.Cars[1-seat].Progress
+			m := e.multiplier(seat) - e.multiplier(1-seat)
+			extent := e.context.Gameplay.CarHeight
+			at := func(time float64) float64 { return y + forwardDistance(e.context.Gameplay, start, time-start)*m }
+			if m != 0 && math.Abs(at(end)) >= extent {
+				low, high := start, end
+				for n := 0; n < 52; n++ {
+					mid := low + (high-low)/2
+					if math.Abs(at(mid)) < extent {
+						low = mid
+					} else {
+						high = mid
+					}
+				}
+				if high > start+1e-12 {
+					end = math.Min(end, high)
+				}
+			}
+		}
+	}
+
 	for seat := range e.state.Cars {
 		if e.tailgating(seat) {
 			a, b := e.state.Cars[seat], e.state.Cars[1-seat]
@@ -156,7 +180,7 @@ func (e *Engine) resolvePlayers(time float64, events *[]Observation) {
 func (e *Engine) lateralBlocked(seat int) bool {
 	a, b, g := e.state.Cars[seat], e.state.Cars[1-seat], e.context.Gameplay
 	x := a.Lateral - b.Lateral
-	return e.state.Contact.Flags&1 != 0 && a.Phase == 2 && math.Abs(a.Progress-b.Progress) < g.CarHeight-1e-8 && math.Abs(x) <= g.CarWidth+1e-8 && x*rawLateralSpeed(a) < 0
+	return e.state.Contact.Flags&1 != 0 && a.Phase == 2 && math.Abs(a.Progress-b.Progress) < g.CarHeight-1e-8 && math.Abs(x) <= g.CarWidth+1e-8 && x*rawLateralSpeed(a) < 0 && x*(rawLateralSpeed(a)-rawLateralSpeed(b)) < 0
 }
 func (e *Engine) lateralSpeed(seat int) float64 {
 	if e.lateralBlocked(seat) {

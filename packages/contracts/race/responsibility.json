@@ -964,6 +964,142 @@
           }
         }
       ]
+    },
+    {
+      "name": "blocked return resumes at longitudinal clearance between ticks",
+      "cars": [
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": -120,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "phase": 2,
+          "movementEndUs": 150000
+        },
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "progress": 10
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.2,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            2,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "lateral": [
+            -30,
+            0
+          ],
+          "progress": [
+            80,
+            170
+          ],
+          "movementStartUs": [
+            87500,
+            0
+          ],
+          "movementEndUs": [
+            237500,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "continuing contact allows both cars to separate sideways immediately",
+      "cars": [
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": -120,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "phase": 2,
+          "movementEndUs": 150000
+        },
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            2,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "separated": true
+        },
+        {
+          "at": 0.15,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 6
+            }
+          ],
+          "hp": [
+            2,
+            3
+          ],
+          "contactTimes": [],
+          "lateral": [
+            -10,
+            40
+          ],
+          "progress": [
+            60,
+            100
+          ],
+          "movementStartUs": [
+            12500,
+            100000
+          ],
+          "movementEndUs": [
+            162500,
+            250000
+          ]
+        }
+      ]
     }
   ]
 }

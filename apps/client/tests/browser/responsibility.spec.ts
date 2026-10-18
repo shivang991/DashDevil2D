@@ -13,6 +13,7 @@ test('actual browser executes every shared responsibility timeline', async ({pag
   expect(actual.admitted.every(Boolean)).toBe(true);
   expect(actual.state.cars.map(car=>car.hp),scenario.name).toEqual(expected.hp);
   expect(actual.contactTimes,scenario.name).toEqual(expected.contactTimes);
+  for (const field of ['progress','lateral'] as const) if (field in expected) { const values=expected[field as keyof typeof expected] as number[]; actual.state.cars.forEach((car,seat)=>expect(Math.abs(car[field]-values[seat]),scenario.name).toBeLessThanOrEqual(fixtures.precision.absolute+fixtures.precision.relative*Math.abs(values[seat]))); }
   if ('contact' in expected) { expect(actual.state.contact).toEqual(expected.contact); expect(actual.contactHex).toBe(expected.contactHex); }
   if ('latestSeat' in expected) expect(actual.state.latestPress?.seat).toBe(expected.latestSeat);
   if ('latestOrder' in expected) expect(actual.state.latestPress?.order).toBe(expected.latestOrder);
