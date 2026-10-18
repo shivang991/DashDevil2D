@@ -47,3 +47,13 @@ Repair `ee3ba3e` immediately revokes admission/input ownership but preserves acc
 The independently reviewed clear-track fixture has 400 units/s normal speed, 2× NOS, car front offset 40 and finish distance 1240. An authoritative disposition confirms the press was accepted at time zero. At 1499999µs, center 1199.9992 remains short of the finish and leaving forfeits; at 1500000µs or one microsecond later, center 1200 yields the gameplay win at 1500000µs. These expectations pass through public real input/outcome streams, with the existing continuous-position tolerance.
 
 Both independent reviewers found zero remaining findings in `7980bbe...ee3ba3e`. The original red, fixture compile error, green regression and subsequent gates remain retained.
+
+## Recovery diagnostic follow-up
+
+The frozen rerun reproduced the recovering-race failure, disproving the earlier assumption that every such failure came from overlapping source work. Both clients received matching confirmed results with no protocol errors, but a late recovery baseline reset the epoch-local verifier and the displayed `verified` statistic fell to zero. Original failed attempts remain retained.
+
+Repair `77fa1a5` makes only the public diagnostic total cumulative across verification epochs. Exact CRC comparison/history and recovery decisions remain epoch-local and unchanged. A newer recovered baseline remains a separate browser assertion; the cumulative number does not establish verification of the newest epoch.
+
+The public encoded-frame regression proves: an epoch-1 match is counted before a delayed acknowledgement completes; installing epoch 2 preserves the total; a matching epoch-2 comparison increments it; duplicate/obsolete-epoch datagrams do not increment; a CRC mismatch requests another recovery without incrementing. The actual diagnostic red is `verified-total-red-04.log`; preceding attempts exposed missing fixture coverage and are retained as setup failures.
+
+Both independent reviewers report zero remaining findings through `77fa1a5`. The browser assertions were not weakened.
