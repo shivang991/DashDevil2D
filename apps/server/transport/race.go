@@ -70,6 +70,7 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 		}
 		state := r.engine.Snapshot()
 		r.zero.Cars = state.Cars
+		r.zero.Contact = state.Contact
 		r.zero.Tick = state.Tick
 		r.zero.TimeUs = state.TimeUs
 		if state.Finish != nil {
@@ -141,6 +142,7 @@ func (s *Server) advanceRacesLocked() []*room {
 		}
 		state := r.engine.Snapshot()
 		r.zero.Cars = state.Cars
+		r.zero.Contact = state.Contact
 		r.zero.Tick = state.Tick
 		r.zero.TimeUs = state.TimeUs
 		if state.Abandoned {
@@ -164,6 +166,9 @@ func (s *Server) advanceRacesLocked() []*room {
 }
 func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 	b := r.zero
+	if event.Car != nil || event.Type == "contact" || event.Type == "objects" {
+		b.Contact = event.Contact
+	}
 	b.Progress.Authority++
 	if event.Type == "input" {
 		seat := *event.Seat

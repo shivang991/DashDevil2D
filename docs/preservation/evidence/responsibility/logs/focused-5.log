@@ -1,0 +1,1114 @@
+
+ RUN  v5.0.4 /Users/shivang/Desktop/programs/test/claude-code-test/apps/client
+
+ ❯ tests/simulation/multiplayer.test.ts (41 tests | 15 failed) 93ms
+   × shared timeline: next-unprocessed tick, no backdating 8ms
+   × shared timeline: same-time seats ordered before shift 10ms
+   × shared timeline: held shifts, no overlap and repeat at completion 4ms
+   × shared timeline: release preserves shift but never restores older NOS 3ms
+   × shared timeline: fresh NOS can boost during an existing shift 2ms
+   × shared timeline: edge steering cancels NOS and counts once; held repeat ignored 1ms
+   × shared timeline: expiry inside tick and refresh cannot resurrect 1ms
+   × shared timeline: refresh extends freshness without history entry 3ms
+   × shared timeline: duplicate stale-round forged-seat and malformed control rejected 6ms
+   × shared timeline: disconnect invalidates queued presses immediately 2ms
+   × shared timeline: short stall processes every tick in order 1ms
+   × shared timeline: continuous speed growth integrates across cap before boost 1ms
+   × shared timeline: slow shift cannot overlap faster repeat 2ms
+   × shared timeline: malformed fresh press cannot consume a valid input sequence 1ms
+   × shared timeline: independent windows avoid retaining empty separation span 17ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: next-unprocessed tick, no backdating
+AssertionError: expected [ { type: 'input', tick: 6, …(5) } ] to deeply equal [ { type: 'input', tick: 6, …(4) } ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 6,
+      "timeUs": 100000,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: same-time seats ordered before shift
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 2,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+@@ -12,10 +22,20 @@
+      "tick": 0,
+      "timeUs": 0,
+      "type": "shift",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 2,
++       "latestSeat": 1,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 1,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: held shifts, no overlap and repeat at completion
+AssertionError: expected [ …(6) ] to deeply equal [ …(6) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 2,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+@@ -12,10 +22,20 @@
+      "tick": 0,
+      "timeUs": 0,
+      "type": "shift",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 2,
++       "latestSeat": 1,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 1,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: release preserves shift but never restores older NOS
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+- Expected
++ Received
+
+@@ -1,15 +1,35 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 2,
++       "latestOrder": 2,
++       "latestSeat": 0,
++       "latestSequence": 2,
++       "latestTimeUs": 50000,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 3,
+      "timeUs": 50000,
+@@ -20,10 +40,20 @@
+      "tick": 3,
+      "timeUs": 50000,
+      "type": "shift",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 2,
++       "latestOrder": 2,
++       "latestSeat": 0,
++       "latestSequence": 2,
++       "latestTimeUs": 50000,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 3,
+      "tick": 6,
+      "timeUs": 100000,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: fresh NOS can boost during an existing shift
+AssertionError: expected [ …(4) ] to deeply equal [ …(4) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+@@ -12,10 +22,20 @@
+      "tick": 0,
+      "timeUs": 0,
+      "type": "shift",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 3,
+      "timeUs": 50000,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: edge steering cancels NOS and counts once; held repeat ignored
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+@@ -1,23 +1,53 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 1,
++       "latestOrder": 2,
++       "latestSeat": 0,
++       "latestSequence": 2,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 1,
++       "latestOrder": 2,
++       "latestSeat": 0,
++       "latestSequence": 2,
++       "latestTimeUs": 0,
++     },
+      "disposition": "ignored",
+      "seat": 0,
+      "sequence": 3,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: expiry inside tick and refresh cannot resurrect
+AssertionError: expected [ …(3) ] to deeply equal [ …(3) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+@@ -12,10 +22,20 @@
+      "tick": 18,
+      "timeUs": 310000,
+      "type": "expiry",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "ignored",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 30,
+      "timeUs": 500000,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: refresh extends freshness without history entry
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -1,15 +1,35 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 15,
+      "timeUs": 250000,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: duplicate stale-round forged-seat and malformed control rejected
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+- Expected
++ Received
+
+@@ -1,39 +1,89 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "rejected",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "rejected",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "rejected",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "rejected",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: disconnect invalidates queued presses immediately
+AssertionError: expected [ { type: 'release', …(3) }, …(1) ] to deeply equal [ { type: 'release', …(3) }, …(1) ]
+
+- Expected
++ Received
+
+@@ -4,10 +4,20 @@
+      "tick": 0,
+      "timeUs": 0,
+      "type": "release",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "rejected",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: short stall processes every tick in order
+AssertionError: expected [ { type: 'input', tick: +0, …(5) } ] to deeply equal [ { type: 'input', tick: +0, …(4) } ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: continuous speed growth integrates across cap before boost
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: slow shift cannot overlap faster repeat
+AssertionError: expected [ …(5) ] to deeply equal [ …(5) ]
+
+- Expected
++ Received
+
+@@ -1,7 +1,17 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 2,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+@@ -12,10 +22,20 @@
+      "tick": 0,
+      "timeUs": 0,
+      "type": "shift",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 2,
++       "latestSeat": 1,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 1,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: malformed fresh press cannot consume a valid input sequence
+AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]
+
+- Expected
++ Received
+
+@@ -1,15 +1,35 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "rejected",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 0,
++       "latestOrder": 0,
++       "latestSeat": 0,
++       "latestSequence": 0,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/15]⎯
+
+ FAIL  tests/simulation/multiplayer.test.ts > shared timeline: independent windows avoid retaining empty separation span
+AssertionError: expected [ …(20) ] to deeply equal [ …(20) ]
+
+- Expected
++ Received
+
+@@ -1,159 +1,359 @@
+  [
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 1,
+      "tick": 0,
+      "timeUs": 0,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 2,
+      "tick": 30,
+      "timeUs": 500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 3,
+      "tick": 60,
+      "timeUs": 1000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 4,
+      "tick": 90,
+      "timeUs": 1500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 5,
+      "tick": 120,
+      "timeUs": 2000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 6,
+      "tick": 150,
+      "timeUs": 2500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 7,
+      "tick": 180,
+      "timeUs": 3000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 8,
+      "tick": 210,
+      "timeUs": 3500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 9,
+      "tick": 240,
+      "timeUs": 4000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 10,
+      "tick": 270,
+      "timeUs": 4500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 11,
+      "tick": 300,
+      "timeUs": 5000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 12,
+      "tick": 330,
+      "timeUs": 5500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 13,
+      "tick": 360,
+      "timeUs": 6000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 14,
+      "tick": 390,
+      "timeUs": 6500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 15,
+      "tick": 420,
+      "timeUs": 7000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 16,
+      "tick": 450,
+      "timeUs": 7500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 17,
+      "tick": 480,
+      "timeUs": 8000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 18,
+      "tick": 510,
+      "timeUs": 8500000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 19,
+      "tick": 540,
+      "timeUs": 9000000,
+      "type": "input",
+    },
+    {
++     "contact": {
++       "blockedSeat": 0,
++       "episode": 0,
++       "flags": 0,
++       "latestControl": 3,
++       "latestOrder": 1,
++       "latestSeat": 0,
++       "latestSequence": 1,
++       "latestTimeUs": 0,
++     },
+      "disposition": "accepted",
+      "seat": 0,
+      "sequence": 20,
+      "tick": 570,
+      "timeUs": 9500000,
+
+ ❯ tests/simulation/multiplayer.test.ts:78:266
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/15]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  15 failed | 88 passed (103)
+   Start at  10:45:49
+   Duration  426ms (tests 61%, import 19%, transform 17%, worker 3%)
+
+undefined
+/Users/shivang/Desktop/programs/test/claude-code-test/apps/client:
+ ERR_PNPM_RECURSIVE_EXEC_FIRST_FAIL  Command failed with exit code 1: vitest run tests/simulation/responsibility.test.ts tests/simulation/multiplayer.test.ts tests/session/race.test.ts

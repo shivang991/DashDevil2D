@@ -1,0 +1,11 @@
+{
+  "gameplay": {
+    "timeLimit": 15,
+    "maxHealth": 6,
+    "initialClearDistance": 0,
+    "emptyWeight": 1,
+    "obstacleWeight": 0,
+    "heartWeight": 0,
+    "coinWeight": 0
+  }
+}

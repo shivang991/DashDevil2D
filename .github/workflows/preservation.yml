@@ -34,6 +34,7 @@ jobs:
       - run: pnpm test:lifecycle
       - run: pnpm test:rage
       - run: pnpm test:rage-default
+      - run: pnpm test:responsibility
       - uses: actions/upload-artifact@v4
         if: always()
         with:

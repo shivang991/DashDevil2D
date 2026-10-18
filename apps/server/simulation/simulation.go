@@ -12,6 +12,7 @@ import (
 )
 
 type Observation struct {
+	Contact     protocol.Contact       `json:"-"`
 	Objects     []protocol.ObjectState `json:"objects,omitempty"`
 	Cars        [2]protocol.Car        `json:"-"`
 	Car         *protocol.Car          `json:"car,omitempty"`
@@ -36,6 +37,7 @@ type Finish struct {
 	Result uint8  `json:"result"`
 }
 type State struct {
+	Contact     protocol.Contact       `json:"contact"`
 	Objects     []protocol.ObjectState `json:"objects"`
 	Finish      *Finish                `json:"finish,omitempty"`
 	Track       track.PlacementState   `json:"track"`
@@ -49,8 +51,10 @@ type physicalSegment struct {
 	start, end  float64
 	cars        [2]protocol.Car
 	multipliers [2]float64
+	blocked     [2]bool
 }
 type eventGroup struct {
+	damage     [2]uint64
 	sampleTime float64
 	timeUs     uint64
 	contacts   []objectContact
@@ -215,7 +219,7 @@ func clear(car *protocol.Car) {
 func (e *Engine) event(kind string, seat uint8, timeUs uint64) Observation {
 	copy := seat
 	car := e.state.Cars[seat]
-	return Observation{Type: kind, Tick: e.state.Tick, TimeUs: timeUs, Seat: &copy, Car: &car, Cars: e.state.Cars}
+	return Observation{Contact: e.state.Contact, Type: kind, Tick: e.state.Tick, TimeUs: timeUs, Seat: &copy, Car: &car, Cars: e.state.Cars}
 }
 func (e *Engine) Disconnect(auth protocol.Identity) {
 	seat := auth.Seat
@@ -297,6 +301,11 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 					if e.context.Mode == 2 {
 						e.order++
 						e.state.LatestPress = &Press{q.seat, input.Control, input.Sequence, timeUs, e.order}
+						e.state.Contact.LatestSeat = q.seat
+						e.state.Contact.LatestControl = input.Control
+						e.state.Contact.LatestSequence = input.Sequence
+						e.state.Contact.LatestTimeUs = timeUs
+						e.state.Contact.LatestOrder = e.order
 					}
 				}
 			case 1:
@@ -365,17 +374,25 @@ func (e *Engine) move(start, end float64) {
 	if len(e.segments) >= 1024 {
 		panic("physical segment history exceeded")
 	}
-	e.segments = append(e.segments, physicalSegment{start, end, e.state.Cars, multipliers})
+	blocked := [2]bool{e.lateralBlocked(0), e.lateralBlocked(1)}
+	e.segments = append(e.segments, physicalSegment{start, end, e.state.Cars, multipliers, blocked})
 	for seat := range e.state.Cars {
 		car := &e.state.Cars[seat]
 		distance := forwardDistance(g, start, end-start)
 		car.Progress = car.Progress + float64(distance*multipliers[seat])
 		car.NormalSpeed = math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*end))
-		if car.Phase != 0 {
+		if blocked[seat] {
+			startUs, _ := CanonicalTime(start)
+			endUs, _ := CanonicalTime(end)
+			pause := endUs - startUs
+			car.MovementStartUs += pause
+			car.MovementEndUs += pause
+		} else if car.Phase != 0 {
 			fraction := math.Max(0, math.Min(1, (float64(end*1e6)-float64(car.MovementStartUs))/float64(car.MovementEndUs-car.MovementStartUs)))
 			car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
 		}
 	}
+	e.refreshContact()
 }
 
 type crossing struct {
@@ -523,6 +540,9 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 			}
 			if e.group == nil {
 				first := uint64(math.MaxUint64)
+				if e.context.Mode == 2 && !math.IsInf(collision, 1) {
+					first, _ = CanonicalTime(collision)
+				}
 				if len(contacts) > 0 {
 					first = contacts[0].timeUs
 				}
@@ -557,10 +577,12 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				if !group.hasSample && center <= time {
 					group.sample = e.state.Cars
 					sampleStart := time
+					blocked := [2]bool{e.lateralBlocked(0), e.lateralBlocked(1)}
 					multipliers := [2]float64{e.multiplier(0), e.multiplier(1)}
 					for _, segment := range e.segments {
 						if segment.start <= center && segment.end >= center {
 							group.sample, sampleStart, multipliers = segment.cars, segment.start, segment.multipliers
+							blocked = segment.blocked
 							break
 						}
 					}
@@ -569,7 +591,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 						car := &group.sample[seat]
 						car.Progress += forwardDistance(g, sampleStart, elapsed) * multipliers[seat]
 						car.NormalSpeed = math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*group.sampleTime))
-						if car.Phase != 0 {
+						if car.Phase != 0 && !blocked[seat] {
 							fraction := math.Max(0, math.Min(1, (group.sampleTime*1e6-float64(car.MovementStartUs))/float64(car.MovementEndUs-car.MovementStartUs)))
 							car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
 						}
@@ -612,7 +634,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				for seat := range e.state.Cars {
 					restorePosition(&e.state.Cars[seat], group.sample[seat])
 				}
-				if len(group.contacts) > 0 {
+				if len(group.contacts) > 0 || group.damage[0] > 0 || group.damage[1] > 0 {
 					sort.SliceStable(group.contacts, func(i, j int) bool {
 						a, b := group.contacts[i], group.contacts[j]
 						if a.object.Id != b.object.Id {

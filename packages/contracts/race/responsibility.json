@@ -1,0 +1,969 @@
+{
+  "version": 1,
+  "precision": {
+    "absolute": 1e-06,
+    "relative": 1e-12
+  },
+  "scenarios": [
+    {
+      "name": "fresh steering exempts its player at a single-shifter impact",
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "contact": {
+            "episode": 1,
+            "flags": 0,
+            "blockedSeat": 0,
+            "latestSeat": 0,
+            "latestControl": 2,
+            "latestSequence": 1,
+            "latestTimeUs": 0,
+            "latestOrder": 1
+          },
+          "contactHex": "000000010000000200000001000000000000000000000001",
+          "progress": [
+            40,
+            40
+          ],
+          "lateral": [
+            -55.833333333333336,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "name": "empty history still returns without damage",
+      "cars": [
+        {
+          "phase": 1,
+          "target": 1,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        },
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ]
+        }
+      ]
+    },
+    {
+      "name": "equal-time reverse arrival still applies Player 1 before Player 2",
+      "cars": [
+        {
+          "phase": 1,
+          "target": 1,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "movementStartUs": 0,
+          "movementEndUs": 150000
+        },
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            },
+            {
+              "seat": 0,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            2,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "latestSeat": 1,
+          "latestOrder": 2,
+          "contact": {
+            "episode": 1,
+            "flags": 0,
+            "blockedSeat": 0,
+            "latestSeat": 1,
+            "latestControl": 3,
+            "latestSequence": 1,
+            "latestTimeUs": 0,
+            "latestOrder": 2
+          },
+          "contactHex": "000000010000010300000001000000000000000000000002"
+        }
+      ]
+    },
+    {
+      "name": "consecutive fresh B inputs exempt B rather than literal second last",
+      "cars": [
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        },
+        {}
+      ],
+      "steps": [
+        {
+          "at": 0.05,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            },
+            {
+              "seat": 1,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": []
+        },
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            2,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "latestSeat": 1,
+          "latestOrder": 3
+        }
+      ]
+    },
+    {
+      "name": "late accepted NOS cannot rewrite the resolved victim",
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [
+            87500
+          ]
+        },
+        {
+          "at": 0.15,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [],
+          "latestSeat": 1,
+          "latestOrder": 2,
+          "contact": {
+            "episode": 1,
+            "flags": 0,
+            "blockedSeat": 0,
+            "latestSeat": 1,
+            "latestControl": 3,
+            "latestSequence": 1,
+            "latestTimeUs": 100000,
+            "latestOrder": 2
+          },
+          "contactHex": "00000001000001030000000100000000000186a000000002"
+        }
+      ]
+    },
+    {
+      "name": "edge steering counts but release repeat and refresh do not",
+      "cars": [
+        {},
+        {}
+      ],
+      "steps": [
+        {
+          "at": 0.02,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": [],
+          "latestSeat": 0,
+          "latestOrder": 1
+        },
+        {
+          "at": 0.04,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            },
+            {
+              "seat": 0,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            },
+            {
+              "seat": 0,
+              "control": 1,
+              "intent": 2,
+              "heldMask": 1
+            },
+            {
+              "seat": 0,
+              "control": 1,
+              "intent": 1,
+              "heldMask": 0
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": [],
+          "latestSeat": 1,
+          "latestOrder": 2
+        }
+      ]
+    },
+    {
+      "name": "ignored presses during return do not enter history",
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [
+            87500
+          ]
+        },
+        {
+          "at": 0.15,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            },
+            {
+              "seat": 0,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [],
+          "latestSeat": 0,
+          "latestOrder": 1
+        }
+      ]
+    },
+    {
+      "name": "dual shifts return with no damage regardless of history",
+      "cars": [
+        {},
+        {}
+      ],
+      "steps": [
+        {
+          "at": 0.15,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            },
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": [
+            118750
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tailgating cannot damage even with a qualifying press",
+      "cars": [
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        },
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "progress": 80
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": []
+        }
+      ]
+    },
+    {
+      "name": "protected victim suppresses damage without transferring it",
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "protectionUs": 100000
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ]
+        },
+        {
+          "at": 0.15,
+          "inputs": [],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": []
+        }
+      ]
+    },
+    {
+      "name": "protection expires exactly at impact",
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "protectionUs": 87500
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [
+            87500
+          ]
+        }
+      ]
+    },
+    {
+      "name": "fresh return impact uses latest history without restarting return",
+      "cars": [
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": -120,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "phase": 2,
+          "movementEndUs": 150000
+        },
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            2,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "separated": true,
+          "returnDeparture": 1
+        },
+        {
+          "at": 0.18,
+          "inputs": [],
+          "hp": [
+            2,
+            3
+          ],
+          "contactTimes": [],
+          "separated": true,
+          "returnDeparture": 1
+        }
+      ]
+    },
+    {
+      "name": "a new opposing shift meets an existing return",
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [
+            87500
+          ]
+        },
+        {
+          "at": 0.2,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            }
+          ],
+          "hp": [
+            2,
+            2
+          ],
+          "contactTimes": [
+            117500
+          ],
+          "movementStartUs": [
+            87500,
+            117500
+          ],
+          "movementEndUs": [
+            237500,
+            267500
+          ]
+        }
+      ]
+    },
+    {
+      "name": "simultaneous obstacle and player damage take maximum even with zero protection duration",
+      "overrides": {
+        "gameplay": {
+          "maxHealth": 6,
+          "playerContactDamage": 3,
+          "obstacleDamage": 2,
+          "invincibleDuration": 0
+        }
+      },
+      "cars": [
+        {
+          "progress": 1505
+        },
+        {
+          "progress": 1505,
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "intent": 0,
+              "control": 2,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            6,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "spent": {
+            "8": 18
+          }
+        }
+      ]
+    },
+    {
+      "name": "fatal player damage finalizes at the impact before later inputs or deadline",
+      "overrides": {
+        "gameplay": {
+          "maxHealth": 1
+        }
+      },
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "intent": 0,
+              "control": 2,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            1,
+            0
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "finish": {
+            "tick": 6,
+            "timeUs": 87500,
+            "result": 0
+          },
+          "reason": 1
+        },
+        {
+          "at": 0.2,
+          "inputs": [],
+          "hp": [
+            1,
+            0
+          ],
+          "contactTimes": []
+        }
+      ]
+    },
+    {
+      "name": "automatic held shifts do not supersede fresh edge steering",
+      "cars": [
+        {},
+        {}
+      ],
+      "steps": [
+        {
+          "at": 0.15,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": []
+        },
+        {
+          "at": 0.25,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [
+            237500
+          ],
+          "latestSeat": 0,
+          "latestOrder": 2
+        }
+      ]
+    },
+    {
+      "name": "protected return victim stays touching past expiry without deferred damage",
+      "cars": [
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": -120,
+          "movementOrigin": -120,
+          "movementTarget": 0,
+          "phase": 2,
+          "movementEndUs": 150000,
+          "protectionUs": 100000
+        },
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 1,
+              "control": 3,
+              "intent": 0,
+              "heldMask": 4
+            }
+          ],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "separated": true,
+          "returnDeparture": 1
+        },
+        {
+          "at": 0.18,
+          "inputs": [],
+          "hp": [
+            3,
+            3
+          ],
+          "contactTimes": [],
+          "separated": true,
+          "returnDeparture": 1
+        }
+      ]
+    },
+    {
+      "name": "player impact exactly at deadline counts before HP comparison",
+      "overrides": {
+        "gameplay": {
+          "timeLimit": 0.0875
+        }
+      },
+      "cars": [
+        {},
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 2,
+              "intent": 0,
+              "heldMask": 2
+            }
+          ],
+          "hp": [
+            3,
+            2
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "finish": {
+            "tick": 6,
+            "timeUs": 87500,
+            "result": 0
+          },
+          "reason": 2
+        }
+      ]
+    },
+    {
+      "name": "simultaneous heart heals selected player before contact damage",
+      "seed": 4,
+      "overrides": {
+        "gameplay": {
+          "heartWeight": 1,
+          "obstacleWeight": 1
+        }
+      },
+      "cars": [
+        {
+          "lane": 1,
+          "departure": 1,
+          "target": 1,
+          "lateral": 0,
+          "movementOrigin": 0,
+          "movementTarget": 0,
+          "progress": 1511
+        },
+        {
+          "lane": 0,
+          "departure": 0,
+          "target": 0,
+          "lateral": -120,
+          "movementOrigin": -120,
+          "movementTarget": -120,
+          "progress": 1511,
+          "hp": 1
+        }
+      ],
+      "steps": [
+        {
+          "at": 0.1,
+          "inputs": [
+            {
+              "seat": 0,
+              "control": 1,
+              "intent": 0,
+              "heldMask": 1
+            }
+          ],
+          "hp": [
+            3,
+            1
+          ],
+          "contactTimes": [
+            87500
+          ],
+          "spent": {
+            "7": 7
+          }
+        }
+      ]
+    }
+  ]
+}

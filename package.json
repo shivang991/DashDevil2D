@@ -30,7 +30,8 @@
     "test:lifecycle": "node apps/client/scripts/transport.mjs --test --lifecycle",
     "test:hearts": "node apps/client/scripts/transport.mjs --test --hearts",
     "test:rage": "node apps/client/scripts/transport.mjs --test --rage",
-    "test:rage-default": "node apps/client/scripts/transport.mjs --test --rage-default"
+    "test:rage-default": "node apps/client/scripts/transport.mjs --test --rage-default",
+    "test:responsibility": "node apps/client/scripts/transport.mjs --test --responsibility"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

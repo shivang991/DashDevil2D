@@ -1,0 +1,21 @@
+<!doctype html>
+<html><head><meta charset="UTF-8"><title>Road Rage responsibility timelines</title></head>
+<body><h1>Road Rage responsibility timeline diagnostic</h1><pre id="state"></pre>
+<script type="module">
+import fixtures from '../../../../packages/contracts/race/responsibility.json';
+import { captureConfiguration } from '@dashdevil/simulation/config';
+import { Multiplayer } from '@dashdevil/simulation/multiplayer';
+import { encodeContact } from '@dashdevil/contracts/protocol';
+const ids = [0,1].map(seat=>({roomId:1,seatSession:seat+1,pairGeneration:1,seat}));
+window.responsibility = fixtures.scenarios.map(scenario=>{
+ const game = new Multiplayer(captureConfiguration('road-rage',scenario.overrides),scenario.seed ?? 1,ids);
+ const cars=game.snapshot().cars; scenario.cars.forEach((car,seat)=>Object.assign(cars[seat],car)); game.restore(cars,0);
+ const sequences=[0,0];
+ return {name:scenario.name,steps:scenario.steps.map(step=>{
+  const admitted=step.inputs.map(({seat,...input})=>game.submit(ids[seat],{...input,identity:ids[seat],round:{roundId:1,inputGeneration:1},sequence:++sequences[seat]}));
+  const events=game.advanceTo(step.at),state=game.snapshot();
+  return {admitted,state,contactTimes:events.filter(e=>e.type==='contact').map(e=>e.timeUs),contactHex:Array.from(encodeContact(state.contact),byte=>byte.toString(16).padStart(2,'0')).join('')};
+ })};
+});
+document.getElementById('state').textContent=JSON.stringify(window.responsibility,null,2);
+</script></body></html>

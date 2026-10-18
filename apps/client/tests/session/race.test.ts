@@ -381,3 +381,24 @@ test('Road Rage deadline prediction waits for authority and accepts fresh contro
   race.finish(outcome);
   expect(race.frame(300000, 0)).toMatchObject({ outcome, awaiting: false, timeUs: 50000 });
 });
+
+test('Road Rage restores shared history and reverses provisional player-contact damage', () => {
+  const config = captureConfiguration('road-rage', { gameplay: { emptyWeight: 1, obstacleWeight: 0, maxHealth: 6 } });
+  const b = initialBaseline(configurationContext(config, 1));
+  b.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
+  // Seat 0 already occupies middle; seat 1 approaches from right.
+  Object.assign(b.cars[0], { lane: 1, departure: 1, target: 1, lateral: 0, movementOrigin: 0, movementTarget: 0 });
+  b.identity.seat = 1;
+  const race = new RaceSession(b);
+  race.input({ identity: b.identity, round: b.round, sequence: 1, intent: 0, control: 1, heldMask: 1 }, 0);
+  expect(race.frame(100000, 0).cars.map(car => car.hp)).toEqual([5, 6]);
+  // Authority accepted seat 0 NOS after seat 1 steering, so seat 1 is the victim.
+  const authoritative = structuredClone(b);
+  authoritative.epoch = 2;
+  authoritative.contact = { ...b.contact, latestSeat: 0, latestControl: 3, latestSequence: 1, latestTimeUs: 0, latestOrder: 2 };
+  Object.assign(authoritative.cars[1], { controls: 1, effective: 1, heldMask: 1, freshnessUs: 1000000, lastInput: 1, phase: 1, target: 1, movementEndUs: 150000, movementTarget: 0, nextShiftUs: 150000 });
+  authoritative.progress.processed2 = authoritative.progress.disposed2 = 1;
+  race.install(authoritative);
+  expect(race.frame(100000, 0).cars.map(car => car.hp)).toEqual([6, 5]);
+  expect(race.snapshot().contact.latestOrder).toBe(2);
+});

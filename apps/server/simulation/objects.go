@@ -103,10 +103,7 @@ func (e *Engine) objectContacts(start, end float64) []objectContact {
 				}
 				exit = high
 			}
-			speed := 0.0
-			if car.Phase != 0 {
-				speed = (car.MovementTarget - car.MovementOrigin) * 1e6 / float64(car.MovementEndUs-car.MovementStartUs)
-			}
+			speed := e.lateralSpeed(seat)
 			if speed == 0 {
 				if math.Abs(car.Lateral-center) >= lateralExtent {
 					continue
@@ -139,6 +136,9 @@ func (e *Engine) resolveObjects(contacts []objectContact, events *[]Observation,
 	g := e.context.Gameplay
 	objects := []protocol.ObjectState{}
 	damage := [2]uint64{}
+	if e.group != nil {
+		damage = e.group.damage
+	}
 	for i := 0; i < len(contacts) && contacts[i].timeUs == timeUs; {
 		object := contacts[i].object
 		seats := []uint8{}
@@ -181,5 +181,5 @@ func (e *Engine) resolveObjects(contacts []objectContact, events *[]Observation,
 			car.ProtectionUs = timeUs + duration
 		}
 	}
-	*events = append(*events, Observation{Type: "objects", Tick: e.state.Tick, TimeUs: timeUs, Cars: e.state.Cars, Objects: objects})
+	*events = append(*events, Observation{Contact: e.state.Contact, Type: "objects", Tick: e.state.Tick, TimeUs: timeUs, Cars: e.state.Cars, Objects: objects})
 }

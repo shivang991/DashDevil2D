@@ -1,0 +1,555 @@
+--- FAIL: TestSharedTimelines (0.01s)
+    --- FAIL: TestSharedTimelines/next-unprocessed_tick,_no_backdating (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":6,"timeUs":100000,"seat":0,"sequence":1,"disposition":"accepted"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 6,
+                        "timeUs": 100000,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/same-time_seats_ordered_before_shift (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift","tick":0,"timeUs":0,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":1,"sequence":1,"disposition":"accepted"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 1,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/held_shifts,_no_overlap_and_repeat_at_completion (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift","tick":0,"timeUs":0,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":1,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift-end","tick":8,"timeUs":150000,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift","tick":9,"timeUs":150000,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift-end","tick":17,"timeUs":300000,"seat":0}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 1,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift-end",
+                        "tick": 8,
+                        "timeUs": 150000,
+                        "seat": 0
+                      },
+                      {
+                        "type": "shift",
+                        "tick": 9,
+                        "timeUs": 150000,
+                        "seat": 0
+                      },
+                      {
+                        "type": "shift-end",
+                        "tick": 17,
+                        "timeUs": 300000,
+                        "seat": 0
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/release_preserves_shift_but_never_restores_older_NOS (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":3,"timeUs":50000,"seat":0,"sequence":2,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift","tick":3,"timeUs":50000,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":6,"timeUs":100000,"seat":0,"sequence":3,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift-end","tick":11,"timeUs":200000,"seat":0}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 3,
+                        "timeUs": 50000,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift",
+                        "tick": 3,
+                        "timeUs": 50000,
+                        "seat": 0
+                      },
+                      {
+                        "type": "input",
+                        "tick": 6,
+                        "timeUs": 100000,
+                        "seat": 0,
+                        "sequence": 3,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift-end",
+                        "tick": 11,
+                        "timeUs": 200000,
+                        "seat": 0
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/fresh_NOS_can_boost_during_an_existing_shift (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift","tick":0,"timeUs":0,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":3,"timeUs":50000,"seat":0,"sequence":2,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift-end","tick":8,"timeUs":150000,"seat":0}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0
+                      },
+                      {
+                        "type": "input",
+                        "tick": 3,
+                        "timeUs": 50000,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift-end",
+                        "tick": 8,
+                        "timeUs": 150000,
+                        "seat": 0
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/edge_steering_cancels_NOS_and_counts_once;_held_repeat_ignored (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":2,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":3,"disposition":"ignored"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 3,
+                        "disposition": "ignored"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/expiry_inside_tick_and_refresh_cannot_resurrect (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"expiry","tick":18,"timeUs":310000,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":30,"timeUs":500000,"seat":0,"sequence":2,"disposition":"ignored"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "expiry",
+                        "tick": 18,
+                        "timeUs": 310000,
+                        "seat": 0
+                      },
+                      {
+                        "type": "input",
+                        "tick": 30,
+                        "timeUs": 500000,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "ignored"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/refresh_extends_freshness_without_history_entry (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":15,"timeUs":250000,"seat":0,"sequence":2,"disposition":"accepted"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 15,
+                        "timeUs": 250000,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "accepted"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/duplicate_stale-round_forged-seat_and_malformed_control_rejected (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"rejected"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":2,"disposition":"rejected"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":2,"disposition":"rejected"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":2,"disposition":"rejected"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "rejected"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "rejected"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "rejected"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "rejected"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/disconnect_invalidates_queued_presses_immediately (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"release","tick":0,"timeUs":0,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"rejected"}]
+            want [
+                      {
+                        "type": "release",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "rejected"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/short_stall_processes_every_tick_in_order (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/threshold_equality_catches_up;_strictly_excessive_lag_abandons (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"abandoned","tick":60,"timeUs":1000000}]
+            want [
+                      {
+                        "type": "abandoned",
+                        "tick": 60,
+                        "timeUs": 1000000
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/continuous_speed_growth_integrates_across_cap_before_boost (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"expiry","tick":59,"timeUs":1000000,"seat":0}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "expiry",
+                        "tick": 59,
+                        "timeUs": 1000000,
+                        "seat": 0
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/slow_shift_cannot_overlap_faster_repeat (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift","tick":0,"timeUs":0,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":1,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift-end","tick":17,"timeUs":300000,"seat":0},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"shift","tick":18,"timeUs":300000,"seat":0}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 1,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "shift-end",
+                        "tick": 17,
+                        "timeUs": 300000,
+                        "seat": 0
+                      },
+                      {
+                        "type": "shift",
+                        "tick": 18,
+                        "timeUs": 300000,
+                        "seat": 0
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/malformed_fresh_press_cannot_consume_a_valid_input_sequence (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"rejected"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "rejected"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      }
+                    ]
+    --- FAIL: TestSharedTimelines/independent_windows_avoid_retaining_empty_separation_span (0.00s)
+        simulation_test.go:135: got [{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":0,"timeUs":0,"seat":0,"sequence":1,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":30,"timeUs":500000,"seat":0,"sequence":2,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":60,"timeUs":1000000,"seat":0,"sequence":3,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":90,"timeUs":1500000,"seat":0,"sequence":4,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":120,"timeUs":2000000,"seat":0,"sequence":5,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":150,"timeUs":2500000,"seat":0,"sequence":6,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":180,"timeUs":3000000,"seat":0,"sequence":7,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":210,"timeUs":3500000,"seat":0,"sequence":8,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":240,"timeUs":4000000,"seat":0,"sequence":9,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":270,"timeUs":4500000,"seat":0,"sequence":10,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":300,"timeUs":5000000,"seat":0,"sequence":11,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":330,"timeUs":5500000,"seat":0,"sequence":12,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":360,"timeUs":6000000,"seat":0,"sequence":13,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":390,"timeUs":6500000,"seat":0,"sequence":14,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":420,"timeUs":7000000,"seat":0,"sequence":15,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":450,"timeUs":7500000,"seat":0,"sequence":16,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":480,"timeUs":8000000,"seat":0,"sequence":17,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":510,"timeUs":8500000,"seat":0,"sequence":18,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":540,"timeUs":9000000,"seat":0,"sequence":19,"disposition":"accepted"},{"contact":{"episode":0,"flags":0,"blockedSeat":0,"latestSeat":0,"latestControl":0,"latestSequence":0,"latestTimeUs":0,"latestOrder":0},"type":"input","tick":570,"timeUs":9500000,"seat":0,"sequence":20,"disposition":"accepted"}]
+            want [
+                      {
+                        "type": "input",
+                        "tick": 0,
+                        "timeUs": 0,
+                        "seat": 0,
+                        "sequence": 1,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 30,
+                        "timeUs": 500000,
+                        "seat": 0,
+                        "sequence": 2,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 60,
+                        "timeUs": 1000000,
+                        "seat": 0,
+                        "sequence": 3,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 90,
+                        "timeUs": 1500000,
+                        "seat": 0,
+                        "sequence": 4,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 120,
+                        "timeUs": 2000000,
+                        "seat": 0,
+                        "sequence": 5,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 150,
+                        "timeUs": 2500000,
+                        "seat": 0,
+                        "sequence": 6,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 180,
+                        "timeUs": 3000000,
+                        "seat": 0,
+                        "sequence": 7,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 210,
+                        "timeUs": 3500000,
+                        "seat": 0,
+                        "sequence": 8,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 240,
+                        "timeUs": 4000000,
+                        "seat": 0,
+                        "sequence": 9,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 270,
+                        "timeUs": 4500000,
+                        "seat": 0,
+                        "sequence": 10,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 300,
+                        "timeUs": 5000000,
+                        "seat": 0,
+                        "sequence": 11,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 330,
+                        "timeUs": 5500000,
+                        "seat": 0,
+                        "sequence": 12,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 360,
+                        "timeUs": 6000000,
+                        "seat": 0,
+                        "sequence": 13,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 390,
+                        "timeUs": 6500000,
+                        "seat": 0,
+                        "sequence": 14,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 420,
+                        "timeUs": 7000000,
+                        "seat": 0,
+                        "sequence": 15,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 450,
+                        "timeUs": 7500000,
+                        "seat": 0,
+                        "sequence": 16,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 480,
+                        "timeUs": 8000000,
+                        "seat": 0,
+                        "sequence": 17,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 510,
+                        "timeUs": 8500000,
+                        "seat": 0,
+                        "sequence": 18,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 540,
+                        "timeUs": 9000000,
+                        "seat": 0,
+                        "sequence": 19,
+                        "disposition": "accepted"
+                      },
+                      {
+                        "type": "input",
+                        "tick": 570,
+                        "timeUs": 9500000,
+                        "seat": 0,
+                        "sequence": 20,
+                        "disposition": "accepted"
+                      }
+                    ]
+FAIL
+FAIL	github.com/shivang991/DashDevil2D/apps/server/simulation	0.730s
+FAIL

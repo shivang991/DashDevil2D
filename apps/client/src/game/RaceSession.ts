@@ -56,7 +56,7 @@ export class RaceSession {
   private engine(baseline = this.baseline) {
     const ids = [0, 1].map(seat => ({ ...baseline.identity, seat })) as [Baseline['identity'], Baseline['identity']];
     const game = new Multiplayer(this.configuration, baseline.context.seed, ids, baseline.round.roundId);
-    game.restore(baseline.cars, baseline.tick, baseline.windows.flatMap(window => window.objects), baseline.timeUs);
+    game.restore(baseline.cars, baseline.tick, baseline.windows.flatMap(window => window.objects), baseline.timeUs, baseline.contact);
     return { game, ids };
   }
   input(input: Input, timeUs: number) {
@@ -109,7 +109,7 @@ export class RaceSession {
     while (game.processedTick < tick) game.advanceTo(Math.min(tick, game.processedTick + 30) / this.configuration.gameplay.tickRate, true);
     const state = game.preview();
     baseline.windows.forEach(window => { window.objects = window.objects.map(object => state.objects.find(current => current.id === object.id) ?? object); });
-    baseline.cars = state.cars; baseline.tick = tick;
+    baseline.cars = state.cars; baseline.contact = state.contact; baseline.tick = tick;
     baseline.timeUs = canonicalTime(tick / this.configuration.gameplay.tickRate);
     return baseline;
   }
@@ -215,7 +215,7 @@ export class RaceSession {
       const previous = game.snapshot();
       const events = game.advanceTo((game.processedTick + 1) / rate, true);
       if (!covered(game.preview().cars)) {
-        game.restore(previous.cars, previous.tick, previous.objects, previous.timeUs);
+        game.restore(previous.cars, previous.tick, previous.objects, previous.timeUs, previous.contact);
         needsRecovery = true; return;
       }
       if (publish) for (const event of events) if (event.objects) this.observeObjects(event.objects);
@@ -230,7 +230,7 @@ export class RaceSession {
       // Provisional sequence is contiguous relative to this replay's cutoff.
       if (game.snapshot().cars[pending.input.identity.seat].lastInput === 0 && pending.input.sequence > 1) {
         const snapshot = game.snapshot(); snapshot.cars[pending.input.identity.seat].lastInput = pending.input.sequence - 1;
-        game.restore(snapshot.cars, snapshot.tick, snapshot.objects, snapshot.timeUs);
+        game.restore(snapshot.cars, snapshot.tick, snapshot.objects, snapshot.timeUs, snapshot.contact);
       }
       game.submit(ids[pending.input.identity.seat], { ...pending.input, identity: ids[pending.input.identity.seat] });
     }

@@ -14,6 +14,7 @@ export interface PairedState {
   verified: number; barriers: number; clockSamples: number; clockOffsetUs: number;
   context?: Context; outcome?: Outcome;
   diagnostics: { corrections?: RaceSession['diagnostics']; reliableAttemptedBytes?: number; reliableReceivedBytes?: number; verificationReceivedBytes?: number; recoveryRequests?: number; recoveryEpochs?: number[]; baselineEpochs?: number[]; localInputs: number; remoteRecords: number; lastLocalInputUs?: number; lastRemoteReceiveUs?: number; outcomeReceivedUs?: number; resultDelayEstimateUs?: number; resultCommitDelayEstimateUs?: number; localInputToDrawUs?: number[]; remoteReceiveToDrawUs?: number[] };
+  contact?: Baseline['contact'];
   objects?: Baseline['windows'][number]['objects'];
   room?: RoomState; pending?: string; notice?: string; roundId?: number; startUs?: number; timeUs?: number; cars?: Baseline['cars']; seed?: number; positions: string; errors: string[]; baselineBytes: number; recoveryMs?: number;
 }
@@ -271,7 +272,7 @@ export class PairedConnection {
         (this.state.diagnostics.baselineEpochs ??= []).push(baseline.epoch);
         this.state.positions = baseline.cars.map(car => car.progress).join(', ');
         this.state.roundId = baseline.round.roundId; this.state.startUs = baseline.context.startUs;
-        this.state.timeUs = baseline.timeUs; this.state.cars = baseline.cars; this.state.seed = baseline.context.seed;
+        this.state.timeUs = baseline.timeUs; this.state.cars = baseline.cars; this.state.contact = baseline.contact; this.state.seed = baseline.context.seed;
         if (!this.options.diagnostic) {
           if (this.race) this.race.install(baseline); else this.race = new RaceSession(baseline);
           if (this.state.outcome?.roundId === baseline.round.roundId) { this.race.finish(this.state.outcome); this.state.timeUs = this.state.outcome.timeUs;
@@ -386,7 +387,7 @@ export class PairedConnection {
     if (!b || value.epoch !== b.epoch || value.round.roundId !== b.round.roundId || value.round.inputGeneration !== b.round.inputGeneration || (this.options.diagnostic ? value.tick <= b.tick : value.tick < b.tick) || !sameProgress(value.progress, b.progress)) throw new Error('Authority history unavailable');
     b.tick = value.tick; b.timeUs = value.timeUs;
     this.state.objects = b.windows.flatMap(window => window.objects);
-    this.state.timeUs = b.timeUs; this.state.cars = structuredClone(b.cars); this.state.positions = b.cars.map(c => c.progress).join(', ');
+    this.state.contact = { ...b.contact }; this.state.timeUs = b.timeUs; this.state.cars = structuredClone(b.cars); this.state.positions = b.cars.map(c => c.progress).join(', ');
     const recover = this.verification?.barrier(value.tick, crc32c(projectBaseline(b)));
     if (this.verification) this.state.verified = this.verifiedEpochBase + this.verification.verified;
     this.lastUsable = performance.now(); this.state.barriers++;

@@ -1,4 +1,4 @@
-import { type Car, type Context, type Identity, type Input, type ObjectState } from '@dashdevil/contracts/protocol';
+import { type Car, type Contact, type Context, type Identity, type Input, type ObjectState } from '@dashdevil/contracts/protocol';
 import type { Configuration } from './config';
 import { MultiplayerTrack } from './multiplayerTrack';
 import { configurationContext, validateMessage } from '@dashdevil/contracts/validation';
@@ -23,8 +23,8 @@ export class Multiplayer {
  private represented?: readonly ObjectState[];
  private continuationUs?: number;
  private rawTime = 0;
- private segments: { start: number; end: number; cars: [Car, Car]; multipliers: number[] }[] = [];
- private group?: { timeUs: number; sampleTime: number; contacts: { object: ObjectState; seat: number; timeUs: number }[]; finishMask: number; sample?: [Car, Car] };
+ private segments: { start: number; end: number; cars: [Car, Car]; multipliers: number[]; blocked: boolean[] }[] = [];
+ private group?: { timeUs: number; sampleTime: number; contacts: { object: ObjectState; seat: number; timeUs: number }[]; finishMask: number; damage: number[]; sample?: [Car, Car] };
  private heldEvents: Observation[] = [];
  private committed?: ReturnType<Multiplayer['currentSnapshot']>;
  private frozen?: ReturnType<Multiplayer['currentSnapshot']>;
@@ -41,6 +41,7 @@ export class Multiplayer {
  private readonly sequences = [0, 0];
  private readonly tokens: number[];
  private readonly connected = [true, true];
+ private contact: Contact = { episode: 0, flags: 0, blockedSeat: 0, latestSeat: 0, latestControl: 0, latestSequence: 0, latestTimeUs: 0, latestOrder: 0 };
  private order = 0;
  private latestPress: { seat: number; control: number; sequence: number; timeUs: number; order: number } | null = null;
  private readonly configuration: MultiplayerConfiguration;
@@ -73,7 +74,8 @@ export class Multiplayer {
   return valid;
  }
  /** Restore a copied authoritative continuation at an exact simulation boundary. */
- restore(cars: readonly Car[], tick: number, objects?: readonly ObjectState[], timeUs = canonicalTime(tick / this.configuration.gameplay.tickRate)): void {
+ restore(cars: readonly Car[], tick: number, objects?: readonly ObjectState[], timeUs = canonicalTime(tick / this.configuration.gameplay.tickRate), contact?: Readonly<Contact>): void {
+  if (contact) { this.contact = { ...contact }; this.order = contact.latestOrder; this.latestPress = contact.latestControl ? { seat: contact.latestSeat, control: contact.latestControl, sequence: contact.latestSequence, timeUs: contact.latestTimeUs, order: contact.latestOrder } : null; }
   this.represented = objects?.map(object => ({ ...object })); this.continuationUs = timeUs === canonicalTime(tick / this.configuration.gameplay.tickRate) ? undefined : timeUs;
   this.consumption = new Map((objects ?? []).map(object => [object.id, object.flags & 28]));
   if (!Number.isSafeInteger(tick) || tick < 0 || cars.length !== 2) throw new Error('Invalid continuation');
@@ -136,7 +138,10 @@ export class Multiplayer {
       car.heldMask |= 1 << (input.control - 1); car.controls = input.control; car.effective = input.control;
       car.flags = input.control === 3 ? 1 : 0;
       car.freshnessUs = timeUs + canonicalTime(this.configuration.connection.controlFreshnessExpiry);
-      if (this.configuration.mode === 'road-rage') this.latestPress = { seat, control: input.control, sequence: input.sequence, timeUs, order: ++this.order };
+      if (this.configuration.mode === 'road-rage') {
+       this.latestPress = { seat, control: input.control, sequence: input.sequence, timeUs, order: ++this.order };
+       Object.assign(this.contact, { latestSeat: seat, latestControl: input.control, latestSequence: input.sequence, latestTimeUs: timeUs, latestOrder: this.order });
+      }
      }
     } else if (input.intent === 1) {
      if (input.control === 0) this.clear(car);
@@ -153,16 +158,26 @@ export class Multiplayer {
  get processedTick() { return this.tick; }
  get pendingGroup() { return this.committed !== undefined; }
  private move(start: number, end: number): void {
-  const g = this.configuration.gameplay, multipliers = this.cars.map((_, seat) => this.multiplier(seat));
+  const g = this.configuration.gameplay, multipliers = this.cars.map((_, seat) => this.multiplier(seat)), blocked = this.cars.map((_, seat) => this.lateralBlocked(seat));
   // A newly discovered group can sample an earlier piece of this microsecond.
   this.segments = this.segments.filter(segment => segment.end >= start - .000002);
   if (this.segments.length >= 1024) throw new Error('Physical segment history exceeded');
-  this.segments.push({ start, end, cars: this.cars.map(car => ({ ...car })) as [Car, Car], multipliers });
+  this.segments.push({ start, end, cars: this.cars.map(car => ({ ...car })) as [Car, Car], multipliers, blocked });
   for (const [seat, car] of this.cars.entries()) {
    car.progress += this.forwardDistance(start, end - start) * multipliers[seat];
    car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * end);
-   if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * Math.max(0, Math.min(1, (end * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs)));
+   if (blocked[seat]) {
+    const pause = canonicalTime(end) - canonicalTime(start);
+    car.movementStartUs += pause; car.movementEndUs += pause;
+   } else if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * Math.max(0, Math.min(1, (end * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs)));
   }
+  this.refreshContact();
+ }
+ private refreshContact(): void {
+  const [a,b] = this.cars, g = this.configuration.gameplay;
+  if (Math.abs(a.lateral-b.lateral) > g.carWidth + 1e-8 || Math.abs(a.progress-b.progress) > g.carHeight + 1e-8) this.contact.flags = 0;
+  this.contact.flags = (this.contact.flags & 3) | (this.tailgating(0) || this.tailgating(1) ? 4 : 0);
+  this.contact.blockedSeat = this.tailgating(0) || this.lateralBlocked(0) ? 1 : this.tailgating(1) || this.lateralBlocked(1) ? 2 : 0;
  }
  private crossings(start: number, end: number) {
   const result: { seat: number; time: number; timeUs: number }[] = [];
@@ -218,10 +233,10 @@ export class Multiplayer {
     if (!this.group) {
      const deadlineUs = 'timeLimit' in g ? canonicalTime(g.timeLimit) : Infinity;
      const deadline = !provisional && this.configuration.mode === 'road-rage' && canonicalTime(next) >= deadlineUs ? deadlineUs : Infinity;
-     const firstUs = Math.min(contacts[0]?.timeUs ?? Infinity, ...finishes.map(finish => finish.timeUs), deadline);
+     const firstUs = Math.min(this.configuration.mode === 'road-rage' && collision !== undefined ? canonicalTime(collision) : Infinity, contacts[0]?.timeUs ?? Infinity, ...finishes.map(finish => finish.timeUs), deadline);
      if (firstUs !== Infinity) {
       const boundary = Math.round(firstUs * g.tickRate / 1e6) / g.tickRate;
-      this.group = { timeUs: firstUs, sampleTime: canonicalTime(boundary) === firstUs ? boundary : firstUs / 1e6, contacts: [], finishMask: 0 };
+      this.group = { timeUs: firstUs, sampleTime: canonicalTime(boundary) === firstUs ? boundary : firstUs / 1e6, contacts: [], finishMask: 0, damage: [0, 0] };
      }
     }
     const group = this.group;
@@ -237,7 +252,7 @@ export class Multiplayer {
       sample.forEach((car, seat) => {
        car.progress += this.forwardDistance(sampleStart, elapsed) * (segment?.multipliers[seat] ?? this.multiplier(seat));
        car.normalSpeed = Math.min(g.maxRoadSpeed, g.startingRoadSpeed + g.speedGrowth * group.sampleTime);
-       if (car.phase !== 0) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * Math.max(0, Math.min(1, (group.sampleTime * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs)));
+       if (car.phase !== 0 && !segment?.blocked[seat]) car.lateral = car.movementOrigin + (car.movementTarget - car.movementOrigin) * Math.max(0, Math.min(1, (group.sampleTime * 1e6 - car.movementStartUs) / (car.movementEndUs - car.movementStartUs)));
       });
       group.sample = sample;
      }
@@ -256,7 +271,7 @@ export class Multiplayer {
     if (closing) {
      const positions = this.cars.map(car => ({ progress: car.progress, lateral: car.lateral, normalSpeed: car.normalSpeed }));
      this.cars.forEach((car, seat) => Object.assign(car, { progress: group.sample![seat].progress, lateral: car.phase === group.sample![seat].phase && car.movementStartUs === group.sample![seat].movementStartUs ? group.sample![seat].lateral : car.phase === 0 ? car.movementTarget : car.movementOrigin, normalSpeed: group.sample![seat].normalSpeed }));
-     if (group.contacts.length) this.resolveObjects(group.contacts.sort((a, b) => a.object.id - b.object.id || a.seat - b.seat), events, group.timeUs);
+     if (group.contacts.length || group.damage.some(damage => damage > 0)) this.resolveObjects(group.contacts.sort((a, b) => a.object.id - b.object.id || a.seat - b.seat), events, group.timeUs);
      const deadMask = this.cars.reduce((mask, car, seat) => mask | (car.hp === 0 ? 1 << seat : 0), 0);
      const deadline = 'timeLimit' in g && group.timeUs === canonicalTime(g.timeLimit);
      if (!provisional && (deadMask || group.finishMask || deadline)) {
@@ -293,7 +308,15 @@ export class Multiplayer {
   const requested = this.cars.map(car => car.effective === 3 ? g.accelSpeedMultiplier : 1);
   return this.tailgating(seat) ? Math.min(requested[seat], requested[1 - seat]) : requested[seat];
  }
- private lateralSpeed(car: Car): number {
+ /** Pause a return at a lateral contact boundary. Keeping the completed fraction
+  * preserves the same return rather than starting another full-duration slide. */
+ private lateralBlocked(seat: number): boolean {
+  const a = this.cars[seat], b = this.cars[1-seat], g = this.configuration.gameplay;
+  const x = a.lateral - b.lateral;
+  return (this.contact.flags & 1) !== 0 && a.phase === 2 && Math.abs(a.progress-b.progress) < g.carHeight - 1e-8 && Math.abs(x) <= g.carWidth + 1e-8 && x * this.rawLateralSpeed(a) < 0;
+ }
+ private lateralSpeed(car: Car): number { return this.lateralBlocked(this.cars.indexOf(car)) ? 0 : this.rawLateralSpeed(car); }
+ private rawLateralSpeed(car: Car): number {
   return car.phase === 0 ? 0 : (car.movementTarget - car.movementOrigin) * 1e6 / (car.movementEndUs - car.movementStartUs);
  }
  /** Split at the instant a leader clears sideways, releasing the follower within
@@ -310,6 +333,8 @@ export class Multiplayer {
   * Touching while separating has no nonempty overlap interval and is ignored. */
  private playerContact(start: number, end: number): number | undefined {
   const [a, b] = this.cars, g = this.configuration.gameplay;
+  this.refreshContact();
+  if (this.contact.flags & 1) return;
   if (a.phase !== 1 && b.phase !== 1 && Math.abs(a.lateral - b.lateral) < g.carWidth && Math.abs(a.progress - b.progress) < g.carHeight - 1e-8) return;
   let entry = start, exit = end;
   const x = a.lateral - b.lateral, vx = this.lateralSpeed(a) - this.lateralSpeed(b);
@@ -338,12 +363,18 @@ export class Multiplayer {
  }
  private resolvePlayers(time: number, events: Observation[]): void {
   const timeUs = canonicalTime(time), g = this.configuration.gameplay;
+  const phases = this.cars.map(car => car.phase);
+  this.contact.episode++; this.contact.flags = 3;
+  if (this.configuration.mode === 'road-rage' && !(phases[0] === 1 && phases[1] === 1) && (phases.some(phase => phase !== 0)) && this.latestPress && this.group) {
+   this.group.damage[1 - this.latestPress.seat] = 'playerContactDamage' in g ? g.playerContactDamage : 0;
+  }
   for (const car of this.cars) if (car.phase === 1) {
    car.phase = 2; car.target = car.departure;
    car.movementOrigin = car.lateral; car.movementTarget = (car.departure - 1) * g.laneSpacing;
    car.movementStartUs = timeUs; car.movementEndUs = timeUs + canonicalTime(g.laneReturnDuration);
    this.clear(car);
   }
+  this.refreshContact();
   events.push({ type: 'contact', tick: this.tick, timeUs, cars: this.cars.map(car => ({ ...car })) });
  }
  /** Stable placement is independent from mutable shared/per-seat consumption. */
@@ -383,7 +414,7 @@ export class Multiplayer {
     for (let n = 0; n < 52; n++) { const middle = low + (high - low) / 2; if (progress(middle) < object.distance + forwardExtent) low = middle; else high = middle; }
     exit = high;
    }
-   const speed = car.phase === 0 ? 0 : (car.movementTarget - car.movementOrigin) * 1e6 / (car.movementEndUs - car.movementStartUs);
+   const speed = this.lateralSpeed(car);
    if (speed === 0) { if (Math.abs(car.lateral - center) >= lateralExtent) continue; }
    else {
     const a = start + (center - lateralExtent - car.lateral) / speed;
@@ -395,7 +426,7 @@ export class Multiplayer {
   return contacts.sort((a,b) => a.timeUs - b.timeUs || a.object.id - b.object.id || a.seat - b.seat);
  }
  private resolveObjects(contacts: { object: ObjectState; seat: number; timeUs: number }[], events: Observation[], timeUs: number) {
-  const g = this.configuration.gameplay, objects = new Map<number, ObjectState>(), damage = [0, 0];
+  const g = this.configuration.gameplay, objects = new Map<number, ObjectState>(), damage = [...(this.group?.damage ?? [0, 0])];
   for (const { object } of contacts) objects.set(object.id, { ...object });
   for (const object of objects.values()) {
    const kind = object.flags & 3;
@@ -430,9 +461,9 @@ export class Multiplayer {
  preview() { return this.currentSnapshot(); }
  snapshot() { return this.copySnapshot(this.frozen ?? this.committed ?? this.currentSnapshot()); }
  private copySnapshot(state: ReturnType<Multiplayer['currentSnapshot']>) {
-  return { ...state, finish: state.finish ? { ...state.finish } : undefined, cars: state.cars.map(car => ({ ...car })) as [Car, Car], objects: state.objects.map(object => ({ ...object })), latestPress: state.latestPress ? { ...state.latestPress } : null,
+  return { ...state, contact: { ...state.contact }, finish: state.finish ? { ...state.finish } : undefined, cars: state.cars.map(car => ({ ...car })) as [Car, Car], objects: state.objects.map(object => ({ ...object })), latestPress: state.latestPress ? { ...state.latestPress } : null,
    track: { ...state.track, slices: state.track.slices.map(slice => ({ ...slice, cells: [...slice.cells] as typeof slice.cells })) } };
  }
- private currentSnapshot() { return { finish: this.finish ? { tick: this.finish.tick, timeUs: this.finish.timeUs, result: this.finish.result } : undefined, reason: this.finish?.reason, objects: this.objects(), tick: this.tick, timeUs: this.finish?.timeUs ?? this.continuationUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
+ private currentSnapshot() { return { contact: { ...this.contact }, finish: this.finish ? { tick: this.finish.tick, timeUs: this.finish.timeUs, result: this.finish.result } : undefined, reason: this.finish?.reason, objects: this.objects(), tick: this.tick, timeUs: this.finish?.timeUs ?? this.continuationUs ?? canonicalTime(this.tick / this.configuration.gameplay.tickRate), abandoned: this.abandoned, track: this.trackState(),
   cars: this.cars.map(car => ({ ...car })) as [Car, Car], latestPress: this.latestPress ? { ...this.latestPress } : null }; }
 }
