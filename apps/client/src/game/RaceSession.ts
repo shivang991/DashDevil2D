@@ -83,6 +83,14 @@ export class RaceSession {
     if (this.outcome || !sameIdentity(record.identity, this.baseline.identity) || record.round.inputGeneration !== this.baseline.round.inputGeneration || record.round.roundId !== this.baseline.round.roundId || record.authority <= this.baseline.progress.authority) return;
     this.beforeCorrection();
     this.advanceAuthority(record.tick);
+    // An authoritative generation change starts a new sequence space for that
+    // seat. Keep the other seat's processed/disposed watermarks unchanged.
+    for (let seat = 0; seat < record.cars.length; seat++) {
+      const car = record.cars[seat];
+      if (!(record.seatMask & (1 << seat)) || car.inputGeneration === this.baseline.cars[seat].inputGeneration) continue;
+      if (seat === 0) { this.baseline.progress.processed1 = car.lastInput; this.baseline.progress.disposed1 = car.lastInput; }
+      else { this.baseline.progress.processed2 = car.lastInput; this.baseline.progress.disposed2 = car.lastInput; }
+    }
     this.baseline.cars = structuredClone(record.cars);
     this.baseline.tick = record.tick; this.baseline.timeUs = record.timeUs;
     for (const object of record.objects) for (const window of this.baseline.windows) {
