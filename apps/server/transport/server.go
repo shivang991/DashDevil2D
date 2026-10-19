@@ -35,6 +35,7 @@ const frameLimit = 65536
 // Config uses one hostname/port for TCP HTTPS and UDP HTTP/3. Local tests may
 // request port zero; the UDP listener then binds the allocated TCP port.
 type Config struct {
+	RoomLimit                                                                    int // zero selects the default 50-room admission limit
 	Address, Origin, Certificate, Key, QUICCertificate, QUICKey, StaticDirectory string
 	Logger                                                                       *slog.Logger
 	Now                                                                          func() time.Time       // authoritative clock; nil uses time.Now
@@ -108,6 +109,12 @@ type ticket struct {
 }
 
 func New(config Config) (*Server, error) {
+	if config.RoomLimit == 0 {
+		config.RoomLimit = 50
+	}
+	if config.RoomLimit < 1 || config.RoomLimit > 10000 {
+		return nil, errors.New("room limit must be between 1 and 10000")
+	}
 	if len(config.DragRaceOverrides) > 0 {
 		if _, err := configuration.Capture([]byte(p.DefaultConfigurationJSON), "drag-race", config.DragRaceOverrides); err != nil {
 			return nil, err
@@ -328,7 +335,8 @@ func (s *Server) admission(c *fiber.Ctx) error {
 				s.mu.Unlock()
 				return s.failure(c, 400, 2, "Invalid room code")
 			}
-			if len(s.rooms) >= 50 {
+			if len(s.rooms) >= s.config.RoomLimit {
+				s.config.Logger.Info("capacity_rejected", "rooms", len(s.rooms), "limit", s.config.RoomLimit)
 				s.mu.Unlock()
 				return s.failure(c, 503, 4, "Server full. Try again later.")
 			}

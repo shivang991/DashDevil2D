@@ -2,6 +2,7 @@ package transport_test
 
 import (
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"testing"
 	"time"
 )
@@ -64,5 +65,39 @@ func TestDeploymentRejectsPriorProtocolBeforeAllocatingSeat(t *testing.T) {
 	problem, ok := value.(p.ProtocolError)
 	if status != 409 || !ok || problem.ExpectedVersion != 2 {
 		t.Fatalf("old tab not told to reload: status=%d response=%T", status, value)
+	}
+}
+
+func TestConfiguredCapacityPreservesExistingSeats(t *testing.T) {
+	s, c, _ := configuredServer(t, transport.Config{RoomLimit: 1})
+	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	host := value.(p.Admission)
+	status, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Other"}, origin)
+	if status != 503 || value.(p.ProtocolError).Detail != "Server full. Try again later." {
+		t.Fatalf("capacity: %d %+v", status, value)
+	}
+	status, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+	if status != 201 {
+		t.Fatalf("existing seat: %d %+v", status, value)
+	}
+	status, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: host.Credential}, origin)
+	if status != 201 || value.(p.Admission).Identity.SeatSession != host.Identity.SeatSession {
+		t.Fatalf("reconnect: %d %+v", status, value)
+	}
+}
+
+func TestRestartInvalidatesLostRoomCredential(t *testing.T) {
+	old, client, _ := serverMode(t, false)
+	_, value := admit(t, old, client, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	credential := value.(p.Admission).Credential
+	old.Close()
+	restarted, client, _ := serverMode(t, false)
+	status, value := admit(t, restarted, client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: credential}, origin)
+	if status != 410 || value.(p.ProtocolError).Detail != "Room expired" {
+		t.Fatalf("lost room: %d %+v", status, value)
+	}
+	status, value = admit(t, restarted, client, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "New host"}, origin)
+	if status != 201 {
+		t.Fatalf("fresh process admission: %d %+v", status, value)
 	}
 }
