@@ -14,24 +14,26 @@ import (
 )
 
 type pair struct {
-	server          *Server
-	seat            *seat
-	identity        p.Identity
-	mu              sync.Mutex
-	roomSocket      *websocket.Conn
-	gameplay        *wt.Session
-	roomInitialized bool
-	initialized     bool
-	roomQueue       chan queued
-	queuedBytes     int
-	queuedMessages  int
-	capacity        chan struct{}
-	limits          p.Connection
-	roomSequence    uint32
-	closed          bool
-	once            sync.Once
-	done            chan struct{}
-	rounds          chan struct{}
+	server             *Server
+	seat               *seat
+	identity           p.Identity
+	mu                 sync.Mutex
+	roomSocket         *websocket.Conn
+	gameplay           *wt.Session
+	roomInitialized    bool
+	initialized        bool
+	roomQueue          chan queued
+	queuedBytes        int
+	queuedMessages     int
+	peakQueuedBytes    int
+	peakQueuedMessages int
+	capacity           chan struct{}
+	limits             p.Connection
+	roomSequence       uint32
+	closed             bool
+	once               sync.Once
+	done               chan struct{}
+	rounds             chan struct{}
 }
 
 func newPair(s *Server, seat *seat) *pair {
@@ -105,6 +107,7 @@ func (pair *pair) enqueueRoom(value any) error {
 	case pair.roomQueue <- queued{wire, time.Now()}:
 		pair.queuedBytes += len(wire)
 		pair.queuedMessages++
+		pair.trackQueuePeakLocked()
 		return nil
 	default:
 		return errors.New("room queue overflow")
@@ -465,6 +468,7 @@ func (pair *pair) reserve(n int) error {
 	}
 	pair.queuedBytes += n
 	pair.queuedMessages++
+	pair.trackQueuePeakLocked()
 	return nil
 }
 func (pair *pair) release(n int) {
@@ -476,4 +480,10 @@ func (pair *pair) release(n int) {
 	case pair.capacity <- struct{}{}:
 	default:
 	}
+}
+
+// Caller holds pair.mu; peaks include all channels and writes in flight.
+func (pair *pair) trackQueuePeakLocked() {
+	pair.peakQueuedBytes = max(pair.peakQueuedBytes, pair.queuedBytes)
+	pair.peakQueuedMessages = max(pair.peakQueuedMessages, pair.queuedMessages)
 }

@@ -31,6 +31,7 @@
     "test:hearts": "node apps/client/scripts/transport.mjs --test --hearts",
     "test:rage": "node apps/client/scripts/transport.mjs --test --rage",
     "test:rage-default": "node apps/client/scripts/transport.mjs --test --rage-default",
+    "test:dense": "node apps/client/scripts/transport.mjs --test --dense",
     "test:failures": "node apps/client/scripts/transport.mjs --test --failures",
     "test:responsibility": "node apps/client/scripts/transport.mjs --test --responsibility"
   },

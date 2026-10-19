@@ -1,0 +1,18 @@
+{
+  "gameplay": {
+    "timeLimit": 120,
+    "startingRoadSpeed": 900,
+    "maxRoadSpeed": 900,
+    "maxHealth": 1000,
+    "sliceSpacing": 10,
+    "initialClearDistance": 0,
+    "emptyWeight": 0,
+    "obstacleWeight": 1,
+    "coinWeight": 0,
+    "heartWeight": 0
+  },
+  "connection": {
+    "reliableFrameBytes": 7168,
+    "queueBytes": 7168
+  }
+}

@@ -52,7 +52,8 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 	}
 	aw := writer(pair, authority)
 	transfer := uint32(1)
-	if _, err = queueBaseline(aw, baseline, transfer); err != nil {
+	baselineBytes, err := queueBaseline(aw, baseline, transfer)
+	if err != nil {
 		return err
 	}
 	receivedMessages := make(chan received, 128)
@@ -115,7 +116,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 			if err = cw.send(p.Initialization{Identity: pair.identity, Round: baseline.Round, Context: baseline.Context}); err != nil {
 				return err
 			}
-			if _, err = queueBaseline(aw, baseline, transfer); err != nil {
+			if baselineBytes, err = queueBaseline(aw, baseline, transfer); err != nil {
 				return err
 			}
 		case record := <-receivedMessages:
@@ -163,6 +164,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				}
 				installed = true
 				lastAck = time.Now()
+				pair.server.config.Logger.Info("baseline_installed", "room", pair.identity.RoomId, "seat", pair.identity.Seat, "generation", pair.identity.PairGeneration, "mode", baseline.Context.Mode, "transfer", transfer, "baseline_bytes", baselineBytes, "installation_us", time.Since(sentAt).Microseconds())
 				pair.mu.Lock()
 				wasInitialized := pair.initialized
 				pair.initialized = true
@@ -221,7 +223,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				sentAt = time.Now()
 				cursor = baseline.Progress.Authority
 				outstanding = nil
-				if _, err = queueBaseline(aw, baseline, transfer); err != nil {
+				if baselineBytes, err = queueBaseline(aw, baseline, transfer); err != nil {
 					return err
 				}
 			case p.ClockRequest:

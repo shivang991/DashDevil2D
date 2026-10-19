@@ -455,6 +455,7 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 }
 
 func queueBaseline(writer *streamWriter, baseline p.Baseline, transferID uint32) (int, error) {
+	started := time.Now()
 	data, err := p.EncodeBaseline(baseline, int(baseline.Context.Connection.BaselineBytes))
 	if err != nil {
 		return 0, err
@@ -475,6 +476,10 @@ func queueBaseline(writer *streamWriter, baseline p.Baseline, transferID uint32)
 			return 0, err
 		}
 	}
+	writer.pair.mu.Lock()
+	peakBytes, peakMessages := writer.pair.peakQueuedBytes, writer.pair.peakQueuedMessages
+	writer.pair.mu.Unlock()
+	writer.pair.server.config.Logger.Info("baseline_transfer_queued", "room", baseline.Identity.RoomId, "seat", baseline.Identity.Seat, "generation", baseline.Identity.PairGeneration, "mode", baseline.Context.Mode, "seed", baseline.Context.Seed, "transfer", transferID, "baseline_bytes", len(data), "framed_bytes", len(data)+len(header)*count, "chunks", count, "production_us", time.Since(started).Microseconds(), "pair_peak_queue_bytes", peakBytes, "pair_peak_queue_messages", peakMessages, "queue_byte_limit", baseline.Context.Connection.QueueBytes, "queue_message_limit", baseline.Context.Connection.QueueMessages)
 	return len(data), nil
 }
 

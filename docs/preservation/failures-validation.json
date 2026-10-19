@@ -1,0 +1,306 @@
+{
+  "version": 1,
+  "issue": 40,
+  "closure": "Explicit owner request to commit and close now; acceptance incomplete",
+  "reviewBaseline": "0f6cc47c55bbfe0c4fa3e106b567540a8939356e",
+  "reviewedImplementationCommits": [
+    "b54ce8b",
+    "0d75982"
+  ],
+  "sourceSha256": {
+    ".github/workflows/preservation.yml": "7f2004524826a91a68352b17ac6ff64c11bffc41e14d0619213dabae9b189e86",
+    "apps/client/playwright.config.ts": "bb2d16a47c9a391829d7d410c989b626b77fef5abf030f33d6532873d2d0e731",
+    "apps/client/playwright.transport.config.ts": "92abafa91a0ca50d68c19add398ead6fae687bf85047ed8bc53b120284108b66",
+    "apps/client/scripts/transport.mjs": "c2c84624e890b98049673ccd901a1994ca9f5101eeb7330ce92b2433d5916c6b",
+    "apps/client/src/transport/PairedConnection.ts": "dcdc528f31e6c7872a9c93132b08f01e7780375cc34e8f4b43c830fad60b6785",
+    "apps/client/tests/browser/dense.spec.ts": "687d899881b5f82725e849809875acd3f0eee97d07a7ddd52732bb47d05ba090",
+    "apps/client/tests/browser/failures.spec.ts": "705ae1538d117baaf2c13bd6e0a9aeaaba5766da0da2644d1a5b64f722f0f9c4",
+    "apps/client/tests/session/paired-lifecycle.test.ts": "c01b177c2d619608d5d9c9433da130560c23ca3831a3451cd4388275af1d5f4c",
+    "apps/client/tests/simulation/protocol.test.ts": "6354c145e8383f556e7b86d3686a233559aa2da92dec9227e3c06329cc8bccfc",
+    "apps/server/protocol/protocol_test.go": "42fa67fd8e508d3870b31fd8dec7df16dbcf483582b26481e3f47951f82bfd90",
+    "apps/server/protocol/validation.go": "3181a73095628fd57ec2768902855d7a9b2f5c75301df2263f9c57b0d60418e5",
+    "apps/server/simulation/simulation.go": "51a9516c35037eef3db5b489c3c07f4243233c740588d89dbeac22a2d5990fc2",
+    "apps/server/transport/coverage_headroom_test.go": "71994029977579699e5e110908f5d1f62073901ed5ef02372ef7ae4589d9af4b",
+    "apps/server/transport/failure_test.go": "04f0b43f9dfe27a72806557db981fcaf06e1f616960faa14c1a3a9a48d149e95",
+    "apps/server/transport/gameplay.go": "ceb4465de95d00366f1cd4827da9993c982fc2881c21357e4912b89a9f14698a",
+    "apps/server/transport/pair.go": "8cf9f3a02fc6af8cae5868157ebf59e9d0788dc5c33e8834432f6bfc969969b7",
+    "apps/server/transport/race.go": "cf60966194a6ba95c0707a9464cfeb739804e7e4365a983c4cdffbb22c81b69b",
+    "apps/server/transport/room_gameplay.go": "438b94f5542a505f5ec9e1096f41cd20abd0ffcae7d292292c63f5f42997e849",
+    "apps/server/transport/rooms.go": "caef8651ee1f8c3e416ad1b943ae804ddcfe8352ca0a9e293f627494fbd82c02",
+    "apps/server/transport/server_test.go": "4e8d53d403d39a8c95739009ca86c9ebf63bfd33857562dbf6636a748da1937c",
+    "infra/dense-drag-race.json": "8e395ea420748a6b772358c014476e997e0fd9201cc8968d08b952aadd3b99d6",
+    "infra/dense-road-rage.json": "f11e97d4246f14b9ff461d7bdc7e599253960ebeb1cca7a79d7448b16ebecf63",
+    "infra/failures-drag-race.json": "6b5f48cc7cddbcfd91312630ebb913dedfaed5a91734b9d7422482fbe61b8e0f",
+    "infra/failures-road-rage.json": "8bb513560c72dbc1c8b31119c1b9c901b38f9760a1d18866ce17c60b0bcb67ef",
+    "package.json": "a8bbb68776bb5644e20b0e3a21441bec76d113743744b81383ba2ddcebbc7f2a",
+    "packages/contracts/protocol/validation.ts": "1571caf415f2a4f25b1e1dc08c5e1eb03821520fd039dded3d6e5053c0eb0417"
+  },
+  "browserCommandsAt0d75982": [
+    {
+      "command": "pnpm test:browser",
+      "exitCode": 0,
+      "startedUnix": 1792348562.947051,
+      "elapsedSeconds": 69.6920268535614,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-browser-final.log",
+      "logSha256": "d9fba72b1be90f5217fe16c96912f65457f06049bccd603f40db90b79c9ff396"
+    },
+    {
+      "command": "pnpm test:failures",
+      "exitCode": 0,
+      "startedUnix": 1792348632.6429172,
+      "elapsedSeconds": 139.57790803909302,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-failures-final.log",
+      "logSha256": "ce62a8ccc67003e9d71ea24e35665a01a1ea4fffdf4dbac509f123d41f6f71cf",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-39-31.899Z",
+      "manifestSha256": "204b7b3f708309d1f4d19fc8c1515752a2dca30914e0ae3f24d8b88b4ddd83e2"
+    },
+    {
+      "command": "pnpm test:transport",
+      "exitCode": 0,
+      "startedUnix": 1792348772.224361,
+      "elapsedSeconds": 12.014708995819092,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-transport-final.log",
+      "logSha256": "eedef6a4f11201da8ac8cc3deddf8cc316c38f8e8651852e746194da4dbe8a1b",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-39-43.953Z",
+      "manifestSha256": "195c329b5dda681c1ae90d631305e900882a0f03e010ab35cf1b2b47a49127a0"
+    },
+    {
+      "command": "pnpm test:rooms",
+      "exitCode": 0,
+      "startedUnix": 1792348784.2434182,
+      "elapsedSeconds": 13.86537480354309,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-rooms-final.log",
+      "logSha256": "c93e3477fad556064f4572a853900e90d365667943785198fa9150ef1f29bfe1",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-39-57.756Z",
+      "manifestSha256": "03ce85596047c80790987268243f9ad50113d8589bea54bcb3d0a788f768c65b"
+    },
+    {
+      "command": "pnpm test:groups",
+      "exitCode": 0,
+      "startedUnix": 1792348798.112849,
+      "elapsedSeconds": 30.102500915527344,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-groups-final.log",
+      "logSha256": "deb37091ba79955a34641c845beffbdecf0019c048a4872884bfb989954bbe3f",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-40-27.916Z",
+      "manifestSha256": "e1af99484f71dceba0a96cef13f425eb5b7303ac61082a8abd977bc1e1cd333c"
+    },
+    {
+      "command": "pnpm test:finality",
+      "exitCode": 0,
+      "startedUnix": 1792348828.216236,
+      "elapsedSeconds": 29.823861837387085,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-finality-final.log",
+      "logSha256": "a56f626d9c6886c7c0d8b441d53610e59edd689be255c655416d57ada4ec55fa",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-40-57.804Z",
+      "manifestSha256": "fd00a3a06d608706b4543ede20d7be7c6c95ba66573236c145bb75a7edd40cac"
+    },
+    {
+      "command": "pnpm test:race",
+      "exitCode": 0,
+      "startedUnix": 1792348858.043134,
+      "elapsedSeconds": 40.897072076797485,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-race-final.log",
+      "logSha256": "cc410555964549a2dc86d36d4e5aedfef6ccba785d125f6ce17f4af3a9202bfc",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-41-38.652Z",
+      "manifestSha256": "5282eedeedcfd58087d53345318d8fe18e8ddea09e89e34fd1a6382d069a9550"
+    },
+    {
+      "command": "pnpm test:objects",
+      "exitCode": 0,
+      "startedUnix": 1792348898.943603,
+      "elapsedSeconds": 17.338594913482666,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-objects-final.log",
+      "logSha256": "d7fd1991b18a1ebf5ec65f12d8723676732939f5cf4f269120e8a0c6f174530b",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-41-56.024Z",
+      "manifestSha256": "7a8187948e439a41f5129ffefb455e6d3df3848e86546502a2f121b022bf2fd5"
+    },
+    {
+      "command": "pnpm test:contacts",
+      "exitCode": 0,
+      "startedUnix": 1792348916.285355,
+      "elapsedSeconds": 31.569016933441162,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-contacts-final.log",
+      "logSha256": "2d51e28c9bc378d3b9f226de1ec33e04d5f4809722cdbc2304aa1d6d57f66e75",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-42-27.485Z",
+      "manifestSha256": "d53bfd8af8f2ef947f89a5a853422adc2fc66e28523fb3ea22dbb67a565ce01f"
+    },
+    {
+      "command": "pnpm test:hearts",
+      "exitCode": 0,
+      "startedUnix": 1792348947.857905,
+      "elapsedSeconds": 18.00785207748413,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-hearts-final.log",
+      "logSha256": "e728068ba596f99b3c9fa23df8a945abd11c2cd989d2ca9c5002465dfcf5558e",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-42-45.449Z",
+      "manifestSha256": "a8da42a97c98bec43e806daace1c680c7af7409a521bfe6600b120749c661e87"
+    },
+    {
+      "command": "pnpm test:maintenance",
+      "exitCode": 0,
+      "startedUnix": 1792348965.868993,
+      "elapsedSeconds": 26.332813024520874,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-maintenance-final.log",
+      "logSha256": "280383e4442c7fb049703bc4ab1fe415937d7245de6a609c1eac12b5707825f5",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-43-11.871Z",
+      "manifestSha256": "f036eef3d876a0d00937946ee7bfdf5a952c3d1c971a454470443bb41b6d79d2"
+    },
+    {
+      "command": "pnpm test:boundaries",
+      "exitCode": 0,
+      "startedUnix": 1792348992.205271,
+      "elapsedSeconds": 20.85349416732788,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-boundaries-final.log",
+      "logSha256": "806a6ad79be28d77c982777abac49ac0296355d6dcb7e24ecd711ec265ca6ad4",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-43-32.600Z",
+      "manifestSha256": "764ed131251b71a12747f643bd3ef4f58676c7d09a6ea2cc3d68a00c481ba623"
+    },
+    {
+      "command": "pnpm test:lifecycle",
+      "exitCode": 0,
+      "startedUnix": 1792349013.06245,
+      "elapsedSeconds": 37.553022146224976,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-lifecycle-final.log",
+      "logSha256": "2c714585a8f70974064f05ec93ca042748cccc2b9b1275c2f4711bee03c43e8c",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-44-10.262Z",
+      "manifestSha256": "f6724bbfee82ca455163aee5bed21d81a9292ce4dd48119cbf678c0ef18ee261"
+    },
+    {
+      "command": "pnpm test:rage",
+      "exitCode": 0,
+      "startedUnix": 1792349050.619012,
+      "elapsedSeconds": 31.356472730636597,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-rage-final.log",
+      "logSha256": "eefb5c0ac55fabf86cbc5b9512861a7aec3aebe72c62418176067ffb2c8dc5ac",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-44-41.614Z",
+      "manifestSha256": "ed9aadcb3b80e288f62d84ec6a4a63e9f0f60512a623f77eee5473981154fbc5"
+    },
+    {
+      "command": "pnpm test:rage-default",
+      "exitCode": 0,
+      "startedUnix": 1792349081.9790761,
+      "elapsedSeconds": 23.054871797561646,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-rage-default-final.log",
+      "logSha256": "26c6e4bda178777b58595aaf7dfb2d81f9303330de219194a5f7363b6a109156",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-45-04.598Z",
+      "manifestSha256": "6e5b3d159cbb772ec36c707b2da3212a6e05a2a74f81b27e42eff903ac63a274"
+    },
+    {
+      "command": "pnpm test:responsibility",
+      "exitCode": 0,
+      "startedUnix": 1792349105.0377421,
+      "elapsedSeconds": 33.55154776573181,
+      "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/test-responsibility-final.log",
+      "logSha256": "c231f2422cb1b26c4e81573183b743b70d53e408dd88508d0618b41a3a421e0c",
+      "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-45-38.207Z",
+      "manifestSha256": "1fab1d08ced001afdb889e8b910e6596ebc9173c4719da67f42dc02516d02851"
+    }
+  ],
+  "denseNativeLatest": {
+    "runDirectory": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/transport-2026-10-18T18-49-57.025Z",
+    "manifestSha256": "9bc6b035a8e2a06b1f104a47affdd282380e1b6bf34684198e1ea7988b5f13e2",
+    "dragRace": "passed",
+    "roadRage": "failed NOS-active assertion"
+  },
+  "knownOutstanding": [
+    "Dense native Road Rage NOS-active assertion failure",
+    "Actual packet-level bandwidth including transport overhead; macOS root-only BPF and sudo password unavailable"
+  ],
+  "failureEvidence": [
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/authority-starvation-red.log",
+      "sha256": "354a29d1fbe1c5c8afbd981b767e5d9685eed4eb06b4c5ec4add76105ec28c19"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/browser-failures-01.log",
+      "sha256": "3103fdd97b0be2deb329a90d9c6469a6be98a589cc678feb321c7b447ba35274"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/captured-pair-green-01.log",
+      "sha256": "e93268bf3dc9485497f1426dce45dad73b331c9aab8c8deff3ad0eca8ef8455a"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/captured-pair-red.log",
+      "sha256": "1bbe4fe4d5a77ef7d5e9983c04bdd6bcc1d0a3ccd7c2320a6b84e3e5eabd59c1"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/captured-pair-replacement.log",
+      "sha256": "d0853a16d03cac18546127a56af11d78430c5c945eaaa1c286f4a3f9d7a56c3d"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/configured-chunks-green-01.log",
+      "sha256": "affebfd40c9c578c19a997890d606cf93900f19264a47ddc9f319c33d446780a"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/configured-chunks-green-02.log",
+      "sha256": "6e4aa03c39c1461436c36cdbfb0e405eb3f8c743d93bb4cd75bfd72f4368664b"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/configured-chunks-red-02.log",
+      "sha256": "2aa73a93fbdef76be5601b0bebbd839640ab8a307efcf9da9228fdbfdc3f8a92"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/configured-chunks-red.log",
+      "sha256": "6460a8562c679e34cecbce89bd86e5ac4bda63324ae7efcffdfe50be5d4e8a24"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/dense-browser-green-01.log",
+      "sha256": "7ea1c5395237e746c551f7272dd8f210fb66cf9c470d7b81540a27cd5d4fcc77"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/dense-browser-red-01.log",
+      "sha256": "2a4f201464acde17ea6de5d8945cd7b1480514919b8c5cf9a109da20cfdc264f"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/dense-browser-red-02.log",
+      "sha256": "52affb102433783e425406cda16b3d76735640a1ea5e380d468fa86a4b199246"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/dense-windows-01.log",
+      "sha256": "11c897ccb652c640c9ff9042721060ec9373b7e5fa23180156df5165882a7c51"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/initialization-frame-red.log",
+      "sha256": "133bf79849222a1e7a40d5e894c04af3673578a7a4b4ab474653f52c5f0b4f20"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/packet-capture-prerequisite-02.log",
+      "sha256": "9b3a3b7a78f239c4473bb193476b1a860c91f1c2b4fab9c7639eceea414a60fb"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/preservation-01.log",
+      "sha256": "9b549c42630f7a5c94044b4e0565405065916ba832a0db6c7b784b8914d7a9f3"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/recovery-red-02.log",
+      "sha256": "7d335a1d70f078b38cd83ba3e8b72c7a11f425f3f1be65c8112e2deddd2be1a3"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/recovery-red.log",
+      "sha256": "763b2ae07a04abbc25bfefa84e39325422d553b36afe4fc477ea6e1c80f541f3"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/room-queue-red.log",
+      "sha256": "518b945c71704acd03cc8a65d993346e8bacdca7095f89317828ccba558397f3"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/room-stall-red.log",
+      "sha256": "ee0b2ba34bee815ff152dc76d7b44826ba333e2efdb47bc0679337e022ab5e07"
+    },
+    {
+      "path": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/typecheck-initial.log",
+      "sha256": "45d46cd71946d2c6ef9fb79245688dda66b2a476f5b6daa897bb416721ce9faf"
+    }
+  ],
+  "rawEvidenceRoot": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40",
+  "acceptanceComplete": false,
+  "stage6GatePassed": false,
+  "finalWorkspaceCheck": {
+    "command": "pnpm check:generated && pnpm exec turbo run typecheck lint test build --force",
+    "exitCode": 0,
+    "tasksPassed": 15,
+    "tasksCached": 0,
+    "vitestPassed": 434,
+    "log": "/Users/shivang/Desktop/programs/test/claude-code-test/apps/client/test-results/failures-issue40/logs/check-close-request.log",
+    "logSha256": "3664e9f89689ba9596186b59f43e895c536550afb7c422ceda185fb77e2d313e"
+  }
+}

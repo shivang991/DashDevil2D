@@ -216,3 +216,34 @@ test('a remote generation reset rebases its input watermarks before following co
     expect(client.state.diagnostics.recoveryRequests ?? 0).toBe(0);
   } finally { client.dispose(); }
 });
+
+test('stalled authoritative progress retains the seat credential for paired recovery', async () => {
+  vi.useFakeTimers();
+  await vi.advanceTimersByTimeAsync(1);
+  vi.stubGlobal('WebSocket', RoomSocket); vi.stubGlobal('WebTransport', Gameplay);
+  const admission: Admission = { version: protocolVersion, identity, credential: new Uint8Array(32).fill(1), roomTicket: new Uint8Array(32).fill(2), gameplayTicket: new Uint8Array(32).fill(3), expiresUs: 10000000, origin: location.origin };
+  vi.stubGlobal('fetch', vi.fn(async () => new Response(encodeMessage('Admission', admission) as Uint8Array<ArrayBuffer>, { status: 201 })));
+  const client = new PairedConnection({ server: 'https://localhost:8443' }, () => {});
+  try {
+    await client.connect(0);
+    const gameplay = Gameplay.instances[0];
+    let authority!: ReadableStreamDefaultController<Uint8Array>;
+    gameplay.authority.enqueue(new ReadableStream<Uint8Array>({ start: controller => { authority = controller; } }));
+    const baseline = initialBaseline(configurationContext(captureConfiguration('drag-race'), 1, 1000000));
+    baseline.identity = identity;
+    baseline.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
+    gameplay.control.enqueue(encodeMessage('Initialization', { identity, round: baseline.round, context: baseline.context }));
+    await vi.waitFor(() => expect(gameplay.inputCalls).toBe(1));
+    const data = encodeBaseline(baseline);
+    authority.enqueue(encodeMessage('BaselineChunk', { identity, round: baseline.round, transferId: 1, epoch: 1, tick: 0, progress: baseline.progress, total: data.length, offset: 0, index: 0, count: 1, data }));
+    await vi.waitFor(() => expect(client.state.diagnostics.baselineEpochs).toEqual([1]));
+    const room: RoomState = { identity, revision: 1, mode: 1, phase: 2, host: 0, seats: [{ session: 2, name: 'Driver', flags: 1, reservationUs: 0 }, { session: 3, name: 'Guest', flags: 1, reservationUs: 0 }], roundId: 1, startUs: 1000000, idleWarningUs: 100000000, idleExpiryUs: 200000000 };
+    RoomSocket.latest.onmessage?.({ data: encodeMessage('RoomState', room).slice().buffer as ArrayBuffer });
+    RoomSocket.latest.onmessage?.({ data: encodeMessage('RoomReply', { identity, sequence: 1, revision: 1, accepted: 1, detail: '' }).slice().buffer as ArrayBuffer });
+    await vi.advanceTimersByTimeAsync(1100);
+    expect(client.state.errors).toContain('Authoritative history expired; recovering connection');
+    expect(client.hasCredential).toBe(true);
+    await vi.advanceTimersByTimeAsync(500);
+    expect(Gameplay.instances).toHaveLength(2);
+  } finally { client.dispose(); }
+});

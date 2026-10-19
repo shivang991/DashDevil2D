@@ -86,7 +86,7 @@ export class PairedConnection {
     if (generation !== this.generation || this.terminal) return;
     const detail = error instanceof Error ? error.message : String(error);
     this.state.errors.push(detail); if (this.state.errors.length > 32) this.state.errors.shift();
-    const ended = /expired|rejected|superseded|replaced|version/i.test(detail);
+    const ended = /(?:room|seat|credential) expired|rejected|superseded|replaced|version/i.test(detail);
     this.teardown();
     if (ended) {
       try { sessionStorage.removeItem(this.storageKey()); } catch { /* storage optional */ }

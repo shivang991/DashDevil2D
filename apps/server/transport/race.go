@@ -165,6 +165,18 @@ func (s *Server) advanceRacesLocked() []*room {
 	return changed
 }
 func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
+	// A canonical group can contact several tightly spaced slices. The wire
+	// Event bounds its object section at three records; publish every change
+	// in ordered records with the same canonical time and resulting car state.
+	// Never truncate a group or fail valid gameplay because it spans slices.
+	if len(event.Objects) > 3 {
+		for start := 0; start < len(event.Objects); start += 3 {
+			part := event
+			part.Objects = event.Objects[start:min(start+3, len(event.Objects))]
+			s.recordRaceLocked(r, part)
+		}
+		return
+	}
 	b := r.zero
 	if event.Car != nil || event.Type == "contact" || event.Type == "objects" {
 		b.Contact = event.Contact
