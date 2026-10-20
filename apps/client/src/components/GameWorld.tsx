@@ -13,7 +13,16 @@ interface GameWorldProps {
 export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sessionRef = useRef<GameSession | null>(null);
-  const [ui, setUi] = useState<UISnapshot>({ health: 2, maxHealth: 2, score: 0, status: "countdown", paused: false, gameOverAnimDone: false, countdown, accelerating: false });
+  const [ui, setUi] = useState<UISnapshot>({
+    health: 2,
+    maxHealth: 2,
+    score: 0,
+    status: "countdown",
+    paused: false,
+    gameOverAnimDone: false,
+    countdown,
+    accelerating: false,
+  });
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -22,7 +31,11 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
     setUi(session.getSnapshot());
     const unsubscribe = session.subscribe(() => setUi(session.getSnapshot()));
     session.start();
-    return () => { unsubscribe(); session.dispose(); sessionRef.current = null; };
+    return () => {
+      unsubscribe();
+      session.dispose();
+      sessionRef.current = null;
+    };
   }, [countdown, configuration, seed]);
 
   return (
@@ -32,9 +45,7 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
         <div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 shrink-0">
           {/* Left side */}
           <div className="flex flex-col gap-1">
-            <h1 className="text-white text-base sm:text-xl tracking-wide">
-              Branding
-            </h1>
+            <h1 className="text-white text-base sm:text-xl tracking-wide">Branding</h1>
             <p className="text-neutral-400 text-xs sm:text-sm">
               {ui.accelerating ? "Accelerating!" : "Hold [Up/W] to accelerate"} Hit [Space] to pause
             </p>
@@ -58,24 +69,29 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
                   height={16}
                   style={{ imageRendering: "pixelated" }}
                   className={`w-5 h-5 sm:w-6 sm:h-6 object-contain ${
-                    i < ui.health
-                      ? ""
-                      : "grayscale opacity-30"
+                    i < ui.health ? "" : "grayscale opacity-30"
                   }`}
                 />
               ))}
             </div>
 
             {/* Score */}
-            <p className="text-white text-xs sm:text-sm">
-              Score: {ui.score}
-            </p>
+            <p className="text-white text-xs sm:text-sm">Score: {ui.score}</p>
           </div>
         </div>
 
         {/* ── Game canvas ── */}
         <div className="flex-1 min-h-0 px-2 sm:px-4 pb-2 sm:pb-4">
-          <div className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700" onPointerDown={event => { if (!(event.target instanceof Element && event.target.closest("button,input,textarea,select,a[href]"))) sessionRef.current?.focus(); }}>
+          <div
+            className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700"
+            onPointerDown={(event) => {
+              if (!(
+                event.target instanceof Element &&
+                event.target.closest("button,input,textarea,select,a[href]")
+              ))
+                sessionRef.current?.focus();
+            }}
+          >
             <canvas ref={canvasRef} aria-label="Long Drive game" className="block w-full h-full" />
 
             {/* Countdown overlay */}
@@ -95,19 +111,20 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
             )}
 
             {/* Pause overlay */}
-            {ui.paused &&
-              ui.status === "playing" && (
-                <div
-                  className="game-overlay absolute inset-0 flex items-center justify-center"
-                  style={{
-                    backdropFilter: "blur(3px)",
-                    WebkitBackdropFilter: "blur(3px)",
-                  }}
-                >
-                  <DirtBackdrop />
-                  <h2 className="relative text-white text-2xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">PAUSED</h2>
-                </div>
-              )}
+            {ui.paused && ui.status === "playing" && (
+              <div
+                className="game-overlay absolute inset-0 flex items-center justify-center"
+                style={{
+                  backdropFilter: "blur(3px)",
+                  WebkitBackdropFilter: "blur(3px)",
+                }}
+              >
+                <DirtBackdrop />
+                <h2 className="relative text-white text-2xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                  PAUSED
+                </h2>
+              </div>
+            )}
 
             {/* Game over overlay */}
             {ui.gameOverAnimDone && (
@@ -119,15 +136,9 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
                 }}
               >
                 <DirtBackdrop />
-                <h2 className="relative text-red-500 text-4xl">
-                  GAME OVER
-                </h2>
-                <p className="relative text-white text-xl mt-4">
-                  Score: {ui.score}
-                </p>
-                <p className="relative text-neutral-400 text-sm mt-3">
-                  Press [Enter] to restart
-                </p>
+                <h2 className="relative text-red-500 text-4xl">GAME OVER</h2>
+                <p className="relative text-white text-xl mt-4">Score: {ui.score}</p>
+                <p className="relative text-neutral-400 text-sm mt-3">Press [Enter] to restart</p>
                 {onBack && (
                   <button
                     onClick={() => {

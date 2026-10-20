@@ -1,4 +1,4 @@
-import { localName } from '@/transport/localName';
+import { localName } from "@/transport/localName";
 import { ArrowRight } from "lucide-react";
 
 interface MenuScreenProps {
@@ -30,13 +30,13 @@ function MenuItem({ title, subtitle, onClick, disabled, comingSoon }: MenuItemPr
           <span className="font-heading text-white text-sm font-light">{title}</span>
           <span className="text-neutral-400 text-xs">{subtitle}</span>
         </div>
-        <div className={`flex items-center justify-center w-8 h-8 rounded-full border ${disabled ? "border-neutral-700" : "border-neutral-500"}`}>
+        <div
+          className={`flex items-center justify-center w-8 h-8 rounded-full border ${disabled ? "border-neutral-700" : "border-neutral-500"}`}
+        >
           <ArrowRight className="w-4 h-4 text-white" />
         </div>
       </button>
-      {comingSoon && (
-        <span className="text-blue-400 text-xs px-1">Coming Soon</span>
-      )}
+      {comingSoon && <span className="text-blue-400 text-xs px-1">Coming Soon</span>}
     </div>
   );
 }
@@ -53,12 +53,12 @@ export function MenuScreen({ onStartGame, onMultiplayer }: MenuScreenProps) {
         <p className="text-neutral-400 text-sm">{localName()}</p>
         {/* Menu items */}
         <div className="flex flex-col gap-3">
+          <MenuItem title="Long Drive" subtitle="Single player runner" onClick={onStartGame} />
           <MenuItem
-            title="Long Drive"
-            subtitle="Single player runner"
-            onClick={onStartGame}
+            title="Drag Race"
+            subtitle="Private two-player race"
+            onClick={() => onMultiplayer(1)}
           />
-          <MenuItem title="Drag Race" subtitle="Private two-player race" onClick={() => onMultiplayer(1)} />
           <MenuItem
             title="Road Rage"
             subtitle="Multiplayer aggressive run"

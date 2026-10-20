@@ -89,7 +89,9 @@ const players = new Set<GameAudio>();
 
 export class GameAudio {
   private disposed = false;
-  constructor() { players.add(this); }
+  constructor() {
+    players.add(this);
+  }
   private lastEventId = 0;
   enabled = preference;
   private context?: AudioContext;
@@ -173,14 +175,9 @@ export class GameAudio {
         this.turbo.start();
 
         // Filtered air adds a rushing boost sound underneath the turbine whistle.
-        this.noiseBuffer = context.createBuffer(
-          1,
-          context.sampleRate * 2,
-          context.sampleRate,
-        );
+        this.noiseBuffer = context.createBuffer(1, context.sampleRate * 2, context.sampleRate);
         const samples = this.noiseBuffer.getChannelData(0);
-        for (let i = 0; i < samples.length; i++)
-          samples[i] = Math.random() * 2 - 1;
+        for (let i = 0; i < samples.length; i++) samples[i] = Math.random() * 2 - 1;
         const air = context.createBufferSource();
         air.buffer = this.noiseBuffer;
         air.loop = true;
@@ -195,8 +192,7 @@ export class GameAudio {
         this.turboAirGain.connect(this.master);
         air.start();
       }
-      if (this.context.state === "suspended")
-        void this.context.resume().catch(() => {});
+      if (this.context.state === "suspended") void this.context.resume().catch(() => {});
     } catch {
       // Audio is optional; unsupported or blocked audio must not stop the game.
     }
@@ -241,14 +237,10 @@ export class GameAudio {
       const envelope = context.createGain();
       // A 3 ms attack plus a fast decay combines a sharp noise crack with an
       // exhaust thump. Later pops get softer; random strength avoids a metronome.
-      const strength =
-        settings.gain * (0.75 + Math.random() * 0.25) * Math.pow(0.88, i);
+      const strength = settings.gain * (0.75 + Math.random() * 0.25) * Math.pow(0.88, i);
       envelope.gain.setValueAtTime(0, start);
       envelope.gain.linearRampToValueAtTime(strength, start + 0.003);
-      envelope.gain.exponentialRampToValueAtTime(
-        0.001,
-        start + settings.durationSeconds,
-      );
+      envelope.gain.exponentialRampToValueAtTime(0.001, start + settings.durationSeconds);
       noise.connect(filter);
       filter.connect(envelope);
       body.connect(envelope);
@@ -272,9 +264,7 @@ export class GameAudio {
       body.start(start);
       noise.stop(start + settings.durationSeconds + 0.02);
       body.stop(start + settings.durationSeconds + 0.02);
-      start +=
-        settings.gapSeconds *
-        (1 + (Math.random() * 2 - 1) * settings.timingVariation);
+      start += settings.gapSeconds * (1 + (Math.random() * 2 - 1) * settings.timingVariation);
     }
   }
 
@@ -300,10 +290,7 @@ export class GameAudio {
     const filter = context.createBiquadFilter();
     filter.type = "lowpass";
     filter.Q.value = soundSettings.release.resonance;
-    filter.frequency.setValueAtTime(
-      soundSettings.release.startHz,
-      context.currentTime,
-    );
+    filter.frequency.setValueAtTime(soundSettings.release.startHz, context.currentTime);
     filter.frequency.exponentialRampToValueAtTime(
       soundSettings.release.endHz,
       context.currentTime + soundSettings.release.sweepSeconds,
@@ -321,10 +308,7 @@ export class GameAudio {
     );
     const body = context.createOscillator();
     body.type = "triangle";
-    body.frequency.setValueAtTime(
-      soundSettings.release.bodyHz,
-      context.currentTime,
-    );
+    body.frequency.setValueAtTime(soundSettings.release.bodyHz, context.currentTime);
     body.frequency.exponentialRampToValueAtTime(
       soundSettings.release.bodyEndHz,
       context.currentTime + soundSettings.release.durationSeconds,
@@ -343,13 +327,9 @@ export class GameAudio {
     };
     this.releaseStop = stop;
     body.start();
-    body.stop(
-      context.currentTime + soundSettings.release.durationSeconds + 0.02,
-    );
+    body.stop(context.currentTime + soundSettings.release.durationSeconds + 0.02);
     air.start();
-    air.stop(
-      context.currentTime + soundSettings.release.durationSeconds + 0.02,
-    );
+    air.stop(context.currentTime + soundSettings.release.durationSeconds + 0.02);
     air.onended = () => {
       air.disconnect();
       body.disconnect();
@@ -360,13 +340,23 @@ export class GameAudio {
     };
   }
 
-  setEnabled(enabled: boolean) { gameAudio.setEnabled(enabled); }
+  setEnabled(enabled: boolean) {
+    gameAudio.setEnabled(enabled);
+  }
 
   dispose(): void {
     if (this.disposed) return;
-    this.disposed = true; players.delete(this); this.stop();
-    this.engine?.stop(); this.engineBass?.stop(); this.turbo?.stop();
-    try { void this.context?.close?.().catch(() => {}); } catch { /* Audio is optional. */ }
+    this.disposed = true;
+    players.delete(this);
+    this.stop();
+    this.engine?.stop();
+    this.engineBass?.stop();
+    this.turbo?.stop();
+    try {
+      void this.context?.close?.().catch(() => {});
+    } catch {
+      /* Audio is optional. */
+    }
     this.context = undefined;
   }
 
@@ -399,23 +389,14 @@ export class GameAudio {
     delay = 0,
   ) {
     const context = this.context;
-    if (
-      !this.enabled ||
-      document.hidden ||
-      !context ||
-      context.state !== "running" ||
-      !this.master
-    )
+    if (!this.enabled || document.hidden || !context || context.state !== "running" || !this.master)
       return;
     const start = context.currentTime + delay;
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, start);
-    oscillator.frequency.exponentialRampToValueAtTime(
-      endFrequency,
-      start + duration,
-    );
+    oscillator.frequency.exponentialRampToValueAtTime(endFrequency, start + duration);
     gain.gain.setValueAtTime(0, start);
     // An 8 ms attack avoids clicks; the remaining duration decays to near silence.
     gain.gain.linearRampToValueAtTime(volume, start + 0.008);
@@ -439,20 +420,34 @@ export class GameAudio {
       if (event.id <= this.lastEventId) continue;
       this.lastEventId = event.id;
       switch (event.type) {
-        case "countdown": this.tone(440, 440, 0.13, "square", 0.16); break;
-        case "go": this.tone(880, 1100, 0.35, "square", 0.16); break;
-        case "lane": this.tone(180, 90, 0.09, "triangle", 0.2); break;
+        case "countdown":
+          this.tone(440, 440, 0.13, "square", 0.16);
+          break;
+        case "go":
+          this.tone(880, 1100, 0.35, "square", 0.16);
+          break;
+        case "lane":
+          this.tone(180, 90, 0.09, "triangle", 0.2);
+          break;
         case "heart":
         case "coin":
           this.tone(880, 880, 0.1);
           this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);
           break;
-        case "damage": this.tone(130, 30, 0.3, "sawtooth", 0.5); break;
-        case "gameover":
-          [330, 262, 196, 98].forEach((note, index) => this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16));
+        case "damage":
+          this.tone(130, 30, 0.3, "sawtooth", 0.5);
           break;
-        case "pause": this.tone(440, 220, 0.16); break;
-        case "resume": this.tone(220, 440, 0.16); break;
+        case "gameover":
+          [330, 262, 196, 98].forEach((note, index) =>
+            this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16),
+          );
+          break;
+        case "pause":
+          this.tone(440, 220, 0.16);
+          break;
+        case "resume":
+          this.tone(220, 440, 0.16);
+          break;
       }
     }
     if (this.context && this.engine && this.engineGain) {
@@ -463,21 +458,14 @@ export class GameAudio {
         this.stopRelease();
       }
       // Trigger only on throttle edges, not every frame or when resuming pause.
-      if (
-        boosting &&
-        previous?.status === "playing" &&
-        !previous.paused &&
-        !previous.accelerating
-      )
+      if (boosting && previous?.status === "playing" && !previous.paused && !previous.accelerating)
         this.exhaustCrackle(soundSettings.crackle.boostPops);
       const now = this.context.currentTime;
       const { engine, turbo } = soundSettings;
       // A four-stroke V12 fires six times per crank revolution: RPM / 10 Hz.
       const rpm = Math.min(
         engine.maxRpm,
-        engine.baseRpm +
-          state.roadSpeed * engine.speedRpm +
-          (boosting ? engine.boostRpm : 0),
+        engine.baseRpm + state.roadSpeed * engine.speedRpm + (boosting ? engine.boostRpm : 0),
       );
       const engineHz = rpm / 10;
       const pitchSmooth = boosting ? engine.pitchSmooth : engine.releaseSmooth;
@@ -487,22 +475,14 @@ export class GameAudio {
         engine.volumeSmooth,
       );
       this.engine.frequency.setTargetAtTime(engineHz, now, pitchSmooth);
-      this.engineBass?.frequency.setTargetAtTime(
-        engineHz * engine.bassRatio,
-        now,
-        pitchSmooth,
-      );
+      this.engineBass?.frequency.setTargetAtTime(engineHz * engine.bassRatio, now, pitchSmooth);
       this.engineFilter?.frequency.setTargetAtTime(
-        boosting
-          ? engine.boostCutoffHz
-          : engine.cutoffHz + state.roadSpeed * engine.cutoffSpeedHz,
+        boosting ? engine.boostCutoffHz : engine.cutoffHz + state.roadSpeed * engine.cutoffSpeedHz,
         now,
         engine.filterSmooth,
       );
       this.turbo?.frequency.setTargetAtTime(
-        boosting
-          ? turbo.boostHz + state.roadSpeed * turbo.speedHz
-          : turbo.restHz,
+        boosting ? turbo.boostHz + state.roadSpeed * turbo.speedHz : turbo.restHz,
         now,
         boosting ? turbo.spoolSmooth : turbo.spoolDownSmooth,
       );
@@ -549,23 +529,33 @@ export class GameAudio {
       this.engineGain.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
     if (this.context) {
       this.turboGain?.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
-      this.turboAirGain?.gain.setTargetAtTime(
-        0,
-        this.context.currentTime,
-        0.02,
-      );
+      this.turboAirGain?.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
     }
   }
 }
 
 /** App-shared preferences/gesture unlocking; sound playback belongs to each session. */
 export const gameAudio = {
-  get enabled() { return preference; },
+  get enabled() {
+    return preference;
+  },
   setEnabled(enabled: boolean) {
     preference = enabled;
-    try { localStorage.setItem(STORAGE_KEY, String(enabled)); } catch { /* Optional storage. */ }
-    for (const player of players) { player.enabled = enabled; if (enabled) player.unlock(); player.syncVisibility(); }
+    try {
+      localStorage.setItem(STORAGE_KEY, String(enabled));
+    } catch {
+      /* Optional storage. */
+    }
+    for (const player of players) {
+      player.enabled = enabled;
+      if (enabled) player.unlock();
+      player.syncVisibility();
+    }
   },
-  unlock: () => { for (const player of players) player.unlock(); },
-  syncVisibility: () => { for (const player of players) player.syncVisibility(); },
+  unlock: () => {
+    for (const player of players) player.unlock();
+  },
+  syncVisibility: () => {
+    for (const player of players) player.syncVisibility();
+  },
 };

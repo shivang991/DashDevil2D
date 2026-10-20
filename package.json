@@ -11,6 +11,8 @@
     "dev": "pnpm --filter @dashdevil/contracts generate && pnpm --filter @dashdevil/client dev",
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
+    "format": "turbo run format",
+    "format:check": "turbo run format:check",
     "test": "turbo run test",
     "build": "turbo run build",
     "test:browser": "turbo run test:browser --filter=@dashdevil/client",

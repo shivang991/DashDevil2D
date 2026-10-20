@@ -20,6 +20,12 @@
     "CGO_ENABLED"
   ],
   "tasks": {
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "outputs": []
+    },
     "generate": {
       "dependsOn": [
         "^generate"
