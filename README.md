@@ -14,6 +14,8 @@ pnpm test:browser
 
 `pnpm dev` generates the client contracts, then starts Vite directly so terminal input remains attached. Keep that terminal open while playing; Ctrl+C stops the server. `pnpm check` runs typechecking, linting, Vitest, native Go vet/tests and production builds through Turborepo. Individual root commands are `pnpm typecheck`, `pnpm lint`, `pnpm test` and `pnpm build`. Client-local commands still work from `apps/client`; install dependencies from the workspace root. Preview the production client with `pnpm --filter @dashdevil/client preview`.
 
+Run `pnpm format` to format the client and TypeScript packages, or `pnpm format:check` to check without writing. All three workspaces share the root `.prettierrc.json`, `.prettierignore`, and Prettier dependency; generated contracts and build/test output are excluded. The same commands work inside each workspace.
+
 | Location | Responsibility |
 | --- | --- |
 | `apps/client` | React, GameSession, keyboard input, rendering/audio and browser checks |

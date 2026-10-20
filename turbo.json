@@ -24,7 +24,12 @@
       "cache": false
     },
     "format:check": {
-      "outputs": []
+      "outputs": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.prettierrc.json",
+        "$TURBO_ROOT$/.prettierignore"
+      ]
     },
     "generate": {
       "dependsOn": [
