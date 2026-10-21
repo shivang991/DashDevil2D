@@ -1,7 +1,7 @@
 {
   "version": 1,
   "precision": {
-    "absolute": 1e-06,
+    "absolute": 1e-6,
     "relative": 1e-12
   },
   "scenarios": [
@@ -29,13 +29,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [3, 2],
+          "contactTimes": [87500],
           "contact": {
             "episode": 1,
             "flags": 0,
@@ -47,14 +42,8 @@
             "latestOrder": 1
           },
           "contactHex": "000000010000000200000001000000000000000000000001",
-          "progress": [
-            40,
-            40
-          ],
-          "lateral": [
-            -55.833333333333336,
-            0
-          ]
+          "progress": [40, 40],
+          "lateral": [-55.833333333333336, 0]
         }
       ]
     },
@@ -82,13 +71,8 @@
         {
           "at": 0.1,
           "inputs": [],
-          "hp": [
-            3,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ]
+          "hp": [3, 3],
+          "contactTimes": [87500]
         }
       ]
     },
@@ -129,13 +113,8 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            2,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [2, 3],
+          "contactTimes": [87500],
           "latestSeat": 1,
           "latestOrder": 2,
           "contact": {
@@ -182,10 +161,7 @@
               "heldMask": 1
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
+          "hp": [3, 3],
           "contactTimes": []
         },
         {
@@ -198,13 +174,8 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            2,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [2, 3],
+          "contactTimes": [87500],
           "latestSeat": 1,
           "latestOrder": 3
         }
@@ -234,13 +205,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
-          "contactTimes": [
-            87500
-          ]
+          "hp": [3, 2],
+          "contactTimes": [87500]
         },
         {
           "at": 0.15,
@@ -252,10 +218,7 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
+          "hp": [3, 2],
           "contactTimes": [],
           "latestSeat": 1,
           "latestOrder": 2,
@@ -275,10 +238,7 @@
     },
     {
       "name": "edge steering counts but release repeat and refresh do not",
-      "cars": [
-        {},
-        {}
-      ],
+      "cars": [{}, {}],
       "steps": [
         {
           "at": 0.02,
@@ -290,10 +250,7 @@
               "heldMask": 1
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
+          "hp": [3, 3],
           "contactTimes": [],
           "latestSeat": 0,
           "latestOrder": 1
@@ -326,10 +283,7 @@
               "heldMask": 0
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
+          "hp": [3, 3],
           "contactTimes": [],
           "latestSeat": 1,
           "latestOrder": 2
@@ -360,13 +314,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
-          "contactTimes": [
-            87500
-          ]
+          "hp": [3, 2],
+          "contactTimes": [87500]
         },
         {
           "at": 0.15,
@@ -384,10 +333,7 @@
               "heldMask": 1
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
+          "hp": [3, 2],
           "contactTimes": [],
           "latestSeat": 0,
           "latestOrder": 1
@@ -396,10 +342,7 @@
     },
     {
       "name": "dual shifts return with no damage regardless of history",
-      "cars": [
-        {},
-        {}
-      ],
+      "cars": [{}, {}],
       "steps": [
         {
           "at": 0.15,
@@ -417,13 +360,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
-          "contactTimes": [
-            118750
-          ]
+          "hp": [3, 3],
+          "contactTimes": [118750]
         }
       ]
     },
@@ -459,10 +397,7 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
+          "hp": [3, 3],
           "contactTimes": []
         }
       ]
@@ -492,21 +427,13 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ]
+          "hp": [3, 3],
+          "contactTimes": [87500]
         },
         {
           "at": 0.15,
           "inputs": [],
-          "hp": [
-            3,
-            3
-          ],
+          "hp": [3, 3],
           "contactTimes": []
         }
       ]
@@ -536,13 +463,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
-          "contactTimes": [
-            87500
-          ]
+          "hp": [3, 2],
+          "contactTimes": [87500]
         }
       ]
     },
@@ -579,23 +501,15 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            2,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [2, 3],
+          "contactTimes": [87500],
           "separated": true,
           "returnDeparture": 1
         },
         {
           "at": 0.18,
           "inputs": [],
-          "hp": [
-            2,
-            3
-          ],
+          "hp": [2, 3],
           "contactTimes": [],
           "separated": true,
           "returnDeparture": 1
@@ -626,13 +540,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
-          "contactTimes": [
-            87500
-          ]
+          "hp": [3, 2],
+          "contactTimes": [87500]
         },
         {
           "at": 0.2,
@@ -644,21 +553,10 @@
               "heldMask": 1
             }
           ],
-          "hp": [
-            2,
-            2
-          ],
-          "contactTimes": [
-            117500
-          ],
-          "movementStartUs": [
-            87500,
-            117500
-          ],
-          "movementEndUs": [
-            237500,
-            267500
-          ]
+          "hp": [2, 2],
+          "contactTimes": [117500],
+          "movementStartUs": [87500, 117500],
+          "movementEndUs": [237500, 267500]
         }
       ]
     },
@@ -697,13 +595,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            6,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [6, 3],
+          "contactTimes": [87500],
           "spent": {
             "8": 18
           }
@@ -739,13 +632,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            1,
-            0
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [1, 0],
+          "contactTimes": [87500],
           "finish": {
             "tick": 6,
             "timeUs": 87500,
@@ -756,20 +644,14 @@
         {
           "at": 0.2,
           "inputs": [],
-          "hp": [
-            1,
-            0
-          ],
+          "hp": [1, 0],
           "contactTimes": []
         }
       ]
     },
     {
       "name": "automatic held shifts do not supersede fresh edge steering",
-      "cars": [
-        {},
-        {}
-      ],
+      "cars": [{}, {}],
       "steps": [
         {
           "at": 0.15,
@@ -781,10 +663,7 @@
               "heldMask": 1
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
+          "hp": [3, 3],
           "contactTimes": []
         },
         {
@@ -797,13 +676,8 @@
               "heldMask": 1
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
-          "contactTimes": [
-            237500
-          ],
+          "hp": [3, 2],
+          "contactTimes": [237500],
           "latestSeat": 0,
           "latestOrder": 2
         }
@@ -843,23 +717,15 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            3,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [3, 3],
+          "contactTimes": [87500],
           "separated": true,
           "returnDeparture": 1
         },
         {
           "at": 0.18,
           "inputs": [],
-          "hp": [
-            3,
-            3
-          ],
+          "hp": [3, 3],
           "contactTimes": [],
           "separated": true,
           "returnDeparture": 1
@@ -895,13 +761,8 @@
               "heldMask": 2
             }
           ],
-          "hp": [
-            3,
-            2
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [3, 2],
+          "contactTimes": [87500],
           "finish": {
             "tick": 6,
             "timeUs": 87500,
@@ -952,13 +813,8 @@
               "heldMask": 1
             }
           ],
-          "hp": [
-            3,
-            1
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [3, 1],
+          "contactTimes": [87500],
           "spent": {
             "7": 7
           }
@@ -999,29 +855,12 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            2,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ],
-          "lateral": [
-            -30,
-            0
-          ],
-          "progress": [
-            80,
-            170
-          ],
-          "movementStartUs": [
-            87500,
-            0
-          ],
-          "movementEndUs": [
-            237500,
-            0
-          ]
+          "hp": [2, 3],
+          "contactTimes": [87500],
+          "lateral": [-30, 0],
+          "progress": [80, 170],
+          "movementStartUs": [87500, 0],
+          "movementEndUs": [237500, 0]
         }
       ]
     },
@@ -1058,13 +897,8 @@
               "heldMask": 4
             }
           ],
-          "hp": [
-            2,
-            3
-          ],
-          "contactTimes": [
-            87500
-          ],
+          "hp": [2, 3],
+          "contactTimes": [87500],
           "separated": true
         },
         {
@@ -1077,27 +911,12 @@
               "heldMask": 6
             }
           ],
-          "hp": [
-            2,
-            3
-          ],
+          "hp": [2, 3],
           "contactTimes": [],
-          "lateral": [
-            -10,
-            40
-          ],
-          "progress": [
-            60,
-            100
-          ],
-          "movementStartUs": [
-            12500,
-            100000
-          ],
-          "movementEndUs": [
-            162500,
-            250000
-          ]
+          "lateral": [-10, 40],
+          "progress": [60, 100],
+          "movementStartUs": [12500, 100000],
+          "movementEndUs": [162500, 250000]
         }
       ]
     }

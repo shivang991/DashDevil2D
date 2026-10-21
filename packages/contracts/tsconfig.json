@@ -1,9 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "ES2022"
-    ],
+    "lib": ["ES2022"],
     "types": [],
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -14,8 +12,5 @@
     "resolveJsonModule": true,
     "erasableSyntaxOnly": true
   },
-  "include": [
-    "generated/**/*.ts",
-    "protocol/**/*.ts"
-  ]
+  "include": ["generated/**/*.ts", "protocol/**/*.ts"]
 }

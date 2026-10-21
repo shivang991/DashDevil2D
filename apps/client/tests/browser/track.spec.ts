@@ -24,12 +24,10 @@ for (const resize of [false, true]) {
     await expect(page.getByRole("img", { name: "Health: 4 of 4" })).toBeVisible();
     await expect(page.getByText("Score: 0", { exact: true })).toBeVisible();
     await page.screenshot({ path: path.join(evidence, "heart-consumed.png") });
-    const dimensions = await page
-      .locator("canvas")
-      .evaluate((c) => ({
-        width: (c as HTMLCanvasElement).width,
-        height: (c as HTMLCanvasElement).height,
-      }));
+    const dimensions = await page.locator("canvas").evaluate((c) => ({
+      width: (c as HTMLCanvasElement).width,
+      height: (c as HTMLCanvasElement).height,
+    }));
     fs.writeFileSync(
       path.join(evidence, "track-observations.json"),
       JSON.stringify(

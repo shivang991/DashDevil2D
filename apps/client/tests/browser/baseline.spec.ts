@@ -136,12 +136,10 @@ test("record real-time public presentation for later human comparison", async ({
   await page.waitForTimeout(150);
   await page.screenshot({ path: path.join(evidence, "baseline-pause.png") });
   await page.setViewportSize({ width: 800, height: 600 });
-  const dimensions = await page
-    .locator("canvas")
-    .evaluate((c) => ({
-      width: (c as HTMLCanvasElement).width,
-      height: (c as HTMLCanvasElement).height,
-    }));
+  const dimensions = await page.locator("canvas").evaluate((c) => ({
+    width: (c as HTMLCanvasElement).width,
+    height: (c as HTMLCanvasElement).height,
+  }));
   fs.writeFileSync(
     path.join(evidence, "resize-environment.json"),
     JSON.stringify(

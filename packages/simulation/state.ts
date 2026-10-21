@@ -2,7 +2,14 @@ import { gameConfig, type GameConfig } from "./config";
 
 import { createTrack, type Track } from "./track";
 
-export interface RoadObject { id?: number; lane: number; y: number; width: number; height: number; distance?: number }
+export interface RoadObject {
+  id?: number;
+  lane: number;
+  y: number;
+  width: number;
+  height: number;
+  distance?: number;
+}
 
 export interface GameState {
   track: Track;
@@ -44,7 +51,10 @@ export interface GameState {
   countdownTimer: number;
 }
 
-export function makeInitialState(random: () => number = Math.random, configuration: GameConfig = gameConfig): GameState {
+export function makeInitialState(
+  random: () => number = Math.random,
+  configuration: GameConfig = gameConfig,
+): GameState {
   const gameConfig = configuration;
   const midLane = Math.floor(gameConfig.laneCount / 2);
   return {
@@ -87,4 +97,3 @@ export function makeInitialState(random: () => number = Math.random, configurati
     countdownTimer: 5,
   };
 }
-
