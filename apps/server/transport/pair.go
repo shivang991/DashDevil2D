@@ -37,7 +37,7 @@ type pair struct {
 }
 
 func newPair(s *Server, seat *seat) *pair {
-	return &pair{server: s, seat: seat, limits: seat.room.settings.Context(1).Connection, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), rounds: make(chan struct{}, 1), capacity: make(chan struct{}, 1)}
+	return &pair{server: s, seat: seat, limits: seat.room.settings.Context(1).Connection, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), rounds: make(chan struct{}, 1), capacity: make(chan struct{})}
 }
 
 func (pair *pair) connectionLimits() p.Connection {
@@ -455,31 +455,51 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 }
 
 // Budget is shared across room, control and authority queues, including writes
-// in flight. Baseline production can wait for a released slot without buffering
-// the complete transfer in the outgoing queue.
-func (pair *pair) reserve(n int) error {
-	pair.mu.Lock()
-	defer pair.mu.Unlock()
-	if pair.closed {
-		return errors.New("pair closed")
+// in flight. Essential stream sends wait for capacity within their queue-wait
+// deadline; the same deadline also bounds subsequent queueing and writing.
+func (pair *pair) reserve(n int, deadline time.Time) error {
+	timer := time.NewTimer(time.Until(deadline))
+	defer timer.Stop()
+	for {
+		pair.mu.Lock()
+		if pair.closed {
+			pair.mu.Unlock()
+			return errors.New("pair closed")
+		}
+		if n > int(pair.limits.QueueBytes) {
+			pair.mu.Unlock()
+			return errors.New("essential message exceeds pair queue bound")
+		}
+		if !time.Now().Before(deadline) {
+			pair.mu.Unlock()
+			return errors.New("essential queue wait exceeded")
+		}
+		if pair.queuedBytes+n <= int(pair.limits.QueueBytes) && pair.queuedMessages < int(pair.limits.QueueMessages) {
+			pair.queuedBytes += n
+			pair.queuedMessages++
+			pair.trackQueuePeakLocked()
+			pair.mu.Unlock()
+			return nil
+		}
+		capacity := pair.capacity
+		pair.mu.Unlock()
+		select {
+		case <-pair.done:
+			return errors.New("pair closed")
+		case <-timer.C:
+			return errors.New("essential queue wait exceeded")
+		case <-capacity:
+		}
 	}
-	if pair.queuedBytes+n > int(pair.limits.QueueBytes) || pair.queuedMessages >= int(pair.limits.QueueMessages) {
-		return errors.New("essential pair queue overflow")
-	}
-	pair.queuedBytes += n
-	pair.queuedMessages++
-	pair.trackQueuePeakLocked()
-	return nil
 }
 func (pair *pair) release(n int) {
 	pair.mu.Lock()
 	pair.queuedBytes -= n
 	pair.queuedMessages--
+	// Broadcast so a waiter for a large frame cannot hide capacity from smaller sends.
+	close(pair.capacity)
+	pair.capacity = make(chan struct{})
 	pair.mu.Unlock()
-	select {
-	case pair.capacity <- struct{}{}:
-	default:
-	}
 }
 
 // Caller holds pair.mu; peaks include all channels and writes in flight.
