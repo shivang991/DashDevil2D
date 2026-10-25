@@ -404,6 +404,7 @@ test("verified diagnostics count successful comparisons across recovery epochs, 
     authority.enqueue(encodeMessage("Barrier", { ...barrier, epoch: 2, tick: 3, timeUs: 50000 }));
     const crc3 = crc32c(projectBaseline({ ...baseline, tick: 3, timeUs: 50000 }));
     gameplay.verification.enqueue(encodeVerification({ epoch: 2, tick: 3, crc: (crc3 ^ 1) >>> 0 }));
+    await vi.advanceTimersByTimeAsync(1000 / baseline.context.connection.recoveryRequestRate + 10);
     await vi.waitFor(() => expect(client.state.diagnostics.recoveryRequests).toBe(2));
     expect(client.state.verified).toBe(2);
   } finally {
