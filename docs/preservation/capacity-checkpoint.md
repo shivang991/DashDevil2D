@@ -33,3 +33,7 @@ Actual environment: macOS/Darwin arm64 on Apple M2, Node 26.10.0, pnpm 8.15.9, G
 Issue #41 cannot yet be represented as resolved: the configurable-capacity gap is repaired, but mandatory inherited browser and operating-model acceptance requirements remain outstanding. This checkpoint preserves those failures rather than closing a failed gate.
 
 The owner confirmed in this session: **“No reference environment available; record the blocker.”** The Linux load and packet-measurement prerequisites are therefore explicitly unavailable. The independently reviewed [validation index](capacity-validation.json) retains current run manifests and hashes.
+
+## 2026-10-24 reset-order follow-up
+
+The scoped [server reset/input ordering repair](reset-order-checkpoint.md) supersedes the dense NOS failure recorded above. Both modes passed the unchanged complete dense drain/recovery test in two subsequent runs. Original failures remain retained. Reference Linux load, packet measurements and other full Stage 6 acceptance requirements remain outstanding.
