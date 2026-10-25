@@ -30,3 +30,7 @@ Initial workspace and transport attempts failed on sandbox Go-cache access. Orig
 ## Closure gate
 
 Keep #42 open until missing release hosts and a trusted staging endpoint supply the required evidence. Record exact released versions, OS/hardware, revisions, fixture/configuration versions, seeds, per-pair scenarios, logs and manual/visual evidence; preserve original failures across retries. A failed scenario blocks acceptance. Reopen its governing decision for contradictions or infeasibility; never substitute gameplay fallback or silently narrow the supported matrix. This checkpoint does not declare Stage 7 acceptance.
+
+## Independent review
+
+Two independent code-review agents reviewed `5392f5c...98f755b`. Standards: **0 violations, 0 actionable smells**. Spec: **0 documentation corrections**; release/OS pairings, both-mode matrix behavior, trusted endpoint/renewal interoperability and complete expectation/manual evidence remain incomplete. Both reviewers checked local logs/manifests. Review does not approve issue closure. Preservation manifest: `apps/client/test-results/run-2026-10-25T07-17-24.621Z-QczNjp/manifest.json`.
