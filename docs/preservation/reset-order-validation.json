@@ -162,5 +162,15 @@
     "specFindings": 0
   },
   "stage6Exit": false,
-  "remainingOperatingAcceptance": "Reference Linux load/packet-measurement environment previously confirmed unavailable. No full Stage6 acceptance claimed."
+  "remainingOperatingAcceptance": "Reference Linux load/packet-measurement environment previously confirmed unavailable. No full Stage6 acceptance claimed.",
+  "ownerManualAcceptance": {
+    "date": "2026-10-24 America/Phoenix",
+    "status": "pass",
+    "scope": "load/network acceptance discussed in this chat",
+    "statement": "Tested it manually, mark pass",
+    "evidenceType": "owner-reported manual testing",
+    "measurementDetailsProvided": false,
+    "issueClosureAccepted": true,
+    "independentStage6Certification": false
+  }
 }

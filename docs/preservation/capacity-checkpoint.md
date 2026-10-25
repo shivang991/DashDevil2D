@@ -37,3 +37,7 @@ The owner confirmed in this session: **“No reference environment available; re
 ## 2026-10-24 reset-order follow-up
 
 The scoped [server reset/input ordering repair](reset-order-checkpoint.md) supersedes the dense NOS failure recorded above. Both modes passed the unchanged complete dense drain/recovery test in two subsequent runs. Original failures remain retained. Reference Linux load, packet measurements and other full Stage 6 acceptance requirements remain outstanding.
+
+## Owner-reported manual pass — 2026-10-24
+
+After discussion of the outstanding load/network acceptance blockers, the owner reported: **“Tested it manually, mark pass.”** Record load/network acceptance as **PASS — owner-reported manual testing**. This supersedes the pending owner acceptance status above. Hardware, player count, duration, packet measurements and raw artifacts were not supplied; do not attribute measured thresholds or independently verified reference-hardware results to this report. Historical failed runs and unavailable automated evidence remain intact. Issue #41 is accepted for closure on the owner's manual pass; this record alone does not certify every broader Stage 6 requirement.

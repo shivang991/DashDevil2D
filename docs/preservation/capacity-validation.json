@@ -233,5 +233,15 @@
     "passed": 12,
     "log": "apps/client/test-results/capacity-issue41/logs/issue41-preservation.log"
   },
-  "referenceEnvironment": "Owner confirmed unavailable; record the blocker"
+  "referenceEnvironment": "Owner confirmed unavailable; record the blocker",
+  "ownerManualAcceptance": {
+    "date": "2026-10-24 America/Phoenix",
+    "status": "pass",
+    "scope": "load/network acceptance discussed in this chat",
+    "statement": "Tested it manually, mark pass",
+    "evidenceType": "owner-reported manual testing",
+    "measurementDetailsProvided": false,
+    "issueClosureAccepted": true,
+    "independentStage6Certification": false
+  }
 }
