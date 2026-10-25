@@ -33,4 +33,8 @@ On the source revision above, `pnpm check --force --env-mode=loose` passed all *
 
 `pnpm test:browser` passed **12/12** preservation/shared-browser scenarios, zero retries. Log: `apps/client/test-results/network-issue43/preservation.log`; run manifest/media: `apps/client/test-results/run-2026-10-25T23-01-44.986Z-rak9MA/`. These local ignored artifacts are not published evidence. They establish applicable automated preservation, not new human audiovisual acceptance.
 
-Independent review will be recorded when available. No product code, tests, gameplay defaults, assets or configuration changed. No newly authorized gameplay correction is introduced. Keep #43 open until its measurement and evidence requirements pass; this document supplies no performance acceptance.
+No product code, tests, gameplay defaults, assets or configuration changed. No newly authorized gameplay correction is introduced. Keep #43 open until its measurement and evidence requirements pass; this document supplies no performance acceptance.
+
+## Independent review
+
+Two independent code-review agents reviewed `26a5d489...1cc3bc6`. Standards: **0 violations, 0 actionable smells**; ignored raw artifacts, retained failures and provenance conform to preservation guidance. Spec: **0 documentation defects** in the owner-authorized blocker-recording scope; the reviewer verified the regression counts and clean tested revision against logs/manifests. Reference-client runs, actual-path impairments, screen timing, per-player percentiles and transport-inclusive bandwidth remain missing acceptance evidence. Both reviews approve the checkpoint, not issue closure. Formatting and diff whitespace checks passed.
