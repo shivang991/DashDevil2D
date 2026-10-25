@@ -31,6 +31,8 @@ const root = path.resolve(client, "../..");
 const output = path.resolve(
   args.output ?? path.join(client, "test-results", `capacity-${Date.now()}`),
 );
+if (fs.existsSync(output))
+  throw new Error("Evidence directory already exists; use a fresh --output");
 fs.mkdirSync(output, { recursive: true });
 const log = (value) => {
   const line = JSON.stringify({ at: new Date().toISOString(), ...value });
@@ -56,12 +58,32 @@ const bundle = await build({
 const code = (Array.isArray(bundle) ? bundle[0] : bundle).output.find(
   (entry) => entry.type === "chunk",
 ).code;
+fs.writeFileSync(path.join(output, "client-bundle.js"), code);
+fs.copyFileSync(fileURLToPath(import.meta.url), path.join(output, "harness-source.mjs"));
 fs.writeFileSync(
   path.join(output, "manifest.json"),
   JSON.stringify(
     {
       revision: git("rev-parse", "HEAD"),
       dirty: git("status", "--porcelain"),
+      diffSha256: createHash("sha256")
+        .update(git("diff", "HEAD", "--binary"))
+        .digest("hex"),
+      sourceHashes: Object.fromEntries(
+        [
+          "apps/client/scripts/capacity.mjs",
+          "apps/client/src/transport/PairedConnection.ts",
+          "packages/contracts/configuration/defaults.json",
+          "packages/contracts/protocol/schema.json",
+          "packages/contracts/protocol/fixtures.json",
+          "pnpm-lock.yaml",
+        ].map((file) => [
+          file,
+          createHash("sha256")
+            .update(fs.readFileSync(path.join(root, file)))
+            .digest("hex"),
+        ]),
+      ),
       origin,
       roomCount,
       seconds,
@@ -79,7 +101,26 @@ fs.writeFileSync(
 const browsers = [];
 const rooms = [];
 const ui = [];
-const readUI = async (page) => JSON.parse(await page.getByTestId("room-evidence").textContent());
+const readUI = async (page) => {
+  const state = JSON.parse(await page.getByTestId("room-evidence").textContent());
+  const status = await page.getByTestId("connection-state").innerText();
+  const result = page.getByTestId("outcome-evidence");
+  const outcome = (await result.count()) ? JSON.parse(await result.textContent()) : undefined;
+  const phase = (await page.getByRole("button", { name: "Return to Lobby", exact: true }).count())
+    ? 3
+    : (await page.getByTestId("countdown").count())
+      ? 1
+      : (await page.getByRole("img", { name: "Multiplayer race" }).count())
+        ? 2
+        : 0;
+  return {
+    ...state,
+    status,
+    outcome,
+    room: { phase, mode: 1 },
+    roomPhaseSource: "observed product DOM",
+  };
+};
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const until = async (predicate, description, timeout = 15000) => {
   const deadline = Date.now() + timeout;
@@ -174,6 +215,12 @@ try {
           );
           window.capacity.last = now;
           window.capacity.frames++;
+          if (!window.capacity.pauseInputs && window.capacity.frames % 30 === 0) {
+            for (const c of clients) {
+              c.releaseControls();
+              c.input(0, window.capacity.frames % 120 < 60 ? 1 : 3);
+            }
+          }
           for (const client of clients) {
             try {
               client.frame();
@@ -229,6 +276,7 @@ try {
     return records;
   };
   const startUI = async () => {
+    for (const page of ui) await page.keyboard.up("ArrowUp");
     const state = await readUI(ui[0]);
     if (state.room.phase === 3) {
       await ui[0].getByRole("button", { name: "Return to Lobby", exact: true }).click();
@@ -243,6 +291,12 @@ try {
       }
     }
     await ui[0].getByRole("button", { name: "Start round", exact: true }).click();
+    for (const page of ui) {
+      const canvas = page.getByRole("img", { name: "Multiplayer race" });
+      await canvas.waitFor({ timeout: 10000 });
+      await canvas.focus();
+      await page.keyboard.down("ArrowUp");
+    }
   };
   const advanceAgent = async ({ page }) =>
     page.evaluate(async () => {
@@ -271,10 +325,74 @@ try {
       host.command(2);
       await until(() => host.state.room.phase === 1 || host.state.room.phase === 2);
     });
-  await snapshot("full-capacity-before-start");
+  const initial = await snapshot("full-capacity-before-start");
+  if (initial.length !== roomCount * 2 || initial.some((r) => r.state.status !== "Connected"))
+    throw new Error("Full player count not connected");
+  const completions = new Map();
+  let recoveries = 0;
+  const recoveryModes = new Set();
+  const previous = new Map();
+  const roundStarts = new Map();
   const began = Date.now();
+  const observeOutcomes = (records) => {
+    for (const record of records) {
+      const key = `${record.room}:${record.seat}`,
+        state = record.state,
+        before = previous.get(key);
+      if (state.status !== "Connected") throw new Error(`Player disconnected ${key}`);
+      if (
+        before &&
+        before.roundId === state.roundId &&
+        before.room.phase === 2 &&
+        state.room.phase === 2 &&
+        state.timeUs <= before.timeUs
+      )
+        throw new Error(`Authority stalled ${key}`);
+      const roundKey = `${record.room}:${state.roundId}`;
+      if (state.room.phase === 1 || state.room.phase === 2) {
+        if (!roundStarts.has(roundKey)) roundStarts.set(roundKey, Date.now());
+        const gameplay = state.context?.gameplay;
+        const expectedSeconds =
+          gameplay?.timeLimit > 0
+            ? gameplay.timeLimit
+            : gameplay?.finishDistance / gameplay?.startingRoadSpeed;
+        if (!Number.isFinite(expectedSeconds) || expectedSeconds <= 0)
+          throw new Error(`Missing round deadline configuration ${roundKey}`);
+        const maxMs = (expectedSeconds + 15) * 1000;
+        if (Date.now() - roundStarts.get(roundKey) > maxMs)
+          throw new Error(`Round exceeded finish deadline ${roundKey}`);
+      }
+      previous.set(key, state);
+    }
+    for (let room = 0; room < roomCount; room++) {
+      const [a, b] = records.filter((r) => r.room === room).map((r) => r.state);
+      if (
+        a.outcome &&
+        b.outcome &&
+        a.outcome.roundId === a.roundId &&
+        b.outcome.roundId === b.roundId
+      ) {
+        const canonical = ({ identity, ...result }) => result;
+        for (const state of [a, b]) {
+          const expected = state.identity,
+            actual = state.outcome.identity;
+          if (
+            actual.roomId !== expected.roomId ||
+            actual.seatSession !== expected.seatSession ||
+            actual.seat !== expected.seat
+          )
+            throw new Error(`Outcome identity mismatch room ${room}`);
+        }
+        if (JSON.stringify(canonical(a.outcome)) !== JSON.stringify(canonical(b.outcome)))
+          throw new Error(`Outcome mismatch room ${room}`);
+        if (a.outcome.result === 3) throw new Error(`Abandoned round room ${room}`);
+        completions.set(room, (completions.get(room) ?? new Set()).add(a.outcome.roundId));
+      }
+    }
+  };
   let cycle = 0;
   while (Date.now() - began < seconds * 1000) {
+    observeOutcomes(await snapshot(`cycle-${cycle}-before`));
     // All rooms receive the same cycle trigger; natural finishes remain authoritative.
     const results = await Promise.allSettled([startUI(), ...rooms.map(advanceAgent)]);
     const failures = results.flatMap((r, index) =>
@@ -284,13 +402,57 @@ try {
       log({ event: "cycle-failed", cycle, failures });
       throw new Error("Coordinated room lifecycle failed");
     }
-    await wait(4000);
     if (cycle % 4 === 1) {
-      const chosen = rooms[cycle % rooms.length];
-      await chosen.page.evaluate(() => window.capacity.clients[1].drop("gameplay"));
-      log({ event: "reconnect-trigger", room: chosen.index });
+      const targetMode = Math.floor(cycle / 4) % 2 ? 2 : 1;
+      const selected = [];
+      for (const room of rooms.filter((room) => room.mode === targetMode)) {
+        if (await room.page.evaluate(() => window.capacity.clients[1].state.room.phase === 2)) {
+          selected.push(room);
+        }
+      }
+      if (!selected.length && roomCount === 2) selected.push(rooms[0]);
+      await Promise.all(
+        selected.map(async (chosen) => {
+          const before = await chosen.page.evaluate(() => {
+            const s = window.capacity.clients[1].state;
+            return { ...s.identity, phase: s.room.phase, roundId: s.roundId };
+          });
+          await chosen.page.evaluate(() => {
+            window.capacity.pauseInputs = true;
+            for (const c of window.capacity.clients) c.releaseControls();
+            window.capacity.clients[1].drop("gameplay");
+          });
+          await until(
+            async () =>
+              chosen.page.evaluate((before) => {
+                const c = window.capacity.clients[1];
+                return (
+                  c.state.status === "Connected" &&
+                  c.state.identity.seatSession === before.seatSession &&
+                  c.state.identity.pairGeneration > before.pairGeneration &&
+                  c.state.cars?.[1].heldMask === 0
+                );
+              }, before),
+            "reconnect same seat with fresh controls",
+            12000,
+          );
+          recoveries++;
+          recoveryModes.add(chosen.mode);
+          await chosen.page.evaluate(() => {
+            window.capacity.pauseInputs = false;
+          });
+          log({ event: "reconnect-trigger", room: chosen.index, mode: chosen.mode, before });
+        }),
+      );
     }
+    await wait(4000);
     const records = await snapshot(`cycle-${cycle}`);
+    if (
+      records.length !== roomCount * 2 ||
+      records.some((r) => r.state.status !== "Connected" || r.harnessErrors?.length)
+    )
+      throw new Error("Connected-player count or harness health failed");
+    observeOutcomes(records);
     for (let seat = 0; seat < 2; seat++)
       await ui[seat].screenshot({
         path: path.join(output, `ui-${cycle}-${seat}.png`),
@@ -301,10 +463,23 @@ try {
     await wait(6000);
     cycle++;
   }
+  if (
+    completions.size !== roomCount ||
+    (seconds >= 30 && !recoveries) ||
+    (roomCount >= 3 && seconds >= 60 && recoveryModes.size !== 2)
+  )
+    throw new Error(
+      "Missing authoritative finishes or verified recovery; duration alone insufficient",
+    );
   success = true;
   log({
     event: "duration-complete",
     elapsedMs: Date.now() - began,
+    recoveries,
+    recoveryModes: [...recoveryModes],
+    completedRounds: Object.fromEntries(
+      [...completions].map(([room, rounds]) => [room, [...rounds]]),
+    ),
     scope:
       "Load duration completed; metric/visual acceptance still requires independent assessment",
   });
@@ -335,4 +510,20 @@ try {
   }
   await Promise.all(browsers.map((b) => b.close()));
   log({ event: "closed", success, output });
+  const manifestPath = path.join(output, "manifest.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  manifest.collectionCompleted = success;
+  manifest.endedAt = new Date().toISOString();
+  manifest.artifacts = Object.fromEntries(
+    fs
+      .readdirSync(output)
+      .filter((file) => file !== "manifest.json")
+      .map((file) => [
+        file,
+        createHash("sha256")
+          .update(fs.readFileSync(path.join(output, file)))
+          .digest("hex"),
+      ]),
+  );
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
 }
