@@ -168,8 +168,8 @@ try {
   );
   await agentHost.goto(`${origin}/__capacity_harness`);
   for (let index = 1; index < roomCount; index++) {
-    // Same-origin frames share a renderer; one process per room caused generator
-    // pauses, which must not be mistaken for server-capacity measurements.
+    // Same-origin frames share a renderer. Retain scheduling measurements
+    // so generator pauses are not mistaken for server-capacity evidence.
     await agentHost.evaluate((index) => {
       const frame = document.createElement("iframe");
       frame.name = `room-${index}`;
@@ -232,7 +232,9 @@ try {
           }
           for (const client of clients) {
             try {
-              client.frame();
+              // Match RaceView's lifecycle: lobby baselines have no active
+              // race clock and must not run gameplay prediction.
+              if (client.state.room?.phase === 2 || client.state.room?.phase === 3) client.frame();
             } catch (error) {
               window.capacity.errors.push(error.message);
             }
