@@ -92,7 +92,7 @@ fs.writeFileSync(
       platform: process.platform,
       bundleSha256: createHash("sha256").update(code).digest("hex"),
       scope:
-        "One product UI room and remaining real-browser PairedConnection rooms. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+        "One product UI room and remaining real-browser PairedConnection rooms in same-origin frames sharing a renderer. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
     },
     null,
     2,
@@ -159,15 +159,24 @@ try {
   );
   await wait(700);
   log({ event: "room-connected", room: 0, mode: 1 });
+  const agentHost = await browsers[2].newPage();
+  await agentHost.route(`${origin}/__capacity_harness`, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<!doctype html><title>Capacity transport agent</title>",
+    }),
+  );
+  await agentHost.goto(`${origin}/__capacity_harness`);
   for (let index = 1; index < roomCount; index++) {
-    const page = await browsers[2].newPage();
+    // Same-origin frames share a renderer; one process per room caused generator
+    // pauses, which must not be mistaken for server-capacity measurements.
+    await agentHost.evaluate((index) => {
+      const frame = document.createElement("iframe");
+      frame.name = `room-${index}`;
+      document.body.append(frame);
+    }, index);
+    const page = agentHost.frame({ name: `room-${index}` });
     rooms.push({ page, index, mode: index % 2 ? 2 : 1 });
-    await page.route(`${origin}/__capacity_harness`, (route) =>
-      route.fulfill({
-        contentType: "text/html",
-        body: "<!doctype html><title>Capacity transport agent</title>",
-      }),
-    );
     await page.goto(`${origin}/__capacity_harness`);
     await page.addScriptTag({ content: code });
     await page.evaluate(
