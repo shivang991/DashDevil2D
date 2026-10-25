@@ -506,6 +506,8 @@ try {
         fullPage: true,
       });
       await ui[seat].getByRole("button", { name: "Leave", exact: true }).click({ timeout: 1000 });
+      const confirm = ui[seat].getByRole("button", { name: "Confirm leave", exact: true });
+      if (await confirm.count()) await confirm.click({ timeout: 1000 });
     } catch {}
   }
   await Promise.all(browsers.map((b) => b.close()));
