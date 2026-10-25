@@ -20,6 +20,17 @@
     "CGO_ENABLED"
   ],
   "tasks": {
+    "format": {
+      "cache": false
+    },
+    "format:check": {
+      "outputs": [],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/.prettierrc.json",
+        "$TURBO_ROOT$/.prettierignore"
+      ]
+    },
     "generate": {
       "dependsOn": [
         "^generate"

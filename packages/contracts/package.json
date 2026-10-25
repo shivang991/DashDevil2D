@@ -19,6 +19,8 @@
     "check:generated": "node protocol/generate.mjs --check",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "pnpm check:generated"
+    "test": "pnpm check:generated",
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "format:check": "prettier --check . --ignore-path ../../.prettierignore"
   }
 }

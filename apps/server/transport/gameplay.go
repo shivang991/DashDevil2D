@@ -57,9 +57,10 @@ type streamWriter struct {
 		io.Writer
 		SetWriteDeadline(time.Time) error
 	}
-	queue chan queued
-	mu    sync.Mutex
-	bytes int
+	queue  chan queued
+	sendMu sync.Mutex
+	mu     sync.Mutex
+	bytes  int
 }
 
 func writer(pair *pair, stream interface {
@@ -98,9 +99,11 @@ func (w *streamWriter) send(value any) error {
 	if err != nil {
 		return err
 	}
-	w.mu.Lock()
-	defer w.mu.Unlock()
-	if err = w.pair.reserve(len(wire)); err != nil {
+	w.sendMu.Lock()
+	defer w.sendMu.Unlock()
+	at := time.Now()
+	deadline := at.Add(time.Duration(w.pair.connectionLimits().EssentialQueueWait * float64(time.Second)))
+	if err = w.pair.reserve(len(wire), deadline); err != nil {
 		return err
 	}
 	select {
@@ -109,8 +112,10 @@ func (w *streamWriter) send(value any) error {
 		return errors.New("pair closed")
 	default:
 	}
+	w.mu.Lock()
+	defer w.mu.Unlock()
 	select {
-	case w.queue <- queued{wire, time.Now()}:
+	case w.queue <- queued{wire, at}:
 		w.bytes += len(wire)
 		return nil
 	default:
@@ -472,7 +477,7 @@ func queueBaseline(writer *streamWriter, baseline p.Baseline, transferID uint32)
 	for i := 0; i < count; i++ {
 		start := i * payload
 		end := min(start+payload, len(data))
-		if err = writer.sendChunk(p.BaselineChunk{Identity: baseline.Identity, Round: baseline.Round, TransferId: transferID, Epoch: baseline.Epoch, Tick: baseline.Tick, Progress: baseline.Progress, Total: uint32(len(data)), Offset: uint32(start), Index: uint32(i), Count: uint32(count), Data: data[start:end]}); err != nil {
+		if err = writer.send(p.BaselineChunk{Identity: baseline.Identity, Round: baseline.Round, TransferId: transferID, Epoch: baseline.Epoch, Tick: baseline.Tick, Progress: baseline.Progress, Total: uint32(len(data)), Offset: uint32(start), Index: uint32(i), Count: uint32(count), Data: data[start:end]}); err != nil {
 			return 0, err
 		}
 	}
@@ -481,22 +486,4 @@ func queueBaseline(writer *streamWriter, baseline p.Baseline, transferID uint32)
 	writer.pair.mu.Unlock()
 	writer.pair.server.config.Logger.Info("baseline_transfer_queued", "room", baseline.Identity.RoomId, "seat", baseline.Identity.Seat, "generation", baseline.Identity.PairGeneration, "mode", baseline.Context.Mode, "seed", baseline.Context.Seed, "transfer", transferID, "baseline_bytes", len(data), "framed_bytes", len(data)+len(header)*count, "chunks", count, "production_us", time.Since(started).Microseconds(), "pair_peak_queue_bytes", peakBytes, "pair_peak_queue_messages", peakMessages, "queue_byte_limit", baseline.Context.Connection.QueueBytes, "queue_message_limit", baseline.Context.Connection.QueueMessages)
 	return len(data), nil
-}
-
-func (w *streamWriter) sendChunk(value p.BaselineChunk) error {
-	deadline := time.NewTimer(time.Duration(w.pair.connectionLimits().EssentialQueueWait * float64(time.Second)))
-	defer deadline.Stop()
-	for {
-		err := w.send(value)
-		if err == nil {
-			return nil
-		}
-		select {
-		case <-w.pair.done:
-			return err
-		case <-deadline.C:
-			return err
-		case <-w.pair.capacity:
-		}
-	}
 }

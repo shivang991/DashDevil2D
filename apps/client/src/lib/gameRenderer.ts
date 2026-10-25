@@ -32,39 +32,35 @@ export function renderLongDrive(
   }
 
   drawRoad(ctx, state, gameConfig, width, height);
-  const objectY = (object: GameState["coins"][number]) => object.distance === undefined ? object.y : state.carYBase + gameConfig.carHeight / 2 - (object.distance - state.roadOffset) - object.height / 2;
+  const objectY = (object: GameState["coins"][number]) =>
+    object.distance === undefined
+      ? object.y
+      : state.carYBase +
+        gameConfig.carHeight / 2 -
+        (object.distance - state.roadOffset) -
+        object.height / 2;
 
   for (const coin of state.coins) {
-    const cx = laneX(
-      coin.lane,
-      width,
-      state.roadWidthRatio,
-      gameConfig.laneCount,
-    );
+    const cx = laneX(coin.lane, width, state.roadWidthRatio, gameConfig.laneCount);
     drawCoin(ctx, cx, objectY(coin), coin.width);
   }
 
   for (const heart of state.hearts) {
-    drawHeart(ctx, laneX(heart.lane, width, state.roadWidthRatio, gameConfig.laneCount), objectY(heart), heart.width);
+    drawHeart(
+      ctx,
+      laneX(heart.lane, width, state.roadWidthRatio, gameConfig.laneCount),
+      objectY(heart),
+      heart.width,
+    );
   }
 
   for (const obs of state.obstacles) {
-    const ox = laneX(
-      obs.lane,
-      width,
-      state.roadWidthRatio,
-      gameConfig.laneCount,
-    );
+    const ox = laneX(obs.lane, width, state.roadWidthRatio, gameConfig.laneCount);
     drawObstacle(ctx, ox, objectY(obs), obs.width, obs.height);
   }
 
   if (state.carVisible) {
-    const carX = laneX(
-      state.visualLane,
-      width,
-      state.roadWidthRatio,
-      gameConfig.laneCount,
-    );
+    const carX = laneX(state.visualLane, width, state.roadWidthRatio, gameConfig.laneCount);
     drawCar(ctx, carX, state, gameConfig);
   }
 
@@ -76,4 +72,3 @@ export function renderLongDrive(
     drawGameOver(ctx, state, width, height);
   }
 }
-

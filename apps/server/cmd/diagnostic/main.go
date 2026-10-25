@@ -18,6 +18,7 @@ func main() {
 	var operatorAddress string
 	var drainTimeout, stopGrace time.Duration
 	var checkReady, requestDrain, checkPublic, checkConfig bool
+	flag.IntVar(&c.RoomLimit, "room-limit", 50, "maximum existing rooms, including reservations (1-10000)")
 	flag.StringVar(&c.Address, "address", "127.0.0.1:8443", "TCP and UDP listen address")
 	flag.StringVar(&c.Origin, "origin", "https://127.0.0.1:4173", "exact permitted website origin")
 	flag.StringVar(&c.Certificate, "cert", "", "trusted HTTPS certificate PEM")

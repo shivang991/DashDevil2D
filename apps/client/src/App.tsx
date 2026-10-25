@@ -28,8 +28,21 @@ function App() {
   return (
     <>
       {screen === "menu" ? (
-        <MenuScreen onMultiplayer={mode => { setMode(mode); setScreen("multiplayer"); }} onStartGame={() => { gameAudio.unlock(); setCountdown(hasStarted.current ? 3 : 5); hasStarted.current = true; setScreen("game"); }} />
-      ) : screen === "multiplayer" ? <MultiplayerScreen mode={mode} onBack={() => setScreen("menu")} /> : (
+        <MenuScreen
+          onMultiplayer={(mode) => {
+            setMode(mode);
+            setScreen("multiplayer");
+          }}
+          onStartGame={() => {
+            gameAudio.unlock();
+            setCountdown(hasStarted.current ? 3 : 5);
+            hasStarted.current = true;
+            setScreen("game");
+          }}
+        />
+      ) : screen === "multiplayer" ? (
+        <MultiplayerScreen mode={mode} onBack={() => setScreen("menu")} />
+      ) : (
         <GameWorld countdown={countdown} onBack={() => setScreen("menu")} />
       )}
       <button
@@ -43,7 +56,11 @@ function App() {
         }}
         className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-950/90 px-3 py-2 text-xs text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-white"
       >
-        {soundEnabled ? <Volume2 size={18} aria-hidden="true" /> : <VolumeX size={18} aria-hidden="true" />}
+        {soundEnabled ? (
+          <Volume2 size={18} aria-hidden="true" />
+        ) : (
+          <VolumeX size={18} aria-hidden="true" />
+        )}
         Sound {soundEnabled ? "on" : "off"}
       </button>
     </>

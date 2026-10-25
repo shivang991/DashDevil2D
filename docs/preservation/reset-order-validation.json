@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "date": "2026-10-24 America/Phoenix",
+  "issue": 41,
+  "baseline": "ec369fa",
+  "repair": "c3e3d7f",
+  "engineSeamOwnerConfirmed": true,
+  "regression": {
+    "command": "go test ./simulation -run TestFreshInputsSurviveResetDuringPendingGroup -count=1",
+    "before": "both subcases rejected fresh input 13",
+    "after": "passed, including exact sequence13/14 and application33333us",
+    "focusedRepetitions": 20,
+    "additionalRegression": "stale-generation and pre-reset queued press rejected; fresh release accepted"
+  },
+  "workspace": {
+    "command": "pnpm check --force",
+    "exitCode": 0,
+    "tasks": 15,
+    "cached": 0,
+    "vitestTests": 434
+  },
+  "browserCommands": [
+    {
+      "command": "pnpm test:dense",
+      "exitCode": 1,
+      "log": "reset-dense-before.log",
+      "scope": "pre-fix; Drag Race NOS assertion failed; Road Rage passed"
+    },
+    {
+      "command": "pnpm test:dense",
+      "exitCode": 0,
+      "log": "reset-dense-after.log"
+    },
+    {
+      "command": "pnpm test:dense",
+      "exitCode": 0,
+      "log": "reset-test-dense.log"
+    },
+    {
+      "command": "pnpm test:groups",
+      "exitCode": 0,
+      "log": "reset-test-groups.log"
+    },
+    {
+      "command": "pnpm test:finality",
+      "exitCode": 0,
+      "log": "reset-test-finality.log"
+    },
+    {
+      "command": "pnpm test:lifecycle",
+      "exitCode": 0,
+      "log": "reset-test-lifecycle.log"
+    }
+  ],
+  "runs": [
+    {
+      "command": "pnpm test:dense",
+      "exitCode": 1,
+      "manifest": "apps/client/test-results/transport-2026-10-25T02-05-04.880Z/manifest.json",
+      "manifestSha256": "d7934e9563b15565d89963dce7afc9fbfc483a69a479a27affa067bc87fbff1b",
+      "revision": "ec369fa28d23075d2a02a56a1cb1f3d48a318683",
+      "worktreeDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "node": "v26.10.0",
+        "pnpm": "8.15.9",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0"
+      }
+    },
+    {
+      "command": "pnpm test:dense",
+      "exitCode": 0,
+      "manifest": "apps/client/test-results/transport-2026-10-25T02-07-07.610Z/manifest.json",
+      "manifestSha256": "963d50f1c530f336bfcd2dd9b64c74e5e15e592242af0811cceea56030bdc12a",
+      "revision": "ec369fa28d23075d2a02a56a1cb1f3d48a318683",
+      "worktreeDiffSha256": "52c6afa9696cc979a9f934213b8c8be2d336b89f2d61f0de3ae2b34935ec35f4",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "node": "v26.10.0",
+        "pnpm": "8.15.9",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0"
+      }
+    },
+    {
+      "command": "pnpm test:dense",
+      "exitCode": 0,
+      "manifest": "apps/client/test-results/transport-2026-10-25T02-08-19.959Z/manifest.json",
+      "manifestSha256": "1f58e4f53e168884f809a266c30232c1a0f3017cfec411466be849182b57f816",
+      "revision": "c3e3d7fa6dd31fee5c8f6ea666960a4987e52607",
+      "worktreeDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "node": "v26.10.0",
+        "pnpm": "8.15.9",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0"
+      }
+    },
+    {
+      "command": "pnpm test:groups",
+      "exitCode": 0,
+      "manifest": "apps/client/test-results/transport-2026-10-25T02-08-54.776Z/manifest.json",
+      "manifestSha256": "73d9a7c5da382413b59093c1a3d60d352ed29f112f2464841cdd95b67543a2ec",
+      "revision": "c3e3d7fa6dd31fee5c8f6ea666960a4987e52607",
+      "worktreeDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "node": "v26.10.0",
+        "pnpm": "8.15.9",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0"
+      }
+    },
+    {
+      "command": "pnpm test:finality",
+      "exitCode": 0,
+      "manifest": "apps/client/test-results/transport-2026-10-25T02-09-27.043Z/manifest.json",
+      "manifestSha256": "6f3accdb88153ebfb529b04d24873162ecd5fcf0a58031aecd3b755e4e84637f",
+      "revision": "c3e3d7fa6dd31fee5c8f6ea666960a4987e52607",
+      "worktreeDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "node": "v26.10.0",
+        "pnpm": "8.15.9",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0"
+      }
+    },
+    {
+      "command": "pnpm test:lifecycle",
+      "exitCode": 0,
+      "manifest": "apps/client/test-results/transport-2026-10-25T02-10-13.548Z/manifest.json",
+      "manifestSha256": "f5fc3f9079840e4a48ebfcf866d6348c991f2803d6ce7bf10be8b0caed1a9514",
+      "revision": "c3e3d7fa6dd31fee5c8f6ea666960a4987e52607",
+      "worktreeDiffSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "environment": {
+        "go": "go version go1.26.0 darwin/arm64",
+        "node": "v26.10.0",
+        "pnpm": "8.15.9",
+        "platform": "darwin",
+        "architecture": "arm64",
+        "cpu": "Apple M2",
+        "release": "25.5.0"
+      }
+    }
+  ],
+  "logs": "apps/client/test-results/reset-order-issue41",
+  "review": {
+    "standardsFindings": 0,
+    "specFindings": 0
+  },
+  "stage6Exit": false,
+  "remainingOperatingAcceptance": "Reference Linux load/packet-measurement environment previously confirmed unavailable. No full Stage6 acceptance claimed.",
+  "ownerManualAcceptance": {
+    "date": "2026-10-24 America/Phoenix",
+    "status": "pass",
+    "scope": "load/network acceptance discussed in this chat",
+    "statement": "Tested it manually, mark pass",
+    "evidenceType": "owner-reported manual testing",
+    "measurementDetailsProvided": false,
+    "issueClosureAccepted": true,
+    "independentStage6Certification": false
+  }
+}

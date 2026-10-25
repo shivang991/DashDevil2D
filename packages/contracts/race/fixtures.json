@@ -5,10 +5,7 @@
   "scenarios": [
     {
       "name": "abreast normal finish ties at front edge",
-      "progress": [
-        0,
-        0
-      ],
+      "progress": [0, 0],
       "phase": 0,
       "nos": false,
       "timeUs": 900000,
@@ -18,10 +15,7 @@
     },
     {
       "name": "NOS wins before normal opponent",
-      "progress": [
-        0,
-        0
-      ],
+      "progress": [0, 0],
       "phase": 0,
       "nos": true,
       "timeUs": 450000,
@@ -31,10 +25,7 @@
     },
     {
       "name": "finish during outbound shift",
-      "progress": [
-        350,
-        0
-      ],
+      "progress": [350, 0],
       "phase": 1,
       "nos": false,
       "timeUs": 25000,
@@ -44,10 +35,7 @@
     },
     {
       "name": "finish during return",
-      "progress": [
-        350,
-        0
-      ],
+      "progress": [350, 0],
       "phase": 2,
       "nos": false,
       "timeUs": 25000,
@@ -57,10 +45,7 @@
     },
     {
       "name": "different crossings inside same tick are not a tie",
-      "progress": [
-        350,
-        349.9
-      ],
+      "progress": [350, 349.9],
       "phase": 0,
       "nos": false,
       "timeUs": 25000,
@@ -70,10 +55,7 @@
     },
     {
       "name": "submicrosecond crossings share canonical time",
-      "progress": [
-        350,
-        349.99992
-      ],
+      "progress": [350, 349.99992],
       "phase": 0,
       "nos": false,
       "timeUs": 25000,
@@ -83,10 +65,7 @@
     },
     {
       "name": "adjacent canonical microseconds select seat zero",
-      "progress": [
-        350,
-        349.9996
-      ],
+      "progress": [350, 349.9996],
       "phase": 0,
       "nos": false,
       "timeUs": 25000,
@@ -96,10 +75,7 @@
     },
     {
       "name": "adjacent canonical microseconds select seat one",
-      "progress": [
-        349.9996,
-        350
-      ],
+      "progress": [349.9996, 350],
       "phase": 0,
       "nos": false,
       "timeUs": 25000,
@@ -110,10 +86,7 @@
     },
     {
       "name": "above halfway crossing rounds upward",
-      "progress": [
-        349.99976,
-        0
-      ],
+      "progress": [349.99976, 0],
       "phase": 0,
       "nos": false,
       "timeUs": 25001,
@@ -123,10 +96,7 @@
     },
     {
       "name": "just below halfway crossing rounds downward",
-      "progress": [
-        349.9998004,
-        0
-      ],
+      "progress": [349.9998004, 0],
       "phase": 0,
       "nos": false,
       "timeUs": 25000,
@@ -136,10 +106,7 @@
     },
     {
       "name": "rounded equal finishes are independent of seat iteration",
-      "progress": [
-        349.99992,
-        350
-      ],
+      "progress": [349.99992, 350],
       "phase": 0,
       "nos": false,
       "timeUs": 25000,
@@ -149,10 +116,7 @@
     },
     {
       "name": "equal canonical finishes straddle the raw tick boundary",
-      "progress": [
-        353.33336,
-        353.33328
-      ],
+      "progress": [353.33336, 353.33328],
       "phase": 0,
       "nos": false,
       "timeUs": 16667,
@@ -162,10 +126,7 @@
     },
     {
       "name": "finish above the exclusive upper bound is a later canonical group",
-      "progress": [
-        353.33336,
-        353.33296
-      ],
+      "progress": [353.33336, 353.33296],
       "phase": 0,
       "nos": false,
       "timeUs": 16667,
@@ -175,10 +136,7 @@
     },
     {
       "name": "shift completion inside a split finish group",
-      "progress": [
-        353.33336,
-        353.33328
-      ],
+      "progress": [353.33336, 353.33328],
       "phase": 1,
       "nos": false,
       "movementEndUs": 16667,
@@ -189,10 +147,7 @@
     },
     {
       "name": "return completion inside a split finish group",
-      "progress": [
-        353.33336,
-        353.33328
-      ],
+      "progress": [353.33336, 353.33328],
       "phase": 2,
       "nos": false,
       "movementEndUs": 16667,

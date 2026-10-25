@@ -144,3 +144,104 @@ func TestCanonicalGroupSamplePreservesBlockedSegmentBeforeClearance(t *testing.T
 		t.Fatalf("HP: %d %d", state.Cars[0].Hp, state.Cars[1].Hp)
 	}
 }
+
+func TestFreshInputsSurviveResetDuringPendingGroup(t *testing.T) {
+	for _, replacement := range []bool{false, true} {
+		name := "countdown sequence barrier"
+		if replacement {
+			name = "replacement connection"
+		}
+		t.Run(name, func(t *testing.T) {
+			game, ids := groupRound(t, `{"gameplay":{"finishDistance":2400,"initialClearDistance":0,"reservedHearts":2,"sliceSpacing":397,"heartExclusionDistance":0,"heartSize":51.99984}}`)
+			cars := game.Snapshot().Cars
+			cars[0].Progress, cars[0].Lateral, cars[0].Lane, cars[0].Hp = 727.33336, 0, 1, 1
+			game.Restore(cars, 0)
+			if _, err := game.AdvanceTo(1.0 / 60); err != nil {
+				t.Fatal(err)
+			}
+			if !game.PendingGroup() {
+				t.Fatal("fixture must open a canonical group")
+			}
+			checkpoint := game.Snapshot()
+			identity, generation := ids[0], uint32(1)
+			if replacement {
+				identity.PairGeneration++
+				generation++
+			}
+			game.ResetSeat(identity, generation, 12)
+			for i, intent := range []uint8{0, 2} {
+				accepted, err := game.Submit(identity, protocol.Input{Identity: identity, Round: protocol.Round{RoundId: 1, InputGeneration: generation}, Sequence: uint32(13 + i), Intent: intent, Control: 3, HeldMask: 4})
+				if err != nil || !accepted {
+					t.Fatalf("fresh input %d rejected after reset: accepted=%v err=%v", 13+i, accepted, err)
+				}
+			}
+			if !reflect.DeepEqual(checkpoint, game.Snapshot()) {
+				t.Fatal("reset/input exposed an unfinished group")
+			}
+			events, err := game.AdvanceTo(.05)
+			if err != nil {
+				t.Fatal(err)
+			}
+			var sequences []uint32
+			for _, event := range events {
+				if event.Type == "input" {
+					if event.Disposition != "accepted" || event.TimeUs != 33333 {
+						t.Fatalf("fresh input applied before reset boundary: %+v", event)
+					}
+					sequences = append(sequences, *event.Sequence)
+				}
+			}
+			if !reflect.DeepEqual(sequences, []uint32{13, 14}) {
+				t.Fatalf("input order: %v", sequences)
+			}
+			car := game.Snapshot().Cars[0]
+			if car.Effective != 3 || car.HeldMask != 4 || car.LastInput != 14 || car.InputGeneration != generation {
+				t.Fatalf("fresh NOS lost across reset: %+v", car)
+			}
+		})
+	}
+}
+
+func TestPendingResetRejectsStaleGenerationAndCancelsOldPress(t *testing.T) {
+	game, ids := groupRound(t, `{"gameplay":{"finishDistance":2400,"initialClearDistance":0,"reservedHearts":2,"sliceSpacing":397,"heartExclusionDistance":0,"heartSize":51.99984}}`)
+	cars := game.Snapshot().Cars
+	cars[0].Progress, cars[0].Lateral, cars[0].Lane, cars[0].Hp = 727.33336, 0, 1, 1
+	game.Restore(cars, 0)
+	if _, err := game.AdvanceTo(1.0 / 60); err != nil {
+		t.Fatal(err)
+	}
+	if !game.PendingGroup() {
+		t.Fatal("fixture must open a canonical group")
+	}
+	input := protocol.Input{Identity: ids[0], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: 1, Intent: 0, Control: 3, HeldMask: 4}
+	if accepted, err := game.Submit(ids[0], input); err != nil || !accepted {
+		t.Fatalf("old press: %v %v", accepted, err)
+	}
+	game.ResetSeat(ids[0], 2, 12)
+	input.Sequence = 13
+	if accepted, err := game.Submit(ids[0], input); err != nil || accepted {
+		t.Fatalf("stale generation accepted: %v %v", accepted, err)
+	}
+	input.Round.InputGeneration = 2
+	input.Intent, input.Control, input.HeldMask = 1, 0, 0
+	if accepted, err := game.Submit(ids[0], input); err != nil || !accepted {
+		t.Fatalf("fresh release rejected: %v %v", accepted, err)
+	}
+	events, err := game.AdvanceTo(.05)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var dispositions []string
+	for _, event := range events {
+		if event.Type == "input" {
+			dispositions = append(dispositions, event.Disposition)
+		}
+	}
+	if !reflect.DeepEqual(dispositions, []string{"rejected", "rejected", "accepted"}) {
+		t.Fatalf("reset dispositions: %v", dispositions)
+	}
+	car := game.Snapshot().Cars[0]
+	if car.Effective != 0 || car.HeldMask != 0 || car.LastInput != 13 || car.InputGeneration != 2 {
+		t.Fatalf("old press reactivated: %+v", car)
+	}
+}

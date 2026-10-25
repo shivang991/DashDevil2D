@@ -1523,70 +1523,18 @@
     }
   },
   "enums": {
-    "mode": [
-      "long-drive",
-      "drag-race",
-      "road-rage"
-    ],
-    "seat": [
-      "player1",
-      "player2"
-    ],
-    "seatOrNone": [
-      "none",
-      "player1",
-      "player2"
-    ],
-    "lane": [
-      "left",
-      "middle",
-      "right"
-    ],
-    "phase": [
-      "steady",
-      "shift",
-      "return"
-    ],
-    "control": [
-      "none",
-      "left",
-      "right",
-      "NOS"
-    ],
-    "inputIntent": [
-      "press",
-      "release",
-      "refresh"
-    ],
-    "disposition": [
-      "accepted",
-      "ignored",
-      "rejected"
-    ],
-    "admissionOperation": [
-      "create",
-      "join",
-      "resume"
-    ],
-    "roomPhase": [
-      "lobby",
-      "countdown",
-      "active",
-      "ended"
-    ],
-    "roomCommand": [
-      "select-mode",
-      "ready",
-      "start",
-      "leave",
-      "focus"
-    ],
-    "outcomeResult": [
-      "player1-win",
-      "player2-win",
-      "tie",
-      "abandoned"
-    ],
+    "mode": ["long-drive", "drag-race", "road-rage"],
+    "seat": ["player1", "player2"],
+    "seatOrNone": ["none", "player1", "player2"],
+    "lane": ["left", "middle", "right"],
+    "phase": ["steady", "shift", "return"],
+    "control": ["none", "left", "right", "NOS"],
+    "inputIntent": ["press", "release", "refresh"],
+    "disposition": ["accepted", "ignored", "rejected"],
+    "admissionOperation": ["create", "join", "resume"],
+    "roomPhase": ["lobby", "countdown", "active", "ended"],
+    "roomCommand": ["select-mode", "ready", "start", "leave", "focus"],
+    "outcomeResult": ["player1-win", "player2-win", "tie", "abandoned"],
     "outcomeReason": [
       "finish",
       "HP",

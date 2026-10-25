@@ -13,10 +13,7 @@ const grassVariants = [
 
 type GrassTextureName = (typeof grassVariants)[number]["name"];
 const grassTileSize = 64; // 32 native pixels, displayed at 2×.
-const totalGrassVariantWeight = grassVariants.reduce(
-  (sum, variant) => sum + variant.weight,
-  0,
-);
+const totalGrassVariantWeight = grassVariants.reduce((sum, variant) => sum + variant.weight, 0);
 
 function pickGrassVariant(random: number): GrassTextureName {
   let remaining = random * totalGrassVariantWeight;
@@ -88,10 +85,7 @@ function drawSprite(
   return true;
 }
 
-const texturePatterns = new WeakMap<
-  CanvasRenderingContext2D,
-  Map<TextureName, CanvasPattern>
->();
+const texturePatterns = new WeakMap<CanvasRenderingContext2D, Map<TextureName, CanvasPattern>>();
 
 function drawGrassTiles(
   ctx: CanvasRenderingContext2D,
@@ -110,13 +104,7 @@ function drawGrassTiles(
     for (let column = 0; column < columns; column++) {
       const image = getTexture(grassVariantAt(column, row, seed)) ?? plain;
       if (image) {
-        ctx.drawImage(
-          image,
-          column * grassTileSize,
-          y,
-          grassTileSize,
-          grassTileSize,
-        );
+        ctx.drawImage(image, column * grassTileSize, y, grassTileSize, grassTileSize);
       }
     }
   }
@@ -177,14 +165,7 @@ export function drawRoad(
   // Road surface
   ctx.fillStyle = "#3a3a3a";
   ctx.fillRect(roadLeft, 0, roadWidth, height);
-  drawTiledTexture(
-    ctx,
-    "asphalt",
-    roadLeft,
-    roadWidth,
-    height,
-    state.roadOffset,
-  );
+  drawTiledTexture(ctx, "asphalt", roadLeft, roadWidth, height, state.roadOffset);
 
   // Selected variant #5 tiles: weathered edges and double yellow dividers.
   // Keep the edges inside the road so they remain visible on narrow screens.
@@ -229,12 +210,7 @@ export function drawCar(
 
   // Fallback while the editable texture loads.
   ctx.fillStyle = "#2196f3";
-  ctx.fillRect(
-    -config.carWidth / 2,
-    -config.carHeight / 2,
-    config.carWidth,
-    config.carHeight,
-  );
+  ctx.fillRect(-config.carWidth / 2, -config.carHeight / 2, config.carWidth, config.carHeight);
 
   ctx.restore();
 }
@@ -281,6 +257,10 @@ export function drawGameOver(
 
 export function drawHeart(ctx: CanvasRenderingContext2D, x: number, y: number, size: number): void {
   const texture = textureImages.get("heart");
-  if (texture?.complete && texture.naturalWidth) ctx.drawImage(texture, x - size / 2, y, size, size);
-  else { ctx.fillStyle = "#ef4444"; ctx.fillRect(x - size / 2, y, size, size); }
+  if (texture?.complete && texture.naturalWidth)
+    ctx.drawImage(texture, x - size / 2, y, size, size);
+  else {
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(x - size / 2, y, size, size);
+  }
 }

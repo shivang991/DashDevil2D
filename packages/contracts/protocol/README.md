@@ -10,36 +10,36 @@ Run `pnpm generate` after changing the schema, then `pnpm check:generated`. The 
 
 All multibyte scalars are big-endian. Reliable records have `u32 bodyLength | u8 messageType | payload`, where the length includes the discriminator and excludes the four-byte prefix. The configured frame bound includes all five framing bytes. Reject advertised body length before body allocation. `FrameReader` supports partial prefixes/bodies and multiple frames in a read; end of stream with an incomplete frame is an error. Unknown types, trailing bytes, bad UTF-8, nonfinite float64, enum overflow and reserved bits fail explicitly.
 
-| Schema scalar/section | Wire representation |
-| --- | --- |
-| `u8`, `u16`, `u32` | 1, 2, 4 unsigned bytes |
-| `us` | 8 unsigned bytes, constrained to 0…9,007,199,254,740,991 before converting to JS Number |
-| `f64` | 8 IEEE-754 bytes; baseline positions retain full precision, including signed zero |
-| `string`, `bytes` | u32 byte count then exactly that many bytes; per-field maximum in schema; strings strict UTF-8 |
-| fixed array | exactly the schema count, no count prefix; cars/seats are Player 1 then Player 2 |
-| variable array | u32 element count, bounded before allocation/traversal, then records in schema order |
+| Schema scalar/section  | Wire representation                                                                                                       |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `u8`, `u16`, `u32`     | 1, 2, 4 unsigned bytes                                                                                                    |
+| `us`                   | 8 unsigned bytes, constrained to 0…9,007,199,254,740,991 before converting to JS Number                                   |
+| `f64`                  | 8 IEEE-754 bytes; baseline positions retain full precision, including signed zero                                         |
+| `string`, `bytes`      | u32 byte count then exactly that many bytes; per-field maximum in schema; strings strict UTF-8                            |
+| fixed array            | exactly the schema count, no count prefix; cars/seats are Player 1 then Player 2                                          |
+| variable array         | u32 element count, bounded before allocation/traversal, then records in schema order                                      |
 | adjacent `bits` fields | fill a byte from low bits upwards in schema order; start a new byte if the next field does not fit; unused high bits zero |
 
 Car lane/departure/target/phase occupy one byte (2 bits each); winning/effective controls and four flags occupy the next (2+2+4). Object lane and kind/consumption flags occupy seven bits, with the high bit reserved. Held physical controls are a separate three-bit mask (left/right/NOS); winning/effective controls remain distinct so releases, expiry and return restrictions can continue correctly. HP, scores, identities and progress are uint32; accepted configuration proves their resource/numeric limits. Enum names and flags are specified in `schema.json`. A missing/unused mode-specific configuration field is zero; expected Context comparison rejects mismatched captures.
 
-| Datagram offset | Field | Width |
-| --- | --- | --- |
-| 0 | epoch | 2 |
-| 2 | tick | 4 |
-| 6 | CRC32C | 4 |
+| Datagram offset | Field  | Width |
+| --------------- | ------ | ----- |
+| 0               | epoch  | 2     |
+| 2               | tick   | 4     |
+| 6               | CRC32C | 4     |
 
 A verification datagram is **exactly ten bytes**, with no reliable framing or type/version byte. Schema/direction are agreed by handshake. The generated decoder rejects any other length; the future datagram adapter discards that error without refreshing liveness. Reliable decoder errors instead fail the connection. Versions agree exactly; no downgrade. `nextCounter` / `NextCounter` refuse wrap; the caller renews the relevant context before exhaustion. Sequence admission, duplicates, old pairs/rounds/generations and epoch/barrier readiness remain stateful responsibilities for #28/#29.
 
 ## Families and continuation coverage
 
-| Channel | Generated records and interpretation |
-| --- | --- |
-| HTTPS | AdmissionRequest(create/join/resume), Admission(paired tickets, credential, identity, expiry/origin), ProtocolError |
-| Room | RoomInitialization(version/current pair), RoomState(revision, two seats, mode/host/readiness/reservation, phase/start/cancellation, idle warning/expiry), RoomCommand(mode/ready/start/leave) |
-| Gameplay control | Handshake, Initialization(immutable Context), Ready(initialization/baseline barrier), ClockRequest/Reply, Recovery, AuthorityAck, ProtocolError, Outcome |
-| Inputs | Input(round, sender input generation, sequence, press/release/refresh, control and held mask) |
-| Authority | Disposition(accepted/ignored/rejected and resulting Car/Contact), Event(causal IDs and resulting state/consumption), Barrier(contiguous watermarks), Coverage(complete replacement windows and generator state), BaselineChunk |
-| Unreliable authority | Verification(epoch, tick, CRC32C) |
+| Channel              | Generated records and interpretation                                                                                                                                                                                           |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| HTTPS                | AdmissionRequest(create/join/resume), Admission(paired tickets, credential, identity, expiry/origin), ProtocolError                                                                                                            |
+| Room                 | RoomInitialization(version/current pair), RoomState(revision, two seats, mode/host/readiness/reservation, phase/start/cancellation, idle warning/expiry), RoomCommand(mode/ready/start/leave)                                  |
+| Gameplay control     | Handshake, Initialization(immutable Context), Ready(initialization/baseline barrier), ClockRequest/Reply, Recovery, AuthorityAck, ProtocolError, Outcome                                                                       |
+| Inputs               | Input(round, sender input generation, sequence, press/release/refresh, control and held mask)                                                                                                                                  |
+| Authority            | Disposition(accepted/ignored/rejected and resulting Car/Contact), Event(causal IDs and resulting state/consumption), Barrier(contiguous watermarks), Coverage(complete replacement windows and generator state), BaselineChunk |
+| Unreliable authority | Verification(epoch, tick, CRC32C)                                                                                                                                                                                              |
 
 `Identity` distinguishes internal room, room-seat session, pair generation and authenticated seat. `Round` distinguishes round and recipient/sender input generation. Each Car additionally carries its own seat's input generation so recovery can reset one seat independently. `Progress` carries authority/event watermarks and both seats' contiguous processed/disposed cutoffs. An accepted event's canonical microsecond time and record identity are exact; client send times cannot backdate application. The ordering rule remains inputs before contacts and Player 1 before Player 2 at equal times; these records carry sufficient order/time information without implementing that simulation in #27.
 

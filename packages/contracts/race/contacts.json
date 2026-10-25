@@ -1,7 +1,7 @@
 {
   "version": 1,
   "precision": {
-    "absolute": 1e-06,
+    "absolute": 1e-6,
     "relative": 1e-12
   },
   "scenarios": [
@@ -36,22 +36,10 @@
         }
       ],
       "expected": {
-        "progress": [
-          100,
-          180
-        ],
-        "lateral": [
-          0,
-          0
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          3,
-          0
-        ],
+        "progress": [100, 180],
+        "lateral": [0, 0],
+        "phase": [0, 0],
+        "effective": [3, 0],
         "contactTimes": []
       },
       "overrides": {}
@@ -88,25 +76,11 @@
         }
       ],
       "expected": {
-        "progress": [
-          115,
-          80
-        ],
-        "lateral": [
-          -102.5,
-          0
-        ],
-        "phase": [
-          2,
-          0
-        ],
-        "effective": [
-          0,
-          0
-        ],
-        "contactTimes": [
-          87500
-        ]
+        "progress": [115, 80],
+        "lateral": [-102.5, 0],
+        "phase": [2, 0],
+        "effective": [0, 0],
+        "contactTimes": [87500]
       },
       "overrides": {}
     },
@@ -140,25 +114,11 @@
         }
       ],
       "expected": {
-        "progress": [
-          80,
-          80
-        ],
-        "lateral": [
-          -76.45833333333333,
-          76.45833333333333
-        ],
-        "phase": [
-          2,
-          2
-        ],
-        "effective": [
-          0,
-          0
-        ],
-        "contactTimes": [
-          118750
-        ]
+        "progress": [80, 80],
+        "lateral": [-76.45833333333333, 76.45833333333333],
+        "phase": [2, 2],
+        "effective": [0, 0],
+        "contactTimes": [118750]
       },
       "overrides": {}
     },
@@ -192,25 +152,11 @@
         }
       ],
       "expected": {
-        "progress": [
-          120,
-          120
-        ],
-        "lateral": [
-          -120,
-          120
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          0,
-          0
-        ],
-        "contactTimes": [
-          118750
-        ]
+        "progress": [120, 120],
+        "lateral": [-120, 120],
+        "phase": [0, 0],
+        "effective": [0, 0],
+        "contactTimes": [118750]
       },
       "overrides": {}
     },
@@ -244,25 +190,11 @@
         }
       ],
       "expected": {
-        "progress": [
-          40,
-          40
-        ],
-        "lateral": [
-          -96.66666666666667,
-          0
-        ],
-        "phase": [
-          2,
-          2
-        ],
-        "effective": [
-          0,
-          0
-        ],
-        "contactTimes": [
-          0
-        ]
+        "progress": [40, 40],
+        "lateral": [-96.66666666666667, 0],
+        "phase": [2, 2],
+        "effective": [0, 0],
+        "contactTimes": [0]
       },
       "overrides": {}
     },
@@ -296,22 +228,10 @@
         }
       ],
       "expected": {
-        "progress": [
-          80,
-          80
-        ],
-        "lateral": [
-          -120,
-          0
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          0,
-          0
-        ],
+        "progress": [80, 80],
+        "lateral": [-120, 0],
+        "phase": [0, 0],
+        "effective": [0, 0],
         "contactTimes": []
       },
       "overrides": {}
@@ -350,22 +270,10 @@
         }
       ],
       "expected": {
-        "progress": [
-          135,
-          160
-        ],
-        "lateral": [
-          0,
-          120
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          3,
-          0
-        ],
+        "progress": [135, 160],
+        "lateral": [0, 120],
+        "phase": [0, 0],
+        "effective": [3, 0],
         "contactTimes": []
       },
       "overrides": {}
@@ -401,22 +309,10 @@
         }
       ],
       "expected": {
-        "progress": [
-          80,
-          240
-        ],
-        "lateral": [
-          0,
-          0
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          0,
-          3
-        ],
+        "progress": [80, 240],
+        "lateral": [0, 0],
+        "phase": [0, 0],
+        "effective": [0, 3],
         "contactTimes": []
       },
       "overrides": {}
@@ -452,22 +348,10 @@
         }
       ],
       "expected": {
-        "progress": [
-          240,
-          200
-        ],
-        "lateral": [
-          -120,
-          0
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          3,
-          0
-        ],
+        "progress": [240, 200],
+        "lateral": [-120, 0],
+        "phase": [0, 0],
+        "effective": [3, 0],
         "contactTimes": []
       },
       "overrides": {}
@@ -498,22 +382,10 @@
         }
       ],
       "expected": {
-        "progress": [
-          200,
-          280
-        ],
-        "lateral": [
-          0,
-          0
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          0,
-          0
-        ],
+        "progress": [200, 280],
+        "lateral": [0, 0],
+        "phase": [0, 0],
+        "effective": [0, 0],
         "contactTimes": []
       },
       "overrides": {}
@@ -551,25 +423,11 @@
         }
       ],
       "expected": {
-        "progress": [
-          100,
-          180
-        ],
-        "lateral": [
-          -120,
-          -120
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          0,
-          0
-        ],
-        "contactTimes": [
-          50000
-        ]
+        "progress": [100, 180],
+        "lateral": [-120, -120],
+        "phase": [0, 0],
+        "effective": [0, 0],
+        "contactTimes": [50000]
       },
       "overrides": {}
     },
@@ -604,25 +462,11 @@
         }
       ],
       "expected": {
-        "progress": [
-          60,
-          140
-        ],
-        "lateral": [
-          0,
-          0
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          3,
-          0
-        ],
-        "contactTimes": [
-          2632
-        ]
+        "progress": [60, 140],
+        "lateral": [0, 0],
+        "phase": [0, 0],
+        "effective": [3, 0],
+        "contactTimes": [2632]
       },
       "overrides": {
         "gameplay": {
@@ -661,25 +505,11 @@
         }
       ],
       "expected": {
-        "progress": [
-          102,
-          182
-        ],
-        "lateral": [
-          0,
-          0
-        ],
-        "phase": [
-          0,
-          0
-        ],
-        "effective": [
-          3,
-          0
-        ],
-        "contactTimes": [
-          49691
-        ]
+        "progress": [102, 182],
+        "lateral": [0, 0],
+        "phase": [0, 0],
+        "effective": [3, 0],
+        "contactTimes": [49691]
       },
       "overrides": {
         "gameplay": {

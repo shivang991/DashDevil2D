@@ -1,8 +1,6 @@
 {
   "version": 1,
-  "requirements": [
-    "https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6146866917"
-  ],
+  "requirements": ["https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6146866917"],
   "valid": [
     {
       "name": "long-drive defaults",
