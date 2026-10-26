@@ -131,6 +131,7 @@ const until = async (predicate, description, timeout = 15000) => {
   throw new Error(`Timeout: ${description}`);
 };
 let success = false;
+let captureFailure;
 try {
   for (let i = 0; i < 3; i++) {
     const browser = await chromium.launch({ channel: "chrome", headless: true });
@@ -328,6 +329,7 @@ try {
     });
     return records;
   };
+  captureFailure = snapshot;
   const startUI = async () => {
     for (const page of ui) await page.keyboard.up("ArrowUp");
     const state = await readUI(ui[0]);
@@ -358,7 +360,19 @@ try {
       const deadline = performance.now() + 8000;
       const until = async (fn) => {
         while (!fn()) {
-          if (performance.now() > deadline) throw new Error("room command acknowledgement timeout");
+          if (performance.now() > deadline)
+            throw new Error(
+              "room command acknowledgement timeout: " +
+                JSON.stringify(
+                  [host, guest].map((c) => ({
+                    status: c.state.status,
+                    pending: c.state.pending,
+                    notice: c.state.notice,
+                    room: c.state.room,
+                    errors: c.state.errors,
+                  })),
+                ),
+            );
           await delay(30);
         }
       };
@@ -369,11 +383,17 @@ try {
         );
       }
       if (host.state.room.phase !== 0) return;
-      await delay(400);
+      const synchronized = () =>
+        host.state.room.revision === guest.state.room.revision &&
+        [host, guest].every((c) => c.state.status === "Connected" && !c.state.pending);
       for (const c of [host, guest]) {
+        await until(synchronized);
         c.command(1, host.state.room.mode, 1);
-        await until(() => !c.state.pending && c.state.room.seats[c.state.identity.seat].flags & 2);
-        await delay(350);
+        await until(
+          () =>
+            synchronized() &&
+            [host, guest].every((view) => view.state.room.seats[c.state.identity.seat].flags & 2),
+        );
       }
       host.command(2);
       await until(() => host.state.room.phase === 1 || host.state.room.phase === 2);
@@ -538,16 +558,32 @@ try {
   });
 } catch (error) {
   log({ event: "failure", error: error.stack });
+  try {
+    await captureFailure?.("failure");
+  } catch (error) {
+    log({ event: "failure-capture-error", error: error.message });
+  }
   process.exitCode = 1;
 } finally {
-  for (const { page } of rooms) {
+  const terminal = [];
+  for (const { page, index } of rooms) {
     try {
-      await page.evaluate(() => {
+      const result = await page.evaluate(() => {
+        const result = structuredClone({
+          states: window.capacity?.clients.map((c) => c.state),
+          maxLoopMs: window.capacity?.maxLoopMs,
+          errors: window.capacity?.errors,
+        });
         clearInterval(window.capacity?.timer);
         for (const c of window.capacity?.clients ?? []) c.leave();
+        return result;
       });
-    } catch {}
+      terminal.push({ room: index, ...result });
+    } catch (error) {
+      terminal.push({ room: index, error: error.message });
+    }
   }
+  fs.writeFileSync(path.join(output, "agents-final.json"), JSON.stringify(terminal));
   for (let seat = 0; seat < ui.length; seat++) {
     try {
       fs.writeFileSync(
