@@ -92,7 +92,15 @@ func (pair *pair) roomBaseline() (p.Baseline, error) {
 	for {
 		s.mu.Lock()
 		r := pair.seat.room
-		if r.engine == nil || !r.engine.PendingGroup() {
+		committed := r.engine == nil || !r.engine.PendingGroup()
+		if r.phase == 2 && r.zero != nil {
+			for i, participant := range r.seats {
+				if participant != nil && r.zero.Cars[i].InputGeneration != participant.inputGeneration {
+					committed = false
+				}
+			}
+		}
+		if committed {
 			defer s.mu.Unlock()
 			return pair.roomBaselineLocked()
 		}
@@ -131,11 +139,6 @@ func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 		b.Generator, b.Windows = raceCoverage(b, state)
 	}
 	b.Identity = pair.identity
-	for i, seat := range r.seats {
-		if seat != nil {
-			b.Cars[i].InputGeneration = seat.inputGeneration
-		}
-	}
 	b.Round.InputGeneration = b.Cars[pair.identity.Seat].InputGeneration
 	return b, p.ValidateBaseline(b, b.Context)
 }

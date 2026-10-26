@@ -134,6 +134,7 @@ export class PairedConnection {
   private queuedMessages = 0;
   private roomWrites: { bytes: number; at: number }[] = [];
   private restoredAt = 0;
+  private initializationStartedAt = 0;
   private revision = 0;
   private roomSequence = 0;
   private terminal = false;
@@ -320,6 +321,7 @@ export class PairedConnection {
       this.clockSequence = 0;
       this.roomSequence = 0;
       this.restoredAt = performance.now();
+      this.initializationStartedAt = this.restoredAt;
       this.openRoom(message.value, generation);
       const options: WebTransportOptions = this.options.certificateHash
         ? {
@@ -404,7 +406,7 @@ export class PairedConnection {
             return;
           }
         }
-        if (!this.baseline && performance.now() - this.restoredAt >= 5000)
+        if (!this.baseline && performance.now() - this.initializationStartedAt >= 5000)
           this.fail(new Error("Initialization timed out"), generation);
       }, 100);
       this.timers.push(watchdog);
@@ -612,6 +614,7 @@ export class PairedConnection {
           this.context,
           Math.min(1048576, this.context.connection.baselineBytes),
         );
+        this.initializationStartedAt = performance.now();
         this.baseline = undefined;
         this.inputSequence = 0;
         if (!this.inputs) {
