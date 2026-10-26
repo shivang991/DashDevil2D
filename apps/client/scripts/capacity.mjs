@@ -259,6 +259,8 @@ try {
         await ready(clients[0]);
         await clients[1].connect(1, clients[0].state.code, mode);
         await ready(clients[1]);
+        // Connection setup precedes loop scheduling; exclude it from loop delay.
+        window.capacity.last = performance.now();
         window.capacity.timer = setInterval(() => {
           const now = performance.now();
           window.capacity.maxLoopMs = Math.max(
