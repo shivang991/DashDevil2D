@@ -792,6 +792,11 @@ func (e *Engine) ResetSeat(identity protocol.Identity, generation, sequence uint
 		return
 	}
 	e.resetControls(seat, generation, sequence)
+	if generationBefore != generation {
+		// The remaining player must observe the new sequence space before
+		// coverage advertises it, even when no event group was open.
+		e.releases = append(e.releases, e.event("release", seat, e.state.TimeUs))
+	}
 }
 func (e *Engine) resetControls(seat uint8, generation, sequence uint32) {
 	car := &e.state.Cars[seat]

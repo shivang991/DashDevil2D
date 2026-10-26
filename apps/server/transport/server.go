@@ -472,7 +472,6 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	if r := participant.room; r.phase == 2 && r.engine != nil {
 		r.engine.ResetSeat(pair.identity, participant.inputGeneration, 0)
 		r.primed[participant.index] = false
-		r.zero.Cars = r.engine.Snapshot().Cars
 	}
 	for key, t := range s.tickets {
 		if t.seat == participant {
