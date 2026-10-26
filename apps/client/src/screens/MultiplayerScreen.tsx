@@ -96,7 +96,11 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
 
   return (
     <main
-      className="min-h-screen bg-neutral-950 text-white flex justify-center p-6"
+      className={
+        race
+          ? "multiplayer-match bg-neutral-950 text-white"
+          : "min-h-screen bg-neutral-950 text-white flex justify-center p-6"
+      }
       onKeyDown={(event) => {
         if (event.key === "Escape" && !event.repeat) {
           if (confirmLeave) setConfirmLeave(false);
@@ -104,18 +108,22 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
         }
       }}
     >
-      <section className="w-full max-w-lg flex flex-col gap-5 py-10">
-        <h1 className="text-2xl font-heading">
-          {inRoom
-            ? race
-              ? modeName(room!.mode)
-              : active
-                ? "Round ready"
-                : countdown
-                  ? "Starting round"
-                  : "Private room"
-            : modeName(mode)}
-        </h1>
+      <section
+        className={race ? "multiplayer-match-panel" : "w-full max-w-lg flex flex-col gap-5 py-10"}
+      >
+        {!race && (
+          <h1 className="text-2xl font-heading">
+            {inRoom
+              ? race
+                ? modeName(room!.mode)
+                : active
+                  ? "Round ready"
+                  : countdown
+                    ? "Starting round"
+                    : "Private room"
+              : modeName(mode)}
+          </h1>
+        )}
         {!race && <p className="text-neutral-400">{localName()}</p>}
         {!inRoom ? (
           <>
@@ -165,28 +173,32 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
           </>
         ) : (
           <>
-            <div className="flex gap-4 items-center">
-              <span className="text-3xl font-mono tracking-widest" data-testid="room-code">
-                {state?.code}
-              </span>
-              <button
-                className={button}
-                onClick={() => {
-                  void navigator.clipboard?.writeText(state?.code ?? "").then(
-                    () => setCopy("Copied"),
-                    () => setCopy("Select and copy the code"),
-                  );
-                }}
-              >
-                {copy}
-              </button>
-            </div>
-            <p data-testid="connection-state" role="status">
-              {state?.status}
-            </p>
-            <p>
-              Mode: <span data-testid="selected-mode">{modeName(room!.mode)}</span>
-            </p>
+            {!race && (
+              <>
+                <div className="flex gap-4 items-center">
+                  <span className="text-3xl font-mono tracking-widest" data-testid="room-code">
+                    {state?.code}
+                  </span>
+                  <button
+                    className={button}
+                    onClick={() => {
+                      void navigator.clipboard?.writeText(state?.code ?? "").then(
+                        () => setCopy("Copied"),
+                        () => setCopy("Select and copy the code"),
+                      );
+                    }}
+                  >
+                    {copy}
+                  </button>
+                </div>
+                <p data-testid="connection-state" role="status">
+                  {state?.status}
+                </p>
+                <p>
+                  Mode: <span data-testid="selected-mode">{modeName(room!.mode)}</span>
+                </p>
+              </>
+            )}
             {!race && (
               <ul className="flex flex-col gap-3">
                 {room!.seats.map((seat, index) => (
@@ -311,52 +323,58 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
                 Return to Lobby
               </button>
             )}
-            <button
-              className={button}
-              onClick={() => {
-                connection.current?.releaseControls();
-                if ((countdown || active) && !state?.outcome) setConfirmLeave(true);
-                else leave();
-              }}
-            >
-              Leave
-            </button>
-            {(countdown || active) && (
-              <p className="text-sm text-neutral-400">
-                Round time: <span data-testid="round-time">{state?.timeUs ?? 0}</span>
-              </p>
+            {!race && (
+              <button
+                className={button}
+                onClick={() => {
+                  connection.current?.releaseControls();
+                  if ((countdown || active) && !state?.outcome) setConfirmLeave(true);
+                  else leave();
+                }}
+              >
+                Leave
+              </button>
             )}
-            <details>
-              <summary className="cursor-pointer text-sm text-neutral-400">
-                Connection details
-              </summary>
-              <pre className="text-xs overflow-auto" data-testid="room-evidence">
-                {JSON.stringify(
-                  {
-                    roundId: state?.roundId,
-                    startUs: state?.startUs,
-                    timeUs: state?.timeUs,
-                    seed: state?.seed,
-                    context: state?.context,
-                    objects: state?.objects,
-                    contact: state?.contact,
-                    cars: state?.cars,
-                    identity: state?.identity,
-                    roomRevision: room!.revision,
-                    diagnostics: state?.diagnostics,
-                    verified: state?.verified,
-                    errors: state?.errors,
-                    baselineBytes: state?.baselineBytes,
-                  },
-                  null,
-                  2,
+            {import.meta.env.VITE_MULTIPLAYER_DEBUG === "true" && (
+              <div className="multiplayer-debug">
+                {(countdown || active) && (
+                  <p className="text-sm text-neutral-400">
+                    Round time: <span data-testid="round-time">{state?.timeUs ?? 0}</span>
+                  </p>
                 )}
-              </pre>
-            </details>
+                <details>
+                  <summary className="cursor-pointer text-sm text-neutral-400">
+                    Connection details
+                  </summary>
+                  <pre className="text-xs overflow-auto" data-testid="room-evidence">
+                    {JSON.stringify(
+                      {
+                        roundId: state?.roundId,
+                        startUs: state?.startUs,
+                        timeUs: state?.timeUs,
+                        seed: state?.seed,
+                        context: state?.context,
+                        objects: state?.objects,
+                        contact: state?.contact,
+                        cars: state?.cars,
+                        identity: state?.identity,
+                        roomRevision: room!.revision,
+                        diagnostics: state?.diagnostics,
+                        verified: state?.verified,
+                        errors: state?.errors,
+                        baselineBytes: state?.baselineBytes,
+                      },
+                      null,
+                      2,
+                    )}
+                  </pre>
+                </details>
+              </div>
+            )}
           </>
         )}
-        {state?.pending && <p role="status">{state.pending}…</p>}
-        {state?.notice && <p role="alert">{state.notice}</p>}
+        {!race && state?.pending && <p role="status">{state.pending}…</p>}
+        {!race && state?.notice && <p role="alert">{state.notice}</p>}
         {confirmLeave && !state?.outcome && (
           <div
             role="dialog"

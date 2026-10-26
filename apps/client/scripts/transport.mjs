@@ -284,6 +284,8 @@ const server = spawn(
 children.push(server);
 const env = {
   ...process.env,
+  // Transport acceptance tests inspect diagnostics hidden from normal play.
+  VITE_MULTIPLAYER_DEBUG: test ? "true" : process.env.VITE_MULTIPLAYER_DEBUG,
   DASHDEVIL_DENSE_TESTS: dense ? "1" : "",
   DASHDEVIL_FAILURE_TESTS: failures ? "1" : "",
   DASHDEVIL_RESPONSIBILITY_TESTS: responsibility ? "1" : "",

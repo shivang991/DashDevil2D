@@ -155,3 +155,58 @@
     font-weight: 300;
   }
 }
+
+/* The stage consumes only the height left after the HUD, footer and diagnostics. */
+.multiplayer-match {
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  padding: clamp(8px, 2vh, 24px) 12px;
+  align-items: center;
+}
+.multiplayer-match-panel {
+  height: min(100%, calc(min(560px, 100vw - 48px) * 15 / 14 + 150px));
+  width: 100%;
+  max-width: 608px;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: clamp(10px, 2vw, 22px);
+  border: 1px solid #404040;
+  border-radius: 24px;
+}
+.race-view {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+}
+.race-stage {
+  flex: 1;
+  min-height: 0;
+  container-type: size;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.race-canvas-wrap {
+  position: relative;
+  width: min(100cqw, calc(100cqh * 14 / 15), 560px);
+  aspect-ratio: 14 / 15;
+  max-height: 600px;
+}
+.multiplayer-debug {
+  flex-shrink: 0;
+  max-height: min(120px, 20dvh);
+  overflow: auto;
+  border-top: 1px dashed #525252;
+  padding-top: 8px;
+}
+
+.multiplayer-match-panel:has(.multiplayer-debug) {
+  height: min(100%, calc(min(560px, 100vw - 48px) * 15 / 14 + 270px));
+}

@@ -11,3 +11,7 @@ From the repository root, use `pnpm format` or `pnpm format:check` through Turbo
 to cover the client and TypeScript packages. All use the shared root Prettier config and ignore file.
 Prettier uses two spaces, semicolons, double quotes,
 trailing commas, and a 100-column line width. Build output and test reports are excluded.
+
+### Multiplayer diagnostics
+
+Set `VITE_MULTIPLAYER_DEBUG=true` in `apps/client/.env.local` (restart Vite) to show connection and round diagnostics. Hidden by default; transport acceptance tests enable them automatically.

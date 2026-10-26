@@ -113,7 +113,7 @@ test(
         const hp = outcomes[0].cars.map((car: { hp: number }) => car.hp);
         expect(outcomes[0].result).toBe(hp[0] > hp[1] ? 0 : hp[1] > hp[0] ? 1 : 2);
         for (const page of pages)
-          await expect(page.getByTestId("time-remaining")).toHaveText("Time remaining: 0.0 s");
+          await expect(page.getByTestId("time-remaining")).toHaveText("0:00");
       }
       records.push({ outcomes, final: await Promise.all(pages.map(read)) });
       for (let seat = 0; seat < 2; seat++)

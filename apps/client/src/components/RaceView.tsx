@@ -54,6 +54,11 @@ export function RaceView({
         setMenu((value) => !value);
         return;
       }
+      if (event.key.toLowerCase() === "m" && !interactive(event.target)) {
+        gameAudio.setEnabled(!gameAudio.enabled);
+        setMuted(!gameAudio.enabled);
+        return;
+      }
       const control = controlFor(event.key);
       if (
         control &&
@@ -179,6 +184,23 @@ export function RaceView({
             ctx.fillStyle = seat === local ? "#2196f3" : "#e74656";
             ctx.fillRect(x - carWidth / 2, cy - carHeight / 2, carWidth, carHeight);
           }
+          if (seat !== local) {
+            const hp = view.cars[seat].hp;
+            const barWidth = Math.max(64, carWidth);
+            const offscreen = cy - carHeight / 2 < 30 || cy + carHeight / 2 > height;
+            const barY = Math.max(30, Math.min(height - 64, cy - carHeight / 2 - 18));
+            const barX = Math.max(8, Math.min(width - barWidth - 8, x - barWidth / 2));
+            ctx.fillStyle = "#171717";
+            ctx.fillRect(barX - 2, barY - 2, barWidth + 4, 12);
+            ctx.fillStyle = "#fb7185";
+            ctx.fillRect(barX, barY, barWidth * Math.max(0, Math.min(1, hp / g.maxHealth)), 8);
+            if (offscreen) {
+              ctx.fillStyle = "#fff";
+              ctx.font = "14px sans-serif";
+              ctx.textAlign = "center";
+              ctx.fillText(cy < height / 2 ? "▲ Rival" : "▼ Rival", barX + barWidth / 2, barY - 8);
+            }
+          }
           ctx.fillStyle = "white";
           ctx.font = "14px sans-serif";
           ctx.textAlign = "center";
@@ -203,102 +225,163 @@ export function RaceView({
   useEffect(() => {
     if (outcome) connection.recordResultCommit();
   }, [connection, outcome]);
+  useEffect(() => {
+    if (!feedback) return;
+    const timer = setTimeout(() => setFeedback(""), 1800);
+    return () => clearTimeout(timer);
+  }, [feedback]);
+  const hp = frame?.cars[local].hp ?? context.gameplay.maxHealth;
+  const seconds = Math.max(0, Math.ceil(context.gameplay.timeLimit - (frame?.timeUs ?? 0) / 1e6));
+  const remaining = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.ceil(
+        100 *
+          (1 -
+            (frame?.cars[local].progress ?? 0) /
+              (context.gameplay.finishDistance - context.gameplay.carHeight / 2)),
+      ),
+    ),
+  );
   return (
-    <div className="relative flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
-        {state.room?.seats.map((seat, i) => (
-          <div key={i} className="rounded border border-neutral-700 p-3">
-            <p>
-              {seat.name}
-              {i === local ? " (You)" : ""}
-            </p>
-            <div className="flex items-center gap-1.5" data-testid={`hp-${i}`}>
-              <span>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</span>
-              <span className="flex flex-wrap gap-1" aria-hidden="true">
-                {Array.from({ length: context.gameplay.maxHealth }, (_, heart) => (
-                  <img
-                    key={heart}
-                    src={`${import.meta.env.BASE_URL}textures/heart.png`}
-                    alt=""
-                    draggable={false}
-                    width={16}
-                    height={16}
-                    style={{ imageRendering: "pixelated" }}
-                    className={
-                      heart < (frame?.cars[i].hp ?? context.gameplay.maxHealth)
-                        ? "object-contain"
-                        : "object-contain grayscale opacity-30"
-                    }
-                  />
-                ))}
+    <div className="race-view">
+      <header className="shrink-0 space-y-2">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-3xl font-heading text-red-400">
+            {context.mode === 2 ? "Road Rage" : "Drag Race"}
+          </h1>
+          <div
+            className="flex gap-1"
+            data-testid={`hp-${local}`}
+            aria-label={`Your HP: ${hp} of ${context.gameplay.maxHealth}`}
+          >
+            {context.gameplay.maxHealth <= 8 && <span className="sr-only">HP {hp}</span>}
+            {context.gameplay.maxHealth > 8 ? (
+              <span>
+                ♥ {hp}/{context.gameplay.maxHealth}
               </span>
-            </div>
-            <p>Score {frame?.cars[i].score ?? 0}</p>
-            {context.mode === 1 && (
-              <>
-                <progress
-                  className="w-full"
-                  aria-label={`${i === local ? "Your" : "Opponent"} finish progress`}
-                  value={frame?.cars[i].progress ?? 0}
-                  max={context.gameplay.finishDistance - context.gameplay.carHeight / 2}
+            ) : (
+              Array.from({ length: context.gameplay.maxHealth }, (_, heart) => (
+                <img
+                  key={heart}
+                  src={`${import.meta.env.BASE_URL}textures/heart.png`}
+                  alt=""
+                  width={22}
+                  height={22}
+                  style={{ imageRendering: "pixelated" }}
+                  className={heart < hp ? "object-contain" : "object-contain grayscale opacity-30"}
                 />
-                <p>
-                  {Math.round(
-                    ((frame?.cars[i].progress ?? 0) /
-                      (context.gameplay.finishDistance - context.gameplay.carHeight / 2)) *
-                      100,
-                  )}
-                  %
-                </p>
-              </>
+              ))
             )}
           </div>
-        ))}
+        </div>
+        <div className="flex items-center justify-between gap-3 text-xs text-neutral-400">
+          <p className="flex min-w-0 gap-2">
+            <span className="truncate" title={state.room?.seats[local].name}>
+              {state.room?.seats[local].name}
+            </span>
+            <span className="text-neutral-600">vs</span>
+            <span className="truncate" title={state.room?.seats[1 - local].name}>
+              {state.room?.seats[1 - local].name}
+            </span>
+          </p>
+          <p
+            className="shrink-0 text-base text-white tabular-nums"
+            data-testid={context.mode === 2 ? "time-remaining" : "distance-remaining"}
+          >
+            {context.mode === 2
+              ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
+              : `${remaining}% left`}
+          </p>
+        </div>
+      </header>
+      <span className="sr-only" data-testid={`hp-${1 - local}`}>
+        HP {frame?.cars[1 - local].hp ?? context.gameplay.maxHealth}
+      </span>
+      <div className="race-stage">
+        <div className="race-canvas-wrap">
+          <p
+            className="pointer-events-none absolute bottom-3 left-3 z-10 rounded bg-black/75 px-2 py-1 text-xs text-sky-300"
+            data-testid="nos-status"
+          >
+            {frame?.cars[local].effective === 3 ? "NOS active" : "NOS ready"} · W / ↑
+          </p>
+
+          <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">
+            {feedback && (
+              <p
+                className="rounded bg-black/80 px-3 py-2"
+                role="status"
+                data-testid="object-feedback"
+              >
+                {feedback}
+              </p>
+            )}
+            {frame?.awaiting && !outcome && (
+              <p role="status" className="bg-black/80 p-2">
+                Awaiting confirmation
+              </p>
+            )}
+            {!((state.room?.seats[1 - local]?.flags ?? 0) & 1) && !outcome && (
+              <p role="status" className="bg-black/80 p-2">
+                Opponent disconnected—round continues.
+              </p>
+            )}
+            {(frame?.stale || state.status !== "Connected") && !outcome && (
+              <p role="alert" className="bg-black/80 p-2">
+                Reconnecting—round continues.
+              </p>
+            )}
+            {state.pending && (
+              <p role="status" className="bg-black/80 p-2">
+                {state.pending}…
+              </p>
+            )}
+            {state.notice && (
+              <p role="alert" className="bg-black/80 p-2">
+                {state.notice}
+              </p>
+            )}
+          </div>
+          <canvas
+            ref={canvas}
+            width={560}
+            height={600}
+            tabIndex={0}
+            role="img"
+            aria-label="Multiplayer race"
+            className="block h-full w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400"
+            onBlur={() => {
+              pressed.current.clear();
+              connection.releaseControls();
+            }}
+          />
+        </div>
       </div>
-      {context.mode === 2 && (
-        <p data-testid="time-remaining">
-          Time remaining:{" "}
-          {Math.max(0, context.gameplay.timeLimit - (frame?.timeUs ?? 0) / 1e6).toFixed(1)} s
-        </p>
-      )}
-      <p role="status" data-testid="object-feedback">
-        {feedback}
-      </p>
-      <p data-testid="nos-status">
-        {frame?.cars[local].effective === 3 ? "NOS active" : "NOS ready"}
-      </p>
-      {frame?.awaiting && !outcome && <p role="status">Awaiting confirmation</p>}
-      {!((state.room?.seats[1 - local]?.flags ?? 0) & 1) && !outcome && (
-        <p role="status">Opponent disconnected—round continues.</p>
-      )}
-      {(frame?.stale || state.status !== "Connected") && !outcome && (
-        <p role="alert">Reconnecting—round continues.</p>
-      )}
-      <canvas
-        ref={canvas}
-        width={560}
-        height={600}
-        tabIndex={0}
-        role="img"
-        aria-label="Multiplayer race"
-        className="w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400"
-        onBlur={() => {
-          pressed.current.clear();
-          connection.releaseControls();
-        }}
-      />
-      <p className="text-sm text-neutral-400">
-        ← / A and → / D steer · ↑ / W holds NOS · Space / Escape opens menu
-      </p>
-      <button
-        className={button}
-        onClick={() => {
-          connection.releaseControls();
-          setMenu(true);
-        }}
-      >
-        Race menu
-      </button>
+      <footer className="shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10px] text-neutral-400">
+        <span>A / D · ← / → steer</span>
+        <div className="flex gap-3">
+          <button
+            onClick={() => {
+              connection.releaseControls();
+              setMenu(true);
+            }}
+            className="hover:text-white"
+          >
+            [ESC] Menu
+          </button>
+          <button
+            onClick={() => {
+              gameAudio.setEnabled(muted);
+              setMuted(!muted);
+            }}
+            className="hover:text-white"
+          >
+            [M] Sound {muted ? "off" : "on"}
+          </button>
+        </div>
+      </footer>
       {menu && !outcome && (
         <div
           role="dialog"
