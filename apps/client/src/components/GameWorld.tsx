@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { ConfigurationOverrides } from "@dashdevil/simulation/config";
+import { LONG_DRIVE_REFERENCE_HEIGHT } from "@dashdevil/simulation/track";
 import { GameSession, type UISnapshot } from "../game/GameSession";
 
 interface GameWorldProps {
@@ -81,9 +82,11 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
         </div>
 
         {/* ── Game canvas ── */}
-        <div className="flex-1 min-h-0 px-2 sm:px-4 pb-2 sm:pb-4">
+        <div className="flex-1 min-h-0 flex items-center px-2 sm:px-4 pb-2 sm:pb-4">
           <div
             className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700"
+            // Keep the fixed spawn horizon above the view without stretching art.
+            style={{ maxHeight: LONG_DRIVE_REFERENCE_HEIGHT }}
             onPointerDown={(event) => {
               if (!(
                 event.target instanceof Element &&

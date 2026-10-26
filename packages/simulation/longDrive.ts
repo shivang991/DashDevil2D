@@ -424,7 +424,9 @@ function tick(
   }
   state.carWorldX = (state.visualLane - 1) * gameConfig.laneSpacing;
   state.carWorldDistance = state.roadOffset + state.carOffset;
-  const behind = state.roadOffset - gameConfig.carHeight / 2;
+  // Keep missed sprites through the bottom margin until fully outside the view.
+  // The renderer scales this fixed margin with the road on tall screens.
+  const behind = state.roadOffset - gameConfig.carHeight / 2 - gameConfig.carBottomMargin;
   retireSlices(state.track, behind, gameConfig);
   const retain = (object: (typeof objects)[number]) =>
     object.distance! + object.height / 2 >= behind;

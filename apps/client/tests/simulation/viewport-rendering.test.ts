@@ -3,8 +3,8 @@ import { advanceLongDrive, createLongDrive } from "@dashdevil/simulation/longDri
 import { captureConfiguration, renderingConfig } from "@dashdevil/simulation/config";
 import { renderLongDrive } from "../../src/lib/gameRenderer";
 import { Multiplayer } from "@dashdevil/simulation/multiplayer";
-import { longDriveObjectY, multiplayerRoadScale } from "../../src/lib/roadProjection";
-import { drawObstacle } from "../../src/lib/renderUtils";
+import { multiplayerRoadScale } from "../../src/lib/roadProjection";
+import { drawCar, drawObstacle } from "../../src/lib/renderUtils";
 
 vi.mock("../../src/lib/renderUtils", () => ({
   drawRoad: vi.fn(),
@@ -16,8 +16,9 @@ vi.mock("../../src/lib/renderUtils", () => ({
 }));
 
 for (const accelerating of [false, true])
-  for (const height of [600, 806, 1440, 2160]) {
-    test(`Long Drive obstacles enter above the top at ${height}px (accelerating=${accelerating})`, () => {
+  for (const availableHeight of [600, 806, 1440, 2160]) {
+    const height = Math.min(availableHeight, 806);
+    test(`Long Drive obstacles enter above the top at ${availableHeight}px (accelerating=${accelerating})`, () => {
       const game = createLongDrive(() => 0.5, { gameplay: { coinWeight: 0, obstacleWeight: 1 } });
       const config = renderingConfig(game.configuration);
       Object.assign(game.state, {
@@ -27,7 +28,13 @@ for (const accelerating of [false, true])
         carY: height - config.carHeight - config.carBottomMargin,
       });
       advanceLongDrive(game, 1, { accelerating });
-      renderLongDrive({} as CanvasRenderingContext2D, 606, height, game.state, config);
+      renderLongDrive(
+        { save: vi.fn(), restore: vi.fn(), scale: vi.fn() } as unknown as CanvasRenderingContext2D,
+        606,
+        height,
+        game.state,
+        config,
+      );
       const call = vi.mocked(drawObstacle).mock.lastCall!;
       expect(call[2] + call[4]).toBeLessThanOrEqual(0.000001);
     });
@@ -71,12 +78,75 @@ for (const mode of ["drag-race", "road-rage"] as const) {
   }
 }
 
-test("tall-screen projection preserves sprite size and exact contact edges while accelerating", () => {
-  for (const offset of [0, 80]) {
-    const carY = 2040 - offset;
-    const height = 40;
-    const carHeight = 80;
-    const y = longDriveObjectY((carHeight + height) / 2, height, carY, carHeight, 2040, 686);
-    expect(y + height).toBe(carY);
+for (const availableHeight of [600, 806, 1440, 2160])
+  for (const accelerating of [false, true]) {
+    test(`Long Drive constant speed from entry to exit at ${availableHeight}px (accelerating=${accelerating})`, () => {
+      const height = Math.min(availableHeight, 806);
+      const game = createLongDrive(() => 0.5);
+      const config = renderingConfig(game.configuration);
+      const base = height - config.carHeight - config.carBottomMargin;
+      const offset = accelerating ? config.accelCarOffset : 0;
+      Object.assign(game.state, {
+        status: "playing",
+        canvasHeight: height,
+        carYBase: base,
+        carY: base - offset,
+        carOffset: offset,
+        obstacles: [{ id: 1, lane: 0, distance: 900, y: 0, width: 48, height: 40 }],
+      });
+      let scale = 1;
+      const ctx = {
+        save: vi.fn(),
+        restore: vi.fn(),
+        scale: (_x: number, y: number) => {
+          scale = y;
+        },
+      } as unknown as CanvasRenderingContext2D;
+      const positions: number[] = [];
+      for (let progress = 0; progress <= 1100; progress += 5) {
+        game.state.roadOffset = progress;
+        scale = 1;
+        renderLongDrive(ctx, 606, height, game.state, config);
+        positions.push(vi.mocked(drawObstacle).mock.lastCall![2] * scale);
+      }
+      expect(positions[0] + 40 * scale).toBeLessThan(0);
+      expect(positions.at(-1)).toBeGreaterThan(height);
+      const step = positions[1] - positions[0];
+      expect(step).toBeGreaterThan(0);
+      for (let i = 2; i < positions.length; i++)
+        expect(positions[i] - positions[i - 1]).toBeCloseTo(step, 8);
+      // Both contact edges stay aligned under the same transform as the car.
+      const contact = (config.carHeight + 40) / 2;
+      for (const distance of [contact, -contact]) {
+        game.state.obstacles[0].distance = game.state.roadOffset + offset + distance;
+        renderLongDrive(ctx, 606, height, game.state, config);
+        const obstacle = vi.mocked(drawObstacle).mock.lastCall!;
+        const car = vi.mocked(drawCar).mock.lastCall!;
+        if (distance > 0) expect(obstacle[2] + obstacle[4]).toBeCloseTo(car[2].carY, 8);
+        else expect(obstacle[2]).toBeCloseTo(car[2].carY + car[3].carHeight, 8);
+      }
+    });
   }
+
+test("missed Long Drive obstacle stays until its top is offscreen", () => {
+  const game = createLongDrive(() => 0.5, { gameplay: { roadSpeedIncrement: 0 } });
+  Object.assign(game.state, {
+    status: "playing",
+    canvasHeight: 806,
+    carYBase: 686,
+    carY: 686,
+    obstacles: [{ id: 1, lane: 0, distance: 0, y: 706, width: 48, height: 40 }],
+  });
+  advanceLongDrive(game, 0.2, {});
+  expect(game.state.obstacles.some((object) => object.id === 1)).toBe(true);
+  advanceLongDrive(game, 0.1, {});
+  expect(game.state.obstacles.some((object) => object.id === 1)).toBe(false);
+});
+
+test("Long Drive never stretches the canvas or sprite proportions", () => {
+  const game = createLongDrive(1);
+  const scale = vi.fn();
+  const ctx = { save: vi.fn(), restore: vi.fn(), scale } as unknown as CanvasRenderingContext2D;
+  renderLongDrive(ctx, 606, 2160, game.state);
+  expect(scale).not.toHaveBeenCalled();
 });
