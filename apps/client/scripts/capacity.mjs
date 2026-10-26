@@ -300,6 +300,7 @@ try {
         states: window.capacity.clients.map((c) => c.state),
         loop: { frames: window.capacity.frames, maxLoopMs: window.capacity.maxLoopMs },
         errors: window.capacity.errors,
+        changes: window.capacity.changes,
       }));
       for (let seat = 0; seat < 2; seat++)
         records.push({
@@ -308,6 +309,7 @@ try {
           kind: "transport-agent",
           ...result.loop,
           harnessErrors: result.errors,
+          changes: result.changes,
           state: result.states[seat],
         });
     }
@@ -388,17 +390,34 @@ try {
       const synchronized = () =>
         host.state.room.revision === guest.state.room.revision &&
         [host, guest].every((c) => c.state.status === "Connected" && !c.state.pending);
+      const command = async (client, kind, mode, ready, accepted) => {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          await until(synchronized);
+          const revision = client.state.room.revision;
+          client.command(kind, mode, ready);
+          await until(
+            () =>
+              synchronized() && (accepted() || client.state.notice === "Room changed; try again"),
+          );
+          if (accepted()) return;
+          window.capacity.changes.push({
+            event: "stale-room-command",
+            command: kind,
+            revision,
+            nextRevision: client.state.room.revision,
+          });
+          await delay(100);
+        }
+        throw new Error("Room command repeatedly rejected as stale");
+      };
       for (const c of [host, guest]) {
-        await until(synchronized);
-        c.command(1, host.state.room.mode, 1);
-        await until(
-          () =>
-            synchronized() &&
-            [host, guest].every((view) => view.state.room.seats[c.state.identity.seat].flags & 2),
+        await command(c, 1, host.state.room.mode, 1, () =>
+          [host, guest].every((view) => view.state.room.seats[c.state.identity.seat].flags & 2),
         );
       }
-      host.command(2);
-      await until(() => host.state.room.phase === 1 || host.state.room.phase === 2);
+      await command(host, 2, host.state.room.mode, 0, () =>
+        [host, guest].every((c) => c.state.room.phase === 1 || c.state.room.phase === 2),
+      );
     });
   const initial = await snapshot("full-capacity-before-start");
   if (initial.length !== roomCount * 2 || initial.some((r) => r.state.status !== "Connected"))
@@ -508,8 +527,8 @@ try {
                   c.state.roundId === before.roundId &&
                   (c.state.room?.phase === 2 || c.state.room?.phase === 3) &&
                   c.state.outcome?.result !== 3 &&
-                  ((c.state.room?.phase === 3 && c.state.outcome?.roundId === c.state.roundId) ||
-                    c.state.cars?.[1].heldMask === 0)
+                  ((c.state.room?.phase === 2 && c.state.cars?.[1].heldMask === 0) ||
+                    (c.state.room?.phase === 3 && c.state.outcome?.roundId === c.state.roundId))
                 );
               }, before),
             "reconnect same seat with fresh controls",
