@@ -29,6 +29,8 @@ for (const mode of ["drag-race", "road-rage"] as const)
       const fillRect = vi.fn();
       const ctx = {
         fillRect,
+        save: vi.fn(),
+        restore: vi.fn(),
         setLineDash: vi.fn(),
         beginPath: vi.fn(),
         moveTo: vi.fn(),
@@ -58,8 +60,8 @@ for (const mode of ["drag-race", "road-rage"] as const)
           ),
         );
         const g = context.gameplay;
-        const obstacleWidth = (g.obstacleW * 560) / (g.laneSpacing * 3.5);
-        for (const height of [440, 1440, 2160]) {
+        const obstacleWidth = (g.obstacleW * 560) / (g.laneSpacing * 3.9);
+        for (const height of [600, 1440, 2160]) {
           host.querySelector("canvas")!.height = height;
           let previousY: number | undefined;
           let previousStep: number | undefined;
@@ -69,7 +71,9 @@ for (const mode of ["drag-race", "road-rage"] as const)
             frame.renderedCars[seat].progress = progress;
             fillRect.mockClear();
             act(() => draw!(0));
-            const obstacle = fillRect.mock.calls.find((call) => call[2] === obstacleWidth);
+            const obstacle = fillRect.mock.calls.find(
+              (call) => Math.abs(Number(call[2]) - obstacleWidth) < 1e-8,
+            );
             if (!obstacle) continue;
             const y = obstacle[1] as number;
             if (previousY !== undefined) {

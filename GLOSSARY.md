@@ -107,6 +107,9 @@ Following another car in the same lane when contact prevents the trailing car fr
 **Track**:
 The ordered placement of road objects across three lanes along the road, finite in Drag Race and extended during play in Long Drive and Road Rage.
 
+**Road scenery**:
+The visual appearance of the road surface and roadside surroundings. Scenery does not affect lanes, road-object placement, or collisions.
+
 **Road slice**:
 A position along the road with one cell for each lane; each cell is empty or contains a single obstacle, coin, or heart.
 

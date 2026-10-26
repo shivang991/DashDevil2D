@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
 import { multiplayerRoadScale } from "@/lib/roadProjection";
 import { RoundResult } from "./RoundResult";
 import { gameAudio } from "@/lib/gameAudio";
@@ -101,7 +102,7 @@ export function RaceView({
         const width = element.width,
           height = element.height;
         const g = context.gameplay,
-          scale = width / (g.laneSpacing * 3.5);
+          scale = width / (g.laneSpacing * 3.9);
         const camera = view.renderedCars[local].progress;
         const roadScale = multiplayerRoadScale(
           scale,
@@ -109,20 +110,15 @@ export function RaceView({
           g.maxRoadSpeed * g.accelSpeedMultiplier + g.carHeight / 2,
         );
         const y = (progress: number) => height * 0.76 - (progress - camera) * roadScale;
-        ctx.fillStyle = "#171b24";
-        ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = "#272d38";
-        ctx.fillRect(width / 2 - g.laneSpacing * 1.5 * scale, 0, g.laneSpacing * 3 * scale, height);
-        ctx.strokeStyle = "#737c90";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([20, 24]);
-        for (const lane of [-0.5, 0.5]) {
-          ctx.beginPath();
-          ctx.moveTo(width / 2 + lane * g.laneSpacing * scale, 0);
-          ctx.lineTo(width / 2 + lane * g.laneSpacing * scale, height);
-          ctx.stroke();
-        }
-        ctx.setLineDash([]);
+        drawRoadScenery(
+          ctx,
+          width,
+          height,
+          g.laneSpacing * 3 * scale,
+          3,
+          height * 0.76 + camera * roadScale,
+          context.seed,
+        );
         ctx.textAlign = "left";
         const finishY = y(g.finishDistance);
         if (context.mode === 1 && finishY > -30 && finishY < height + 30) {
@@ -139,6 +135,17 @@ export function RaceView({
           const ow = (kind === 2 ? g.obstacleW : kind === 1 ? g.coinSize : g.heartSize) * scale;
           const oh = (kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize) * roadScale;
           if (cy < -oh || cy > height + oh) continue;
+          if (
+            drawSprite(
+              ctx,
+              kind === 2 ? "barrier" : kind === 3 ? "heart" : "coin",
+              x - ow / 2,
+              cy - oh / 2,
+              ow,
+              oh,
+            )
+          )
+            continue;
           ctx.fillStyle = kind === 2 ? "#f59e0b" : kind === 3 ? "#fb7185" : "#fde047";
           if (kind === 2) {
             ctx.fillRect(x - ow / 2, cy - oh / 2, ow, oh);
@@ -154,20 +161,24 @@ export function RaceView({
         view.renderedCars.forEach((car, seat) => {
           const x = width / 2 + car.lateral * scale,
             cy = y(car.progress);
-          ctx.fillStyle = seat === local ? "#e74656" : "#40c9d5";
-          ctx.fillRect(
-            x - (g.carWidth * scale) / 2,
-            cy - (g.carHeight * roadScale) / 2,
-            g.carWidth * scale,
-            g.carHeight * roadScale,
+          const carWidth = g.carWidth * scale,
+            carHeight = g.carHeight * roadScale;
+          ctx.save();
+          // The shared sprite is blue; rotate only the rival's paint toward red.
+          if (seat !== local) ctx.filter = "hue-rotate(150deg)";
+          const drawn = drawSprite(
+            ctx,
+            "car",
+            x - carWidth / 2,
+            cy - carHeight / 2,
+            carWidth,
+            carHeight,
           );
-          ctx.fillStyle = "#111827";
-          ctx.fillRect(
-            x - g.carWidth * scale * 0.34,
-            cy - g.carHeight * roadScale * 0.28,
-            g.carWidth * scale * 0.68,
-            g.carHeight * roadScale * 0.2,
-          );
+          ctx.restore();
+          if (!drawn) {
+            ctx.fillStyle = seat === local ? "#2196f3" : "#e74656";
+            ctx.fillRect(x - carWidth / 2, cy - carHeight / 2, carWidth, carHeight);
+          }
           ctx.fillStyle = "white";
           ctx.font = "14px sans-serif";
           ctx.textAlign = "center";
@@ -201,7 +212,27 @@ export function RaceView({
               {seat.name}
               {i === local ? " (You)" : ""}
             </p>
-            <p data-testid={`hp-${i}`}>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</p>
+            <div className="flex items-center gap-1.5" data-testid={`hp-${i}`}>
+              <span>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</span>
+              <span className="flex flex-wrap gap-1" aria-hidden="true">
+                {Array.from({ length: context.gameplay.maxHealth }, (_, heart) => (
+                  <img
+                    key={heart}
+                    src={`${import.meta.env.BASE_URL}textures/heart.png`}
+                    alt=""
+                    draggable={false}
+                    width={16}
+                    height={16}
+                    style={{ imageRendering: "pixelated" }}
+                    className={
+                      heart < (frame?.cars[i].hp ?? context.gameplay.maxHealth)
+                        ? "object-contain"
+                        : "object-contain grayscale opacity-30"
+                    }
+                  />
+                ))}
+              </span>
+            </div>
             <p>Score {frame?.cars[i].score ?? 0}</p>
             {context.mode === 1 && (
               <>
@@ -246,7 +277,7 @@ export function RaceView({
       <canvas
         ref={canvas}
         width={560}
-        height={440}
+        height={600}
         tabIndex={0}
         role="img"
         aria-label="Multiplayer race"

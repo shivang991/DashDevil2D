@@ -68,7 +68,7 @@ function getTexture(name: TextureName) {
   return image?.complete && image.naturalWidth > 0 ? image : undefined;
 }
 
-function drawSprite(
+export function drawSprite(
   ctx: CanvasRenderingContext2D,
   name: TextureName,
   x: number,
@@ -153,32 +153,52 @@ export function drawRoad(
   width: number,
   height: number,
 ) {
-  const roadWidth = width * state.roadWidthRatio;
+  drawRoadScenery(
+    ctx,
+    width,
+    height,
+    width * state.roadWidthRatio,
+    config.laneCount,
+    state.roadOffset,
+    state.grassSeed,
+  );
+}
+
+/** Shared visual scenery; offset is unwrapped so grass stays anchored to the road. */
+export function drawRoadScenery(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  roadWidth: number,
+  laneCount: number,
+  offset: number,
+  seed: number,
+) {
   const roadLeft = (width - roadWidth) / 2;
 
   // Grass
   ctx.fillStyle = "#2d5a27";
   ctx.fillRect(0, 0, width, height);
 
-  drawGrassTiles(ctx, width, height, state.roadOffset, state.grassSeed);
+  drawGrassTiles(ctx, width, height, offset, seed);
 
   // Road surface
   ctx.fillStyle = "#3a3a3a";
   ctx.fillRect(roadLeft, 0, roadWidth, height);
-  drawTiledTexture(ctx, "asphalt", roadLeft, roadWidth, height, state.roadOffset);
+  drawTiledTexture(ctx, "asphalt", roadLeft, roadWidth, height, offset);
 
   // Selected variant #5 tiles: weathered edges and double yellow dividers.
   // Keep the edges inside the road so they remain visible on narrow screens.
   const edgeWidth = 8;
   for (const x of [roadLeft, roadLeft + roadWidth - edgeWidth]) {
-    drawTiledTexture(ctx, "road-edge", Math.round(x), edgeWidth, height, state.roadOffset, 1);
+    drawTiledTexture(ctx, "road-edge", Math.round(x), edgeWidth, height, offset, 1);
   }
 
-  const laneWidth = roadWidth / config.laneCount;
+  const laneWidth = roadWidth / laneCount;
   const dividerWidth = 16;
-  for (let i = 1; i < config.laneCount; i++) {
+  for (let i = 1; i < laneCount; i++) {
     const x = Math.round(roadLeft + laneWidth * i - dividerWidth / 2);
-    drawTiledTexture(ctx, "lane-divider", x, dividerWidth, height, state.roadOffset, 1);
+    drawTiledTexture(ctx, "lane-divider", x, dividerWidth, height, offset, 1);
   }
 }
 
