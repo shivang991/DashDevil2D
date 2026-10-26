@@ -1,0 +1,811 @@
+{
+  "version": 1,
+  "issue": "https://github.com/shivang991/DashDevil2D/issues/44",
+  "workDate": "2026-10-25 America/Phoenix",
+  "reviewBaseline": "ce1c3464495a42f33c3c1d242e72c79944231e30",
+  "issueResolved": false,
+  "normalQualityAtLoadEstablished": false,
+  "watchdogFix": "8f4bded",
+  "reconnectPublicationFix": "3ddf772",
+  "driverRevision": "c2d6086",
+  "operationalFix": "97fd406",
+  "ownerFinalInstruction": "Record blocker; keep open",
+  "deployedRevision": "bc5bcdb674dc081e72ff6b5052bb935b0db7e918",
+  "hardware": {
+    "originalReference": "two dedicated cores / 2 GiB Linux",
+    "ownerApprovedAlternative": true,
+    "actual": "one KVM vCPU / 961 MiB RAM / no swap / Ubuntu24.04.5"
+  },
+  "ownerVisualReview": {
+    "reported": "looks good to me",
+    "scope": "Qualitative deployed-game review; no physical display timings supplied"
+  },
+  "checks": {
+    "workspace": {
+      "command": "pnpm check --force --env-mode=loose",
+      "tasksPassed": 15,
+      "cacheHits": 0,
+      "vitestPassed": 434,
+      "log": "check-final.log",
+      "sourceRevision": "97fd4064a582f698afc937aa203d656d80b82424"
+    },
+    "nativeLifecycle": {
+      "passed": 4,
+      "log": "lifecycle-reconnect-fixed.log"
+    },
+    "preservation": {
+      "passed": 12,
+      "log": "preservation-reconnect-fixed.log"
+    },
+    "nativeTransportSmoke": {
+      "passed": 3,
+      "log": "transport-fixed.log"
+    },
+    "denseBaselineProgress": {
+      "passed": 2,
+      "log": "dense-fixed.log"
+    }
+  },
+  "review": {
+    "standards": {
+      "documentedViolations": 0,
+      "nonblockingHeuristics": [
+        "Numeric domain constants in driver",
+        "Repeated setup in focused reconnect tests",
+        "Bounded private clock-sample observation couples driver to transport internals"
+      ]
+    },
+    "spec": {
+      "correctionDefects": 0,
+      "acceptanceGaps": [
+        "Sustained capacity verdict evaluated per retained run",
+        "Reference-client physical timing and network-profile measurements",
+        "Per-player transport-inclusive ordinary/burst bandwidth mapping",
+        "Full simulation/queue/ack-age measurement distributions"
+      ]
+    }
+  },
+  "loadRuns": [
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-1/manifest.json",
+      "sha256": "346e44999175393ba1710493d23dd9bdacd33943d98f01fe87952f6eaabdd889",
+      "revision": "1abec181642e9abdc7aac651a7c06b015922af9e",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-25T23:49:48.537Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "29d56fdb86edd5d2efbf6b7060707c39038a8e68ed81dd2a1a5a96ce52955dc9",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-10-udp-buffers/manifest.json",
+      "sha256": "fa4d6b7f96015d0186116e240d3be5b9794f6b152d6c60086e9e551479898be4",
+      "revision": "d67f691ff60072b2b8ee5135f6afc0206b088a39",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": 5,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T01:20:48.349Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads, grouped in isolated browser contexts. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "7bcf0eb2a4668b292535ac28d82841143491e133e5daf8c9488b147f021f6256",
+        "apps/client/src/transport/PairedConnection.ts": "5d8a05231d17397c97a90868257d87fe00f7cc1361e355b60d8bbf3ba620d6ed",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-2/manifest.json",
+      "sha256": "a9e38699294b7403d0f6db9902cd43cf82dbe2c54530286d789348b3d685ca02",
+      "revision": "9af86646f4a936da3883e5006207c65cb34002c7",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-25T23:55:49.651Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in same-origin frames sharing a renderer. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "897662b37cd84cd3933797b5c1b448942972a67000b9ec44dbfb7abdab699f79",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-3/manifest.json",
+      "sha256": "e4b4c7fdafbfb08efd3e5be5e056923143161de50f66d871aa478d6ebd0e4d65",
+      "revision": "fbb230f9159caf5af16697d7bb65c10489393081",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T00:00:49.979Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in same-origin frames sharing a renderer. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "086cc0203cf0ff07e94d26b549bd6c98eed5e232738eecf8192feb331aff8250",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-4/manifest.json",
+      "sha256": "cf153d995bff6b09491d156011be1c1a8bfd46e63a92c2f37860283640a75579",
+      "revision": "33f52031761f0bdf6ffebe837f1f353001e333bb",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T00:07:29.369Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "df7b9429b2b3bb5d3f3699d0e6d1ff6632a0628f3e1764a32e95d4fd65597e45",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-5/manifest.json",
+      "sha256": "f3084e87b00ac9ff1bf584b640eb91cd5458dcaca94fb278e963ba6d2b8e425e",
+      "revision": "a46c92f34924713fdc8557220c37f20e4bf199cc",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T00:13:31.751Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "e15875cc4c60b7d6d7d332204bd00ab31694839b7f61b8548ab3d855d37985c2",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-6-fixed/manifest.json",
+      "sha256": "7aa7624f3741d08310def2d1c681a7664fda623a1351540928008f69ce51ff14",
+      "revision": "8f4bded68e2b0378e0d24dd5e610c8f88c16606e",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T00:34:04.547Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "5e6189d626d5315fa3495a9b7d11eb706d1b5b2ae441e60b4e238f83ce63b365",
+        "apps/client/src/transport/PairedConnection.ts": "5d8a05231d17397c97a90868257d87fe00f7cc1361e355b60d8bbf3ba620d6ed",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-7-current/manifest.json",
+      "sha256": "d1a610d41e453adc99c8ea8c12a9617698632d85973a5094e21ed79a6a6a9ab0",
+      "revision": "0bc2ab17cc909f128a23d3e16c2528fdc362c84a",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T00:47:09.447Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "f2b7b83f39b46f9ad73e4b0eaaad59082632c7bb5af07c49d410fdcc5326f024",
+        "apps/client/src/transport/PairedConnection.ts": "5d8a05231d17397c97a90868257d87fe00f7cc1361e355b60d8bbf3ba620d6ed",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-8-barriers/manifest.json",
+      "sha256": "a79b710f92064edcf84b7b67c4a302c3a9b431c72dc9a60423d2957e427aec6a",
+      "revision": "933b513bdd01f341ce873b8bf0caec3a2d9744fe",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T00:59:21.428Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "65bbf858777ea521b527e7406d1400b87694d790723bbc8cb675e4eba1577ba3",
+        "apps/client/src/transport/PairedConnection.ts": "5d8a05231d17397c97a90868257d87fe00f7cc1361e355b60d8bbf3ba620d6ed",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/full-9-contexts/manifest.json",
+      "sha256": "24359df801fdbb7c1b2b8f4696b9416567819a8e83aff02370734bd1ab96dd36",
+      "revision": "d67f691ff60072b2b8ee5135f6afc0206b088a39",
+      "rooms": 50,
+      "requestedSeconds": 1800,
+      "roomsPerContext": 5,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T01:10:31.855Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads, grouped in isolated browser contexts. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "7bcf0eb2a4668b292535ac28d82841143491e133e5daf8c9488b147f021f6256",
+        "apps/client/src/transport/PairedConnection.ts": "5d8a05231d17397c97a90868257d87fe00f7cc1361e355b60d8bbf3ba620d6ed",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/handshake-shared-20/manifest.json",
+      "sha256": "96221616d8eb16daaa7d75a4b75e9994460b9181cc1621ab27630b286263e6c4",
+      "revision": "933b513bdd01f341ce873b8bf0caec3a2d9744fe",
+      "rooms": 20,
+      "requestedSeconds": 30,
+      "roomsPerContext": 49,
+      "collectionCompleted": true,
+      "endedAt": "2026-10-26T01:04:29.390Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads, grouped in isolated browser contexts. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "9050579554819184d4349a1664116ddcfe18d967731ee469ce52cdddf6b5fbab",
+        "apps/client/src/transport/PairedConnection.ts": "5d8a05231d17397c97a90868257d87fe00f7cc1361e355b60d8bbf3ba620d6ed",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/path-pilot-3/manifest.json",
+      "sha256": "87c18e1b17d343648a56d0d1870816f0fcbaf519ff5a2bd7472012e3e33edd06",
+      "revision": "d67f691ff60072b2b8ee5135f6afc0206b088a39",
+      "rooms": 3,
+      "requestedSeconds": 90,
+      "roomsPerContext": 5,
+      "collectionCompleted": true,
+      "endedAt": "2026-10-26T04:27:36.425Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads, grouped in isolated browser contexts. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "1bbfe9d5ec4c3a7e03791522acabe28cb9237ea8c5c8cb2b3123556ec57b606e",
+        "apps/client/src/transport/PairedConnection.ts": "5d8a05231d17397c97a90868257d87fe00f7cc1361e355b60d8bbf3ba620d6ed",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/pilot-3/manifest.json",
+      "sha256": "7cb2a7c5c599b5c27860b80a576701f397de065adda17ed28e75619af88d4f81",
+      "revision": "f4c55dd30d0d12ebcb7d60845d74607517cedf05",
+      "rooms": 2,
+      "requestedSeconds": 60,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-25T23:36:09.290Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "6575cb8c2686a7066597a25878955df70452e02b414d6f03fbe8e4208c2e7d42",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/pilot-4/manifest.json",
+      "sha256": "e2632a4eaf3a61f898e86b77f8cbf074fdf88780b81f461d98b741522c2c10bc",
+      "revision": "f4c55dd30d0d12ebcb7d60845d74607517cedf05",
+      "rooms": 2,
+      "requestedSeconds": 60,
+      "roomsPerContext": null,
+      "collectionCompleted": true,
+      "endedAt": "2026-10-25T23:37:58.584Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "e27ce87b1adf148d80f3efdcd91801a1bbbfeffe54ab8589ce6b2530283fe61d",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/pilot-5/manifest.json",
+      "sha256": "78491dac7d25bf6dc461c4d1462e8067a173c2603b6c15f7fd300145224f1ec0",
+      "revision": "f4c55dd30d0d12ebcb7d60845d74607517cedf05",
+      "rooms": 3,
+      "requestedSeconds": 110,
+      "roomsPerContext": null,
+      "collectionCompleted": true,
+      "endedAt": "2026-10-25T23:40:36.453Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "708daa0c99d29b1dded68e3dcaed2a03ddf0411fdb7a98615f6b1b2f49a48074",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/pilot-retry/manifest.json",
+      "sha256": "a9d80870fb5a9d4729c19417a325d01aaef8ccded321ec86fe6a5af14dc4b6b6",
+      "revision": "ce1c3464495a42f33c3c1d242e72c79944231e30",
+      "rooms": 2,
+      "requestedSeconds": 20,
+      "roomsPerContext": null,
+      "collectionCompleted": null,
+      "endedAt": null,
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": null
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/recovery-probe-10/manifest.json",
+      "sha256": "fd7d03b16df55dc5027d910f94deb3e5b344f82332f4a1b8e3a54f04036e0c92",
+      "revision": "0bc2ab17cc909f128a23d3e16c2528fdc362c84a",
+      "rooms": 10,
+      "requestedSeconds": 60,
+      "roomsPerContext": null,
+      "collectionCompleted": false,
+      "endedAt": "2026-10-26T00:50:19.878Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "a4daad2fc57aa79703e68e8693fe365e17d5d30c1a696c2fc81b6ed70a941e69",
+        "apps/client/src/transport/PairedConnection.ts": "59b14756070d878920bcd6d0c69c2b75494dd2cc00670a4a1fc30d0aa8d00a0e",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    },
+    {
+      "manifest": "apps/client/test-results/capacity-issue44/worker-pilot/manifest.json",
+      "sha256": "f38f799318969fbbb5396bd2081708e289cf03bfbddb36b93f6fff1226d2b31e",
+      "revision": "33f52031761f0bdf6ffebe837f1f353001e333bb",
+      "rooms": 2,
+      "requestedSeconds": 20,
+      "roomsPerContext": null,
+      "collectionCompleted": true,
+      "endedAt": "2026-10-26T00:03:39.740Z",
+      "scope": "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+      "sourceHashes": {
+        "apps/client/scripts/capacity.mjs": "df7b9429b2b3bb5d3f3699d0e6d1ff6632a0628f3e1764a32e95d4fd65597e45",
+        "apps/client/src/transport/PairedConnection.ts": "27b701e0ffe5a53e328a4bbe73dc8eca0c32d1b78ef168a6694e00ea0c1a1a2c",
+        "packages/contracts/configuration/defaults.json": "2a9439e9f2540c116f8fcb4513aff86bc60bb551adbd11e3368bde54417dd4c1",
+        "packages/contracts/protocol/schema.json": "04167c65e7a496bd4f4da8c8eeb65fe0802866b3abd75d27161229056720063c",
+        "packages/contracts/protocol/fixtures.json": "170fa0e815680a8bd4ce0dc71d6d9d61e3f4e271cdde272c3fc2ca3f3b9a517e",
+        "pnpm-lock.yaml": "fb4704982cbd053c362694c72ad773ccd2358a34c073dfdff2ed3b5baaef036b"
+      }
+    }
+  ],
+  "logs": [
+    {
+      "path": "apps/client/test-results/capacity-issue44/check-final.log",
+      "sha256": "5e44224f0fb7a89d96d46e858869755dbf640c3c603cb12910b4320094a7ea63",
+      "bytes": 9906
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/check-fixed.log",
+      "sha256": "2cf8c0eddc9955780e6a90b746f50d94684e00e9b6c91b2212efcbabda4900c7",
+      "bytes": 9905
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/check-reconnect-fixed.log",
+      "sha256": "c1de4018bf2e822d94345cd1e43e777f664f4c45d15845417d6f45f53c639076",
+      "bytes": 9896
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/check.log",
+      "sha256": "e1ff8c0b8ed8e927febc92330bdabf0d106b240c24f03eac4baf7bd15a921865",
+      "bytes": 9905
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/dense-fixed.log",
+      "sha256": "0782c7aee7a9389b26a8d7fc343dbacddd176150a01178a085fd75eb0539d5ca",
+      "bytes": 1556
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/deploy-reconnect.log",
+      "sha256": "2c2f042b643daadab608501ef0c3f0502aeb58436c2d9acd4a1695a500f1d593",
+      "bytes": 11824
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/deploy-server-prerequisites.log",
+      "sha256": "20f5b76c174c48e3207b827551a91c933b59bdd47077f1a557b0eb760f650439",
+      "bytes": 11515
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/deploy.log",
+      "sha256": "1b9491164ed1bbc6e0b2c3a7e3c3f78b353646a19b9e9c040d76855378988df5",
+      "bytes": 14231
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/final-deployment-health.log",
+      "sha256": "c9e26f8edfa944b3f15ab60931720beb3f74407f57f3363d08e7e792e3ac06bd",
+      "bytes": 186
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-1.log",
+      "sha256": "6b31d69028271cdf08cd32f8d00d8548c27d5aabfe370dd2b8038efb34b53c45",
+      "bytes": 22163
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-10-udp-buffers.log",
+      "sha256": "c247f471806dc63b7f2f044bda7e3decc371f1d6d2c303db26ffa0f1e0c46e7a",
+      "bytes": 124319
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-2.log",
+      "sha256": "d1b3dc3593eab9478e29ba18dfe29293b34fbe5166c3a53df2d35a569761e186",
+      "bytes": 10939
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-3.log",
+      "sha256": "8932f4f7af13575c9fa92dcb3f3a090075a269a87b305967f5585de30a22fa8e",
+      "bytes": 13100
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-4.log",
+      "sha256": "41def030e9e044902dd1e3c03ef9e7a8c4b6c54b94684ff45cdab27d1ce9d01c",
+      "bytes": 6743
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-5.log",
+      "sha256": "9a563b29e0aa9f389b4416db5eef5b010c41ec3a28d282b8c82d6c32d0523faf",
+      "bytes": 8203
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-6-fixed.log",
+      "sha256": "159d9273c8601a0e1a72283a4c488a010aa6727c8244c1d47ec50e9c77715b65",
+      "bytes": 12678
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-7-current.log",
+      "sha256": "b3138dec6dcbbdd423285dc55dce749e7f9b27251974bfd255b87c5ad338560b",
+      "bytes": 14289
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-8-barriers.log",
+      "sha256": "a2e0335638ad5401d721cc782c81d60d55a6a1c34372a176c4b2b79de084571b",
+      "bytes": 11525
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/full-9-contexts.log",
+      "sha256": "fc18c6b3f45e156a5b71073f4f724ffce5e37294a4e02f809129149f6df24b2a",
+      "bytes": 142285
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/handshake-shared-20.log",
+      "sha256": "7b4b41e3e9ebe857d06299c123c4cddb36718b5ce142bdfb9f88a2f5bd0681da",
+      "bytes": 5413
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/initialization-green.log",
+      "sha256": "2eb6d8642faa93457a3b61a9fd44f5f6a83804e83a6642533f808c4b0bae7b8a",
+      "bytes": 1879
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/initialization-red.log",
+      "sha256": "3f96bc73e67acbf5ec34ce23aa037a93562d0379ba4d0e320a4f97ab82718c7c",
+      "bytes": 7761
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/lifecycle-reconnect-fixed.log",
+      "sha256": "c288d896157f7db768b96f7855981e1a2e591d44d79ea25736914ecda9aedae2",
+      "bytes": 1883
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/path-pilot-3.log",
+      "sha256": "c59f53aaae64b7cc65f3509ea097f9387d2f8786efc3855389a3864292deb776",
+      "bytes": 5467
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/path-ping.log",
+      "sha256": "f1443c077122d28c25d2d7028c189946c4f6e5c70d68e0d9380ee1dcf0b99686",
+      "bytes": 530
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/pilot-3.log",
+      "sha256": "1793dbcbb69ace41d3e151c8608e944911367fb5b99adc5c1f12d611b4b44cf0",
+      "bytes": 1457
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/pilot-4.log",
+      "sha256": "e4ac6c494568b46810e85359d56e25e34a2b7e237575057f94f4ad0787404fe1",
+      "bytes": 2325
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/pilot-5.log",
+      "sha256": "ccba4f945ac9292432153d4c6f615f96b9e7e688c3f3aec76dbc885938910e9e",
+      "bytes": 4116
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/pilot-retry.log",
+      "sha256": "802e99472447f75990aaaad90fb658203819fb24e6c05ee73147182bb104df3c",
+      "bytes": 1126
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/pilot.log",
+      "sha256": "c658a63cfd063628bb2a9c5275cc5226727d9d23e2c5838901135f7be562760b",
+      "bytes": 472
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/preservation-fixed.log",
+      "sha256": "ae9c047e570cc730edf4b772ff476d0c2b149850c1351e24b540f1617e936ee3",
+      "bytes": 7939
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/preservation-frozen.log",
+      "sha256": "ef181c7b93508cc15a9e879706ea148f35c1e36d53a272825597a9a477722a0b",
+      "bytes": 7939
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/preservation-isolated.log",
+      "sha256": "81f1699c4480608df1a3beea2039a2690c6958bd47edc9c6db0b11540a0111b2",
+      "bytes": 13361
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/preservation-reconnect-fixed.log",
+      "sha256": "787a40de7cf355c6a6560f8abe98ed249c8c172ca0dc077ec37ff4ba7244d413",
+      "bytes": 7943
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/preservation.log",
+      "sha256": "b12e9c2142a05780283ea34905fe6bc7ff3792e12dad6fd9d160a7186ff57226",
+      "bytes": 13438
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/public-smoke-retry.log",
+      "sha256": "ee78507294a157849628a367d1c33de51c490c4be14d22cf4a63c8584e3f2fe0",
+      "bytes": 62
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/public-smoke.log",
+      "sha256": "b11207c87813c478029c224d4ba65adc4ded3530e6491a0a10f00d306b9902b7",
+      "bytes": 1526
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/reconnect-admission-green-final-native.log",
+      "sha256": "9d4bbe4f0580e923cb0e8738b4b404adb04bd14fe482144934dfed199bbc4bcf",
+      "bytes": 68
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/reconnect-admission-green-final.log",
+      "sha256": "ffaf3029b2cf6c0691617e9ce7d55bfe12d3d92a3e480cb039bc782e9b5a9df7",
+      "bytes": 190
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/reconnect-admission-green.log",
+      "sha256": "fb95e141e99f882f7d60616798b122a974dd74cd74c6e619e613256238b32258",
+      "bytes": 68
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/reconnect-admission-red.log",
+      "sha256": "f3949acb7f96259748a289d418f6bb31e0a719469330f4865adf3a6326a7709e",
+      "bytes": 1528
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/reconnect-progress-green-native.log",
+      "sha256": "a6405076bb2a3e3bdff0855b74bb0a74dc8c9cf67d7b074d3f531268baabcf36",
+      "bytes": 138
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/reconnect-progress-green.log",
+      "sha256": "a322f13763c11e2cf14c7cbc52025585790b25917249aacd81ddcb01851f6032",
+      "bytes": 12231
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/reconnect-progress-red.log",
+      "sha256": "d4d748fc3f04b12b43bdece16b6adf37ac6cc871ea827ca171001ff79d6b1de2",
+      "bytes": 470
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/recovery-probe-10.log",
+      "sha256": "1761a337e9f971d9ea6901917a3e104b2448ea068a3418d3c3fb2881db956151",
+      "bytes": 3875
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/sound-repro.log",
+      "sha256": "467a94a24d6a6959add26a545114631bef4b083a43a6c54e53988b72a7e02894",
+      "bytes": 1231
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/transport-fixed.log",
+      "sha256": "0d550111040998319757ec50f528f1154150998a52ac907230223b8187b41d8b",
+      "bytes": 1680
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/udp-buffer-persist.log",
+      "sha256": "70cbc4c743a7ec8df89120eecece17d9cac3f1523297bea42340c6032f41a469",
+      "bytes": 159
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/udp-buffer-tuning.log",
+      "sha256": "ca7638b6fcb0b4c23d6864c1ed3ba71b53def38870ea8849b1e64d772c51616d",
+      "bytes": 137
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/worker-pilot.log",
+      "sha256": "8b1222b2cd1ab2ae6c9a909f93f5078fde92050de754bf3a17480bc7c4bb7026",
+      "bytes": 1737
+    }
+  ],
+  "serverArchives": [
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-1.tgz",
+      "sha256": "8f59b55281e0127f271cc5901d4e4d7c34adfa0eb1b1dde0e416732568cd09eb",
+      "bytes": 4522597
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-10.tgz",
+      "sha256": "d88d536e2b8e76dbd384bc31e26a7dee276c2732ae8c1447ee0861e22dfea31f",
+      "bytes": 14560640
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-2.tgz",
+      "sha256": "54c1265d5ff42df4fc0e13ca6a8a6e8283e8217e13be261baa221a908bd967da",
+      "bytes": 2293049
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-3.tgz",
+      "sha256": "4cdc35f8edbe6e803506fb8a92fd9247e6df0744723ede5ea7ac4ac8bef25110",
+      "bytes": 2547728
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-4.tgz",
+      "sha256": "10a13358f427bdc0c6449cc5d20375e95edc1c172b45c813a07e6b88b1993faf",
+      "bytes": 3225796
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-5.tgz",
+      "sha256": "707ce8b277d0deb3ddd102cec8932bfd5502c485c597357ac8ca76d63c115740",
+      "bytes": 3323045
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-6.tgz",
+      "sha256": "337a3a1cebc446710ff7bec637c69bc059607cf45dd57a4a7be5f9a48f195f56",
+      "bytes": 4546061
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-7.tgz",
+      "sha256": "40a87aa6db9472921d771daeea3f5323903320fefd4635115dd85374570e8cf7",
+      "bytes": 4495200
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-8.tgz",
+      "sha256": "27b75a43c2f327512c84b061248c1a29386b712d06821afa7d7fc9f8762e1de5",
+      "bytes": 4356764
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-9.tgz",
+      "sha256": "37233803ee40dd0284f78cb548b360367e427632560cebd6cb2eecbf4de9d5e6",
+      "bytes": 7889081
+    }
+  ],
+  "derivedSummaries": [
+    {
+      "path": "apps/client/test-results/capacity-issue44/server-full-10/summary.json",
+      "sha256": "b69d9de48db67fdb3dc93ca06ba3ce2a9b79a125da0a18f3e94c8d99bf56037a",
+      "data": {
+        "fullCapacityStart": "2026-10-26T01:16:30.250Z",
+        "failureAt": "2026-10-26T01:20:47.393Z",
+        "elapsedMs": 257143,
+        "verdict": "failed; no 30-minute or normal-quality pass",
+        "verifiedRecoveriesByMode": {
+          "1": 48,
+          "2": 50
+        },
+        "sampledResourceRowsWithinWindow": 127,
+        "processCpuPeakPercentOneCore": 80.59938417607785,
+        "processCpuMeanPercentOneCore": 43.81779641166521,
+        "processRssPeakMiB": 82.85546875,
+        "udpCounterDeltas": {
+          "InDatagrams": 416786,
+          "NoPorts": 0,
+          "InErrors": 0,
+          "OutDatagrams": 615261,
+          "RcvbufErrors": 0,
+          "SndbufErrors": 0,
+          "InCsumErrors": 0,
+          "IgnoredMulti": 0,
+          "MemErrors": 0
+        },
+        "simulationSweepEntryGapMaxMs": 181.705868,
+        "gcStopRequestToRestartEntryCount": 456,
+        "gcStopRequestToRestartEntryMaxMs": 1.222605,
+        "limitations": [
+          "Resource rows are sampled every2seconds, within the requested window.",
+          "Sweep gaps and GC entry intervals are proxies, not full tick or runtime pause distributions.",
+          "Socket TCP RTT values belong to backend/proxy connections, not the public network path.",
+          "Packet text lacks full TCP header lengths and per-player mapping; not transport-inclusive bandwidth acceptance."
+        ]
+      }
+    },
+    {
+      "path": "apps/client/test-results/capacity-issue44/path-pilot-3/path-summary.json",
+      "sha256": "b8bf2b8160c915b986a63288ee9e96b57e43267a7971ac2a21e4c404d18bbfdf",
+      "data": {
+        "scope": "Low-load public-path diagnostic, not a qualifying performance scenario or full matrix. Final bounded clock sample windows are reported per player, without pooling duplicated handshakes.",
+        "players": [
+          {
+            "room": 1,
+            "seat": 0,
+            "lastWindowSampleCount": 8,
+            "minMs": 279.8,
+            "medianMs": 308.2,
+            "nearestRankP95Ms": 397.999,
+            "maxMs": 397.999
+          },
+          {
+            "room": 1,
+            "seat": 1,
+            "lastWindowSampleCount": 8,
+            "minMs": 257.8,
+            "medianMs": 286.35,
+            "nearestRankP95Ms": 501.5,
+            "maxMs": 501.5
+          },
+          {
+            "room": 2,
+            "seat": 0,
+            "lastWindowSampleCount": 8,
+            "minMs": 262.4,
+            "medianMs": 277.85,
+            "nearestRankP95Ms": 345.1,
+            "maxMs": 345.1
+          },
+          {
+            "room": 2,
+            "seat": 1,
+            "lastWindowSampleCount": 8,
+            "minMs": 288.4,
+            "medianMs": 307.85,
+            "nearestRankP95Ms": 425.0,
+            "maxMs": 425.0
+          }
+        ],
+        "ping": {
+          "samples": 5,
+          "minMs": 255.311,
+          "meanMs": 268.803,
+          "maxMs": 290.323,
+          "lossPercent": 0
+        },
+        "normalRttLimitMs": 150,
+        "normalConditionEstablished": false
+      }
+    }
+  ],
+  "persistentHostConfiguration": {
+    "path": "infra/60-dashdevil-quic.conf",
+    "sha256": "78acc55af91aa91dcac07dbbf0a4b643c07acd5a594b0dde84bd18877fdbd1c3",
+    "priorCeilings": 212992,
+    "currentCeilings": 7500000
+  },
+  "artifactAvailability": "Raw artifacts remain ignored in this owner workspace and retained server temporary directories; this index publishes hashes and provenance, not raw logs or a full acceptance claim.",
+  "acceptanceStatus": "Owner requested blocker recorded and issue kept open; sustained load failed after257143ms and observed public RTT exceeds150ms normal envelope."
+}
