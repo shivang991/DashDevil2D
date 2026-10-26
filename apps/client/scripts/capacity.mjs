@@ -18,6 +18,9 @@ if (!args.origin || new URL(args.origin).protocol !== "https:")
 const origin = new URL(args.origin).origin;
 const roomCount = Number(args.rooms ?? 50);
 const seconds = Number(args.seconds ?? 1800);
+const roomsPerContext = Number(args["rooms-per-context"] ?? 5);
+if (!Number.isInteger(roomsPerContext) || roomsPerContext < 1 || roomsPerContext > 49)
+  throw new Error("rooms-per-context must be 1..49");
 if (
   !Number.isInteger(roomCount) ||
   roomCount < 2 ||
@@ -86,13 +89,14 @@ fs.writeFileSync(
       ),
       origin,
       roomCount,
+      roomsPerContext,
       seconds,
       node: process.version,
       cpu: os.cpus()[0].model,
       platform: process.platform,
       bundleSha256: createHash("sha256").update(code).digest("hex"),
       scope:
-        "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+        "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads, grouped in isolated browser contexts. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
     },
     null,
     2,
@@ -160,39 +164,48 @@ try {
   );
   await wait(700);
   log({ event: "room-connected", room: 0, mode: 1 });
-  const agentHost = await browsers[2].newPage();
-  await agentHost.route(`${origin}/__capacity_harness`, (route) =>
-    route.fulfill({
-      contentType: "text/html",
-      body: "<!doctype html><title>Capacity transport agent</title>",
-    }),
-  );
-  await agentHost.goto(`${origin}/__capacity_harness`);
-  await agentHost.evaluate((code) => {
-    const source =
-      code +
-      `\nself.window=self;self.onmessage=async({data})=>{try {const fn=(0,eval)("("+data.fn+")");self.postMessage({id:data.id,result:await fn(data.arg)});}catch(error){self.postMessage({id:data.id,error:error.stack??error.message});}};`;
-    window.capacityWorkerURL = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
-    window.capacityWorkers = new Map();
-    window.capacityCall = (index, fn, arg) =>
-      new Promise((resolve, reject) => {
-        const entry = window.capacityWorkers.get(index);
-        if (entry.failed) {
-          reject(new Error(entry.failed));
-          return;
-        }
-        const id = ++entry.next;
-        const timeout = setTimeout(() => {
-          entry.pending.delete(id);
-          reject(new Error(`Worker ${index} RPC timeout`));
-        }, 30000);
-        entry.pending.set(id, { resolve, reject, timeout });
-        entry.worker.postMessage({ id, fn, arg });
-      });
-  }, code);
+  const createAgentHost = async () => {
+    const context = await browsers[2].newContext();
+    const agentHost = await context.newPage();
+    await agentHost.route(`${origin}/__capacity_harness`, (route) =>
+      route.fulfill({
+        contentType: "text/html",
+        body: "<!doctype html><title>Capacity transport agent</title>",
+      }),
+    );
+    await agentHost.goto(`${origin}/__capacity_harness`);
+    await agentHost.evaluate((code) => {
+      const source =
+        code +
+        `\nself.window=self;self.onmessage=async({data})=>{try {const fn=(0,eval)("("+data.fn+")");self.postMessage({id:data.id,result:await fn(data.arg)});}catch(error){self.postMessage({id:data.id,error:error.stack??error.message});}};`;
+      window.capacityWorkerURL = URL.createObjectURL(
+        new Blob([source], { type: "text/javascript" }),
+      );
+      window.capacityWorkers = new Map();
+      window.capacityCall = (index, fn, arg) =>
+        new Promise((resolve, reject) => {
+          const entry = window.capacityWorkers.get(index);
+          if (entry.failed) {
+            reject(new Error(entry.failed));
+            return;
+          }
+          const id = ++entry.next;
+          const timeout = setTimeout(() => {
+            entry.pending.delete(id);
+            reject(new Error(`Worker ${index} RPC timeout`));
+          }, 30000);
+          entry.pending.set(id, { resolve, reject, timeout });
+          entry.worker.postMessage({ id, fn, arg });
+        });
+    }, code);
+    return agentHost;
+  };
+  let currentAgentHost;
   for (let index = 1; index < roomCount; index++) {
-    // Native browser workers isolate baseline validation without allocating a
-    // renderer process per room. Retain each worker's scheduling measurements.
+    // Small independent contexts bound Chromium's per-renderer concurrent
+    // handshake throttling. Native transport behavior and deadlines stay intact.
+    if ((index - 1) % roomsPerContext === 0) currentAgentHost = await createAgentHost();
+    const agentHost = currentAgentHost;
     await agentHost.evaluate((index) => {
       const entry = { worker: new Worker(window.capacityWorkerURL), next: 0, pending: new Map() };
       entry.worker.onmessage = ({ data }) => {
@@ -234,6 +247,39 @@ try {
             );
           },
         });
+        window.capacityHandshakes = [];
+        const NativeWebSocket = window.WebSocket;
+        window.WebSocket = class extends NativeWebSocket {
+          constructor(...args) {
+            super(...args);
+            const started = performance.now();
+            const record = { transport: "WebSocket", started };
+            window.capacityHandshakes.push(record);
+            this.addEventListener("open", () => {
+              record.openMs = performance.now() - started;
+            });
+            this.addEventListener("error", () => {
+              record.errorMs = performance.now() - started;
+            });
+          }
+        };
+        const NativeWebTransport = window.WebTransport;
+        window.WebTransport = class extends NativeWebTransport {
+          constructor(...args) {
+            super(...args);
+            const started = performance.now();
+            const record = { transport: "WebTransport", started };
+            window.capacityHandshakes.push(record);
+            void this.ready.then(
+              () => {
+                record.openMs = performance.now() - started;
+              },
+              () => {
+                record.errorMs = performance.now() - started;
+              },
+            );
+          }
+        };
         const clients = [0, 1].map(
           () => new window.CapacityClient.PairedConnection({ server: origin }, () => {}),
         );
@@ -301,6 +347,7 @@ try {
         loop: { frames: window.capacity.frames, maxLoopMs: window.capacity.maxLoopMs },
         errors: window.capacity.errors,
         changes: window.capacity.changes,
+        handshakes: window.capacityHandshakes,
       }));
       for (let seat = 0; seat < 2; seat++)
         records.push({
@@ -310,6 +357,7 @@ try {
           ...result.loop,
           harnessErrors: result.errors,
           changes: result.changes,
+          handshakes: result.handshakes,
           state: result.states[seat],
         });
     }
@@ -509,7 +557,12 @@ try {
         selected.map(async (chosen) => {
           const before = await chosen.page.evaluate(() => {
             const s = window.capacity.clients[1].state;
-            return { ...s.identity, phase: s.room.phase, roundId: s.roundId };
+            return {
+              ...s.identity,
+              phase: s.room.phase,
+              roundId: s.roundId,
+              attemptStartedAt: performance.now(),
+            };
           });
           await chosen.page.evaluate(() => {
             window.capacity.pauseInputs = true;
@@ -524,6 +577,8 @@ try {
                   c.state.status === "Connected" &&
                   c.state.identity.seatSession === before.seatSession &&
                   c.state.identity.pairGeneration > before.pairGeneration &&
+                  c.state.room?.identity.pairGeneration === c.state.identity.pairGeneration &&
+                  !!(c.state.room?.seats[1].flags & 1) &&
                   c.state.roundId === before.roundId &&
                   (c.state.room?.phase === 2 || c.state.room?.phase === 3) &&
                   c.state.outcome?.result !== 3 &&
@@ -536,10 +591,17 @@ try {
           );
           recoveries++;
           recoveryModes.add(chosen.mode);
-          await chosen.page.evaluate(() => {
+          const recoveryAttemptMs = await chosen.page.evaluate((before) => {
             window.capacity.pauseInputs = false;
+            return performance.now() - before.attemptStartedAt;
+          }, before);
+          log({
+            event: "reconnect-verified",
+            room: chosen.index,
+            mode: chosen.mode,
+            before,
+            recoveryAttemptMs,
           });
-          log({ event: "reconnect-trigger", room: chosen.index, mode: chosen.mode, before });
         }),
       );
     }
@@ -598,6 +660,7 @@ try {
           states: window.capacity?.clients.map((c) => c.state),
           maxLoopMs: window.capacity?.maxLoopMs,
           errors: window.capacity?.errors,
+          handshakes: window.capacityHandshakes,
         });
         clearInterval(window.capacity?.timer);
         for (const c of window.capacity?.clients ?? []) c.leave();
