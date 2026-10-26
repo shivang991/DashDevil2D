@@ -92,7 +92,7 @@ fs.writeFileSync(
       platform: process.platform,
       bundleSha256: createHash("sha256").update(code).digest("hex"),
       scope:
-        "One product UI room and remaining real-browser PairedConnection rooms in same-origin frames sharing a renderer. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
+        "One product UI room and remaining real-browser PairedConnection rooms in browser worker threads. Load pages exercise optional-storage failure fallback, native TLS/WebSocket/WebTransport, default server configuration. Protocol agents predict frames without drawing; no screen-response claim. Random server seeds retained per player. Not a complete normal-condition acceptance verdict.",
     },
     null,
     2,
@@ -167,18 +167,60 @@ try {
     }),
   );
   await agentHost.goto(`${origin}/__capacity_harness`);
+  await agentHost.evaluate((code) => {
+    const source =
+      code +
+      `\nself.window=self;self.onmessage=async({data})=>{try {const fn=(0,eval)("("+data.fn+")");self.postMessage({id:data.id,result:await fn(data.arg)});}catch(error){self.postMessage({id:data.id,error:error.stack??error.message});}};`;
+    window.capacityWorkerURL = URL.createObjectURL(new Blob([source], { type: "text/javascript" }));
+    window.capacityWorkers = new Map();
+    window.capacityCall = (index, fn, arg) =>
+      new Promise((resolve, reject) => {
+        const entry = window.capacityWorkers.get(index);
+        if (entry.failed) {
+          reject(new Error(entry.failed));
+          return;
+        }
+        const id = ++entry.next;
+        const timeout = setTimeout(() => {
+          entry.pending.delete(id);
+          reject(new Error(`Worker ${index} RPC timeout`));
+        }, 30000);
+        entry.pending.set(id, { resolve, reject, timeout });
+        entry.worker.postMessage({ id, fn, arg });
+      });
+  }, code);
   for (let index = 1; index < roomCount; index++) {
-    // Same-origin frames share a renderer. Retain scheduling measurements
-    // so generator pauses are not mistaken for server-capacity evidence.
+    // Native browser workers isolate baseline validation without allocating a
+    // renderer process per room. Retain each worker's scheduling measurements.
     await agentHost.evaluate((index) => {
-      const frame = document.createElement("iframe");
-      frame.name = `room-${index}`;
-      document.body.append(frame);
+      const entry = { worker: new Worker(window.capacityWorkerURL), next: 0, pending: new Map() };
+      entry.worker.onmessage = ({ data }) => {
+        const pending = entry.pending.get(data.id);
+        if (!pending) return;
+        entry.pending.delete(data.id);
+        clearTimeout(pending.timeout);
+        if (data.error) pending.reject(new Error(data.error));
+        else pending.resolve(data.result);
+      };
+      entry.worker.onerror = (event) => {
+        entry.failed = event.message;
+        for (const pending of entry.pending.values()) {
+          clearTimeout(pending.timeout);
+          pending.reject(new Error(event.message));
+        }
+        entry.pending.clear();
+      };
+      window.capacityWorkers.set(index, entry);
     }, index);
-    const page = agentHost.frame({ name: `room-${index}` });
+    const page = {
+      evaluate: (fn, arg) =>
+        agentHost.evaluate(({ index, fn, arg }) => window.capacityCall(index, fn, arg), {
+          index,
+          fn: fn.toString(),
+          arg,
+        }),
+    };
     rooms.push({ page, index, mode: index % 2 ? 2 : 1 });
-    await page.goto(`${origin}/__capacity_harness`);
-    await page.addScriptTag({ content: code });
     await page.evaluate(
       async ({ origin, mode }) => {
         // Product already supports unavailable optional storage. Keep credentials
