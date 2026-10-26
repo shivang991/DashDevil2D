@@ -10,6 +10,15 @@ Use a Linux Docker host with Compose v2 supporting `up --wait`. Point `PUBLIC_HO
 
 The public hostname, client origin and certificate must agree. Use normal public certificate validation; no development fingerprint or fallback transport is installed. An HTTP-only CDN/load balancer does not provide the required UDP path. Private-only hosts need a different issuance arrangement such as DNS-01; this script uses public HTTP-01.
 
+On the Linux host, permit the UDP buffers [recommended by quic-go](https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes) before starting the server:
+
+```sh
+sudo install -m 644 infra/60-dashdevil-quic.conf /etc/sysctl.d/60-dashdevil-quic.conf
+sudo sysctl -p /etc/sysctl.d/60-dashdevil-quic.conf
+```
+
+Check an existing file before replacing it. These are host socket-buffer ceilings, not per-player allocations or application timeout changes. Restart the server through the normal drain/deployment flow to resize existing sockets. Preserve the previous values for rollback. The #44 VPS test eliminated observed kernel UDP receive drops after this change; it still failed sustained-load acceptance. See [the load checkpoint](../docs/preservation/load-checkpoint.md).
+
 ## First deployment and updates
 
 From the repository root on the Docker host:
