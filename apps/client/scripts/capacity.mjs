@@ -505,7 +505,11 @@ try {
                   c.state.status === "Connected" &&
                   c.state.identity.seatSession === before.seatSession &&
                   c.state.identity.pairGeneration > before.pairGeneration &&
-                  c.state.cars?.[1].heldMask === 0
+                  c.state.roundId === before.roundId &&
+                  (c.state.room?.phase === 2 || c.state.room?.phase === 3) &&
+                  c.state.outcome?.result !== 3 &&
+                  ((c.state.room?.phase === 3 && c.state.outcome?.roundId === c.state.roundId) ||
+                    c.state.cars?.[1].heldMask === 0)
                 );
               }, before),
             "reconnect same seat with fresh controls",
