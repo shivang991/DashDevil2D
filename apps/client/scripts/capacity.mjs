@@ -344,6 +344,7 @@ try {
     for (const { page, index } of rooms) {
       const result = await page.evaluate(() => ({
         states: window.capacity.clients.map((c) => c.state),
+        clockRttUs: window.capacity.clients.map((c) => c.samples.map(({ rtt }) => rtt)),
         loop: { frames: window.capacity.frames, maxLoopMs: window.capacity.maxLoopMs },
         errors: window.capacity.errors,
         changes: window.capacity.changes,
@@ -359,6 +360,7 @@ try {
           changes: result.changes,
           handshakes: result.handshakes,
           state: result.states[seat],
+          clockRttUs: result.clockRttUs[seat],
         });
     }
     fs.appendFileSync(
@@ -658,6 +660,7 @@ try {
       const result = await page.evaluate(() => {
         const result = structuredClone({
           states: window.capacity?.clients.map((c) => c.state),
+          clockRttUs: window.capacity?.clients.map((c) => c.samples.map(({ rtt }) => rtt)),
           maxLoopMs: window.capacity?.maxLoopMs,
           errors: window.capacity?.errors,
           handshakes: window.capacityHandshakes,

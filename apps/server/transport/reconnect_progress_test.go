@@ -1,9 +1,12 @@
 package transport
 
 import (
+	"bytes"
+	"github.com/gofiber/fiber/v2"
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"github.com/shivang991/DashDevil2D/apps/server/simulation"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
@@ -108,10 +111,32 @@ func TestReconnectBaselineWaitsForPublishedReset(t *testing.T) {
 	cars[1].LastInput = 7
 	engine.Restore(cars, 0)
 	r := &room{id: 1, code: "test", mode: 1, phase: 2, roundID: 1, settings: cfg, engine: engine, zero: &p.Baseline{Context: cfg.Context(1), Round: p.Round{RoundId: 1, InputGeneration: 1}, Epoch: 1, Cars: cars, Progress: p.Progress{Processed1: 5, Disposed1: 5, Processed2: 7, Disposed2: 7}}}
-	participant := &seat{room: r, index: 1, session: 22, generation: 2, inputGeneration: 2}
+	participant := &seat{room: r, index: 1, session: 22, generation: 1, inputGeneration: 1}
 	participant.pair = newPair(s, participant)
 	r.seats[1] = participant
-	engine.ResetSeat(participant.pair.identity, 2, 0)
+	participant.credential = bytes.Repeat([]byte{7}, 32)
+	s.credentials[token(participant.credential)] = participant
+	s.rooms[r.code] = r
+	app := fiber.New()
+	app.Post("/admission", s.admission)
+	wire, err := p.EncodeMessage(p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: participant.credential}, 65536)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := httptest.NewRequest("POST", "/admission", bytes.NewReader(wire))
+	request.Header.Set("Origin", "https://example.com")
+	request.Header.Set("Content-Type", "application/octet-stream")
+	response, err := app.Test(request)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != 201 || participant.generation != 2 {
+		t.Fatalf("replacement admission: status=%d generation=%d", response.StatusCode, participant.generation)
+	}
+	if r.zero.Cars[1].InputGeneration != 1 || r.zero.Cars[1].LastInput != 7 {
+		t.Fatal("admission exposed unrecorded reset in committed cars")
+	}
 	type result struct {
 		baseline p.Baseline
 		err      error
