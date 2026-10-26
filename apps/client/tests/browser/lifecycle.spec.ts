@@ -1,4 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
+import { messageTypes } from "@dashdevil/contracts/protocol";
 const read = async (page: Page) =>
   JSON.parse((await page.getByTestId("room-evidence").textContent())!);
 
@@ -351,3 +352,171 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     await Promise.all(contexts.map((context) => context.close()));
   }
 });
+
+for (const mode of ["Drag Race", "Road Rage"]) {
+  test(`${mode}: new round initialization gets its own deadline on an aged pair`, async ({
+    browser,
+    baseURL,
+  }, info) => {
+    test.setTimeout(45000);
+    const contexts = await Promise.all(
+      [0, 1].map(() => browser.newContext({ baseURL, viewport: { width: 1280, height: 900 } })),
+    );
+    const pages = await Promise.all(contexts.map((context) => context.newPage()));
+    const records: unknown[] = [];
+    try {
+      await pages[0].addInitScript(
+        ({ initializationId, baselineId }) => {
+          const fixture = {
+            armed: false,
+            initializations: 0,
+            before: 0,
+            delayed: 0,
+            delayMs: 350,
+            observations: [] as { initialization: number; received: number; delivered: number }[],
+          };
+          (window as unknown as { initializationFixture: typeof fixture }).initializationFixture =
+            fixture;
+          const wrap = (stream: ReadableStream<Uint8Array>, channel: "control" | "authority") => {
+            let pending = new Uint8Array();
+            return stream.pipeThrough(
+              new TransformStream<Uint8Array, Uint8Array>({
+                async transform(part, controller) {
+                  const combined = new Uint8Array(pending.length + part.length);
+                  combined.set(pending);
+                  combined.set(part, pending.length);
+                  pending = combined;
+                  while (pending.length >= 4) {
+                    const size = new DataView(pending.buffer, pending.byteOffset).getUint32(0) + 4;
+                    if (size > 1048576) throw new Error("Initialization fixture frame overflow");
+                    if (pending.length < size) break;
+                    const frame = pending.slice(0, size);
+                    pending = pending.slice(size);
+                    if (channel === "control" && frame[4] === initializationId)
+                      fixture.initializations++;
+                    if (channel === "authority" && frame[4] === baselineId && fixture.armed) {
+                      fixture.armed = false;
+                      const received = performance.now();
+                      // Authority may arrive ahead of control. Observe the new
+                      // Initialization first, then create the exact baseline gap.
+                      while (fixture.initializations <= fixture.before) {
+                        if (performance.now() - received >= 1000)
+                          throw new Error("Fixture did not observe new Initialization");
+                        await new Promise((resolve) => setTimeout(resolve, 5));
+                      }
+                      await new Promise((resolve) => setTimeout(resolve, fixture.delayMs));
+                      fixture.delayed++;
+                      fixture.observations.push({
+                        initialization: fixture.initializations,
+                        received,
+                        delivered: performance.now(),
+                      });
+                    }
+                    controller.enqueue(frame);
+                  }
+                },
+                flush() {
+                  if (pending.length) throw new Error("Initialization fixture partial frame");
+                },
+              }),
+            );
+          };
+          const Native = window.WebTransport;
+          window.WebTransport = class extends Native {
+            async createBidirectionalStream(
+              ...args: Parameters<WebTransport["createBidirectionalStream"]>
+            ) {
+              const stream = await super.createBidirectionalStream(...args);
+              return { readable: wrap(stream.readable, "control"), writable: stream.writable };
+            }
+            get incomingUnidirectionalStreams() {
+              return super.incomingUnidirectionalStreams.pipeThrough(
+                new TransformStream<ReadableStream<Uint8Array>, ReadableStream<Uint8Array>>({
+                  transform(stream, controller) {
+                    controller.enqueue(wrap(stream, "authority"));
+                  },
+                }),
+              );
+            }
+          };
+        },
+        {
+          initializationId: messageTypes.Initialization.id,
+          baselineId: messageTypes.BaselineChunk.id,
+        },
+      );
+      for (const page of pages) {
+        await page.goto("/");
+        await page.getByRole("button", { name: new RegExp(mode) }).click();
+      }
+      await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
+      await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
+      await pages[1]
+        .getByLabel("Room code")
+        .fill(await pages[0].getByTestId("room-code").innerText());
+      await pages[1].getByLabel("Room code").press("Enter");
+      await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
+      // Deliberately age the existing pair beyond its original five-second
+      // initialization clock. No transport or gameplay clock is replaced.
+      await pages[0].waitForTimeout(6000);
+      const before = await Promise.all(pages.map(read));
+      records.push({ before });
+      await pages[0].evaluate(() => {
+        const fixture = (
+          window as unknown as {
+            initializationFixture: { before: number; initializations: number; armed: boolean };
+          }
+        ).initializationFixture;
+        fixture.before = fixture.initializations;
+        fixture.armed = true;
+      });
+      for (const page of pages) {
+        await page.getByRole("button", { name: "Ready", exact: true }).click();
+        await expect(page.getByRole("button", { name: "Cancel ready", exact: true })).toBeVisible();
+      }
+      await expect(
+        pages[0].getByRole("button", { name: "Start round", exact: true }),
+      ).toBeEnabled();
+      await pages[0].getByRole("button", { name: "Start round", exact: true }).click();
+      await expect.poll(async () => (await read(pages[0])).errors).toEqual([]);
+      for (const page of pages)
+        await expect(page.getByRole("img", { name: "Multiplayer race" })).toBeVisible({
+          timeout: 10000,
+        });
+      const after = await Promise.all(pages.map(read));
+      records.push({ after });
+      for (let seat = 0; seat < 2; seat++) {
+        expect(after[seat].errors).toEqual([]);
+        expect(after[seat].identity).toEqual(before[seat].identity);
+        expect(after[seat].roundId).toBeGreaterThan(before[seat].roundId);
+        expect(after[seat].diagnostics.baselineEpochs.length).toBeGreaterThan(
+          before[seat].diagnostics.baselineEpochs.length,
+        );
+        await expect(pages[seat].getByTestId("connection-state")).toHaveText("Connected");
+      }
+      expect(after[0].roundId).toBe(after[1].roundId);
+      const fixture = await pages[0].evaluate(
+        () => (window as unknown as { initializationFixture: unknown }).initializationFixture,
+      );
+      records.push({ fixture });
+      expect((fixture as { delayed: number }).delayed).toBe(1);
+      await info.attach("aged-pair-race.png", {
+        body: await pages[0].screenshot({ fullPage: true }),
+        contentType: "image/png",
+      });
+    } finally {
+      for (let seat = 0; seat < pages.length; seat++) {
+        try {
+          records.push({ seat, final: await read(pages[seat]) });
+        } catch {
+          records.push({ seat, finalUnavailable: true });
+        }
+      }
+      await info.attach("aged-pair-initialization.json", {
+        body: JSON.stringify(records, null, 2),
+        contentType: "application/json",
+      });
+      await Promise.all(contexts.map((context) => context.close()));
+    }
+  });
+}

@@ -96,6 +96,7 @@ function retainEvidence(code) {
       "infra/dense-drag-race.json",
       "infra/dense-road-rage.json",
       "apps/client/tests/browser/dense.spec.ts",
+      "apps/client/tests/browser/lifecycle.spec.ts",
       "infra/failures-drag-race.json",
       "infra/failures-road-rage.json",
       "apps/client/tests/browser/failures.spec.ts",
