@@ -1,5 +1,8 @@
 import type { GameConfig } from "./config";
 
+/** Canonical Long Drive spawn horizon, independent of the display. */
+export const LONG_DRIVE_REFERENCE_HEIGHT = 806;
+
 export type Cell = "empty" | "coin" | "obstacle" | "heart";
 export interface RoadSlice {
   readonly id: number;
@@ -48,7 +51,12 @@ export function appendSlice(
   const slice = Object.freeze({
     id: track.nextId++,
     timeUs,
-    distance: progress + 806 - config.carBottomMargin - config.carHeight / 2 + size / 2,
+    distance:
+      progress +
+      LONG_DRIVE_REFERENCE_HEIGHT -
+      config.carBottomMargin -
+      config.carHeight / 2 +
+      size / 2,
     cells: Object.freeze(cells),
   });
   track.slices.push(slice);

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { multiplayerRoadScale } from "@/lib/roadProjection";
 import { RoundResult } from "./RoundResult";
 import { gameAudio } from "@/lib/gameAudio";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
@@ -102,7 +103,12 @@ export function RaceView({
         const g = context.gameplay,
           scale = width / (g.laneSpacing * 3.5);
         const camera = view.renderedCars[local].progress;
-        const y = (progress: number) => height * 0.76 - (progress - camera) * scale;
+        const roadScale = multiplayerRoadScale(
+          scale,
+          height,
+          g.maxRoadSpeed * g.accelSpeedMultiplier + g.carHeight / 2,
+        );
+        const y = (progress: number) => height * 0.76 - (progress - camera) * roadScale;
         ctx.fillStyle = "#171b24";
         ctx.fillRect(0, 0, width, height);
         ctx.fillStyle = "#272d38";
@@ -131,7 +137,7 @@ export function RaceView({
           const x = width / 2 + (object.lane - 1) * g.laneSpacing * scale,
             cy = y(object.distance);
           const ow = (kind === 2 ? g.obstacleW : kind === 1 ? g.coinSize : g.heartSize) * scale;
-          const oh = (kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize) * scale;
+          const oh = (kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize) * roadScale;
           if (cy < -oh || cy > height + oh) continue;
           ctx.fillStyle = kind === 2 ? "#f59e0b" : kind === 3 ? "#fb7185" : "#fde047";
           if (kind === 2) {
@@ -151,21 +157,25 @@ export function RaceView({
           ctx.fillStyle = seat === local ? "#e74656" : "#40c9d5";
           ctx.fillRect(
             x - (g.carWidth * scale) / 2,
-            cy - (g.carHeight * scale) / 2,
+            cy - (g.carHeight * roadScale) / 2,
             g.carWidth * scale,
-            g.carHeight * scale,
+            g.carHeight * roadScale,
           );
           ctx.fillStyle = "#111827";
           ctx.fillRect(
             x - g.carWidth * scale * 0.34,
-            cy - g.carHeight * scale * 0.28,
+            cy - g.carHeight * roadScale * 0.28,
             g.carWidth * scale * 0.68,
-            g.carHeight * scale * 0.2,
+            g.carHeight * roadScale * 0.2,
           );
           ctx.fillStyle = "white";
           ctx.font = "14px sans-serif";
           ctx.textAlign = "center";
-          ctx.fillText(seat === local ? "You" : "Rival", x, cy + (g.carHeight * scale) / 2 + 20);
+          ctx.fillText(
+            seat === local ? "You" : "Rival",
+            x,
+            cy + (g.carHeight * roadScale) / 2 + 20,
+          );
         });
         connection.recordDraw();
         if (time - lastHud > 40) {

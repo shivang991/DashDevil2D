@@ -1,6 +1,9 @@
+import { LONG_DRIVE_REFERENCE_HEIGHT } from "@dashdevil/simulation/track";
 import type { GameState } from "@dashdevil/simulation/state";
 import { gameConfig as defaultConfig, type GameConfig } from "./constants";
 import { drawRoad, drawCar, drawCoin, drawHeart, drawObstacle, drawGameOver } from "./renderUtils";
+
+import { longDriveObjectY } from "./roadProjection";
 
 // ── Utility ──
 
@@ -35,10 +38,14 @@ export function renderLongDrive(
   const objectY = (object: GameState["coins"][number]) =>
     object.distance === undefined
       ? object.y
-      : state.carYBase +
-        gameConfig.carHeight / 2 -
-        (object.distance - state.roadOffset) -
-        object.height / 2;
+      : longDriveObjectY(
+          object.distance - state.roadOffset - state.carOffset,
+          object.height,
+          state.carY,
+          gameConfig.carHeight,
+          state.carYBase,
+          LONG_DRIVE_REFERENCE_HEIGHT - gameConfig.carHeight - gameConfig.carBottomMargin,
+        );
 
   for (const coin of state.coins) {
     const cx = laneX(coin.lane, width, state.roadWidthRatio, gameConfig.laneCount);

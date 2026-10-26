@@ -64,3 +64,28 @@ test("seeded high-speed pickup adds exactly ten points", async ({ page, evidence
   await expect(page.getByText("PAUSED", { exact: true })).toBeVisible();
   await page.screenshot({ path: path.join(evidence, "boost-coin-paused.png") });
 });
+
+for (const height of [1440, 2160]) {
+  test(`tall ${height}px canvas draws the first obstacle at the top edge`, async ({ page }) => {
+    await page.setViewportSize({ width: 606, height });
+    await page.addInitScript(`(() => {
+      const original = CanvasRenderingContext2D.prototype.drawImage;
+      window.firstBarrierBottom = null;
+      CanvasRenderingContext2D.prototype.drawImage = function(...args) {
+        if (args[0]?.src?.endsWith('/barrier.png') && window.firstBarrierBottom === null)
+          window.firstBarrierBottom = args[2] + args[4];
+        return original.apply(this, args);
+      };
+    })()`);
+    await page.clock.install({ time: new Date("2026-10-14T19:00:00Z") });
+    await page.clock.pauseAt(new Date("2026-10-14T19:00:01Z"));
+    await page.goto("http://127.0.0.1:4173/tests/browser/track.html");
+    await page.locator("canvas").click();
+    await page.clock.runFor(3050);
+    await page.clock.runFor(1050);
+    const bottom = await page.evaluate("window.firstBarrierBottom");
+    expect(bottom).not.toBeNull();
+    // First rendered frame may follow the exact spawn boundary by one frame.
+    expect(bottom).toBeLessThanOrEqual(height * 0.02);
+  });
+}
