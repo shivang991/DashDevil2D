@@ -13,7 +13,7 @@ The public hostname, client origin and certificate must agree. Use normal public
 On the Linux host, permit the UDP buffers [recommended by quic-go](https://github.com/quic-go/quic-go/wiki/UDP-Buffer-Sizes) before starting the server:
 
 ```sh
-sudo install -m 644 infra/60-dashdevil-quic.conf /etc/sysctl.d/60-dashdevil-quic.conf
+sudo install -m 644 infra/quic.conf /etc/sysctl.d/60-dashdevil-quic.conf
 sudo sysctl -p /etc/sysctl.d/60-dashdevil-quic.conf
 ```
 

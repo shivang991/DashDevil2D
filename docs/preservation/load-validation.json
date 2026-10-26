@@ -801,7 +801,7 @@
     }
   ],
   "persistentHostConfiguration": {
-    "path": "infra/60-dashdevil-quic.conf",
+    "path": "infra/quic.conf",
     "sha256": "78acc55af91aa91dcac07dbbf0a4b643c07acd5a594b0dde84bd18877fdbd1c3",
     "priorCeilings": 212992,
     "currentCeilings": 7500000
