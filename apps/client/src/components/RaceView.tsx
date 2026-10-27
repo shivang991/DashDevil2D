@@ -188,18 +188,14 @@ export function RaceView({
             cy = y(car.progress);
           const carWidth = g.carWidth * scale,
             carHeight = g.carHeight * roadScale;
-          ctx.save();
-          // The shared sprite is blue; rotate only the rival's paint toward red.
-          if (seat !== local) ctx.filter = "hue-rotate(150deg)";
           const drawn = drawSprite(
             ctx,
-            "car",
+            seat === local ? "car" : "car-rival",
             x - carWidth / 2,
             cy - carHeight / 2,
             carWidth,
             carHeight,
           );
-          ctx.restore();
           if (!drawn) {
             ctx.fillStyle = seat === local ? "#2196f3" : "#e74656";
             ctx.fillRect(x - carWidth / 2, cy - carHeight / 2, carWidth, carHeight);

@@ -45,6 +45,7 @@ function grassRowsInView(offset: number, height: number) {
 const textureNames = [
   "asphalt",
   "car",
+  "car-rival",
   "coin",
   "heart",
   "barrier",
