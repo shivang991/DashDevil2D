@@ -9,7 +9,7 @@ import type { PairedConnection, PairedState } from "../../src/transport/PairedCo
 
 for (const mode of ["drag-race", "road-rage"] as const)
   for (const seat of [0, 1])
-    test(`${mode} seat ${seat}: obstacle keeps moving through the bottom edge`, () => {
+    test(`${mode} seat ${seat}: obstacle scrolling and per-car damage effects`, () => {
       const configuration = captureConfiguration(mode);
       const context = configurationContext(configuration, 1, 1000000);
       const baseline = initialBaseline(context);
@@ -44,6 +44,7 @@ for (const mode of ["drag-race", "road-rage"] as const)
         draw = callback;
         return 1;
       });
+      const random = vi.spyOn(Math, "random").mockReturnValue(1);
       const cancel = vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
       const host = document.createElement("div");
       document.body.append(host);
@@ -87,11 +88,32 @@ for (const mode of ["drag-race", "road-rage"] as const)
           }
           expect(crossedBottom).toBe(true);
         }
+        const carWidth = (g.carWidth * 560) / (g.laneSpacing * 3.9);
+        const carsAt = (time: number) => {
+          fillRect.mockClear();
+          act(() => draw!(time));
+          return fillRect.mock.calls.filter((call) => Math.abs(Number(call[2]) - carWidth) < 1e-8);
+        };
+        const before = carsAt(0);
+        expect(before).toHaveLength(2);
+        frame.cars[seat].hp--;
+        frame.feedback = ["Obstacle hit"];
+        const hit = carsAt(10);
+        expect(hit[seat][0]).not.toBe(before[seat][0]);
+        expect(hit[1 - seat]).toEqual(before[1 - seat]);
+        expect(host.querySelector('[data-testid="object-feedback"]')).toBeNull();
+        // First hidden phase, followed by complete recovery without another HP drop.
+        expect(carsAt(410)).toHaveLength(1);
+        expect(carsAt(2210)).toEqual(before);
+        frame.cars[1 - seat].hp--;
+        expect(carsAt(2220)[1 - seat][0]).not.toBe(before[1 - seat][0]);
+        expect(carsAt(2620)).toHaveLength(1);
       } finally {
         act(() => root.unmount());
         host.remove();
         contextSpy.mockRestore();
         raf.mockRestore();
         cancel.mockRestore();
+        random.mockRestore();
       }
     });

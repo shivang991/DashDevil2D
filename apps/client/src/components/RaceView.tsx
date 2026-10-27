@@ -46,7 +46,6 @@ export function RaceView({
   );
   const [muted, setMuted] = useState(!audio.enabled);
   const [menu, setMenu] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const [frame, setFrame] = useState<Frame>();
   const local = state.identity?.seat ?? 0;
   const context = state.context!;
@@ -119,6 +118,8 @@ export function RaceView({
   useEffect(() => {
     let handle = 0,
       lastHud = 0;
+    const previousHp: number[] = [];
+    const hitAt = [-Infinity, -Infinity];
     const draw = (time: number) => {
       const view = connection.frame();
       const element = canvas.current,
@@ -182,20 +183,36 @@ export function RaceView({
             ctx.fillText(kind === 3 ? "♥" : "●", x, cy + oh / 3);
           }
         }
-        if (view.feedback.length) setFeedback(view.feedback.join(" · "));
         view.renderedCars.forEach((car, seat) => {
-          const x = width / 2 + car.lateral * scale,
-            cy = y(car.progress);
+          const hp = view.cars[seat].hp;
+          if (previousHp[seat] !== undefined && hp < previousHp[seat]) hitAt[seat] = time;
+          previousHp[seat] = hp;
+          const elapsed = (time - hitAt[seat]) / 1000;
+          const presentation = context.presentation;
+          const shake =
+            elapsed < presentation.shakeDuration
+              ? presentation.shakeIntensity * (1 - elapsed / presentation.shakeDuration)
+              : 0;
+          // Drag Race has no protection, but still needs a visible damage cue.
+          const blinkDuration = g.invincibleDuration || 2;
+          const visible =
+            elapsed >= blinkDuration ||
+            presentation.blinkCount === 0 ||
+            Math.floor((elapsed * presentation.blinkCount * 2) / blinkDuration) % 2 === 0;
+          const x = width / 2 + car.lateral * scale + (Math.random() - 0.5) * shake,
+            cy = y(car.progress) + (Math.random() - 0.5) * shake;
           const carWidth = g.carWidth * scale,
             carHeight = g.carHeight * roadScale;
-          const drawn = drawSprite(
-            ctx,
-            seat === local ? "car" : "car-rival",
-            x - carWidth / 2,
-            cy - carHeight / 2,
-            carWidth,
-            carHeight,
-          );
+          const drawn =
+            !visible ||
+            drawSprite(
+              ctx,
+              seat === local ? "car" : "car-rival",
+              x - carWidth / 2,
+              cy - carHeight / 2,
+              carWidth,
+              carHeight,
+            );
           if (!drawn) {
             ctx.fillStyle = seat === local ? "#2196f3" : "#e74656";
             ctx.fillRect(x - carWidth / 2, cy - carHeight / 2, carWidth, carHeight);
@@ -241,11 +258,6 @@ export function RaceView({
   useEffect(() => {
     if (outcome) connection.recordResultCommit();
   }, [connection, outcome]);
-  useEffect(() => {
-    if (!feedback) return;
-    const timer = setTimeout(() => setFeedback(""), 1800);
-    return () => clearTimeout(timer);
-  }, [feedback]);
   const hp = frame?.cars[local].hp ?? context.gameplay.maxHealth;
   const seconds = Math.max(0, Math.ceil(context.gameplay.timeLimit - (frame?.timeUs ?? 0) / 1e6));
   const remaining = Math.max(
@@ -336,15 +348,6 @@ export function RaceView({
           </p>
 
           <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">
-            {feedback && (
-              <p
-                className="rounded bg-black/80 px-3 py-2"
-                role="status"
-                data-testid="object-feedback"
-              >
-                {feedback}
-              </p>
-            )}
             {frame?.awaiting && !outcome && (
               <p role="status" className="bg-black/80 p-2">
                 Awaiting confirmation
