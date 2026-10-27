@@ -311,7 +311,7 @@ export function MultiplayerView({
               <div className="multiplayer-ready-actions">
                 <Button
                   className={`multiplayer-action ${host && canStart ? "multiplayer-start" : ""}`}
-                  disabled={!eligible || !focused || (host && ready && !canStart)}
+                  disabled={!eligible || !focused || (ready && (!host || !canStart))}
                   onClick={
                     host && canStart
                       ? () => actions?.command(2, room!.mode, 0, "Starting round")
@@ -323,10 +323,10 @@ export function MultiplayerView({
                     : ready
                       ? host
                         ? "Waiting for player…"
-                        : "Cancel ready"
+                        : "Ready"
                       : "Ready"}
                 </Button>
-                {host && ready && (
+                {ready && (
                   <button
                     className="multiplayer-text-button"
                     disabled={!eligible}

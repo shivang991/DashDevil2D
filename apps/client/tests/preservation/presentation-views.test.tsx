@@ -104,6 +104,15 @@ function getButton(name: string) {
 function clickButton(name: string) {
   act(() => getButton(name).click());
 }
+
+test("guest readiness keeps Ready disabled and offers a separate cancel control", () => {
+  const guest = { ...lobby, identity: { ...lobby.identity!, seat: 1 } };
+  const props = renderMultiplayer({ state: guest });
+  expect(getButton("Ready").disabled).toBe(true);
+  expect(getButton("Cancel ready").disabled).toBe(false);
+  clickButton("Cancel ready");
+  expect(props.actions.command).toHaveBeenCalledWith(1, room.mode, 0, "Confirming readiness");
+});
 function escape() {
   act(() =>
     (document.activeElement ?? host).dispatchEvent(
