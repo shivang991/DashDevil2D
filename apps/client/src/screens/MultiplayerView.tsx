@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
+import defaults from "@dashdevil/contracts/configuration";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 import { RoundResult } from "@/components/RoundResult";
 import { Button } from "@/components/ui/button";
@@ -55,6 +56,42 @@ export function MultiplayerView({
   const inRoom = Boolean(room && state?.identity && state.status !== "Disconnected");
   const finalized = Boolean(state?.outcome && state.outcome.roundId === room?.roundId);
   const returned = Boolean(room && room.seats[local].flags & 8);
+  const resultKey =
+    inRoom && finalized && room?.phase !== 0 && !returned
+      ? `${room!.identity.roomId}:${room!.roundId}`
+      : undefined;
+  const [readyResult, setReadyResult] = useState<string>();
+  const [previousResultKey, setPreviousResultKey] = useState(resultKey);
+  if (previousResultKey !== resultKey) {
+    setPreviousResultKey(resultKey);
+    setReadyResult(undefined);
+  }
+  const resultWait = useRef<{ key: string; receivedMs: number }>(undefined);
+  const outcomeReceivedUs = state?.diagnostics.outcomeReceivedUs;
+  const resultDelayMs =
+    (state?.context?.presentation.roundOverDelay ?? defaults.presentation.roundOverDelay) * 1000;
+  useEffect(() => {
+    if (!resultKey) {
+      resultWait.current = undefined;
+      return;
+    }
+    if (resultWait.current?.key !== resultKey) {
+      resultWait.current = {
+        key: resultKey,
+        receivedMs: outcomeReceivedUs === undefined ? performance.now() : outcomeReceivedUs / 1000,
+      };
+    }
+    const deadlineMs = resultWait.current.receivedMs + resultDelayMs;
+    let timer: ReturnType<typeof setTimeout>;
+    const wait = () => {
+      const remainingMs = deadlineMs - performance.now();
+      if (remainingMs <= 0) setReadyResult(resultKey);
+      // Browser timers use signed 32-bit milliseconds. Recheck the monotonic deadline.
+      else timer = setTimeout(wait, Math.min(Math.ceil(remainingMs), 2_147_483_647));
+    };
+    timer = setTimeout(wait, 0);
+    return () => clearTimeout(timer);
+  }, [resultKey, outcomeReceivedUs, resultDelayMs]);
   const waitingForOther = room?.phase === 3 && returned;
   const countdown = room?.phase === 1 && !finalized;
   const showCountdown = inRoom && countdown && connected;
@@ -406,7 +443,7 @@ export function MultiplayerView({
         )}
       </section>
       <MultiplayerDialog
-        open={Boolean(inRoom && finalized && room?.phase !== 0 && !returned)}
+        open={Boolean(resultKey && readyResult === resultKey)}
         title="Round Over"
         description="The multiplayer round has ended."
         className="round-result-dialog"

@@ -113,11 +113,28 @@ for (const delayed of [0, 1])
       await pages[delayed].evaluate(() => sessionStorage.setItem("finalityReload", "1"));
       await pages[delayed].reload();
       await pages[delayed].getByRole("button", { name: /Drag Race/ }).click();
-      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
-        timeout: 1200,
-      });
+      // Terminal acceptance is immediate; the results dialog deliberately waits.
+      await expect
+        .poll(async () => {
+          const evidence = pages[delayed].getByTestId("room-evidence");
+          if (!(await evidence.count())) return 0;
+          return JSON.parse((await evidence.textContent())!).diagnostics.outcomeReceivedUs ?? 0;
+        })
+        .toBeGreaterThan(0);
       const before = JSON.parse((await pages[delayed].getByTestId("room-evidence").textContent())!);
       expect(before.baselineBytes).toBe(0);
+      expect(
+        before.cars.map(({ progress, lateral, hp, score }) => ({ progress, lateral, hp, score })),
+      ).toEqual(outcomes[delayed].cars);
+      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toHaveCount(0);
+      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
+        timeout: 3000,
+      });
+      const elapsedUs = await pages[delayed].evaluate(
+        (receivedUs) => performance.now() * 1000 - receivedUs,
+        before.diagnostics.outcomeReceivedUs,
+      );
+      expect(elapsedUs).toBeGreaterThanOrEqual(1_000_000);
       await expect
         .poll(
           async () =>

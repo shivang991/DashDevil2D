@@ -63,7 +63,7 @@ func TestDeploymentRejectsPriorProtocolBeforeAllocatingSeat(t *testing.T) {
 	s, c, _ := serverMode(t, false)
 	status, value := admit(t, s, c, p.AdmissionRequest{Version: 1, Name: "Old tab"}, origin)
 	problem, ok := value.(p.ProtocolError)
-	if status != 409 || !ok || problem.ExpectedVersion != 2 {
+	if status != 409 || !ok || problem.ExpectedVersion != p.ProtocolVersion {
 		t.Fatalf("old tab not told to reload: status=%d response=%T", status, value)
 	}
 }

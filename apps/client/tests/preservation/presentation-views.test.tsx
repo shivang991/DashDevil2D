@@ -4,6 +4,8 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import { MultiplayerView } from "@/screens/MultiplayerView";
 import { MenuScreen } from "@/screens/MenuScreen";
 import { disconnected, lobby, outcome, room } from "@/stories/fixtures";
+import { captureConfiguration } from "@dashdevil/simulation/config";
+import { configurationContext } from "@dashdevil/contracts/validation";
 
 let host: HTMLDivElement;
 let root: Root;
@@ -17,6 +19,7 @@ afterEach(() => {
   act(() => root.unmount());
   host.remove();
   vi.restoreAllMocks();
+  vi.useRealTimers();
 });
 
 test("menu fixtures avoid generating or storing a player identity", () => {
@@ -38,6 +41,7 @@ test("menu fixtures avoid generating or storing a player identity", () => {
 });
 
 test("leave confirmation focuses cancel and resets on a server outcome", () => {
+  vi.useFakeTimers();
   const actions = {
     connect: vi.fn(async () => {}),
     command: vi.fn(),
@@ -69,6 +73,8 @@ test("leave confirmation focuses cancel and resets on a server outcome", () => {
   expect(document.activeElement?.textContent).toBe("Cancel");
   expect(actions.releaseControls).toHaveBeenCalledOnce();
   render({ ...countdown, outcome });
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(1000));
   expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
   render();
   expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Starting");
@@ -105,9 +111,123 @@ function clickButton(name: string) {
   act(() => getButton(name).click());
 }
 
+test.each([1, 2] as const)("mode %s honors its captured round-over delay", (mode) => {
+  vi.useFakeTimers();
+  const context = configurationContext(
+    captureConfiguration(mode === 1 ? "drag-race" : "road-rage", {
+      presentation: { roundOverDelay: 2.5 },
+    }),
+  );
+  renderMultiplayer({
+    mode,
+    state: { ...lobby, context, room: { ...room, mode, phase: 3 }, outcome },
+    renderRace: () => <div>Final scene</div>,
+  });
+  act(() => vi.advanceTimersByTime(2499));
+  expect(host.textContent).toContain("Final scene");
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(1));
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
+});
+
+test("a valid long delay never overflows into an immediate result", () => {
+  vi.useFakeTimers();
+  const context = configurationContext(
+    captureConfiguration("drag-race", { presentation: { roundOverDelay: 3_000_000 } }),
+  );
+  renderMultiplayer({ state: { ...lobby, context, room: { ...room, phase: 3 }, outcome } });
+  act(() => vi.advanceTimersByTime(1000));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(2_999_998_999));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(1));
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
+});
+
+test("outcome receipt starts the delay before room finalization and reconnects preserve it", () => {
+  vi.useFakeTimers();
+  act(() => vi.advanceTimersByTime(5000));
+  const final = {
+    ...lobby,
+    room: { ...room, phase: 2 },
+    outcome,
+    diagnostics: { ...lobby.diagnostics, outcomeReceivedUs: 5_000_000 },
+  };
+  const props = renderMultiplayer({ state: final, renderRace: () => <div>Final scene</div> });
+  act(() => vi.advanceTimersByTime(400));
+  renderMultiplayer({
+    ...props,
+    state: {
+      ...final,
+      status: "Reconnecting",
+      room: { ...room, phase: 3 },
+      outcome: { ...outcome },
+    },
+  });
+  act(() => vi.advanceTimersByTime(599));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  expect(host.textContent).toContain("Final scene");
+  act(() => vi.advanceTimersByTime(1));
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
+  expect(getButton("Return to Lobby").disabled).toBe(true);
+});
+
+test.each(["leave", "new round"])("%s cancels a pending round result", (change) => {
+  vi.useFakeTimers();
+  const final = { ...lobby, room: { ...room, phase: 3 }, outcome };
+  const props = renderMultiplayer({ state: final });
+  act(() => vi.advanceTimersByTime(500));
+  renderMultiplayer({
+    ...props,
+    state:
+      change === "leave" ? disconnected : { ...lobby, room: { ...room, roundId: 2, phase: 2 } },
+  });
+  act(() => vi.advanceTimersByTime(1000));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  const nextRound = change === "leave" ? room.roundId : 2;
+  renderMultiplayer({
+    ...props,
+    state: {
+      ...final,
+      room: { ...final.room, roundId: nextRound },
+      outcome: { ...outcome, roundId: nextRound },
+    },
+  });
+  act(() => vi.advanceTimersByTime(999));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(1));
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
+});
+
+test("an outcome first received after reconnect gets the full delay", () => {
+  vi.useFakeTimers();
+  const props = renderMultiplayer({
+    state: { ...lobby, status: "Reconnecting", room: { ...room, phase: 3 } },
+  });
+  act(() => vi.advanceTimersByTime(5000));
+  renderMultiplayer({
+    ...props,
+    state: {
+      ...props.state,
+      outcome,
+      diagnostics: { ...lobby.diagnostics, outcomeReceivedUs: 5_000_000 },
+    },
+  });
+  act(() => vi.advanceTimersByTime(999));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(1));
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
+});
+
 test("round result stays over the race until this player returns, then waits in the lobby", () => {
+  vi.useFakeTimers();
   const final = { ...lobby, room: { ...room, phase: 3 }, outcome };
   const props = renderMultiplayer({ state: final, renderRace: () => <div>Completed race</div> });
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  expect(host.textContent).toContain("Completed race");
+  act(() => vi.advanceTimersByTime(999));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(1));
   expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
   expect(host.textContent).toContain("Completed race");
   clickButton("Return to Lobby");

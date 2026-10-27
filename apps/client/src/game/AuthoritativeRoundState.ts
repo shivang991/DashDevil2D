@@ -1,6 +1,6 @@
 import { RaceSession } from "./RaceSession";
 import { RaceVerification } from "./RaceVerification";
-import { validateMessage } from "@dashdevil/contracts/validation";
+import { initialCar, validateMessage } from "@dashdevil/contracts/validation";
 import { BaselineTransfer } from "@dashdevil/contracts/transfer";
 import { crc32c } from "@dashdevil/contracts/wire";
 import {
@@ -407,8 +407,28 @@ export class AuthoritativeRoundState {
   input(value: Input, timeUs: number) {
     this.race?.input(value, timeUs);
   }
-  frame(timeUs: number, authorityAgeUs: number) {
-    return this.race?.frame(timeUs, authorityAgeUs);
+  frame(timeUs: number, authorityAgeUs: number): ReturnType<RaceSession["frame"]> | undefined {
+    if (this.race) return this.race.frame(timeUs, authorityAgeUs);
+    const outcome = this.current.outcome;
+    if (!outcome || !this.context || outcome.roundId !== this.initialRound) return;
+    // A recovered terminal outcome can precede the first baseline. Its cars are
+    // sufficient to draw the frozen result while road-object state is unavailable.
+    return {
+      feedback: [],
+      sounds: [],
+      objects: [],
+      renderedCars: outcome.cars.map((car) => ({ ...car, tilt: 0 })),
+      cars: outcome.cars.map((car, seat) => ({
+        ...initialCar(seat === 0 ? 0 : 2, car.hp),
+        ...car,
+        normalSpeed: this.context!.gameplay.startingRoadSpeed,
+      })),
+      timeUs: outcome.timeUs,
+      outcome: structuredClone(outcome),
+      awaiting: false,
+      stale: false,
+      needsRecovery: false,
+    };
   }
   get diagnostics() {
     return this.race?.diagnostics.map((value) => ({ ...value }));

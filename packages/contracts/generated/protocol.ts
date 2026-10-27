@@ -1,6 +1,6 @@
 // Generated from protocol/schema.json. Run pnpm generate; do not edit.
 import { encodeRecord, decodeRecord, encodeFrame, decodeFrame, projectRecord } from '../protocol/runtime';
-export const protocolVersion = 2;
+export const protocolVersion = 3;
 export const layouts = {
   "Identity": [
     {
@@ -496,6 +496,10 @@ export const layouts = {
     },
     {
       "name": "shakeIntensity",
+      "type": "f64"
+    },
+    {
+      "name": "roundOverDelay",
       "type": "f64"
     }
   ],
@@ -1578,6 +1582,7 @@ export interface Presentation {
   roadWidthRatioNormal: number;
   shakeDuration: number;
   shakeIntensity: number;
+  roundOverDelay: number;
 }
 export function encodePresentation(value: Presentation, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'Presentation', value, limit); }
 export function decodePresentation(bytes: Uint8Array, limit = 1048576): Presentation { return decodeRecord(layouts, 'Presentation', bytes, limit) as Presentation; }

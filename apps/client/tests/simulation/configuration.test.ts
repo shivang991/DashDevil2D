@@ -30,6 +30,16 @@ import {
   type Mode,
   type ConfigurationOverrides,
 } from "@dashdevil/simulation/config";
+test.each(["drag-race", "road-rage"] as const)(
+  "%s captures a default one-second round-over delay and immutable overrides",
+  (mode) => {
+    expect(captureConfiguration(mode).presentation.roundOverDelay).toBe(1);
+    const overrides = { presentation: { roundOverDelay: 2.5 } };
+    const captured = captureConfiguration(mode, overrides);
+    overrides.presentation.roundOverDelay = 4;
+    expect(captured.presentation.roundOverDelay).toBe(2.5);
+  },
+);
 for (const scenario of fixtures.valid) {
   test(scenario.name, () => {
     const configuration = captureConfiguration(

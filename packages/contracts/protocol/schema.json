@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "byteOrder": "big-endian",
   "timestampMax": 9007199254740991,
   "projection": "signed-int64; floor(position*1024+0.5); exact-JS-integer subset",
@@ -498,6 +498,10 @@
       },
       {
         "name": "shakeIntensity",
+        "type": "f64"
+      },
+      {
+        "name": "roundOverDelay",
         "type": "f64"
       }
     ],

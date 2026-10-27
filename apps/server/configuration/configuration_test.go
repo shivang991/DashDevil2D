@@ -73,3 +73,24 @@ func TestCaptureOwnershipAndMalformedSettings(t *testing.T) {
 		}
 	}
 }
+
+func TestRoundOverDelayCapturedInContext(t *testing.T) {
+	definition, err := os.ReadFile("../../../packages/contracts/configuration/defaults.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, mode := range []string{"drag-race", "road-rage"} {
+		for _, scenario := range []struct {
+			override string
+			want     float64
+		}{{"", 1}, {`{"presentation":{"roundOverDelay":2.5}}`, 2.5}} {
+			config, err := Capture(definition, mode, []byte(scenario.override))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got := config.Context(1).Presentation.RoundOverDelay; got != scenario.want {
+				t.Fatalf("%s delay: got %v want %v", mode, got, scenario.want)
+			}
+		}
+	}
+}

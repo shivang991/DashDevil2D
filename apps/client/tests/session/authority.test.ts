@@ -327,7 +327,22 @@ test("a cold recovered outcome stays visible before the first baseline is comple
   const final = outcome(b);
   expect(authority.accept({ type: "Outcome", value: final })).toEqual([{ type: "outcome" }]);
   expect(authority.view).toMatchObject({ outcome: final, timeUs: final.timeUs });
-  expect(authority.frame(900000, 0)).toBeUndefined();
+  expect(authority.frame(900000, 0)).toMatchObject({
+    outcome: final,
+    timeUs: 475000,
+    cars: [
+      { progress: 380, hp: 3, controls: 0, effective: 0, heldMask: 0 },
+      { progress: 190, hp: 3, controls: 0, effective: 0, heldMask: 0 },
+    ],
+    renderedCars: [
+      { progress: 380, tilt: 0 },
+      { progress: 190, tilt: 0 },
+    ],
+    awaiting: false,
+    stale: false,
+    needsRecovery: false,
+  });
+  expect(authority.frame(2_000_000, 2_000_000)).toEqual(authority.frame(900000, 0));
   expect(authority.requestRecovery()).toBeUndefined();
   const completion = authority.accept(parts[1]);
   expect(

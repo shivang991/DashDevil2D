@@ -108,6 +108,7 @@ const durationFields = new Set([
   "networkBudgetWindow",
   "simulationLagThreshold",
   "correctionSmoothing",
+  "roundOverDelay",
 ]);
 function captureGroup<T extends object>(group: string, baseline: T, override: unknown): Numeric<T> {
   requireValue(
@@ -268,6 +269,11 @@ export function captureConfiguration<M extends Mode>(
     presentation.correctionSmoothing <= 0.25,
     "presentation.correctionSmoothing",
     "must be zero or at most 250 ms",
+  );
+  requireValue(
+    presentation.roundOverDelay >= 1,
+    "presentation.roundOverDelay",
+    "must be at least one second",
   );
   requireValue(
     presentation.gameOverFadeMaxOpacity === 0 || presentation.gameOverFadeSpeed > 0,

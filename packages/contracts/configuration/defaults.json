@@ -118,7 +118,8 @@
     "gameOverShakeMultiplier": 1.5,
     "gameOverShakeDuration": 0.5,
     "gameOverFadeSpeed": 2,
-    "correctionSmoothing": 0.1
+    "correctionSmoothing": 0.1,
+    "roundOverDelay": 1
   },
   "room": {
     "reconnectGrace": 15,
