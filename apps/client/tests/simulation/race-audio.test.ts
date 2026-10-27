@@ -1,0 +1,41 @@
+import { afterEach, expect, test, vi } from "vitest";
+import { GameAudio } from "../../src/lib/gameAudio";
+import { RaceAudio } from "../../src/game/RaceAudio";
+import { RaceSession } from "../../src/game/RaceSession";
+import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
+import { captureConfiguration } from "@dashdevil/simulation/config";
+
+afterEach(() => vi.restoreAllMocks());
+
+test("multiplayer audio follows local boost, silences stale play, and plays terminal cue once", () => {
+  const update = vi.spyOn(GameAudio.prototype, "update").mockImplementation(() => {});
+  const cue = vi.spyOn(GameAudio.prototype, "playEffect").mockImplementation(() => {});
+  const impact = vi.spyOn(GameAudio.prototype, "impact").mockImplementation(() => {});
+  const dispose = vi.spyOn(GameAudio.prototype, "dispose");
+  const b = initialBaseline(configurationContext(captureConfiguration("road-rage"), 1, 1000000));
+  b.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
+  const race = new RaceSession(b);
+  const frame = race.frame(0, 0);
+  frame.cars[1].flags = 1;
+  frame.sounds = [{ type: "heart" }, { type: "impact", protected: true }];
+  const audio = new RaceAudio();
+  audio.update(frame, 1);
+  expect(cue.mock.calls.map(([type]) => type)).toEqual(["go", "heart"]);
+  expect(impact).toHaveBeenCalledWith(true);
+  expect(update.mock.calls.at(-1)?.[0]).toMatchObject({ accelerating: true, health: b.cars[1].hp });
+  cue.mockClear();
+  impact.mockClear();
+  frame.stale = true;
+  audio.update(frame, 1);
+  expect(cue).not.toHaveBeenCalled();
+  expect(impact).not.toHaveBeenCalled();
+  expect(update.mock.calls.at(-1)?.[0]).toMatchObject({ paused: true });
+  frame.outcome = { ...b, roundId: b.round.roundId, outcomeId: 1, result: 0, reason: 0 };
+  frame.sounds = [];
+  audio.update(frame, 1);
+  audio.update(frame, 1);
+  expect(cue.mock.calls.map(([type]) => type)).toEqual(["gameover"]);
+  expect(update.mock.calls.at(-1)?.[0]).toMatchObject({ status: "gameover" });
+  audio.dispose();
+  expect(dispose).toHaveBeenCalledOnce();
+});

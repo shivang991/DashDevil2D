@@ -963,3 +963,147 @@ test("collision return tilts toward the departure lane", () => {
   const race = new RaceSession(b);
   expect(race.frame(50000, 0).renderedCars[0].tilt).toBeLessThan(0);
 });
+
+for (const mode of ["drag-race", "road-rage"] as const)
+  for (const seat of [0, 1]) {
+    for (const kind of [1, 3])
+      test(`${mode} seat ${seat}: only local ${kind === 3 ? "heart" : "coin"} pickups sound, including full HP`, () => {
+        const b = initialBaseline(configurationContext(captureConfiguration(mode), 1, 1000000));
+        b.identity.seat = seat;
+        b.cars[seat].progress = 44;
+        b.cars[1 - seat].progress = 0;
+        const lane = b.cars[seat].lane;
+        b.windows = [
+          {
+            start: -200,
+            end: 5000,
+            firstSlice: 1,
+            lastSlice: 1,
+            objects: [{ id: 4, sliceId: 1, lane, flags: kind, distance: 100 }],
+          },
+        ];
+        b.generator.nextSlice = 2;
+        b.generator.nextObject = 7;
+        const race = new RaceSession(b);
+        const frame = race.frame(25000, 0);
+        expect(frame.sounds).toEqual([{ type: kind === 3 ? "heart" : "coin" }]);
+        expect(race.frame(25000, 0).sounds).toEqual([]);
+        race.event({
+          identity: b.identity,
+          round: b.round,
+          authority: 1,
+          eventId: 1,
+          tick: 1,
+          timeUs: 16667,
+          kind: 2,
+          seatMask: 3,
+          cars: frame.cars,
+          contact: b.contact,
+          objects: frame.objects,
+        });
+        expect(race.frame(30000, 0).sounds).toEqual([]);
+
+        const rivalBaseline = structuredClone(b);
+        rivalBaseline.identity.seat = 1 - seat;
+        const rival = new RaceSession(rivalBaseline);
+        expect(rival.frame(25000, 0).sounds).toEqual([]);
+      });
+    test(`${mode} seat ${seat}: obstacle impacts sound once; protected hits softer and without damage cue`, () => {
+      const b = initialBaseline(configurationContext(captureConfiguration(mode), 1, 1000000));
+      b.identity.seat = seat;
+      b.cars[seat].progress = 44;
+      b.cars[1 - seat].progress = 0;
+      if (mode === "road-rage") b.cars[seat].protectionUs = 1000000;
+      b.windows = [
+        {
+          start: -200,
+          end: 5000,
+          firstSlice: 1,
+          lastSlice: 1,
+          objects: [{ id: 4, sliceId: 1, lane: b.cars[seat].lane, flags: 2, distance: 100 }],
+        },
+      ];
+      b.generator.nextSlice = 2;
+      b.generator.nextObject = 7;
+      const race = new RaceSession(b);
+      const sounds = race.frame(25000, 0).sounds;
+      expect(sounds).toContainEqual({ type: "impact", protected: mode === "road-rage" });
+      expect(sounds.some((sound) => sound.type === "damage")).toBe(mode === "drag-race");
+      expect(race.frame(30000, 0).sounds).toEqual([]);
+    });
+  }
+
+test("authoritative car contact sounds once and recovery does not replay old contact", () => {
+  const b = baseline();
+  const race = new RaceSession(b);
+  const event = {
+    identity: b.identity,
+    round: b.round,
+    authority: 1,
+    eventId: 1,
+    tick: 0,
+    timeUs: 0,
+    kind: 8,
+    seatMask: 3,
+    cars: b.cars,
+    contact: { ...b.contact, episode: 1, flags: 3 },
+    objects: [],
+  };
+  race.event(event);
+  expect(race.frame(0, 0).sounds).toEqual([{ type: "impact", protected: false }]);
+  race.event(event);
+  expect(race.frame(0, 0).sounds).toEqual([]);
+  const recovered = race.snapshot();
+  recovered.epoch++;
+  race.install(recovered);
+  expect(race.frame(0, 0).sounds).toEqual([]);
+});
+
+for (const mode of ["drag-race", "road-rage"] as const)
+  for (const seat of [0, 1])
+    test(`${mode} seat ${seat}: predicted steering and car contact sound once across replay`, () => {
+      const b = initialBaseline(configurationContext(captureConfiguration(mode), 1, 1000000));
+      b.identity.seat = seat;
+      b.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
+      Object.assign(b.cars[1 - seat], {
+        lane: 1,
+        departure: 1,
+        target: 1,
+        lateral: 0,
+        movementOrigin: 0,
+        movementTarget: 0,
+      });
+      const race = new RaceSession(b);
+      const control = seat === 0 ? 2 : 1;
+      race.input(
+        {
+          identity: b.identity,
+          round: b.round,
+          sequence: 1,
+          intent: 0,
+          control,
+          heldMask: 1 << (control - 1),
+        },
+        0,
+      );
+      const frame = race.frame(100000, 0);
+      expect(frame.sounds.filter((sound) => sound.type === "lane")).toHaveLength(1);
+      expect(frame.sounds.filter((sound) => sound.type === "impact")).toEqual([
+        { type: "impact", protected: false },
+      ]);
+      expect(race.frame(100000, 0).sounds).toEqual([]);
+      race.event({
+        identity: b.identity,
+        round: b.round,
+        authority: 1,
+        eventId: 1,
+        tick: 6,
+        timeUs: 100000,
+        kind: 8,
+        seatMask: 3,
+        cars: frame.cars,
+        contact: { ...b.contact, episode: 1, flags: 3 },
+        objects: [],
+      });
+      expect(race.frame(100000, 0).sounds.filter((sound) => sound.type === "impact")).toEqual([]);
+    });

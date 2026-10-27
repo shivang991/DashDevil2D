@@ -27,6 +27,7 @@ export function playingFixture(mode: 1 | 2) {
     ],
     timeUs: 38_000_000,
     feedback: [],
+    sounds: [],
     outcome: undefined,
     awaiting: false,
     stale: false,

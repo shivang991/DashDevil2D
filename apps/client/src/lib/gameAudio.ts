@@ -1,6 +1,19 @@
 import type { LongDriveEvent } from "@dashdevil/simulation/longDrive";
 import type { GameState } from "@dashdevil/simulation/state";
 
+export type DrivingAudioState = Pick<
+  GameState,
+  | "status"
+  | "paused"
+  | "score"
+  | "health"
+  | "currentLane"
+  | "accelerating"
+  | "countdownTimer"
+  | "roadSpeed"
+>;
+export type AudioCue = LongDriveEvent["type"];
+
 const STORAGE_KEY = "runner-sound-enabled";
 
 /**
@@ -411,7 +424,54 @@ export class GameAudio {
     };
   }
 
-  update(state: Readonly<GameState>, events: readonly LongDriveEvent[] = []) {
+  /** Shared one-shot recipes for every game mode. */
+  playEffect(cue: AudioCue) {
+    if (this.disposed) return;
+    switch (cue) {
+      case "countdown":
+        this.tone(440, 440, 0.13, "square", 0.16);
+        break;
+      case "go":
+        this.tone(880, 1100, 0.35, "square", 0.16);
+        break;
+      case "lane":
+        this.tone(180, 90, 0.09, "triangle", 0.2);
+        break;
+      case "heart":
+        [523, 659, 784].forEach((note, index) =>
+          this.tone(note, note, 0.24, "sine", 0.26, index * 0.065),
+        );
+        break;
+      case "coin":
+        this.tone(880, 880, 0.1);
+        this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);
+        break;
+      case "damage":
+        this.tone(130, 30, 0.3, "sawtooth", 0.5);
+        break;
+      case "gameover":
+        [330, 262, 196, 98].forEach((note, index) =>
+          this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16),
+        );
+        break;
+      case "pause":
+        this.tone(440, 220, 0.16);
+        break;
+      case "resume":
+        this.tone(220, 440, 0.16);
+        break;
+    }
+  }
+
+  /** One cue per collision episode; protection gives a lighter bumper tap. */
+  impact(protectedHit = false) {
+    if (this.disposed) return;
+    const strength = protectedHit ? 0.16 : 0.4;
+    this.tone(protectedHit ? 220 : 160, 45, 0.13, "triangle", strength);
+    this.tone(95, 28, 0.22, "sawtooth", strength * 0.65);
+  }
+
+  update(state: Readonly<DrivingAudioState>, events: readonly LongDriveEvent[] = []) {
     if (this.disposed) return;
     // Compare snapshots so effects fire once per event, not every animation frame.
     const previous = this.previous;
@@ -419,36 +479,7 @@ export class GameAudio {
     for (const event of events) {
       if (event.id <= this.lastEventId) continue;
       this.lastEventId = event.id;
-      switch (event.type) {
-        case "countdown":
-          this.tone(440, 440, 0.13, "square", 0.16);
-          break;
-        case "go":
-          this.tone(880, 1100, 0.35, "square", 0.16);
-          break;
-        case "lane":
-          this.tone(180, 90, 0.09, "triangle", 0.2);
-          break;
-        case "heart":
-        case "coin":
-          this.tone(880, 880, 0.1);
-          this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);
-          break;
-        case "damage":
-          this.tone(130, 30, 0.3, "sawtooth", 0.5);
-          break;
-        case "gameover":
-          [330, 262, 196, 98].forEach((note, index) =>
-            this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16),
-          );
-          break;
-        case "pause":
-          this.tone(440, 220, 0.16);
-          break;
-        case "resume":
-          this.tone(220, 440, 0.16);
-          break;
-      }
+      this.playEffect(event.type);
     }
     if (this.context && this.engine && this.engineGain) {
       const running = state.status === "playing" && !state.paused;

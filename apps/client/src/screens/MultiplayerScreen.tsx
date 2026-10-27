@@ -1,3 +1,4 @@
+import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
 import {
   PairedConnection,
@@ -53,6 +54,34 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
       document.removeEventListener("visibilitychange", focus);
     };
   }, []);
+
+  // Countdown lives in the lobby; RaceView takes over playback when racing starts.
+  const countdownPlayer = useRef<GameAudio | undefined>(undefined);
+  const previousCount = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const player = new GameAudio();
+    countdownPlayer.current = player;
+    player.unlock();
+    return () => {
+      player.dispose();
+      countdownPlayer.current = undefined;
+    };
+  }, []);
+  useEffect(() => {
+    if (state?.room?.phase !== 1 || state.status !== "Connected") {
+      previousCount.current = undefined;
+      return;
+    }
+    const count = Math.max(
+      1,
+      Math.min(3, Math.ceil((state.room.startUs - (clock + state.clockOffsetUs)) / 1e6)),
+    );
+    const key = `${state.room.roundId}:${count}`;
+    if (previousCount.current !== key) {
+      previousCount.current = key;
+      countdownPlayer.current?.playEffect("countdown");
+    }
+  }, [state, clock]);
 
   return (
     <MultiplayerView

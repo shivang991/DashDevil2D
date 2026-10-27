@@ -1,3 +1,4 @@
+import { RaceAudio } from "@/game/RaceAudio";
 import { Settings } from "lucide-react";
 import { TouchControls } from "./TouchControls";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -30,6 +31,19 @@ export function RaceView({
   onLeave: () => void;
   audio?: Pick<typeof gameAudio, "enabled" | "setEnabled">;
 }) {
+  const playback = useRef<RaceAudio | undefined>(undefined);
+  const suspendedAudio = useRef(suspended);
+  useEffect(() => {
+    suspendedAudio.current = suspended;
+  }, [suspended]);
+  useEffect(() => {
+    const player = new RaceAudio();
+    playback.current = player;
+    return () => {
+      player.dispose();
+      playback.current = undefined;
+    };
+  }, [state.roundId]);
   const canvas = useRef<HTMLCanvasElement>(null);
   const pressed = useRef(new Set<string>());
   const sources = useRef(new Map<string, number>());
@@ -123,6 +137,7 @@ export function RaceView({
     const hitAt = [-Infinity, -Infinity];
     const draw = (time: number) => {
       const view = connection.frame();
+      if (view) playback.current?.update(view, local, suspendedAudio.current);
       const element = canvas.current,
         ctx = element?.getContext("2d");
       if (view && ctx && element) {

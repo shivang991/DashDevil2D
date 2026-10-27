@@ -5,10 +5,13 @@ import { createLongDrive, type LongDriveEvent } from "@dashdevil/simulation/long
 afterEach(() => vi.unstubAllGlobals());
 test("audio consumes an identified terminal cue once and cannot mutate frozen gameplay", () => {
   let oscillators = 0;
+  const pitches: number[] = [];
   const parameter = () => ({
     value: 0,
     setTargetAtTime() {},
-    setValueAtTime() {},
+    setValueAtTime(value: number) {
+      pitches.push(value);
+    },
     exponentialRampToValueAtTime() {},
     linearRampToValueAtTime() {},
   });
@@ -53,6 +56,18 @@ test("audio consumes an identified terminal cue once and cannot mutate frozen ga
   audio.update(state, Object.freeze([event]));
   expect(oscillators - initial).toBe(4);
   expect(state).toMatchObject({ health: 2, score: 0, status: "gameover", gameOverFadeAlpha: 0 });
+  pitches.length = 0;
+  audio.playEffect("coin");
+  const coin = [...pitches];
+  pitches.length = 0;
+  audio.playEffect("heart");
+  expect(pitches).not.toEqual(coin);
+  expect(pitches.length).toBeGreaterThan(0);
+  const audible = oscillators;
+  audio.enabled = false;
+  audio.playEffect("heart");
+  audio.impact();
+  expect(oscillators).toBe(audible);
   audio.dispose();
 });
 

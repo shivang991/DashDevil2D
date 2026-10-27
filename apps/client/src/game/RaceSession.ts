@@ -2,6 +2,7 @@ import {
   Multiplayer,
   canonicalTime,
   type MultiplayerConfiguration,
+  type Observation,
 } from "@dashdevil/simulation/multiplayer";
 import { firstContact } from "@dashdevil/simulation/geometry";
 import { captureConfiguration } from "@dashdevil/simulation/config";
@@ -22,6 +23,11 @@ const sameIdentity = (a: Baseline["identity"], b: Baseline["identity"]) =>
   a.seatSession === b.seatSession &&
   a.pairGeneration === b.pairGeneration;
 
+export interface RaceSound {
+  type: "coin" | "heart" | "impact" | "lane" | "damage";
+  protected?: boolean;
+}
+
 /** Client prediction owns copied simulation state; rendering never writes it. */
 export class RaceSession {
   readonly diagnostics = [0, 1].map(() => ({
@@ -31,6 +37,9 @@ export class RaceSession {
     maxSettlingUs: 0,
   }));
   private settlingSince?: number;
+  private soundEpisode = 0;
+  private sounds: RaceSound[] = [];
+  private soundSeen = new Set<string>();
   private feedbackSeen = new Set<string>();
   private feedback: string[] = [];
   private baseline: Baseline;
@@ -54,6 +63,7 @@ export class RaceSession {
   constructor(baseline: Baseline, nowUs = () => performance.now() * 1000) {
     this.nowUs = nowUs;
     this.baseline = structuredClone(baseline);
+    this.soundEpisode = Math.max(this.soundEpisode, baseline.contact.episode);
     const c = baseline.context;
     const mode = c.mode === 1 ? "drag-race" : "road-rage";
     // Wire Gameplay includes fields for all modes; capture only this mode's keys.
@@ -93,6 +103,7 @@ export class RaceSession {
       this.lastFrameUs = baseline.timeUs;
     } else this.beforeCorrection();
     this.baseline = structuredClone(baseline);
+    this.soundEpisode = Math.max(this.soundEpisode, baseline.contact.episode);
     const cutoff =
       baseline.identity.seat === 0 ? baseline.progress.processed1 : baseline.progress.processed2;
     this.pending = this.pending.filter((p) => p.input.sequence > cutoff);
@@ -182,6 +193,7 @@ export class RaceSession {
       record.authority <= this.baseline.progress.authority
     )
       return;
+    const previousCars = this.baseline.cars;
     this.beforeCorrection();
     this.advanceAuthority(record.tick);
     // An authoritative generation change starts a new sequence space for that
@@ -210,6 +222,14 @@ export class RaceSession {
         if (index >= 0) window.objects[index] = { ...object };
       }
     this.observeObjects(record.objects);
+    this.observeSounds(
+      record.objects,
+      record.cars,
+      record.timeUs,
+      record.contact.episode,
+      undefined,
+      previousCars,
+    );
     this.baseline.contact = { ...record.contact };
     this.baseline.progress.authority = record.authority;
     this.baseline.progress.event = record.eventId;
@@ -286,10 +306,72 @@ export class RaceSession {
       );
     }
   }
+  private observeSounds(
+    objects: readonly import("@dashdevil/contracts/protocol").ObjectState[],
+    cars: readonly Car[],
+    timeUs: number,
+    episode: number,
+    observation?: Observation,
+    previousCars: readonly Car[] = this.baseline.cars,
+  ) {
+    const seat = this.baseline.identity.seat;
+    const car = cars[seat];
+    const g = this.configuration.gameplay;
+    const emit = (key: string, sound: RaceSound) => {
+      if (this.soundSeen.has(key)) return;
+      this.soundSeen.add(key);
+      this.sounds.push(sound);
+    };
+    for (const object of objects) {
+      const kind = object.flags & 3;
+      if (kind === 2) {
+        if (object.flags & (8 << seat))
+          emit(`object:${object.id}`, {
+            type: "impact",
+            protected: previousCars[seat].protectionUs > timeUs,
+          });
+        continue;
+      }
+      if (!(object.flags & 4)) continue;
+      // Pickup consumption is global. Identify the sole overlapping collector,
+      // including hearts consumed at full HP. A simultaneous contested pickup is silent.
+      const size = kind === 3 ? g.heartSize : g.coinSize;
+      const overlaps = cars.map(
+        (candidate) =>
+          Math.abs(candidate.lateral - (object.lane - 1) * g.laneSpacing) <=
+            (g.carWidth + size) / 2 + 0.001 &&
+          Math.abs(candidate.progress - object.distance) <= (g.carHeight + size) / 2 + 0.001,
+      );
+      if (overlaps[seat] && !overlaps[1 - seat])
+        emit(`object:${object.id}`, { type: kind === 3 ? "heart" : "coin" });
+    }
+    if (episode > this.soundEpisode) {
+      this.soundEpisode = episode;
+      emit(`contact:${episode}`, {
+        type: "impact",
+        protected: previousCars[seat].protectionUs > timeUs,
+      });
+    }
+    if ((!observation || observation.type === "objects") && car.hp < previousCars[seat].hp)
+      emit(`damage:${timeUs}`, { type: "damage" });
+    if (
+      car.phase === 1 &&
+      ((observation?.type === "shift" && observation.seat === seat) ||
+        previousCars[seat].phase !== 1 ||
+        car.movementStartUs !== previousCars[seat].movementStartUs)
+    )
+      emit(`lane:${car.inputGeneration}:${car.movementStartUs}`, { type: "lane" });
+  }
+  private drainSounds() {
+    const sounds = this.sounds;
+    this.sounds = [];
+    return sounds;
+  }
   frame(estimatedUs: number, authorityAgeUs: number) {
     if (this.outcome)
       return {
         feedback: [] as string[],
+        sounds: this.drainSounds(),
         objects: this.baseline.windows.flatMap((window) => window.objects),
         renderedCars: this.outcome.cars.map((c) => ({ ...c, tilt: 0 })),
         cars: this.outcome.cars.map((c, seat) => ({
@@ -416,6 +498,7 @@ export class RaceSession {
     this.feedback = [];
     return {
       feedback,
+      sounds: this.drainSounds(),
       objects: state.objects,
       renderedCars,
       cars: state.cars,
@@ -479,7 +562,17 @@ export class RaceSession {
         return;
       }
       if (publish)
-        for (const event of events) if (event.objects) this.observeObjects(event.objects);
+        for (const event of events) {
+          if (event.objects) this.observeObjects(event.objects);
+          this.observeSounds(
+            event.objects ?? [],
+            event.cars ?? game.preview().cars,
+            event.timeUs,
+            game.preview().contact.episode,
+            event,
+            previous.cars,
+          );
+        }
     };
     const advance = (us: number) => {
       const tick = Math.floor((us * rate) / 1e6);
