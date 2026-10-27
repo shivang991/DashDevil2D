@@ -117,7 +117,7 @@ export function GameWorldView({ ui, canvasRef, onFocus, onBack }: GameWorldViewP
                 {onBack && (
                   <button
                     onClick={onBack}
-                    className="relative mt-6 px-4 py-2 rounded-lg border border-neutral-600 text-neutral-300 text-sm hover:border-neutral-400 hover:text-white transition-colors"
+                    className="relative mt-6 px-4 py-2 rounded-lg border border-neutral-600 text-neutral-300 text-sm hover:border-neutral-400 hover:text-white"
                   >
                     Back to Menu
                   </button>

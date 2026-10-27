@@ -14,7 +14,7 @@ export function MenuItem({ title, subtitle, onClick, disabled, comingSoon }: Men
       <button
         onClick={onClick}
         disabled={disabled}
-        className={`flex items-center justify-between w-full px-4 py-3 rounded-xl border transition-colors text-left ${
+        className={`flex items-center justify-between w-full px-4 py-3 rounded-xl border text-left ${
           disabled
             ? "border-neutral-700 opacity-50 cursor-not-allowed"
             : "border-neutral-600 hover:border-neutral-400 hover:bg-neutral-800 cursor-pointer"

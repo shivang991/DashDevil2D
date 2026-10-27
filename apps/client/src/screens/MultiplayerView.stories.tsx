@@ -25,6 +25,35 @@ export const RoadRage: Story = { args: { mode: 2 } };
 export const Loading: Story = { args: { state: undefined } };
 export const Joining: Story = { args: { state: { ...disconnected, pending: "Joining room" } } };
 export const Error: Story = { args: { error: "Unable to join: room is full." } };
+export const JoinError: Story = {
+  ...Error,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "Join Room" }));
+    await userEvent.type(canvas.getByLabelText("Room code"), "0042");
+  },
+};
+export const Creating: Story = { args: { state: { ...disconnected, pending: "Creating room" } } };
+export const Guest: Story = {
+  args: { state: { ...lobby, identity: { ...lobby.identity!, seat: 1 } } },
+};
+export const HostNotReady: Story = {
+  args: {
+    state: {
+      ...lobby,
+      room: { ...room, seats: room.seats.map((seat) => ({ ...seat, flags: 1 })) },
+    },
+  },
+};
+export const CountdownCancelled: Story = {
+  ...HostNotReady,
+  args: {
+    state: {
+      ...HostNotReady.args!.state!,
+      notice: "Countdown cancelled. Both players must ready again.",
+    },
+  },
+};
 export const ReadyToStart: Story = { args: { state: lobby } };
 export const WaitingForPlayer: Story = {
   args: {
@@ -55,6 +84,7 @@ export const LeaveConfirmation: Story = {
 export const JoinWithCode: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "Join Room" }));
     await expect(canvas.getByRole("button", { name: "Join Room" })).toBeDisabled();
     await userEvent.type(canvas.getByLabelText("Room code"), "1234");
     await userEvent.click(canvas.getByRole("button", { name: "Join Room" }));

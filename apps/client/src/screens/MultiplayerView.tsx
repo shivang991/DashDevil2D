@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Check, ChevronLeft, Copy, LoaderCircle, LockKeyhole, X } from "lucide-react";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 import { RoundResult } from "@/components/RoundResult";
+import { Button } from "@/components/ui/button";
+import { MultiplayerDialog } from "./MultiplayerDialog";
+import "./multiplayer.css";
 
 const button =
   "rounded-lg border border-neutral-600 px-4 py-2 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed";
@@ -30,36 +34,30 @@ export function MultiplayerView({
   actions,
   renderRace,
 }: MultiplayerViewProps) {
+  const [selectedMode, setSelectedMode] = useState(mode);
   const [code, setCode] = useState("");
-  const [copy, setCopy] = useState("Copy");
+  const [copy, setCopy] = useState("");
+  const [joinOpen, setJoinOpen] = useState(state?.pending === "Joining room");
   const [dismissedResult, setDismissedResult] = useState<number>();
   const [confirmLeave, setConfirmLeave] = useState(false);
   const cancelLeave = useRef<HTMLButtonElement>(null);
+  const backButton = useRef<HTMLButtonElement>(null);
+  const joinButton = useRef<HTMLButtonElement>(null);
+  const main = useRef<HTMLElement>(null);
   const room = state?.room;
   const local = state?.identity?.seat ?? 0;
   const host = room?.host === local;
   const connected = state?.status === "Connected";
   const pending = Boolean(state?.pending);
   const eligible = connected && !pending;
-  const canStart = eligible && room?.seats.every((seat) => (seat.flags & 3) === 3);
-
-  useEffect(() => {
-    if (confirmLeave) cancelLeave.current?.focus();
-  }, [confirmLeave]);
-
-  // Reset transient confirmation when the server publishes a new outcome.
-  const [previousOutcome, setPreviousOutcome] = useState(state?.outcome);
-  if (previousOutcome !== state?.outcome) {
-    setPreviousOutcome(state?.outcome);
-    if (state?.outcome) setConfirmLeave(false);
-  }
-
-  const leave = () => {
-    actions?.leave();
-    setConfirmLeave(false);
-  };
+  // Losing focus clears readiness on the server; remote focus is not exposed separately.
+  const canStart =
+    eligible && focused && room?.seats.every((seat) => seat.session && (seat.flags & 3) === 3);
+  const ready = Boolean(room && room.seats[local].flags & 2);
+  const inRoom = Boolean(room && state?.identity && state.status !== "Disconnected");
   const finalized = Boolean(state?.outcome && state.outcome.roundId === room?.roundId);
   const countdown = room?.phase === 1 && !finalized;
+  const showCountdown = inRoom && countdown && connected;
   const active = room?.phase === 2;
   const race =
     (active || room?.phase === 3 || (finalized && room?.phase !== 0)) &&
@@ -71,148 +69,237 @@ export function MultiplayerView({
         Math.min(3, Math.ceil((room.startUs - (clock + (state?.clockOffsetUs ?? 0))) / 1e6)),
       )
     : 3;
-  const inRoom = Boolean(room && state?.identity && state.status !== "Disconnected");
+  const admissionError =
+    error ||
+    (state?.status.startsWith("Unable") ||
+    state?.status === "Browser unsupported" ||
+    state?.status === "Version mismatch—reload"
+      ? state.status
+      : "");
+  const shownMode = inRoom ? room!.mode : selectedMode;
+  const showJoin = !inRoom && joinOpen;
+
+  // Admission closes the join dialog even if this room later expires remotely.
+  const [previousInRoom, setPreviousInRoom] = useState(inRoom);
+  if (previousInRoom !== inRoom) {
+    setPreviousInRoom(inRoom);
+    if (inRoom) setJoinOpen(false);
+    else setConfirmLeave(false);
+  }
+  // Reset transient confirmation when the server publishes a new outcome.
+  const [previousOutcome, setPreviousOutcome] = useState(state?.outcome);
+  if (previousOutcome !== state?.outcome) {
+    setPreviousOutcome(state?.outcome);
+    if (state?.outcome) setConfirmLeave(false);
+  }
+
+  useEffect(() => {
+    if (!copy) return;
+    const timer = setTimeout(() => setCopy(""), 2500);
+    return () => clearTimeout(timer);
+  }, [copy]);
+
+  const requestLeave = () => {
+    actions?.releaseControls();
+    setConfirmLeave(true);
+  };
+  const leave = () => {
+    if (room) setSelectedMode(room.mode as 1 | 2);
+    setJoinOpen(false);
+    setCopy("");
+    actions?.leave();
+    setConfirmLeave(false);
+  };
+  const toggleReady = () => actions?.command(1, room!.mode, ready ? 0 : 1, "Confirming readiness");
+  const copyCode = async () => {
+    try {
+      await navigator.clipboard.writeText(state?.code ?? "");
+      setCopy("Copied");
+    } catch {
+      setCopy("Select and copy the code");
+    }
+  };
 
   return (
     <main
-      className={
-        race
-          ? "multiplayer-match bg-neutral-950 text-white"
-          : "min-h-screen bg-neutral-950 text-white flex justify-center p-6"
-      }
+      ref={main}
+      tabIndex={-1}
+      className={race ? "multiplayer-match bg-neutral-950 text-white" : "multiplayer-screen"}
       onKeyDown={(event) => {
-        if (event.key === "Escape" && !event.repeat) {
-          if (confirmLeave) setConfirmLeave(false);
-          else if (!inRoom) onBack();
-        }
+        if (event.key !== "Escape" || event.repeat || event.defaultPrevented) return;
+        if (showJoin || showCountdown || confirmLeave || race) return;
+        if (inRoom) requestLeave();
+        else if (!pending) onBack();
       }}
     >
-      <section
-        className={race ? "multiplayer-match-panel" : "w-full max-w-lg flex flex-col gap-5 py-10"}
-      >
+      <section className={race ? "multiplayer-match-panel" : "multiplayer-panel"}>
         {!race && (
-          <h1 className="text-2xl font-heading">
-            {inRoom
-              ? race
-                ? modeName(room!.mode)
-                : active
-                  ? "Round ready"
-                  : countdown
-                    ? "Starting round"
-                    : "Private room"
-              : modeName(mode)}
-          </h1>
-        )}
-        {!race && <p className="text-neutral-400">{playerName}</p>}
-        {!inRoom ? (
           <>
-            <p>Create a private room or join a friend.</p>
-            <button
-              className={button}
-              disabled={!state || pending}
-              onClick={() => void actions?.connect(0, "", mode)}
-            >
-              Create Room
-            </button>
-            <form
-              className="flex flex-col gap-3"
-              onSubmit={(event) => {
-                event.preventDefault();
-                if (/^\d{4}$/.test(code) && !pending) void actions?.connect(1, code);
-              }}
-            >
-              <label htmlFor="room-code">Room code</label>
-              <input
-                id="room-code"
-                className="rounded-lg border border-neutral-600 bg-neutral-900 p-3 font-mono text-xl tracking-widest"
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]{4}"
-                maxLength={4}
-                autoComplete="off"
-                value={code}
-                onChange={(event) => setCode(event.target.value.replace(/[^0-9]/g, ""))}
-                aria-describedby="admission-error"
-              />
-              <button className={button} disabled={!state || pending || !/^\d{4}$/.test(code)}>
-                Join Room
+            <h1 className="sr-only">Multiplayer</h1>
+            <header className="multiplayer-header">
+              <button
+                ref={backButton}
+                type="button"
+                className="multiplayer-back"
+                aria-label={inRoom ? "Leave" : "Back"}
+                disabled={!inRoom && pending}
+                onClick={inRoom ? requestLeave : onBack}
+              >
+                <ChevronLeft aria-hidden="true" />
               </button>
-            </form>
-            <p id="admission-error" role="alert">
-              {error ||
-                (state?.status.startsWith("Unable") ||
-                state?.status === "Browser unsupported" ||
-                state?.status === "Version mismatch—reload"
-                  ? state.status
-                  : "")}
-            </p>
-            <button className={button} onClick={onBack}>
-              Back
-            </button>
+              <div className="multiplayer-modes" role="group" aria-label="Multiplayer mode">
+                {([2, 1] as const).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className="multiplayer-mode"
+                    aria-pressed={shownMode === value}
+                    disabled={inRoom ? !host || !eligible || room!.phase !== 0 : pending}
+                    onClick={() => {
+                      if (shownMode === value) return;
+                      if (inRoom) actions?.command(0, value, 0, "Changing mode");
+                      else setSelectedMode(value);
+                    }}
+                  >
+                    <span data-testid={shownMode === value ? "selected-mode" : undefined}>
+                      {modeName(value)}
+                    </span>
+                    {inRoom && !host && shownMode === value && <LockKeyhole aria-hidden="true" />}
+                  </button>
+                ))}
+              </div>
+            </header>
           </>
+        )}
+        {!inRoom ? (
+          <div className="multiplayer-entry">
+            <p className="multiplayer-player-name">{playerName}</p>
+            <div className="multiplayer-actions">
+              <Button
+                className="multiplayer-action"
+                disabled={!state || pending}
+                onClick={() => void actions?.connect(0, "", selectedMode)}
+              >
+                {state?.pending === "Creating room" ? (
+                  <>
+                    <LoaderCircle className="multiplayer-spinner" aria-hidden="true" />
+                    Creating…
+                  </>
+                ) : (
+                  "Create Room"
+                )}
+              </Button>
+              <Button
+                ref={joinButton}
+                className="multiplayer-action"
+                disabled={!state || pending}
+                onClick={() => setJoinOpen(true)}
+              >
+                Join Room
+              </Button>
+            </div>
+            {!showJoin && admissionError && !pending && (
+              <p className="multiplayer-error" role="alert">
+                {admissionError}
+              </p>
+            )}
+            {pending && !showJoin && (
+              <p className="multiplayer-note" role="status">
+                {state?.pending}…
+              </p>
+            )}
+          </div>
         ) : (
           <>
             {!race && (
               <>
-                <div className="flex gap-4 items-center">
-                  <span className="text-3xl font-mono tracking-widest" data-testid="room-code">
-                    {state?.code}
-                  </span>
-                  <button
-                    className={button}
-                    onClick={() => {
-                      void navigator.clipboard?.writeText(state?.code ?? "").then(
-                        () => setCopy("Copied"),
-                        () => setCopy("Select and copy the code"),
-                      );
-                    }}
-                  >
-                    {copy}
-                  </button>
-                </div>
-                <p data-testid="connection-state" role="status">
-                  {state?.status}
+                <p className="multiplayer-mode-hint">
+                  {host
+                    ? "Changing mode resets both players’ readiness."
+                    : "The host chooses the mode."}
                 </p>
-                <p>
-                  Mode: <span data-testid="selected-mode">{modeName(room!.mode)}</span>
+                <div className="multiplayer-room">
+                  <ul className="multiplayer-players" aria-label="Players">
+                    {[room!.host, 1 - room!.host].map((index, position) => {
+                      const seat = room!.seats[index];
+                      return (
+                        <li key={index} className="multiplayer-player">
+                          {position === 1 && (
+                            <span className="multiplayer-versus" aria-hidden="true">
+                              vs
+                            </span>
+                          )}
+                          <div className="multiplayer-player-info">
+                            <span className="multiplayer-player-label">
+                              {seat.session > 0 && Boolean(seat.flags & 2) && (
+                                <Check className="multiplayer-ready-check" aria-label="Ready" />
+                              )}
+                              <span
+                                className="multiplayer-name"
+                                title={seat.name || "Waiting for player"}
+                              >
+                                {seat.session ? (
+                                  <>
+                                    {seat.name}
+                                    {index === local && (
+                                      <span className="multiplayer-you"> (You)</span>
+                                    )}
+                                  </>
+                                ) : (
+                                  "??"
+                                )}
+                              </span>
+                            </span>
+                            <span className="multiplayer-seat-status">
+                              {!seat.session
+                                ? "Waiting for player"
+                                : !(seat.flags & 1)
+                                  ? "Reconnecting…"
+                                  : index === room!.host
+                                    ? "Host"
+                                    : "Guest"}
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <div className="multiplayer-code-wrap">
+                    <div className="multiplayer-code">
+                      <span data-testid="room-code" aria-label="Room code">
+                        {state?.code}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label="Copy room code"
+                        onClick={() => void copyCode()}
+                      >
+                        {copy === "Copied" ? (
+                          <Check aria-hidden="true" />
+                        ) : (
+                          <Copy aria-hidden="true" />
+                        )}
+                      </button>
+                    </div>
+                    <span className="multiplayer-copy-feedback" role="status">
+                      {copy}
+                    </span>
+                  </div>
+                </div>
+                <p
+                  data-testid="connection-state"
+                  role="status"
+                  className={connected ? "sr-only" : "multiplayer-note"}
+                >
+                  {state?.status}
                 </p>
               </>
             )}
-            {!race && (
-              <ul className="flex flex-col gap-3">
-                {room!.seats.map((seat, index) => (
-                  <li key={index} className="rounded-lg border border-neutral-700 p-4">
-                    <span>
-                      {seat.session
-                        ? `${seat.name}${index === local ? " (You)" : ""}`
-                        : "Waiting for player"}
-                    </span>
-                    {seat.session > 0 && (
-                      <p className="text-sm text-neutral-400">
-                        {index === room!.host ? "Host · " : ""}
-                        {seat.flags & 1 ? "Connected" : "Reconnecting"} ·{" "}
-                        {seat.flags & 2 ? "Ready" : "Not ready"}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            )}
-            {countdown ? (
-              <div className="text-center py-8">
-                <p className="text-7xl" data-testid="countdown" aria-live="polite">
-                  {remaining}
-                </p>
-                <p>{installed ? "Get ready!" : "Preparing round…"}</p>
-              </div>
-            ) : race ? (
+            {countdown ? null : race ? (
               renderRace ? (
                 renderRace({
                   suspended: confirmLeave || state?.status !== "Connected",
-                  onLeave: () => {
-                    actions?.releaseControls();
-                    setConfirmLeave(true);
-                  },
+                  onLeave: requestLeave,
                 })
               ) : (
                 <p>Synchronizing…</p>
@@ -220,58 +307,47 @@ export function MultiplayerView({
             ) : active ? (
               <p>{installed ? "Players synchronized." : "Synchronizing…"}</p>
             ) : (
-              <>
-                {host && (
-                  <label className="flex flex-col gap-2">
-                    Multiplayer mode
-                    <select
-                      className="rounded-lg bg-neutral-900 border border-neutral-600 p-3"
-                      value={room!.mode}
-                      disabled={!eligible}
-                      onChange={(event) =>
-                        actions?.command(0, Number(event.target.value), 0, "Changing mode")
-                      }
-                    >
-                      <option value={1}>Drag Race</option>
-                      <option value={2}>Road Rage</option>
-                    </select>
-                  </label>
-                )}
-                <button
-                  className={button}
-                  disabled={!eligible || !focused}
-                  onClick={() =>
-                    actions?.command(
-                      1,
-                      room!.mode,
-                      room!.seats[local].flags & 2 ? 0 : 1,
-                      "Confirming readiness",
-                    )
+              <div className="multiplayer-ready-actions">
+                <Button
+                  className={`multiplayer-action ${host && canStart ? "multiplayer-start" : ""}`}
+                  disabled={!eligible || !focused || (host && ready && !canStart)}
+                  onClick={
+                    host && canStart
+                      ? () => actions?.command(2, room!.mode, 0, "Starting round")
+                      : toggleReady
                   }
                 >
-                  {room!.seats[local].flags & 2 ? "Cancel ready" : "Ready"}
-                </button>
-                {host && (
-                  <>
-                    <button
-                      className={button}
-                      disabled={!canStart}
-                      onClick={() => actions?.command(2, room!.mode, 0, "Starting round")}
-                    >
-                      Start round
-                    </button>
-                    {!canStart && (
-                      <p className="text-sm text-neutral-400">
-                        Start requires two connected, initialized, focused and ready players.
-                      </p>
-                    )}
-                  </>
+                  {host && canStart
+                    ? "Start round"
+                    : ready
+                      ? host
+                        ? "Waiting for player…"
+                        : "Cancel ready"
+                      : "Ready"}
+                </Button>
+                {host && ready && (
+                  <button
+                    className="multiplayer-text-button"
+                    disabled={!eligible}
+                    onClick={toggleReady}
+                  >
+                    Cancel ready
+                  </button>
                 )}
+                <p className="multiplayer-note">
+                  {!focused
+                    ? "Return to the game to ready up."
+                    : !host && ready
+                      ? "Waiting for the host to start."
+                      : host && canStart
+                        ? "Both players ready. Start your engines."
+                        : "Both players must be connected and ready to start."}
+                </p>
                 {room!.idleWarningUs > 0 &&
                   clock + (state?.clockOffsetUs ?? 0) >= room!.idleWarningUs && (
                     <p role="alert">This room will expire soon without activity.</p>
                   )}
-              </>
+              </div>
             )}
             {room!.phase === 0 && state?.outcome && dismissedResult !== state.outcome.roundId && (
               <>
@@ -291,18 +367,6 @@ export function MultiplayerView({
                 onClick={() => actions?.command(5, room!.mode, 0, "Returning to lobby")}
               >
                 Return to Lobby
-              </button>
-            )}
-            {!race && (
-              <button
-                className={button}
-                onClick={() => {
-                  actions?.releaseControls();
-                  if ((countdown || active) && !state?.outcome) setConfirmLeave(true);
-                  else leave();
-                }}
-              >
-                Leave
               </button>
             )}
             {import.meta.env.VITE_MULTIPLAYER_DEBUG === "true" && (
@@ -343,42 +407,133 @@ export function MultiplayerView({
             )}
           </>
         )}
-        {!race && state?.pending && <p role="status">{state.pending}…</p>}
-        {!race && state?.notice && <p role="alert">{state.notice}</p>}
-        {confirmLeave && !state?.outcome && (
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="leave-title"
-            className="fixed inset-0 bg-black/90 flex items-center justify-center p-6"
-            onKeyDown={(event) => {
-              if (event.key === "Tab") {
-                event.preventDefault();
-                const buttons = event.currentTarget.querySelectorAll("button");
-                const next = document.activeElement === buttons[0] ? buttons[1] : buttons[0];
-                next.focus();
-              }
-            }}
-          >
-            <div className="rounded-xl border border-neutral-600 bg-neutral-950 p-6 flex flex-col gap-4">
-              <h2 id="leave-title">Leave room?</h2>
-              <p>
-                {countdown
-                  ? "Leaving cancels the countdown for both players."
-                  : room!.seats[1 - local].flags & 1
-                    ? "Leaving forfeits this round to the connected opponent."
-                    : "Leaving abandons this round while the opponent is disconnected."}
-              </p>
-              <button ref={cancelLeave} className={button} onClick={() => setConfirmLeave(false)}>
-                Cancel
-              </button>
-              <button className={button} onClick={leave}>
-                Confirm leave
-              </button>
-            </div>
+        {!race && inRoom && state?.pending && (
+          <p className="multiplayer-note" role="status">
+            {state.pending}…
+          </p>
+        )}
+        {!race && state?.notice && (
+          <div className="multiplayer-notice" role="alert">
+            <p>{state.notice}</p>
+            {state.notice.startsWith("Countdown cancelled") && (
+              <p>A player left, lost connection, or hid the game.</p>
+            )}
           </div>
         )}
       </section>
+      <MultiplayerDialog
+        open={showJoin}
+        title={pending ? "Joining" : "Join room"}
+        description={
+          pending
+            ? "Connecting to your friend’s room."
+            : "Enter your friend’s four-digit room code."
+        }
+        onDismiss={pending ? undefined : () => setJoinOpen(false)}
+        dismissOutside={!pending}
+        returnFocus={joinButton}
+      >
+        {pending ? (
+          <div className="multiplayer-joining" role="status">
+            <LoaderCircle className="multiplayer-spinner" aria-hidden="true" />
+            <span className="sr-only">Joining room…</span>
+          </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="multiplayer-dialog-close"
+              aria-label="Close join dialog"
+              onClick={() => setJoinOpen(false)}
+            >
+              <X aria-hidden="true" />
+            </button>
+            <form
+              className="multiplayer-join-form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                if (/^\d{4}$/.test(code) && !pending && state) void actions?.connect(1, code);
+              }}
+            >
+              <label htmlFor="room-code">Room code</label>
+              <input
+                id="room-code"
+                className="multiplayer-code-input"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]{4}"
+                maxLength={4}
+                autoComplete="off"
+                autoFocus
+                placeholder="Enter code"
+                value={code}
+                onChange={(event) => setCode(event.target.value.replace(/[^0-9]/g, ""))}
+                aria-invalid={Boolean(admissionError)}
+                aria-describedby={admissionError ? "admission-error" : undefined}
+              />
+              {admissionError && (
+                <p id="admission-error" className="multiplayer-error" role="alert">
+                  {admissionError}
+                </p>
+              )}
+              <Button className="multiplayer-action" disabled={!state || !/^\d{4}$/.test(code)}>
+                Join Room
+              </Button>
+            </form>
+          </>
+        )}
+      </MultiplayerDialog>
+      <MultiplayerDialog
+        open={Boolean(showCountdown && !confirmLeave)}
+        title="Starting"
+        description="The race starts after the countdown."
+        onDismiss={requestLeave}
+        returnFocus={main}
+      >
+        <p
+          className="multiplayer-countdown"
+          data-testid="countdown"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {remaining}
+        </p>
+        <p className="multiplayer-note">{installed ? "Get ready!" : "Preparing round…"}</p>
+        <button className="multiplayer-text-button" onClick={requestLeave}>
+          Leave
+        </button>
+      </MultiplayerDialog>
+      <MultiplayerDialog
+        open={confirmLeave && inRoom && (!race || !state?.outcome)}
+        title="Leave room?"
+        description="Confirm before leaving your multiplayer room."
+        onDismiss={() => setConfirmLeave(false)}
+        initialFocus={cancelLeave}
+        returnFocus={main}
+      >
+        <p className="multiplayer-leave-description">
+          {countdown
+            ? "Leaving cancels the countdown for both players."
+            : !race
+              ? "You’ll return to the multiplayer screen."
+              : room!.seats[1 - local].flags & 1
+                ? "Leaving forfeits this round to the connected opponent."
+                : "Leaving abandons this round while the opponent is disconnected."}
+        </p>
+        {!race && host && Boolean(room?.seats[1 - local].session) && (
+          <p className="multiplayer-note">{room!.seats[1 - local].name} becomes the host.</p>
+        )}
+        <Button
+          ref={cancelLeave}
+          className="multiplayer-action"
+          onClick={() => setConfirmLeave(false)}
+        >
+          Cancel
+        </Button>
+        <button className="multiplayer-text-button" onClick={leave}>
+          Confirm leave
+        </button>
+      </MultiplayerDialog>
     </main>
   );
 }

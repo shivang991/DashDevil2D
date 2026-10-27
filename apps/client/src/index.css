@@ -4,26 +4,6 @@
 
 @custom-variant dark (&:is(.dark *));
 
-.game-overlay {
-  animation: game-overlay-in 100ms ease-out;
-}
-
-@keyframes game-overlay-in {
-  from {
-    opacity: 0;
-  }
-
-  to {
-    opacity: 1;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .game-overlay {
-    animation: none;
-  }
-}
-
 @theme inline {
   --font-sans: "Bruno Ace SC", sans-serif;
   --font-heading: "Bitcount Ink Variable", monospace;

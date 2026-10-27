@@ -24,6 +24,7 @@ test(
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
       await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
       const code = await pages[0].getByTestId("room-code").innerText();
+      await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
       await pages[1].getByLabel("Room code").fill(code);
       await pages[1].getByLabel("Room code").press("Enter");
       await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
@@ -124,10 +125,10 @@ test(
       if (!defaults) {
         await pages[1].getByRole("button", { name: "Return to Lobby", exact: true }).click();
         await expect(pages[0].getByLabel("Multiplayer mode")).toBeVisible();
-        await pages[0].getByLabel("Multiplayer mode").selectOption("1");
+        await pages[0].getByRole("button", { name: "Drag Race", exact: true }).click();
         for (const page of pages)
           await expect(page.getByTestId("selected-mode")).toHaveText("Drag Race");
-        await pages[0].getByLabel("Multiplayer mode").selectOption("2");
+        await pages[0].getByRole("button", { name: "Road Rage", exact: true }).click();
         for (const page of pages)
           await expect(page.getByTestId("selected-mode")).toHaveText("Road Rage");
         await start();

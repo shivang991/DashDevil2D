@@ -46,6 +46,7 @@ test("default course: native menu controls, recovered authority, shared results 
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
     await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
     const code = await pages[0].getByTestId("room-code").innerText();
+    await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[1].getByLabel("Room code").fill(code);
     await pages[1].getByLabel("Room code").press("Enter");
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
@@ -128,13 +129,13 @@ test("default course: native menu controls, recovered authority, shared results 
       await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible();
     }
     await expect(pages[0].getByLabel("Multiplayer mode")).toBeVisible();
-    await expect(pages[0].getByRole("button", { name: "Start round" })).toBeDisabled();
+    await expect(pages[0].getByRole("button", { name: "Start round" })).toHaveCount(0);
     await pages[1].getByRole("button", { name: "Dismiss result" }).click();
     await expect(pages[1].getByRole("heading", { name: "Round result" })).toHaveCount(0);
     // Mode capture changes in lobby, then restore Drag Race for another playable round.
-    await pages[0].getByLabel("Multiplayer mode").selectOption("2");
+    await pages[0].getByRole("button", { name: "Road Rage", exact: true }).click();
     await expect(pages[1].getByTestId("selected-mode")).toHaveText("Road Rage");
-    await pages[0].getByLabel("Multiplayer mode").selectOption("1");
+    await pages[0].getByRole("button", { name: "Drag Race", exact: true }).click();
     await expect(pages[1].getByTestId("selected-mode")).toHaveText("Drag Race");
     await start();
     const rematch = await Promise.all(pages.map(read));
@@ -267,6 +268,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
     await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
     const code = await pages[0].getByTestId("room-code").innerText();
+    await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[1].getByLabel("Room code").fill(code);
     await pages[1].getByLabel("Room code").press("Enter");
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
@@ -324,6 +326,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     );
     expect(recoveredOutcome.cars).toEqual(outcome.cars);
     expect(recoveredOutcome.timeUs).toBe(outcome.timeUs);
+    await pages[2].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[2].getByLabel("Room code").fill(code);
     await pages[2].getByLabel("Room code").press("Enter");
     await expect(pages[2].getByTestId("connection-state")).toHaveText("Connected");
@@ -331,7 +334,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
       await expect(page.getByRole("button", { name: "Ready", exact: true })).toBeVisible();
     await expect(pages[0].getByRole("heading", { name: "Round result" })).toBeVisible();
     await expect(pages[2].getByRole("heading", { name: "Round result" })).toHaveCount(0);
-    await expect(pages[0].getByRole("button", { name: "Start round" })).toBeDisabled();
+    await expect(pages[0].getByRole("button", { name: "Start round" })).toHaveCount(0);
     records.push({
       outcome,
       recoveredOutcome,

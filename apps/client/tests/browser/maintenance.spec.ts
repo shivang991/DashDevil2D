@@ -22,6 +22,7 @@ test("planned maintenance keeps active play and final results, then abandons unf
     }
     await pair[0].getByRole("button", { name: "Create Room", exact: true }).click();
     await expect(pair[0].getByTestId("connection-state")).toHaveText("Connected");
+    await pair[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await pair[1].getByLabel("Room code").fill(await pair[0].getByTestId("room-code").innerText());
     await pair[1].getByLabel("Room code").press("Enter");
     await expect(pair[1].getByTestId("connection-state")).toHaveText("Connected");

@@ -37,6 +37,7 @@ for (const action of ["recover", "leave"])
         }
         await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
         await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
+        await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
         await pages[1]
           .getByLabel("Room code")
           .fill(await pages[0].getByTestId("room-code").innerText());
