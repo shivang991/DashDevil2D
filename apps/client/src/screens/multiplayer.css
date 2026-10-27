@@ -344,11 +344,6 @@
   place-items: center;
   min-height: 152px;
 }
-.multiplayer-joining svg {
-  width: 56px;
-  height: 56px;
-  stroke-width: 1.5;
-}
 .multiplayer-countdown {
   font-family: var(--font-heading);
   font-weight: 300;
@@ -366,14 +361,6 @@
 .multiplayer-start[data-slot="button"] {
   border-color: #fafafa;
   animation: multiplayer-start-pulse 2.4s ease-in-out infinite;
-}
-.multiplayer-spinner {
-  animation: multiplayer-spin 1s linear infinite;
-}
-@keyframes multiplayer-spin {
-  to {
-    transform: rotate(360deg);
-  }
 }
 @keyframes multiplayer-start-pulse {
   0%,
@@ -420,7 +407,6 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .multiplayer-spinner,
   .multiplayer-start[data-slot="button"] {
     animation: none;
   }

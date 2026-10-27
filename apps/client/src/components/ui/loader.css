@@ -1,0 +1,50 @@
+.loader {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 60px;
+  aspect-ratio: 2;
+  --loader-dot: no-repeat radial-gradient(circle closest-side, currentColor 90%, transparent);
+  background:
+    var(--loader-dot) 0% 50%,
+    var(--loader-dot) 50% 50%,
+    var(--loader-dot) 100% 50%;
+  background-size: calc(100% / 3) 50%;
+  animation: loader-bounce 1s infinite linear;
+}
+
+.loader[data-size="sm"] {
+  width: 30px;
+}
+
+@keyframes loader-bounce {
+  20% {
+    background-position:
+      0% 0%,
+      50% 50%,
+      100% 50%;
+  }
+  40% {
+    background-position:
+      0% 100%,
+      50% 0%,
+      100% 50%;
+  }
+  60% {
+    background-position:
+      0% 50%,
+      50% 100%,
+      100% 0%;
+  }
+  80% {
+    background-position:
+      0% 50%,
+      50% 50%,
+      100% 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader {
+    animation: none;
+  }
+}

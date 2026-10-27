@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Check, ChevronLeft, Copy, LoaderCircle, LockKeyhole, X } from "lucide-react";
+import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 import { RoundResult } from "@/components/RoundResult";
 import { Button } from "@/components/ui/button";
+import { Loader } from "@/components/ui/loader";
 import { MultiplayerDialog } from "./MultiplayerDialog";
 import "./multiplayer.css";
 
@@ -182,7 +183,7 @@ export function MultiplayerView({
               >
                 {state?.pending === "Creating room" ? (
                   <>
-                    <LoaderCircle className="multiplayer-spinner" aria-hidden="true" />
+                    <Loader size="sm" />
                     Creating…
                   </>
                 ) : (
@@ -435,7 +436,7 @@ export function MultiplayerView({
       >
         {pending ? (
           <div className="multiplayer-joining" role="status">
-            <LoaderCircle className="multiplayer-spinner" aria-hidden="true" />
+            <Loader />
             <span className="sr-only">Joining room…</span>
           </div>
         ) : (
