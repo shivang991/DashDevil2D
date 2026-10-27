@@ -1,6 +1,6 @@
 import { Settings } from "lucide-react";
 import { TouchControls } from "./TouchControls";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
 import { multiplayerRoadScale } from "@/lib/roadProjection";
 import { gameAudio } from "@/lib/gameAudio";
@@ -80,7 +80,8 @@ export function RaceView({
       if (
         control &&
         !menu &&
-        event.target === canvas.current &&
+        !interactive(event.target) &&
+        state.status === "Connected" &&
         document.hasFocus() &&
         !document.hidden
       ) {
@@ -92,9 +93,9 @@ export function RaceView({
       pressed.current.delete(event.code);
       if (suspended) return;
       const control = controlFor(event.key);
-      if (control && !interactive(event.target)) {
+      if (control && sources.current.has(`key:${event.code}`)) {
         controlInput(`key:${event.code}`, control, false);
-        if (event.target === canvas.current) event.preventDefault();
+        if (!interactive(event.target)) event.preventDefault();
       }
     };
     window.addEventListener("keydown", down);
@@ -107,13 +108,14 @@ export function RaceView({
       window.removeEventListener("blur", release);
       document.removeEventListener("visibilitychange", release);
     };
-  }, [connection, controlInput, menu, suspended, state.outcome, audio]);
-  useEffect(() => {
+  }, [connection, controlInput, menu, suspended, state.outcome, state.status, audio]);
+  useLayoutEffect(() => {
+    pressed.current.clear();
     sources.current.clear();
     connection.releaseControls();
     if (!menu && !suspended && !state.outcome && state.status === "Connected")
       canvas.current?.focus();
-  }, [connection, menu, suspended, state.outcome, state.status]);
+  }, [connection, menu, suspended, state.outcome, state.status, state.roundId]);
   useEffect(() => {
     let handle = 0,
       lastHud = 0;
@@ -339,13 +341,11 @@ export function RaceView({
       </span>
       <div className="race-stage">
         <div className="race-canvas-wrap">
-          <p
-            className="pointer-events-none absolute bottom-3 left-3 z-10 rounded bg-black/75 px-2 py-1 text-xs text-sky-300"
+          <span
+            hidden
             data-testid="nos-status"
             data-nos-state={(frame?.cars[local].flags ?? 0) & 1 ? "active" : "ready"}
-          >
-            W / ↑
-          </p>
+          />
 
           <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">
             {frame?.awaiting && !outcome && (

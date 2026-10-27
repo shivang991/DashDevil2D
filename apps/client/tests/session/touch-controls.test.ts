@@ -50,6 +50,24 @@ test("multiplayer shares touch and keyboard holds and releases controls when set
     const gas = host.querySelector<HTMLButtonElement>('[aria-label="Accelerate"]')!;
     const left = host.querySelector<HTMLButtonElement>('[aria-label="Steer left"]')!;
     const canvas = host.querySelector("canvas")!;
+    expect(document.activeElement).toBe(canvas);
+    expect(host.textContent).not.toContain("W / ↑");
+    act(() => canvas.blur());
+    const key = (target: EventTarget, type: string, value = "w", code = "KeyW") =>
+      act(() => target.dispatchEvent(new KeyboardEvent(type, { key: value, code, bubbles: true })));
+    key(document.body, "keydown");
+    expect(connection.input).toHaveBeenLastCalledWith(0, 3);
+    key(document.body, "keyup");
+    expect(connection.input).toHaveBeenLastCalledWith(1, 3);
+    const input = document.createElement("input");
+    host.append(input);
+    connection.input.mockClear();
+    input.focus();
+    key(input, "keydown");
+    key(input, "keyup");
+    expect(connection.input).not.toHaveBeenCalled();
+    input.remove();
+    act(() => canvas.focus());
     pointer(left, "pointerdown", 1);
     pointer(gas, "pointerdown", 2);
     expect(connection.input.mock.calls).toEqual([
@@ -74,6 +92,10 @@ test("multiplayer shares touch and keyboard holds and releases controls when set
     expect(gas.disabled).toBe(true);
     expect(gas.getAttribute("aria-pressed")).toBe("false");
     expect(host.querySelector('[aria-label="Race menu"]')).not.toBeNull();
+    connection.input.mockClear();
+    key(document.body, "keydown", "ArrowLeft", "ArrowLeft");
+    key(document.body, "keyup", "ArrowLeft", "ArrowLeft");
+    expect(connection.input).not.toHaveBeenCalled();
   } finally {
     act(() => root.unmount());
     host.remove();
