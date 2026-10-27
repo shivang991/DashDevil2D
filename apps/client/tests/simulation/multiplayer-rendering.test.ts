@@ -27,10 +27,13 @@ for (const mode of ["drag-race", "road-rage"] as const)
         status: "Connected",
       } as PairedState;
       const fillRect = vi.fn();
+      const rotate = vi.fn();
       const ctx = {
         fillRect,
         save: vi.fn(),
         restore: vi.fn(),
+        translate: vi.fn(),
+        rotate,
         setLineDash: vi.fn(),
         beginPath: vi.fn(),
         moveTo: vi.fn(),
@@ -94,7 +97,12 @@ for (const mode of ["drag-race", "road-rage"] as const)
           act(() => draw!(time));
           return fillRect.mock.calls.filter((call) => Math.abs(Number(call[2]) - carWidth) < 1e-8);
         };
+        frame.renderedCars[seat].tilt = 0.35;
+        rotate.mockClear();
         const before = carsAt(0);
+        expect(rotate.mock.calls.map(([angle]) => angle)).toEqual(
+          seat === 0 ? [0.35, 0] : [0, 0.35],
+        );
         expect(before).toHaveLength(2);
         frame.cars[seat].hp--;
         frame.feedback = ["Obstacle hit"];

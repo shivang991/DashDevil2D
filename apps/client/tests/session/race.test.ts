@@ -369,6 +369,7 @@ test("a rejected local shift repairs gameplay and snaps its misleading animation
   const frame = race.frame(100000, 0);
   expect(frame.cars[0].lateral).toBe(-120);
   expect(frame.renderedCars[0].lateral).toBe(-120);
+  expect(frame.renderedCars[0].tilt).toBe(0);
 });
 
 test("large corrections snap and repeated small corrections retain the first settling deadline", () => {
@@ -454,6 +455,7 @@ test("fresh-generation recovery drops pending controls and presentation offsets"
   const frame = race.frame(100000, 0);
   expect(frame.cars[0].effective).toBe(0);
   expect(frame.renderedCars[0].lateral).toBe(-120);
+  expect(frame.renderedCars[0].tilt).toBe(0);
 });
 
 test("correction diagnostics measure abrupt corrections and settling without counting normal movement", () => {
@@ -908,4 +910,56 @@ test("Road Rage restores shared history and reverses provisional player-contact 
   race.install(authoritative);
   expect(race.frame(100000, 0).cars.map((car) => car.hp)).toEqual([6, 5]);
   expect(race.snapshot().contact.latestOrder).toBe(2);
+});
+
+for (const mode of ["drag-race", "road-rage"] as const)
+  for (const seat of [0, 1])
+    test(`${mode} seat ${seat}: configurable lane tilt leaves gameplay unchanged and settles upright`, () => {
+      const make = (angle: number) => {
+        const config = captureConfiguration(mode, {
+          presentation: { carTiltMaxAngle: angle, carTiltLerpSpeed: 12 },
+        });
+        const b = initialBaseline(configurationContext(config, 1, 1000000));
+        b.identity.seat = seat;
+        b.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
+        const race = new RaceSession(b);
+        race.input(
+          {
+            identity: b.identity,
+            round: b.round,
+            sequence: 1,
+            intent: 0,
+            control: seat === 0 ? 2 : 1,
+            heldMask: seat === 0 ? 2 : 1,
+          },
+          0,
+        );
+        return race;
+      };
+      const race = make(1),
+        disabled = make(0);
+      const frame = race.frame(50000, 0);
+      const plain = disabled.frame(50000, 0);
+      expect(frame.cars).toEqual(plain.cars);
+      expect(plain.renderedCars[seat].tilt).toBe(0);
+      const movement = frame.cars[seat];
+      const diff = (movement.movementTarget - frame.renderedCars[seat].lateral) / 120;
+      expect(frame.renderedCars[seat].tilt).toBeCloseTo(diff * (1 - Math.pow(0.8, 3)), 6);
+      expect(frame.renderedCars[seat].tilt * (seat === 0 ? 1 : -1)).toBeGreaterThan(0);
+      const tilted = Math.abs(frame.renderedCars[seat].tilt);
+      expect(Math.abs(race.frame(900000, 0).renderedCars[seat].tilt)).toBeLessThan(tilted);
+    });
+
+test("collision return tilts toward the departure lane", () => {
+  const b = baseline();
+  const car = b.cars[0];
+  car.phase = 2;
+  car.departure = 0;
+  car.target = 0;
+  car.lateral = -60;
+  car.movementOrigin = -60;
+  car.movementTarget = -120;
+  car.movementEndUs = 150000;
+  const race = new RaceSession(b);
+  expect(race.frame(50000, 0).renderedCars[0].tilt).toBeLessThan(0);
 });

@@ -48,6 +48,7 @@ export class RaceSession {
   };
   private offset?: { progress: number; lateral: number }[];
   private snapCorrection = false;
+  private carTilts = [0, 0];
   private settleStartUs = 0;
   private settleEndUs = 0;
   constructor(baseline: Baseline, nowUs = () => performance.now() * 1000) {
@@ -88,6 +89,7 @@ export class RaceSession {
       this.offset = undefined;
       this.correction = undefined;
       this.rendered = undefined;
+      this.carTilts = [0, 0];
       this.lastFrameUs = baseline.timeUs;
     } else this.beforeCorrection();
     this.baseline = structuredClone(baseline);
@@ -289,7 +291,7 @@ export class RaceSession {
       return {
         feedback: [] as string[],
         objects: this.baseline.windows.flatMap((window) => window.objects),
-        renderedCars: this.outcome.cars.map((c) => ({ ...c })),
+        renderedCars: this.outcome.cars.map((c) => ({ ...c, tilt: 0 })),
         cars: this.outcome.cars.map((c, seat) => ({
           ...this.baseline.cars[seat],
           ...c,
@@ -310,6 +312,8 @@ export class RaceSession {
       this.lastFrameUs,
       Math.min(estimatedUs, this.lastAuthorityUs + 1000000),
     );
+    let resetTilt = false;
+    const dt = Math.max(0, (target - this.lastFrameUs) / 1e6);
     this.completeSettling(target);
     if (this.correction) {
       const previous = this.predict(
@@ -368,6 +372,7 @@ export class RaceSession {
         if (this.settlingSince === undefined) this.settlingSince = this.correction.receivedUs;
       }
       if (snap) {
+        resetTilt = true;
         this.offset = undefined;
         this.settlingSince = undefined;
       } else {
@@ -383,10 +388,28 @@ export class RaceSession {
     this.lastFrameUs = target;
     const state = this.predict(target, true);
     const remaining = this.remainingOffset(target);
-    const renderedCars = state.renderedCars.map((car, seat) => ({
-      progress: car.progress + (this.offset?.[seat].progress ?? 0) * remaining,
-      lateral: car.lateral + (this.offset?.[seat].lateral ?? 0) * remaining,
-    }));
+    const { carTiltMaxAngle, carTiltLerpSpeed } = this.configuration.presentation;
+    // Match Long Drive's 60 Hz easing; only actual lane movement produces tilt.
+    const ease =
+      carTiltLerpSpeed < 60
+        ? 1 - Math.pow(1 - carTiltLerpSpeed / 60, dt * 60)
+        : 1 - Math.exp(-carTiltLerpSpeed * dt);
+    const renderedCars = state.renderedCars.map((car, seat) => {
+      const movement = state.cars[seat];
+      const laneDiff =
+        movement.phase === 0
+          ? 0
+          : (movement.movementTarget - car.lateral) / this.configuration.gameplay.laneSpacing;
+      const targetTilt = Math.max(-1, Math.min(1, laneDiff)) * carTiltMaxAngle;
+      this.carTilts[seat] = resetTilt
+        ? 0
+        : this.carTilts[seat] + (targetTilt - this.carTilts[seat]) * ease;
+      return {
+        progress: car.progress + (this.offset?.[seat].progress ?? 0) * remaining,
+        lateral: car.lateral + (this.offset?.[seat].lateral ?? 0) * remaining,
+        tilt: this.carTilts[seat],
+      };
+    });
     this.rendered = renderedCars;
     this.completeSettling(target);
     const feedback = this.feedback;

@@ -19,7 +19,7 @@ export function playingFixture(mode: 1 | 2) {
   }));
   const frame: NonNullable<ReturnType<PairedConnection["frame"]>> = {
     cars: [cars[0], cars[1]],
-    renderedCars: cars.map(({ progress, lateral }) => ({ progress, lateral })),
+    renderedCars: cars.map(({ progress, lateral }) => ({ progress, lateral, tilt: 0 })),
     objects: [
       { id: 1, sliceId: 1, lane: 0, distance: progress + 240, flags: 2 },
       { id: 2, sliceId: 2, lane: 1, distance: progress + 380, flags: 1 },

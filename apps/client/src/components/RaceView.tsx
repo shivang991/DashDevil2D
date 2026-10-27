@@ -204,6 +204,10 @@ export function RaceView({
             cy = y(car.progress) + (Math.random() - 0.5) * shake;
           const carWidth = g.carWidth * scale,
             carHeight = g.carHeight * roadScale;
+          ctx.save();
+          ctx.translate(x, cy);
+          ctx.rotate(car.tilt);
+          ctx.translate(-x, -cy);
           const drawn =
             !visible ||
             drawSprite(
@@ -218,6 +222,7 @@ export function RaceView({
             ctx.fillStyle = seat === local ? "#2196f3" : "#e74656";
             ctx.fillRect(x - carWidth / 2, cy - carHeight / 2, carWidth, carHeight);
           }
+          ctx.restore();
           if (seat !== local) {
             const hp = view.cars[seat].hp;
             const barWidth = Math.max(64, carWidth);
