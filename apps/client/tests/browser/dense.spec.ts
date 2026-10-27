@@ -94,7 +94,7 @@ for (const mode of ["Drag Race", "Road Rage"])
         });
       await pages[0].getByRole("img", { name: "Multiplayer race" }).focus();
       await pages[0].keyboard.down("ArrowUp");
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       await expect
         .poll(
           async () => {

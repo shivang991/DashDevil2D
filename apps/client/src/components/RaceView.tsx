@@ -343,8 +343,9 @@ export function RaceView({
           <p
             className="pointer-events-none absolute bottom-3 left-3 z-10 rounded bg-black/75 px-2 py-1 text-xs text-sky-300"
             data-testid="nos-status"
+            data-nos-state={(frame?.cars[local].flags ?? 0) & 1 ? "active" : "ready"}
           >
-            {(frame?.cars[local].flags ?? 0) & 1 ? "NOS active" : "NOS ready"} · W / ↑
+            W / ↑
           </p>
 
           <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">

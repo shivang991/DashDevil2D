@@ -62,7 +62,7 @@ test("default course: native menu controls, recovered authority, shared results 
       for (const page of pages)
         await expect(page.getByRole("img", { name: "Multiplayer race" })).toBeVisible();
       for (const page of pages) {
-        await expect(page.getByTestId("nos-status")).toHaveText("NOS ready");
+        await expect(page.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
         await page.keyboard.up("ArrowUp");
       }
     };
@@ -73,16 +73,16 @@ test("default course: native menu controls, recovered authority, shared results 
     const canvas = pages[0].getByRole("img", { name: "Multiplayer race" });
     await canvas.focus();
     await pages[0].keyboard.down("ArrowUp");
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     await pages[0].keyboard.press("Escape");
     await expect(pages[0].getByRole("button", { name: "Resume", exact: true })).toBeFocused();
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[0].getByRole("button", { name: "Resume", exact: true }).press("Space");
     await expect(canvas).toBeFocused();
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[0].keyboard.up("ArrowUp");
     await pages[0].keyboard.down("ArrowUp");
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     await pages[0].keyboard.up("ArrowUp");
     await pages[1].evaluate(() =>
       (window as unknown as { closeGameplay: () => void }).closeGameplay(),
@@ -97,7 +97,7 @@ test("default course: native menu controls, recovered authority, shared results 
     expect(recovered.identity.pairGeneration).toBeGreaterThan(initial[1].identity.pairGeneration);
     expect(recovered.cars[1].inputGeneration).toBeGreaterThan(initial[1].cars[1].inputGeneration);
     expect(recovered.timeUs).toBeGreaterThan(initial[1].timeUs);
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[0].getByRole("button", { name: "Leave", exact: true }).click();
     await expect(pages[0].getByRole("button", { name: "Cancel", exact: true })).toBeFocused();
     await pages[0].keyboard.press("Escape");
@@ -280,7 +280,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     await expect(canvas).toBeVisible();
     await canvas.focus();
     await pages[1].keyboard.down("ArrowUp");
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     const before = await read(pages[1]);
     records.push({ before });
     // Explicit platform fixture, not physical tab-suspension or OS-focus evidence.
@@ -288,7 +288,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
       Object.defineProperty(document, "hidden", { configurable: true, value: true });
       document.dispatchEvent(new Event("visibilitychange"));
     });
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await expect.poll(async () => (await read(pages[0])).timeUs).toBeGreaterThan(before.timeUs);
     await pages[1].evaluate(() => {
       Object.defineProperty(document, "hidden", { configurable: true, value: false });
@@ -299,10 +299,10 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
       .toBeGreaterThan(before.identity.pairGeneration);
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
     await expect(canvas).toBeFocused();
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[1].keyboard.up("ArrowUp");
     await pages[1].keyboard.down("ArrowUp");
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     await pages[1].keyboard.up("ArrowUp");
     const restored = await read(pages[1]);
     records.push({ restored });

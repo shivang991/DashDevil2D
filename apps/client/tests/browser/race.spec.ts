@@ -161,7 +161,7 @@ for (const delivery of ["clean", "delayed", "recovering", "unordered"])
       await expect(canvas).toBeVisible();
       await canvas.focus();
       await pages[0].keyboard.down("ArrowUp");
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       // Platform event fixture for an off-window keyup: no W keyup is
       // delivered between blur and a fresh press. Not physical OS-focus evidence.
       await canvas.evaluate((element) =>
@@ -170,19 +170,19 @@ for (const delivery of ["clean", "delayed", "recovering", "unordered"])
         ),
       );
       await pages[0].evaluate(() => window.dispatchEvent(new Event("blur")));
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
       await canvas.evaluate((element) =>
         element.dispatchEvent(
           new KeyboardEvent("keydown", { key: "w", code: "KeyW", bubbles: true }),
         ),
       );
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       await pages[0].keyboard.down("ArrowRight");
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
       await pages[0].keyboard.up("ArrowRight");
       await pages[0].keyboard.up("ArrowUp");
       await pages[0].keyboard.down("ArrowUp");
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       await info.attach("race.png", {
         body: await pages[0].screenshot({ fullPage: true }),
         contentType: "image/png",

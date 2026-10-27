@@ -49,7 +49,7 @@ test(
       if (!defaults) {
         await pages[0].getByRole("img", { name: "Multiplayer race" }).focus();
         await pages[0].keyboard.down("ArrowUp");
-        await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+        await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
         await expect
           .poll(
             async () => {
@@ -139,7 +139,7 @@ test(
         for (let seat = 0; seat < 2; seat++) {
           expect(rematch[seat].identity).toEqual(initial[seat].identity);
           expect(rematch[seat].cars.map((car: { hp: number }) => car.hp)).toEqual([6, 6]);
-          await expect(pages[seat].getByTestId("nos-status")).toHaveText("NOS ready");
+          await expect(pages[seat].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
         }
         for (const page of pages)
           await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({

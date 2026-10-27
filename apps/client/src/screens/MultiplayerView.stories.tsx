@@ -137,7 +137,7 @@ export const PlayingDragRace: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole("img", { name: "Multiplayer race" })).toBeVisible();
-    await waitFor(() => expect(canvas.getByTestId("nos-status")).toHaveTextContent("NOS active"));
+    await waitFor(() => expect(canvas.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active"));
     await expect(canvas.getByTestId("distance-remaining")).toHaveTextContent("% left");
   },
 };

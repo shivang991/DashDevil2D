@@ -94,7 +94,7 @@ for (const leader of [0, 1])
           { intervals: [20] },
         )
         .toBeLessThan(1e-6);
-      await expect(pages[follower].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[follower].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       samples.push(await Promise.all(pages.map(read)));
       await pages[follower].waitForTimeout(250);
       const locked = (await read(pages[follower])).cars!;
