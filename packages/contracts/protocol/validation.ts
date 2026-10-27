@@ -349,7 +349,10 @@ export function validateCar(car: Car, timeUs: number, context: Context): void {
     car.controls === 0 || (car.heldMask & (1 << (car.controls - 1))) !== 0,
     "winning control is not held",
   );
-  requireState((car.flags & 1) === 0 || car.effective === 3, "NOS requires effective boost");
+  requireState(
+    (car.flags & 1) === 0 || ((car.heldMask & 4) !== 0 && car.effective !== 0),
+    "NOS requires held boost",
+  );
 }
 export function validateWindow(window: Window): void {
   requireState(

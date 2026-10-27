@@ -265,16 +265,25 @@ export class Multiplayer {
       car: { ...this.cars[authenticated.seat] },
     });
   }
+  private steering(car: Car): number {
+    return car.effective === 1 || car.effective === 2
+      ? car.effective
+      : car.heldMask & 2
+        ? 2
+        : car.heldMask & 1
+          ? 1
+          : 0;
+  }
   private shift(car: Car, seat: number, timeUs: number, events: Observation[]): void {
     const g = this.configuration.gameplay;
     if (
       this.tailgating(seat) ||
       car.phase !== 0 ||
-      (car.effective !== 1 && car.effective !== 2) ||
+      this.steering(car) === 0 ||
       timeUs < car.nextShiftUs
     )
       return;
-    const target = Math.max(0, Math.min(2, car.lane + (car.effective === 1 ? -1 : 1)));
+    const target = Math.max(0, Math.min(2, car.lane + (this.steering(car) === 1 ? -1 : 1)));
     if (target === car.lane) return;
     car.phase = 1;
     car.departure = car.lane;
@@ -318,7 +327,7 @@ export class Multiplayer {
             car.heldMask |= 1 << (input.control - 1);
             car.controls = input.control;
             car.effective = input.control;
-            car.flags = input.control === 3 ? 1 : 0;
+            car.flags = car.heldMask & 4 ? 1 : 0;
             car.freshnessUs =
               timeUs + canonicalTime(this.configuration.connection.controlFreshnessExpiry);
             if (this.configuration.mode === "road-rage") {
@@ -342,11 +351,11 @@ export class Multiplayer {
           if (input.control === 0) this.clear(car);
           else {
             car.heldMask &= ~(1 << (input.control - 1));
+            car.flags = car.heldMask & 4 ? 1 : 0;
             if (car.controls === input.control) {
-              car.controls = 0;
-              car.effective = 0;
-              car.flags = 0;
-              car.freshnessUs = 0;
+              car.controls = car.heldMask & 4 ? 3 : car.heldMask & 2 ? 2 : car.heldMask & 1 ? 1 : 0;
+              car.effective = car.controls;
+              if (!car.controls) car.freshnessUs = 0;
             }
           }
         } else if (
@@ -509,11 +518,7 @@ export class Multiplayer {
             next = Math.min(next, car.freshnessUs / 1e6);
           if (car.phase !== 0 && car.movementEndUs / 1e6 > time)
             next = Math.min(next, car.movementEndUs / 1e6);
-          if (
-            car.phase === 0 &&
-            (car.effective === 1 || car.effective === 2) &&
-            car.nextShiftUs / 1e6 > time
-          )
+          if (car.phase === 0 && this.steering(car) !== 0 && car.nextShiftUs / 1e6 > time)
             next = Math.min(next, car.nextShiftUs / 1e6);
         }
         const collision = this.playerContact(time, next);
@@ -702,7 +707,7 @@ export class Multiplayer {
   }
   private multiplier(seat: number): number {
     const g = this.configuration.gameplay;
-    const requested = this.cars.map((car) => (car.effective === 3 ? g.accelSpeedMultiplier : 1));
+    const requested = this.cars.map((car) => (car.flags & 1 ? g.accelSpeedMultiplier : 1));
     return this.tailgating(seat) ? Math.min(requested[seat], requested[1 - seat]) : requested[seat];
   }
   /** Pause a return at a lateral contact boundary. Keeping the completed fraction
@@ -784,7 +789,7 @@ export class Multiplayer {
     const x = a.lateral - b.lateral,
       vx = this.lateralSpeed(a) - this.lateralSpeed(b);
     // Detect a shifting impact from requested motion before tailgating clamps it.
-    const requested = (car: Car) => (car.effective === 3 ? g.accelSpeedMultiplier : 1);
+    const requested = (car: Car) => (car.flags & 1 ? g.accelSpeedMultiplier : 1);
     const y = a.progress - b.progress,
       m =
         (a.phase === 1 && a.progress < b.progress) || (b.phase === 1 && b.progress < a.progress)

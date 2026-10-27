@@ -44,6 +44,8 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
       ui={ui}
       canvasRef={canvasRef}
       onFocus={() => sessionRef.current?.focus()}
+      onControl={(control, down) => sessionRef.current?.control(control, down)}
+      onCommand={(command) => sessionRef.current?.command(command)}
       onBack={
         onBack
           ? () => {

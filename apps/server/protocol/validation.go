@@ -65,7 +65,7 @@ func ValidateCar(car Car, timeUs uint64, context Context) error {
 	if e := require(car.Effective == 0 || car.FreshnessUs > timeUs, "expired effective controls"); e != nil {
 		return e
 	}
-	return require(car.Flags&1 == 0 || car.Effective == 3, "NOS requires effective boost")
+	return require(car.Flags&1 == 0 || (car.HeldMask&4 != 0 && car.Effective != 0), "NOS requires held boost")
 }
 func ValidateWindow(w Window) error {
 	if e := require(w.Start <= w.End && w.FirstSlice <= w.LastSlice, "window bounds"); e != nil {

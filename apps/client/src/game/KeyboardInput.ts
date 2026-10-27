@@ -17,7 +17,7 @@ const movements = new Map<string, "left" | "right" | "accelerate">([
 const interactive =
   'button,input,textarea,select,a[href],[contenteditable]:not([contenteditable="false"]),[role="button"]';
 export class KeyboardInput {
-  private active?: string;
+  private active = new Map<string, "left" | "right" | "accelerate">();
   private disposed = false;
   private readonly surface: HTMLElement;
   private readonly availability: () => InputAvailability;
@@ -38,15 +38,16 @@ export class KeyboardInput {
   }
   read(): LongDriveInput {
     if (this.disposed || !this.eligibleMovement()) return {};
-    const movement = this.active ? movements.get(this.active) : undefined;
-    return movement === "accelerate"
-      ? { accelerating: true }
-      : movement
-        ? { steering: movement }
-        : {};
+    const held = [...this.active.values()];
+    const steering = held.filter((value) => value !== "accelerate").at(-1);
+    return { steering, accelerating: held.includes("accelerate") };
+  }
+  setControl(source: string, movement: "left" | "right" | "accelerate", down: boolean): void {
+    if (!down) this.active.delete(source);
+    else if (this.eligibleMovement()) this.active.set(source, movement);
   }
   clear = (): void => {
-    this.active = undefined;
+    this.active.clear();
   };
   dispose(): void {
     if (this.disposed) return;
@@ -56,7 +57,7 @@ export class KeyboardInput {
     window.removeEventListener("blur", this.clear);
     document.removeEventListener("visibilitychange", this.visibility);
     document.removeEventListener("focusin", this.focusIn);
-    this.active = undefined;
+    this.active.clear();
   }
   private focused(): boolean {
     return document.activeElement === this.surface;
@@ -85,11 +86,11 @@ export class KeyboardInput {
     // The browser marks held-key repeats even when keyup happened elsewhere.
     // A nonrepeat keydown is fresh and must recover after an undelivered keyup.
     if (!usable || event.repeat) return;
-    if (movement) this.active = key;
+    if (movement) this.active.set(key, movement);
     else this.command(key === " " ? "pause" : "restart");
   };
   private readonly keyUp = (event: KeyboardEvent) => {
-    if (this.active === event.key) this.active = undefined;
+    this.active.delete(event.key);
   };
   private readonly visibility = () => {
     if (document.hidden) this.clear();

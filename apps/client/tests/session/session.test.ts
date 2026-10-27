@@ -121,10 +121,10 @@ test("keyboard discards countdown keys, suppresses repeats and requires fresh in
   keyboard("d");
   keyboard("w", "keydown", true);
   time.advance(1 / 60);
-  expect(session.getSnapshot().accelerating).toBe(false);
+  expect(session.getSnapshot().accelerating).toBe(true);
   keyboard("d", "keyup");
   time.advance(1 / 60);
-  expect(session.getSnapshot().accelerating).toBe(false);
+  expect(session.getSnapshot().accelerating).toBe(true);
   keyboard(" ");
   expect(session.getSnapshot().paused).toBe(true);
   keyboard(" ", "keydown", true);

@@ -239,13 +239,25 @@ func (e *Engine) Disconnect(auth protocol.Identity) {
 	}
 	e.releases = append(e.releases, e.event("release", seat, e.state.TimeUs))
 }
+func steering(car *protocol.Car) uint8 {
+	if car.Effective == 1 || car.Effective == 2 {
+		return car.Effective
+	}
+	if car.HeldMask&2 != 0 {
+		return 2
+	}
+	if car.HeldMask&1 != 0 {
+		return 1
+	}
+	return 0
+}
 func (e *Engine) shift(car *protocol.Car, seat uint8, timeUs uint64, events *[]Observation) {
 	g := e.context.Gameplay
-	if e.tailgating(int(seat)) || car.Phase != 0 || (car.Effective != 1 && car.Effective != 2) || timeUs < car.NextShiftUs {
+	if e.tailgating(int(seat)) || car.Phase != 0 || steering(car) == 0 || timeUs < car.NextShiftUs {
 		return
 	}
 	delta := 1
-	if car.Effective == 1 {
+	if steering(car) == 1 {
 		delta = -1
 	}
 	target := max(0, min(2, int(car.Lane)+delta))
@@ -303,7 +315,7 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 					car.Controls = input.Control
 					car.Effective = input.Control
 					car.Flags = 0
-					if input.Control == 3 {
+					if car.HeldMask&4 != 0 {
 						car.Flags = 1
 					}
 					expiry, _ := CanonicalTime(e.connections[q.seat].ControlFreshnessExpiry)
@@ -323,11 +335,23 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 					clear(car)
 				} else {
 					car.HeldMask &^= 1 << (input.Control - 1)
+					car.Flags = 0
+					if car.HeldMask&4 != 0 {
+						car.Flags = 1
+					}
 					if car.Controls == input.Control {
 						car.Controls = 0
-						car.Effective = 0
-						car.Flags = 0
-						car.FreshnessUs = 0
+						if car.HeldMask&4 != 0 {
+							car.Controls = 3
+						} else if car.HeldMask&2 != 0 {
+							car.Controls = 2
+						} else if car.HeldMask&1 != 0 {
+							car.Controls = 1
+						}
+						car.Effective = car.Controls
+						if car.Controls == 0 {
+							car.FreshnessUs = 0
+						}
 					}
 				}
 			case 2:
@@ -518,7 +542,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				if car.Phase != 0 && float64(car.MovementEndUs)/1e6 > time {
 					next = math.Min(next, float64(car.MovementEndUs)/1e6)
 				}
-				if car.Phase == 0 && (car.Effective == 1 || car.Effective == 2) && float64(car.NextShiftUs)/1e6 > time {
+				if car.Phase == 0 && steering(&car) != 0 && float64(car.NextShiftUs)/1e6 > time {
 					next = math.Min(next, float64(car.NextShiftUs)/1e6)
 				}
 			}

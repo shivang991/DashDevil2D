@@ -13,7 +13,7 @@ func (e *Engine) tailgating(seat int) bool {
 func (e *Engine) multiplier(seat int) float64 {
 	requested := [2]float64{1, 1}
 	for i, car := range e.state.Cars {
-		if car.Effective == 3 {
+		if car.Flags&1 != 0 {
 			requested[i] = e.context.Gameplay.AccelSpeedMultiplier
 		}
 	}
@@ -91,7 +91,7 @@ func (e *Engine) playerContact(start, end float64) float64 {
 	// Test requested motion before the follower constraint hides a shifting impact.
 	if (a.Phase == 1 && a.Progress < b.Progress) || (b.Phase == 1 && b.Progress < a.Progress) {
 		requested := func(car protocol.Car) float64 {
-			if car.Effective == 3 {
+			if car.Flags&1 != 0 {
 				return g.AccelSpeedMultiplier
 			}
 			return 1

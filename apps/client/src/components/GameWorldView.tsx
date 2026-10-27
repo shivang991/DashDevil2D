@@ -1,3 +1,5 @@
+import { TouchControls } from "./TouchControls";
+import { GameSettings } from "./GameSettings";
 import type { Ref } from "react";
 import { LONG_DRIVE_REFERENCE_HEIGHT } from "@dashdevil/simulation/track";
 import type { UISnapshot } from "@/game/GameSession";
@@ -7,19 +9,29 @@ interface GameWorldViewProps {
   canvasRef?: Ref<HTMLCanvasElement>;
   onFocus?: () => void;
   onBack?: () => void;
+  onControl?: (control: 1 | 2 | 3, down: boolean) => void;
+  onCommand?: (command: "pause" | "reset") => void;
 }
 
 /** Presentation only; the owning GameWorld manages the live session. */
-export function GameWorldView({ ui, canvasRef, onFocus, onBack }: GameWorldViewProps) {
+export function GameWorldView({
+  ui,
+  canvasRef,
+  onFocus,
+  onBack,
+  onControl,
+  onCommand,
+}: GameWorldViewProps) {
   return (
-    <div className="flex items-center justify-center w-screen h-screen bg-neutral-950 overflow-hidden">
-      <div className="flex flex-col w-[320px] sm:w-160 h-screen max-h-screen overflow-hidden">
+    <div className="flex items-center justify-center w-full h-dvh bg-neutral-950 overflow-hidden">
+      <div className="relative flex flex-col w-full max-w-160 h-dvh overflow-hidden game-shell">
+        <GameSettings ui={ui} onCommand={onCommand} onFocus={onFocus} onBack={onBack} />
         {/* ── Top HUD bar ── */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-2 sm:py-3 shrink-0">
+        <div className="flex items-center justify-between pl-4 pr-14 sm:pl-6 py-2 sm:py-3 shrink-0">
           {/* Left side */}
           <div className="flex flex-col gap-1">
             <h1 className="text-white text-base sm:text-xl tracking-wide">Branding</h1>
-            <p className="text-neutral-400 text-xs sm:text-sm">
+            <p className="keyboard-hint text-neutral-400 text-xs sm:text-sm">
               {ui.accelerating ? "Accelerating!" : "Hold [Up/W] to accelerate"} Hit [Space] to pause
             </p>
           </div>
@@ -126,6 +138,9 @@ export function GameWorldView({ ui, canvasRef, onFocus, onBack }: GameWorldViewP
             )}
           </div>
         </div>
+        {onControl && (
+          <TouchControls disabled={ui.status !== "playing" || ui.paused} onControl={onControl} />
+        )}
       </div>
     </div>
   );

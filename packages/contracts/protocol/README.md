@@ -22,6 +22,8 @@ All multibyte scalars are big-endian. Reliable records have `u32 bodyLength | u8
 
 Car lane/departure/target/phase occupy one byte (2 bits each); winning/effective controls and four flags occupy the next (2+2+4). Object lane and kind/consumption flags occupy seven bits, with the high bit reserved. Held physical controls are a separate three-bit mask (left/right/NOS); winning/effective controls remain distinct so releases, expiry and return restrictions can continue correctly. HP, scores, identities and progress are uint32; accepted configuration proves their resource/numeric limits. Enum names and flags are specified in `schema.json`. A missing/unused mode-specific configuration field is zero; expected Context comparison rejects mismatched captures.
 
+Steering and NOS can be held together. The NOS flag follows the held boost bit independently of the winning control; steering uses the effective direction, falling back to held right then left when NOS is the winner. Releasing the winner selects a remaining held control (NOS, right, left), preserving the existing freshness deadline. Expiry, focus loss and forced returns still clear all controls. Client and server simulations must be deployed together for these input semantics.
+
 | Datagram offset | Field  | Width |
 | --------------- | ------ | ----- |
 | 0               | epoch  | 2     |

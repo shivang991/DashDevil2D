@@ -41,28 +41,42 @@ function App() {
           }}
         />
       ) : screen === "multiplayer" ? (
-        <MultiplayerScreen mode={mode} onBack={() => setScreen("menu")} />
+        <MultiplayerScreen
+          mode={mode}
+          onBack={() => {
+            setSoundEnabled(gameAudio.enabled);
+            setScreen("menu");
+          }}
+        />
       ) : (
-        <GameWorld countdown={countdown} onBack={() => setScreen("menu")} />
+        <GameWorld
+          countdown={countdown}
+          onBack={() => {
+            setSoundEnabled(gameAudio.enabled);
+            setScreen("menu");
+          }}
+        />
       )}
-      <button
-        type="button"
-        aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
-        aria-pressed={soundEnabled}
-        onClick={() => {
-          const enabled = !soundEnabled;
-          gameAudio.setEnabled(enabled);
-          setSoundEnabled(enabled);
-        }}
-        className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-950/90 px-3 py-2 text-xs text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-white"
-      >
-        {soundEnabled ? (
-          <Volume2 size={18} aria-hidden="true" />
-        ) : (
-          <VolumeX size={18} aria-hidden="true" />
-        )}
-        Sound {soundEnabled ? "on" : "off"}
-      </button>
+      {screen === "menu" && (
+        <button
+          type="button"
+          aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+          aria-pressed={soundEnabled}
+          onClick={() => {
+            const enabled = !soundEnabled;
+            gameAudio.setEnabled(enabled);
+            setSoundEnabled(enabled);
+          }}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-950/90 px-3 py-2 text-xs text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-white"
+        >
+          {soundEnabled ? (
+            <Volume2 size={18} aria-hidden="true" />
+          ) : (
+            <VolumeX size={18} aria-hidden="true" />
+          )}
+          Sound {soundEnabled ? "on" : "off"}
+        </button>
+      )}
     </>
   );
 }

@@ -106,6 +106,7 @@ test("public app: five-second start, actual canvas, keyboard pause and mute", as
   await expect(page.getByText("PAUSED", { exact: true })).toBeVisible();
   await page.clock.runFor(5000);
   await expect(page.getByText("PAUSED", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("button", { name: "Mute sound" }).click();
   await expect(page.getByRole("button", { name: "Enable sound" })).toBeVisible();
   await page.reload();
@@ -286,11 +287,13 @@ test("native sound control keeps Space behavior and clears held movement", async
   await page.clock.runFor(5100);
   await page.keyboard.down("w");
   await page.clock.runFor(20);
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await page.getByRole("button", { name: "Mute sound" }).focus();
   await page.keyboard.press("Space");
   await page.clock.runFor(20);
   await expect(page.getByRole("button", { name: "Enable sound" })).toBeVisible();
-  await expect(page.getByText("PAUSED", { exact: true })).toHaveCount(0);
+  await expect(page.getByText("PAUSED", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Resume", exact: true }).click();
   await expect(page.getByText("Hold [Up/W] to accelerate", { exact: false })).toBeVisible();
   await page.locator("canvas").click();
   await page.keyboard.down("w");

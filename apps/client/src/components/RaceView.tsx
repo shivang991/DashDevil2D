@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { Settings } from "lucide-react";
+import { TouchControls } from "./TouchControls";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
 import { multiplayerRoadScale } from "@/lib/roadProjection";
 import { RoundResult } from "./RoundResult";
@@ -31,6 +33,17 @@ export function RaceView({
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const pressed = useRef(new Set<string>());
+  const sources = useRef(new Map<string, number>());
+  const controlInput = useCallback(
+    (source: string, control: number, down: boolean) => {
+      const wasHeld = [...sources.current.values()].includes(control);
+      if (down) sources.current.set(source, control);
+      else sources.current.delete(source);
+      const isHeld = [...sources.current.values()].includes(control);
+      if (wasHeld !== isHeld) connection.input(isHeld ? 0 : 1, control);
+    },
+    [connection],
+  );
   const [muted, setMuted] = useState(!audio.enabled);
   const [menu, setMenu] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -44,6 +57,7 @@ export function RaceView({
   useEffect(() => {
     const release = () => {
       pressed.current.clear();
+      sources.current.clear();
       connection.releaseControls();
     };
     const down = (event: KeyboardEvent) => {
@@ -73,7 +87,7 @@ export function RaceView({
         !document.hidden
       ) {
         event.preventDefault();
-        connection.input(0, control);
+        controlInput(`key:${event.code}`, control, true);
       }
     };
     const up = (event: KeyboardEvent) => {
@@ -81,7 +95,7 @@ export function RaceView({
       if (suspended) return;
       const control = controlFor(event.key);
       if (control && !interactive(event.target)) {
-        connection.input(1, control);
+        controlInput(`key:${event.code}`, control, false);
         if (event.target === canvas.current) event.preventDefault();
       }
     };
@@ -95,8 +109,9 @@ export function RaceView({
       window.removeEventListener("blur", release);
       document.removeEventListener("visibilitychange", release);
     };
-  }, [connection, menu, suspended, state.outcome, audio]);
+  }, [connection, controlInput, menu, suspended, state.outcome, audio]);
   useEffect(() => {
+    sources.current.clear();
     connection.releaseControls();
     if (!menu && !suspended && !state.outcome && state.status === "Connected")
       canvas.current?.focus();
@@ -251,7 +266,18 @@ export function RaceView({
   );
   return (
     <div className="race-view">
-      <header className="shrink-0 space-y-2">
+      <header className="shrink-0 space-y-2 pr-12">
+        <button
+          className="settings-trigger absolute top-0 right-0"
+          aria-label="Settings"
+          aria-expanded={menu}
+          onClick={() => {
+            connection.releaseControls();
+            setMenu((value) => !value);
+          }}
+        >
+          <Settings size={22} aria-hidden="true" />
+        </button>
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-heading text-red-400">
             {context.mode === 2 ? "Road Rage" : "Drag Race"}
@@ -310,7 +336,7 @@ export function RaceView({
             className="pointer-events-none absolute bottom-3 left-3 z-10 rounded bg-black/75 px-2 py-1 text-xs text-sky-300"
             data-testid="nos-status"
           >
-            {frame?.cars[local].effective === 3 ? "NOS active" : "NOS ready"} · W / ↑
+            {(frame?.cars[local].flags ?? 0) & 1 ? "NOS active" : "NOS ready"} · W / ↑
           </p>
 
           <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">
@@ -359,40 +385,21 @@ export function RaceView({
             className="block h-full w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400"
             onBlur={() => {
               pressed.current.clear();
+              sources.current.clear();
               connection.releaseControls();
             }}
           />
         </div>
       </div>
-      <footer className="shrink-0 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[10px] text-neutral-400">
-        <span>A / D · ← / → steer</span>
-        <div className="flex gap-3">
-          <button
-            onClick={() => {
-              connection.releaseControls();
-              setMenu(true);
-            }}
-            className="hover:text-white"
-          >
-            [ESC] Menu
-          </button>
-          <button
-            onClick={() => {
-              audio.setEnabled(muted);
-              setMuted(!muted);
-            }}
-            className="hover:text-white"
-          >
-            [M] Sound {muted ? "off" : "on"}
-          </button>
-        </div>
-      </footer>
+      <TouchControls
+        disabled={menu || suspended || Boolean(outcome) || state.status !== "Connected"}
+        onControl={(control, down) => {
+          if (down) canvas.current?.focus({ preventScroll: true });
+          controlInput(`touch:${control}`, control, down);
+        }}
+      />
       {menu && !outcome && (
-        <div
-          role="dialog"
-          aria-label="Race menu"
-          className="absolute inset-x-4 top-1/3 bg-neutral-950/95 border border-neutral-600 rounded-xl p-5 flex flex-col gap-3"
-        >
+        <div role="dialog" aria-label="Race menu" className="settings-panel race-settings-panel">
           <p>The round continues.</p>
           <button autoFocus className={button} onClick={() => setMenu(false)}>
             Resume

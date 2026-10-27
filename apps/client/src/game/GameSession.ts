@@ -45,6 +45,7 @@ export class GameSession {
   private lastTime = 0;
   private disposed = false;
   private readonly input: KeyboardInput;
+  private readonly resizeObserver?: ResizeObserver;
   private focused = true;
 
   private readonly options: SessionOptions;
@@ -65,6 +66,10 @@ export class GameSession {
       (command) => this.command(command),
     );
     this.resize();
+    if (typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(this.resize);
+      this.resizeObserver.observe(options.canvas);
+    }
     this.snapshot = this.uiSnapshot();
     window.addEventListener("resize", this.resize);
     window.addEventListener("blur", this.blur);
@@ -122,6 +127,7 @@ export class GameSession {
     this.disposed = true;
     if (this.frame !== undefined) this.clock.cancel(this.frame);
     this.frame = undefined;
+    this.resizeObserver?.disconnect();
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("blur", this.blur);
     window.removeEventListener("focus", this.focusReturned);
@@ -174,6 +180,14 @@ export class GameSession {
       );
     this.frame = this.clock.request(this.tick);
   };
+  control(control: 1 | 2 | 3, down: boolean): void {
+    if (down) this.focus();
+    this.input.setControl(
+      `touch:${control}`,
+      control === 1 ? "left" : control === 2 ? "right" : "accelerate",
+      down,
+    );
+  }
   focus(): void {
     if (!this.disposed) this.options.canvas.focus({ preventScroll: true });
   }

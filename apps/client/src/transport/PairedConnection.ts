@@ -857,7 +857,9 @@ export class PairedConnection {
       this.winningControl = control;
     } else {
       this.heldMask &= ~mask;
-      if (this.winningControl === control) this.winningControl = 0;
+      if (this.winningControl === control)
+        this.winningControl =
+          this.heldMask & 4 ? 3 : this.heldMask & 2 ? 2 : this.heldMask & 1 ? 1 : 0;
     }
     const input = {
       identity: this.admission.identity,
