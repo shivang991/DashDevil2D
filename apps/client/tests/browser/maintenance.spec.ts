@@ -35,7 +35,7 @@ test("planned maintenance keeps active play and final results, then abandons unf
   try {
     await createRound(pages.slice(0, 2));
     for (const page of pages.slice(0, 2))
-      await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 65000,
       });
     const finished = JSON.parse((await pages[0].getByTestId("outcome-evidence").textContent())!);
@@ -49,8 +49,7 @@ test("planned maintenance keeps active play and final results, then abandons unf
       .poll(async () => (await read(pages[2])).timeUs, { intervals: [50] })
       .toBeGreaterThan(before.timeUs);
     for (const page of pages.slice(2)) {
-      await expect(page.getByText("Server maintenance", { exact: true })).toBeVisible();
-      await expect(page.getByText("Round abandoned", { exact: true })).toBeVisible();
+      await expect(page.getByText("Round Abandoned", { exact: true })).toBeVisible();
     }
     const abandoned = await Promise.all(
       pages

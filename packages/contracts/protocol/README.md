@@ -65,7 +65,7 @@ An applied self-contained `Outcome` acknowledges its terminal tick/progress usin
 
 ## Shared lobby return (#35)
 
-RoomCommand values are 0 select mode, 1 readiness, 2 start, 3 leave, 4 focus and 5 Return to Lobby. Command 5 is accepted only for a finalized round, moves the shared room to lobby, clears readiness and retains its code, host and idle deadline. Existing seat sessions retain their result summary; replacement guests do not inherit it. The coordinated version-1 schema now bounds this enum at 5; no existing record width or fixture bytes change. The new literal command-5 fixture is independently reviewed and consumed in both languages.
+RoomCommand values are 0 select mode, 1 readiness, 2 start, 3 leave, 4 focus and 5 Return to Lobby. Command 5 is accepted only for a finalized round and marks that seat returned (Seat flag 3). The shared room enters the lobby when both seats return, or when the other seat leaves. Readiness clears and the room retains its code, host and idle deadline. Existing seat sessions retain their result summary; replacement guests do not inherit it.
 
 ## Maintenance deployment compatibility
 

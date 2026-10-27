@@ -11,6 +11,7 @@ export function MultiplayerDialog({
   initialFocus,
   returnFocus,
   children,
+  className,
 }: {
   open: boolean;
   title: string;
@@ -20,13 +21,16 @@ export function MultiplayerDialog({
   initialFocus?: RefObject<HTMLButtonElement | null>;
   returnFocus: RefObject<HTMLElement | null>;
   children: ReactNode;
+  className?: string;
 }) {
   const previousFocus = useRef<HTMLElement | null>(null);
   return (
     <Dialog.Root open={open} onOpenChange={(next) => !next && onDismiss?.()}>
-      <Dialog.Overlay className="multiplayer-dialog-scrim" />
+      <Dialog.Overlay
+        className={`multiplayer-dialog-scrim${className ? ` ${className}-scrim` : ""}`}
+      />
       <Dialog.Content
-        className="multiplayer-dialog"
+        className={`multiplayer-dialog${className ? ` ${className}` : ""}`}
         onEscapeKeyDown={(event) => {
           event.preventDefault();
           if (!event.repeat) onDismiss?.();

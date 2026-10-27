@@ -3,7 +3,6 @@ import { TouchControls } from "./TouchControls";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
 import { multiplayerRoadScale } from "@/lib/roadProjection";
-import { RoundResult } from "./RoundResult";
 import { gameAudio } from "@/lib/gameAudio";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 
@@ -418,7 +417,6 @@ export function RaceView({
           </button>
         </div>
       )}
-      {outcome && <RoundResult outcome={outcome} local={local} />}
     </div>
   );
 }

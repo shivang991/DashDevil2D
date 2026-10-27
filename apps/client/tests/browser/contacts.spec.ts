@@ -94,7 +94,10 @@ for (const leader of [0, 1])
           { intervals: [20] },
         )
         .toBeLessThan(1e-6);
-      await expect(pages[follower].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
+      await expect(pages[follower].getByTestId("nos-status")).toHaveAttribute(
+        "data-nos-state",
+        "active",
+      );
       samples.push(await Promise.all(pages.map(read)));
       await pages[follower].waitForTimeout(250);
       const locked = (await read(pages[follower])).cars!;
@@ -123,7 +126,7 @@ for (const leader of [0, 1])
         contentType: "image/png",
       });
       for (const page of pages)
-        await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+        await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
           timeout: 20000,
         });
       const outcomes = await Promise.all(

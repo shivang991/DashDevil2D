@@ -726,7 +726,7 @@
       {
         "name": "flags",
         "type": "u8",
-        "mask": 7
+        "mask": 15
       },
       {
         "name": "reservationUs",
@@ -1578,7 +1578,8 @@
     "Seat": {
       "0": "connected",
       "1": "ready",
-      "2": "reserved"
+      "2": "reserved",
+      "3": "returned to lobby after round"
     }
   }
 }

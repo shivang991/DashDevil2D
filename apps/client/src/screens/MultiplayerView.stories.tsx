@@ -95,6 +95,23 @@ export const JoinWithCode: Story = {
 const dragRace = playingFixture(1);
 const roadRage = playingFixture(2);
 
+export const RoundOver: Story = {
+  args: {
+    state: { ...dragRace.state, room: { ...dragRace.state.room!, phase: 3 }, outcome },
+  },
+  render: PlayingPreview,
+};
+export const TiedRound: Story = {
+  args: {
+    state: {
+      ...dragRace.state,
+      room: { ...dragRace.state.room!, phase: 3 },
+      outcome: { ...outcome, result: 2 },
+    },
+  },
+  render: PlayingPreview,
+};
+
 function PlayingPreview(args: ComponentProps<typeof MultiplayerView>) {
   // Each mount owns sound preferences and mock controls; nothing touches saved game settings.
   const [audio] = useState(() => ({
@@ -137,7 +154,9 @@ export const PlayingDragRace: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole("img", { name: "Multiplayer race" })).toBeVisible();
-    await waitFor(() => expect(canvas.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active"));
+    await waitFor(() =>
+      expect(canvas.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active"),
+    );
     await expect(canvas.getByTestId("distance-remaining")).toHaveTextContent("% left");
   },
 };

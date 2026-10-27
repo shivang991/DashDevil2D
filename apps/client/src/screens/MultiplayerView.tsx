@@ -7,8 +7,6 @@ import { Loader } from "@/components/ui/loader";
 import { MultiplayerDialog } from "./MultiplayerDialog";
 import "./multiplayer.css";
 
-const button =
-  "rounded-lg border border-neutral-600 px-4 py-2 hover:bg-neutral-800 disabled:opacity-40 disabled:cursor-not-allowed";
 const modeName = (mode: number) => (mode === 2 ? "Road Rage" : "Drag Race");
 
 interface MultiplayerViewProps {
@@ -39,7 +37,6 @@ export function MultiplayerView({
   const [code, setCode] = useState("");
   const [copy, setCopy] = useState("");
   const [joinOpen, setJoinOpen] = useState(state?.pending === "Joining room");
-  const [dismissedResult, setDismissedResult] = useState<number>();
   const [confirmLeave, setConfirmLeave] = useState(false);
   const cancelLeave = useRef<HTMLButtonElement>(null);
   const backButton = useRef<HTMLButtonElement>(null);
@@ -57,11 +54,13 @@ export function MultiplayerView({
   const ready = Boolean(room && room.seats[local].flags & 2);
   const inRoom = Boolean(room && state?.identity && state.status !== "Disconnected");
   const finalized = Boolean(state?.outcome && state.outcome.roundId === room?.roundId);
+  const returned = Boolean(room && room.seats[local].flags & 8);
+  const waitingForOther = room?.phase === 3 && returned;
   const countdown = room?.phase === 1 && !finalized;
   const showCountdown = inRoom && countdown && connected;
   const active = room?.phase === 2;
   const race =
-    (active || room?.phase === 3 || (finalized && room?.phase !== 0)) &&
+    (active || (room?.phase === 3 && !returned) || (finalized && room?.phase !== 0 && !returned)) &&
     (room?.mode === 1 || room?.mode === 2);
   const installed = room && state?.roundId === room.roundId && state?.startUs === room.startUs;
   const remaining = room
@@ -307,6 +306,10 @@ export function MultiplayerView({
               )
             ) : active ? (
               <p>{installed ? "Players synchronized." : "Synchronizing…"}</p>
+            ) : waitingForOther ? (
+              <p className="multiplayer-note" role="status">
+                Waiting for other player to return…
+              </p>
             ) : (
               <div className="multiplayer-ready-actions">
                 <Button
@@ -349,26 +352,6 @@ export function MultiplayerView({
                     <p role="alert">This room will expire soon without activity.</p>
                   )}
               </div>
-            )}
-            {room!.phase === 0 && state?.outcome && dismissedResult !== state.outcome.roundId && (
-              <>
-                <RoundResult outcome={state.outcome} local={local} />
-                <button
-                  className={button}
-                  onClick={() => setDismissedResult(state.outcome!.roundId)}
-                >
-                  Dismiss result
-                </button>
-              </>
-            )}
-            {state?.outcome && room!.phase === 3 && (
-              <button
-                className={button}
-                disabled={!eligible}
-                onClick={() => actions?.command(5, room!.mode, 0, "Returning to lobby")}
-              >
-                Return to Lobby
-              </button>
             )}
             {import.meta.env.VITE_MULTIPLAYER_DEBUG === "true" && (
               <div className="multiplayer-debug">
@@ -422,6 +405,22 @@ export function MultiplayerView({
           </div>
         )}
       </section>
+      <MultiplayerDialog
+        open={Boolean(inRoom && finalized && room?.phase !== 0 && !returned)}
+        title="Round Over"
+        description="The multiplayer round has ended."
+        className="round-result-dialog"
+        returnFocus={main}
+      >
+        {state?.outcome && <RoundResult outcome={state.outcome} local={local} />}
+        <Button
+          className="round-result-return"
+          disabled={!eligible || room?.phase !== 3}
+          onClick={() => actions?.command(5, room!.mode, 0, "Returning to lobby")}
+        >
+          Return to Lobby
+        </Button>
+      </MultiplayerDialog>
       <MultiplayerDialog
         open={showJoin}
         title={pending ? "Joining" : "Join room"}

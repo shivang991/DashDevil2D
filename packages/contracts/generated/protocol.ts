@@ -724,7 +724,7 @@ export const layouts = {
     {
       "name": "flags",
       "type": "u8",
-      "mask": 7
+      "mask": 15
     },
     {
       "name": "reservationUs",

@@ -58,11 +58,11 @@ for (const delayed of [0, 1])
         await page.getByRole("button", { name: "Ready", exact: true }).click();
       await pages[0].getByRole("button", { name: "Start round" }).click();
       await expect(pages[delayed].getByTestId("countdown")).toBeVisible();
-      await expect(pages[1 - delayed].getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(pages[1 - delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 15000,
       });
       await expect(pages[delayed].locator("html")).toHaveAttribute("data-delayed-room-state", "3");
-      await expect(pages[delayed].getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 1000,
       });
       const outcomes = await Promise.all(
@@ -113,7 +113,7 @@ for (const delayed of [0, 1])
       await pages[delayed].evaluate(() => sessionStorage.setItem("finalityReload", "1"));
       await pages[delayed].reload();
       await pages[delayed].getByRole("button", { name: /Drag Race/ }).click();
-      await expect(pages[delayed].getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 1200,
       });
       const before = JSON.parse((await pages[delayed].getByTestId("room-evidence").textContent())!);

@@ -211,6 +211,9 @@ func (s *Server) removeSeatLocked(r *room, index uint8) {
 	}
 	r.seats[index] = nil
 	s.cancelCountdownLocked(r)
+	if r.phase == 3 && r.seats[1-index] != nil && r.seats[1-index].returned {
+		r.phase = 0
+	}
 	for _, other := range r.seats {
 		if other != nil {
 			other.ready = false

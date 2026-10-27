@@ -103,7 +103,7 @@ test(
         });
       }
       for (const page of pages)
-        await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+        await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
           timeout: 65000,
         });
       const outcomes = await Promise.all(

@@ -69,7 +69,7 @@ test("leave confirmation focuses cancel and resets on a server outcome", () => {
   expect(document.activeElement?.textContent).toBe("Cancel");
   expect(actions.releaseControls).toHaveBeenCalledOnce();
   render({ ...countdown, outcome });
-  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
   render();
   expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Starting");
   expect(actions.leave).not.toHaveBeenCalled();
@@ -104,6 +104,48 @@ function getButton(name: string) {
 function clickButton(name: string) {
   act(() => getButton(name).click());
 }
+
+test("round result stays over the race until this player returns, then waits in the lobby", () => {
+  const final = { ...lobby, room: { ...room, phase: 3 }, outcome };
+  const props = renderMultiplayer({ state: final, renderRace: () => <div>Completed race</div> });
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
+  expect(host.textContent).toContain("Completed race");
+  clickButton("Return to Lobby");
+  expect(props.actions.command).toHaveBeenCalledWith(5, room.mode, 0, "Returning to lobby");
+
+  act(() =>
+    root.render(
+      <MultiplayerView
+        {...props}
+        state={{
+          ...final,
+          room: {
+            ...final.room,
+            seats: [{ ...room.seats[0], flags: 9 }, room.seats[1]],
+          },
+        }}
+      />,
+    ),
+  );
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  expect(host.textContent).toContain("Waiting for other player to return");
+  expect(host.textContent).not.toContain("Round Over");
+  expect(getButton("Road Rage").disabled).toBe(true);
+
+  act(() =>
+    root.render(
+      <MultiplayerView
+        {...props}
+        state={{
+          ...final,
+          room: { ...room, seats: room.seats.map((seat) => ({ ...seat, flags: 1 })) },
+        }}
+      />,
+    ),
+  );
+  expect(host.textContent).not.toContain("Round Over");
+  expect(host.textContent).toContain("Ready");
+});
 
 test("guest readiness keeps Ready disabled and offers a separate cancel control", () => {
   const guest = { ...lobby, identity: { ...lobby.identity!, seat: 1 } };

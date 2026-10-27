@@ -49,7 +49,10 @@ test(
       if (!defaults) {
         await pages[0].getByRole("img", { name: "Multiplayer race" }).focus();
         await pages[0].keyboard.down("ArrowUp");
-        await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
+        await expect(pages[0].getByTestId("nos-status")).toHaveAttribute(
+          "data-nos-state",
+          "active",
+        );
         await expect
           .poll(
             async () => {
@@ -96,7 +99,7 @@ test(
         contentType: "image/png",
       });
       for (const page of pages)
-        await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+        await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
           timeout: 65000,
         });
       await pages[0].keyboard.up("ArrowUp");
@@ -124,6 +127,8 @@ test(
         });
       if (!defaults) {
         await pages[1].getByRole("button", { name: "Return to Lobby", exact: true }).click();
+        await expect(pages[1].getByText("Waiting for other player to return…")).toBeVisible();
+        await pages[0].getByRole("button", { name: "Return to Lobby", exact: true }).click();
         await expect(pages[0].getByLabel("Multiplayer mode")).toBeVisible();
         await pages[0].getByRole("button", { name: "Drag Race", exact: true }).click();
         for (const page of pages)
@@ -139,10 +144,13 @@ test(
         for (let seat = 0; seat < 2; seat++) {
           expect(rematch[seat].identity).toEqual(initial[seat].identity);
           expect(rematch[seat].cars.map((car: { hp: number }) => car.hp)).toEqual([6, 6]);
-          await expect(pages[seat].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
+          await expect(pages[seat].getByTestId("nos-status")).toHaveAttribute(
+            "data-nos-state",
+            "ready",
+          );
         }
         for (const page of pages)
-          await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+          await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
             timeout: 15000,
           });
       }

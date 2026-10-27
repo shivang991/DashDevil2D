@@ -139,6 +139,9 @@ func (s *Server) broadcast(r *room) {
 			if seat.ready {
 				flags |= 2
 			}
+			if seat.returned {
+				flags |= 8
+			}
 			reservation := uint64(0)
 			if !seat.deadline.IsZero() {
 				reservation = uint64(max(seat.deadline.Sub(s.start).Microseconds(), 0))
@@ -399,6 +402,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		r.seed = seed
 		for _, seat := range r.seats {
 			seat.inputGeneration++
+			seat.returned = false
 		}
 		resetIdle = true
 		r.roundID++
@@ -421,12 +425,14 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			s.mu.Unlock()
 			return fmt.Errorf("Return to Lobby requires a finalized round")
 		}
-		// Keep the terminal state available to reserved seats recovering in the
-		// lobby. A new round replaces it atomically in prepareRoundLocked.
-		r.phase = 0
-		for _, other := range r.seats {
-			if other != nil {
-				other.ready = false
+		participant.returned = true
+		if r.seats[1-participant.index] == nil || r.seats[1-participant.index].returned {
+			// Keep the outcome for reserved seats recovering in the lobby.
+			r.phase = 0
+			for _, other := range r.seats {
+				if other != nil {
+					other.ready = false
+				}
 			}
 		}
 	case 4:

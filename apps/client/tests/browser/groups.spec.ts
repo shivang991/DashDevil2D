@@ -78,7 +78,7 @@ for (const action of ["recover", "leave"])
         }
         const remaining = action === "recover" ? [0, 1] : [1 - recovering];
         for (const seat of remaining)
-          await expect(pages[seat].getByRole("heading", { name: "Round result" })).toBeVisible({
+          await expect(pages[seat].getByRole("heading", { name: "Round Over" })).toBeVisible({
             timeout: 5000,
           });
         const outcomes = await Promise.all(

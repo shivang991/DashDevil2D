@@ -1,42 +1,38 @@
+import { Crown } from "lucide-react";
 import type { Outcome } from "@dashdevil/contracts/protocol";
-
-const reasons = [
-  "Finish line",
-  "HP depleted",
-  "Time limit",
-  "Forfeit",
-  "Reconnect grace expired",
-  "Both players disconnected or left",
-  "Server simulation interrupted",
-  "Server maintenance",
-];
+import portrait from "@/assets/racer-portrait.png";
 
 export function RoundResult({ outcome, local }: { outcome: Outcome; local: number }) {
+  const neutral = outcome.result >= 2;
+  const result =
+    outcome.result === 3
+      ? "Round Abandoned"
+      : outcome.result === 2
+        ? "Tie"
+        : outcome.result === local
+          ? "You Won"
+          : "You Lost";
+  const seats = neutral ? [1 - local, local] : [outcome.result];
+
   return (
-    <div role="status" className="rounded-xl border border-red-400 bg-neutral-900 p-5">
-      <h2 className="text-xl">Round result</h2>
-      <p>
-        {outcome.result === 3
-          ? "Round abandoned"
-          : outcome.result === 2
-            ? "Tie"
-            : outcome.result === local
-              ? "You won!"
-              : "You lost"}
+    <div className="round-result">
+      <div
+        className={`round-result-portraits ${neutral ? "round-result-portraits--paired" : ""}`}
+        aria-hidden="true"
+      >
+        {!neutral && <Crown className="round-result-crown" fill="currentColor" strokeWidth={1.5} />}
+        {seats.map((seat) => (
+          <div key={seat} className={`round-result-portrait round-result-portrait--seat-${seat}`}>
+            <img src={portrait} alt="" />
+          </div>
+        ))}
+      </div>
+      <p className="round-result-message" role="status">
+        {result}
       </p>
-      <p>{reasons[outcome.reason]}</p>
-      <p>Server confirmed · {(outcome.timeUs / 1e6).toFixed(3)} s</p>
-      {outcome.cars.map((car, seat) => (
-        <p key={seat}>
-          {seat === local ? "You" : "Opponent"} · Final HP {car.hp} · Score {car.score}
-        </p>
-      ))}
-      <details>
-        <summary>Result details</summary>
-        <pre data-testid="outcome-evidence" className="text-xs overflow-auto">
-          {JSON.stringify(outcome)}
-        </pre>
-      </details>
+      <pre hidden data-testid="outcome-evidence">
+        {JSON.stringify(outcome)}
+      </pre>
     </div>
   );
 }

@@ -32,7 +32,7 @@ test("idle warning, explicit expiry failure, fresh room, reserved host and expir
       timeout: 5000,
     });
     await expect(pages[0].getByRole("button", { name: "Create Room", exact: true })).toBeEnabled();
-    await expect(pages[0].getByRole("heading", { name: "Round result" })).toHaveCount(0);
+    await expect(pages[0].getByRole("heading", { name: "Round Over" })).toHaveCount(0);
     await info.attach("idle-expired.png", {
       body: await pages[0].screenshot({ fullPage: true }),
       contentType: "image/png",
@@ -121,7 +121,7 @@ test("countdown and gameplay outlive idle expiry; leaving a disconnected opponen
     await contexts[1].unroute("**/admission*");
     await pages[1].reload();
     await pages[1].getByRole("button", { name: /Drag Race/ }).click();
-    await expect(pages[1].getByRole("heading", { name: "Round result" })).toBeVisible();
+    await expect(pages[1].getByRole("heading", { name: "Round Over" })).toBeVisible();
     const outcome = JSON.parse((await pages[1].getByTestId("outcome-evidence").textContent())!);
     expect(outcome.result).toBe(3);
     expect(outcome.reason).toBe(5);

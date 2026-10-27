@@ -97,6 +97,7 @@ type seat struct {
 	deadline         time.Time
 	leaving          time.Time
 	connected, ready bool
+	returned         bool
 	focused          bool
 	installedRound   uint32
 	inputGeneration  uint32
