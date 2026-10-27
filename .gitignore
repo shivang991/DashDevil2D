@@ -9,3 +9,5 @@ apps/client/playwright-report/
 .local/
 infra/.env
 infra/certs/
+
+**/storybook-static/

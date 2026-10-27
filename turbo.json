@@ -113,6 +113,15 @@
       "outputs": [
         "protocol/generated.go"
       ]
+    },
+    "storybook": {
+      "dependsOn": ["^generate"],
+      "persistent": true,
+      "cache": false
+    },
+    "build:storybook": {
+      "dependsOn": ["^generate", "typecheck"],
+      "outputs": ["storybook-static/**"]
     }
   }
 }

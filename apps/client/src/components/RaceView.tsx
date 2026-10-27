@@ -18,15 +18,20 @@ export function RaceView({
   state,
   onLeave,
   suspended,
+  audio = gameAudio,
 }: {
-  connection: PairedConnection;
+  connection: Pick<
+    PairedConnection,
+    "frame" | "input" | "releaseControls" | "recordDraw" | "recordResultCommit"
+  >;
   state: PairedState;
   suspended: boolean;
   onLeave: () => void;
+  audio?: Pick<typeof gameAudio, "enabled" | "setEnabled">;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const pressed = useRef(new Set<string>());
-  const [muted, setMuted] = useState(!gameAudio.enabled);
+  const [muted, setMuted] = useState(!audio.enabled);
   const [menu, setMenu] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [frame, setFrame] = useState<Frame>();
@@ -55,8 +60,8 @@ export function RaceView({
         return;
       }
       if (event.key.toLowerCase() === "m" && !interactive(event.target)) {
-        gameAudio.setEnabled(!gameAudio.enabled);
-        setMuted(!gameAudio.enabled);
+        audio.setEnabled(!audio.enabled);
+        setMuted(!audio.enabled);
         return;
       }
       const control = controlFor(event.key);
@@ -90,7 +95,7 @@ export function RaceView({
       window.removeEventListener("blur", release);
       document.removeEventListener("visibilitychange", release);
     };
-  }, [connection, menu, suspended, state.outcome]);
+  }, [connection, menu, suspended, state.outcome, audio]);
   useEffect(() => {
     connection.releaseControls();
     if (!menu && !suspended && !state.outcome && state.status === "Connected")
@@ -373,7 +378,7 @@ export function RaceView({
           </button>
           <button
             onClick={() => {
-              gameAudio.setEnabled(muted);
+              audio.setEnabled(muted);
               setMuted(!muted);
             }}
             className="hover:text-white"
@@ -395,7 +400,7 @@ export function RaceView({
           <button
             className={button}
             onClick={() => {
-              gameAudio.setEnabled(muted);
+              audio.setEnabled(muted);
               setMuted(!muted);
             }}
           >
