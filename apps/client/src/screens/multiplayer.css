@@ -216,21 +216,15 @@
   text-align: center;
   overflow-wrap: anywhere;
 }
-.multiplayer-notice {
-  padding: 16px;
-  border-left: 2px solid #a3a3a3;
-  font-size: 11px;
-  line-height: 1.8;
-}
-.multiplayer-notice p + p {
-  color: #a3a3a3;
-  margin-top: 8px;
-}
 .multiplayer-error {
   color: #f87171;
   font-size: 12px;
   line-height: 1.7;
+  text-align: center;
   overflow-wrap: anywhere;
+}
+.multiplayer-error p + p {
+  margin-top: 8px;
 }
 .multiplayer-text-button {
   min-height: 44px;

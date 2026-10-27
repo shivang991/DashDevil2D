@@ -106,13 +106,22 @@ export function MultiplayerView({
         Math.min(3, Math.ceil((room.startUs - (clock + (state?.clockOffsetUs ?? 0))) / 1e6)),
       )
     : 3;
-  const admissionError =
+  const roomError =
     error ||
     (state?.status.startsWith("Unable") ||
     state?.status === "Browser unsupported" ||
     state?.status === "Version mismatch—reload"
       ? state.status
-      : "");
+      : "") ||
+    state?.notice;
+  const errorMessage = roomError && (
+    <div id="room-error" className="multiplayer-error" role="alert">
+      <p>{roomError}</p>
+      {roomError.startsWith("Countdown cancelled") && (
+        <p>A player left, lost connection, or hid the game.</p>
+      )}
+    </div>
+  );
   const shownMode = inRoom ? room!.mode : selectedMode;
   const showJoin = !inRoom && joinOpen;
 
@@ -235,11 +244,6 @@ export function MultiplayerView({
                 Join Room
               </Button>
             </div>
-            {!showJoin && admissionError && !pending && (
-              <p className="multiplayer-error" role="alert">
-                {admissionError}
-              </p>
-            )}
             {pending && !showJoin && (
               <p className="multiplayer-note" role="status">
                 {state?.pending}…
@@ -433,14 +437,7 @@ export function MultiplayerView({
             {state.pending}…
           </p>
         )}
-        {!race && state?.notice && (
-          <div className="multiplayer-notice" role="alert">
-            <p>{state.notice}</p>
-            {state.notice.startsWith("Countdown cancelled") && (
-              <p>A player left, lost connection, or hid the game.</p>
-            )}
-          </div>
-        )}
+        {!race && !showJoin && !pending && errorMessage}
       </section>
       <MultiplayerDialog
         open={Boolean(resultKey && readyResult === resultKey)}
@@ -505,14 +502,10 @@ export function MultiplayerView({
                 placeholder="Enter code"
                 value={code}
                 onChange={(event) => setCode(event.target.value.replace(/[^0-9]/g, ""))}
-                aria-invalid={Boolean(admissionError)}
-                aria-describedby={admissionError ? "admission-error" : undefined}
+                aria-invalid={Boolean(roomError)}
+                aria-describedby={roomError ? "room-error" : undefined}
               />
-              {admissionError && (
-                <p id="admission-error" className="multiplayer-error" role="alert">
-                  {admissionError}
-                </p>
-              )}
+              {errorMessage}
               <Button className="multiplayer-action" disabled={!state || !/^\d{4}$/.test(code)}>
                 Join Room
               </Button>
