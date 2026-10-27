@@ -22,7 +22,7 @@ cp infra/.env.example infra/.env
 
 For later updates, pull the desired revision and run **the same `./infra/up.sh`**. It:
 
-1. Validates Compose and builds images before interrupting the running revision.
+1. Validates Compose, pulls Certbot and builds images before interrupting the running revision.
 2. Requests maintenance from an existing server and waits for it to drain, then stops it. Existing client/nginx containers stay on their old images until this completes.
 3. Stops the renewal service to avoid competing certificate writers; starts missing client/nginx services in HTTP challenge mode without recreating existing ones.
 4. Issues/reuses the certificate. Then recreates the services together, waits for client/nginx health and server readiness, and restarts renewal.
