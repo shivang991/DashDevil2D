@@ -37,17 +37,21 @@ describe("exact schema configuration resource gate", () => {
 
 import fixtures from "@dashdevil/contracts/protocol-fixtures";
 import {
-  layouts,
-  messageTypes,
-  encodeMessage,
-  decodeMessage,
-  encodeBaseline,
-  decodeBaseline,
-  encodeVerification,
-  decodeVerification,
-  projectBaseline,
-  type Messages,
+  type AdmissionOperation,
+  AdmissionOperationCreate,
+  AdmissionOperationJoin,
+  AdmissionOperationResume,
   type Baseline,
+  decodeBaseline,
+  decodeMessage,
+  decodeVerification,
+  encodeBaseline,
+  encodeMessage,
+  encodeVerification,
+  layouts,
+  type Messages,
+  messageTypes,
+  projectBaseline,
   type Verification,
 } from "@dashdevil/contracts/protocol";
 import {
@@ -331,13 +335,6 @@ for (const scenario of fixtures.semanticInvalid)
     expect(() => validateBaseline(value, value.context)).toThrow();
   });
 
-import {
-  AdmissionOperationCreate,
-  AdmissionOperationJoin,
-  AdmissionOperationResume,
-  type AdmissionOperation,
-} from "@dashdevil/contracts/protocol";
-
 describe("named admission operations preserve literal wire assignments", () => {
   it.each<[AdmissionOperation, string]>([
     [AdmissionOperationCreate, "000000110100000300000000000000014100000000"],
@@ -370,5 +367,28 @@ describe("named admission operations preserve literal wire assignments", () => {
         credential: new Uint8Array(),
       }),
     ).toThrow();
+  });
+});
+
+import * as named from "@dashdevil/contracts/protocol";
+import schema from "@dashdevil/contracts/protocol-schema";
+
+describe("named room commands preserve wire compatibility", () => {
+  it("encodes Return to Lobby as existing command 5 and still rejects 6", () => {
+    const value = {
+      identity: { roomId: 1, seatSession: 1, pairGeneration: 1, seat: 0 as const },
+      sequence: 1,
+      revision: 1,
+      command: named.RoomCommandCodeReturnToLobby,
+      mode: named.ModeDragRace,
+      ready: named.WireBooleanFalse,
+    };
+    expect(hex(named.encodeRoomCommand(value))).toBe(
+      "000000010000000100000001000000000100000001050100",
+    );
+    expect(() => named.encodeRoomCommand({ ...value, command: 6 as never })).toThrow();
+    expect(schema.types.RoomCommand.find((f) => f.name === "command")).toMatchObject({
+      enum: "roomCommandCode",
+    });
   });
 });

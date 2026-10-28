@@ -112,13 +112,13 @@ func TestSharedTimelines(t *testing.T) {
 					advance(*step.At)
 					payload := identities[step.Seat]
 					if step.PayloadSeat != nil {
-						payload.Seat = *step.PayloadSeat
+						payload.Seat = protocol.SeatIndex(*step.PayloadSeat)
 					}
 					round := uint32(1)
 					if step.RoundID != nil {
 						round = *step.RoundID
 					}
-					_, err = game.Submit(identities[step.Seat], protocol.Input{Identity: payload, Round: protocol.Round{RoundId: round, InputGeneration: 1}, Sequence: step.Sequence, Intent: step.Intent, Control: step.Control, HeldMask: step.HeldMask})
+					_, err = game.Submit(identities[step.Seat], protocol.Input{Identity: payload, Round: protocol.Round{RoundId: round, InputGeneration: 1}, Sequence: step.Sequence, Intent: protocol.InputIntent(step.Intent), Control: protocol.Control(step.Control), HeldMask: step.HeldMask})
 					if err != nil {
 						t.Fatal(err)
 					}
@@ -303,7 +303,7 @@ func TestSharedFinishContinuations(t *testing.T) {
 				cars[seat].Progress = scenario.Progress[seat]
 			}
 			car := &cars[0]
-			car.Phase = scenario.Phase
+			car.Phase = protocol.MovementPhase(scenario.Phase)
 			if scenario.Phase != 0 {
 				car.MovementEndUs = 150000
 				if scenario.MovementEndUs != nil {
@@ -332,7 +332,7 @@ func TestSharedFinishContinuations(t *testing.T) {
 				t.Fatal(err)
 			}
 			state := game.Snapshot()
-			expected := &Finish{Tick: scenario.Tick, TimeUs: scenario.TimeUs, Result: scenario.Result}
+			expected := &Finish{Tick: scenario.Tick, TimeUs: scenario.TimeUs, Result: protocol.OutcomeResult(scenario.Result)}
 			position0 := 360.0
 			if scenario.Position0 != nil {
 				position0 = *scenario.Position0

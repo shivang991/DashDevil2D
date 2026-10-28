@@ -1,16 +1,18 @@
-import { AdmissionOperationResume } from "@dashdevil/contracts/protocol";
+import { AdmissionOperationResume, RoomPhaseCountdown } from "@dashdevil/contracts/protocol";
+
 import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
 import {
   PairedConnection,
   type ConnectionOptions,
   type PairedState,
+  type MultiplayerMode,
 } from "@/transport/PairedConnection";
 import { MultiplayerView } from "./MultiplayerView";
 import { RaceView } from "@/components/RaceView";
 import { localName } from "@/transport/localName";
 
-export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () => void }) {
+export function MultiplayerScreen({ mode, onBack }: { mode: MultiplayerMode; onBack: () => void }) {
   const connection = useRef<PairedConnection | undefined>(undefined);
   const [client, setClient] = useState<PairedConnection>();
   const [state, setState] = useState<PairedState>();
@@ -69,7 +71,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
     };
   }, []);
   useEffect(() => {
-    if (state?.room?.phase !== 1 || state.status !== "Connected") {
+    if (state?.room?.phase !== RoomPhaseCountdown || state.status !== "Connected") {
       previousCount.current = undefined;
       return;
     }

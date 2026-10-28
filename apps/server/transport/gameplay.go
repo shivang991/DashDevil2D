@@ -33,11 +33,11 @@ func fixtureBaseline(identity p.Identity) (p.Baseline, error) {
 	b.Progress = p.Progress{}
 	for i := range b.Cars {
 		car := &b.Cars[i]
-		car.Phase = 0
-		car.Controls = 0
-		car.Effective = 0
-		car.Flags = 0
-		car.HeldMask = 0
+		car.Phase = p.MovementPhaseSteady
+		car.Controls = p.ControlNone
+		car.Effective = p.ControlNone
+		car.Flags = p.CarFlagsNone
+		car.HeldMask = p.HeldControlsNone
 		car.LastInput = 0
 		car.FreshnessUs = 0
 		car.NextShiftUs = 0
@@ -222,8 +222,8 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 		return err
 	}
 	hello, ok := first.(p.Handshake)
-	if !ok || hello.Version != p.ProtocolVersion || hello.Identity != pair.identity || hello.DatagramBytes < 10 {
-		wire, _ := p.EncodeMessage(p.ProtocolError{Code: 1, ExpectedVersion: p.ProtocolVersion, Detail: "Incompatible version, identity or datagram support"}, frameLimit)
+	if !ok || hello.Version != p.ProtocolVersion || hello.Identity != pair.identity || hello.DatagramBytes < p.VerificationDatagramBytes {
+		wire, _ := p.EncodeMessage(p.ProtocolError{Code: p.ProtocolErrorCodeIncompatibleHandshake, ExpectedVersion: p.ProtocolVersion, Detail: "Incompatible version, identity or datagram support"}, frameLimit)
 		control.SetWriteDeadline(time.Now().Add(500 * time.Millisecond))
 		control.Write(wire)
 		return errors.New("gameplay handshake rejected")
@@ -234,7 +234,7 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 	}
 	control.SetReadDeadline(time.Time{})
 	cw := writer(pair, control)
-	if err = cw.send(p.Handshake{Version: p.ProtocolVersion, Identity: pair.identity, DatagramBytes: 10}); err != nil {
+	if err = cw.send(p.Handshake{Version: p.ProtocolVersion, Identity: pair.identity, DatagramBytes: p.VerificationDatagramBytes}); err != nil {
 		return err
 	}
 	if err = cw.send(p.Initialization{Identity: pair.identity, Round: baseline.Round, Context: baseline.Context}); err != nil {
@@ -294,7 +294,7 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 	lastRate := time.Now()
 	lastRecovery := time.Time{}
 	fail := func(err error) error {
-		cw.send(p.ProtocolError{Code: 3, ExpectedVersion: p.ProtocolVersion, Detail: err.Error()})
+		cw.send(p.ProtocolError{Code: p.ProtocolErrorCodeMalformedOrProcessingFailure, ExpectedVersion: p.ProtocolVersion, Detail: err.Error()})
 		return err
 	}
 	for {
@@ -327,12 +327,12 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 				if input.Sequence != lastInput+1 {
 					return fail(errors.New("input sequence gap"))
 				}
-				if input.Intent != 2 || input.Control != 0 || input.HeldMask != 0 {
+				if input.Intent != p.InputIntentRefresh || input.Control != p.ControlNone || input.HeldMask != p.HeldControlsNone {
 					return fail(errors.New("diagnostic fixture accepts released-control refreshes only"))
 				}
 				lastInput = input.Sequence
 				baseline.Cars[pair.identity.Seat].LastInput = lastInput
-				if pair.identity.Seat == 0 {
+				if pair.identity.Seat == p.SeatIndexPlayer1 {
 					baseline.Progress.Processed1 = lastInput
 					baseline.Progress.Disposed1 = lastInput
 				} else {
@@ -344,7 +344,7 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 					return e
 				}
 				baseline.Progress.Authority = next
-				if err = aw.send(p.Disposition{Identity: pair.identity, Round: baseline.Round, Authority: next, Tick: baseline.Tick, TimeUs: baseline.TimeUs, Seat: pair.identity.Seat, Sequence: lastInput, Processed: lastInput, Disposition: 1, Intent: 2, Car: baseline.Cars[pair.identity.Seat], Contact: baseline.Contact}); err != nil {
+				if err = aw.send(p.Disposition{Identity: pair.identity, Round: baseline.Round, Authority: next, Tick: baseline.Tick, TimeUs: baseline.TimeUs, Seat: pair.identity.Seat, Sequence: lastInput, Processed: lastInput, Disposition: p.DispositionCodeIgnored, Intent: p.InputIntentRefresh, Car: baseline.Cars[pair.identity.Seat], Contact: baseline.Contact}); err != nil {
 					return err
 				}
 				continue
@@ -448,7 +448,7 @@ func (pair *pair) runGameplay(session *wt.Session) error {
 			if e != nil {
 				return e
 			}
-			datagram, e := p.EncodeVerification(p.Verification{Epoch: baseline.Epoch, Tick: baseline.Tick, Crc: p.CRC32C(projection)}, 10)
+			datagram, e := p.EncodeVerification(p.Verification{Epoch: baseline.Epoch, Tick: baseline.Tick, Crc: p.CRC32C(projection)}, p.VerificationDatagramBytes)
 			if e != nil {
 				return e
 			}

@@ -1,3 +1,11 @@
+import {
+  OutcomeReasonBothDisconnected,
+  OutcomeReasonDeadline,
+  OutcomeReasonHP,
+  OutcomeResultAbandoned,
+  OutcomeResultPlayer2Win,
+  OutcomeResultTie,
+} from "@dashdevil/contracts/protocol";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { RoundResult } from "./RoundResult";
 import "@/screens/multiplayer.css";
@@ -17,6 +25,14 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Won: Story = {};
-export const Lost: Story = { args: { outcome: { ...outcome, result: 1, reason: 1 } } };
-export const Tie: Story = { args: { outcome: { ...outcome, result: 2, reason: 2 } } };
-export const Abandoned: Story = { args: { outcome: { ...outcome, result: 3, reason: 5 } } };
+export const Lost: Story = {
+  args: { outcome: { ...outcome, result: OutcomeResultPlayer2Win, reason: OutcomeReasonHP } },
+};
+export const Tie: Story = {
+  args: { outcome: { ...outcome, result: OutcomeResultTie, reason: OutcomeReasonDeadline } },
+};
+export const Abandoned: Story = {
+  args: {
+    outcome: { ...outcome, result: OutcomeResultAbandoned, reason: OutcomeReasonBothDisconnected },
+  },
+};

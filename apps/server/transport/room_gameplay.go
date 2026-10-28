@@ -23,12 +23,12 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 		return err
 	}
 	hello, ok := first.(p.Handshake)
-	if !ok || hello.Version != p.ProtocolVersion || hello.Identity != pair.identity || hello.DatagramBytes < 10 {
+	if !ok || hello.Version != p.ProtocolVersion || hello.Identity != pair.identity || hello.DatagramBytes < p.VerificationDatagramBytes {
 		return errors.New("incompatible version, identity or datagrams")
 	}
 	control.SetReadDeadline(time.Time{})
 	cw := writer(pair, control)
-	if err = cw.send(p.Handshake{Version: p.ProtocolVersion, Identity: pair.identity, DatagramBytes: 10}); err != nil {
+	if err = cw.send(p.Handshake{Version: p.ProtocolVersion, Identity: pair.identity, DatagramBytes: p.VerificationDatagramBytes}); err != nil {
 		return err
 	}
 	baseline, err := pair.roomBaseline()
@@ -249,7 +249,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				copy.Identity = pair.identity
 				outcome = &copy
 			}
-			active := r.phase == 2
+			active := r.phase == p.RoomPhaseActive
 			var records []raceRecord
 			current := baseline
 			if r.zero != nil {
@@ -332,7 +332,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				if e != nil {
 					return e
 				}
-				datagram, e := p.EncodeVerification(p.Verification{Epoch: baseline.Epoch, Tick: current.Tick, Crc: p.CRC32C(projection)}, 10)
+				datagram, e := p.EncodeVerification(p.Verification{Epoch: baseline.Epoch, Tick: current.Tick, Crc: p.CRC32C(projection)}, p.VerificationDatagramBytes)
 				if e != nil {
 					return e
 				}

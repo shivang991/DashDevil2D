@@ -1,3 +1,11 @@
+import {
+  CarFlagsNOSActive,
+  ControlLeft,
+  ControlNOS,
+  ControlRight,
+  ModeRoadRage,
+  SeatFlagsConnected,
+} from "@dashdevil/contracts/protocol";
 import { RaceAudio } from "@/game/RaceAudio";
 import { Settings } from "lucide-react";
 import { TouchControls } from "./TouchControls";
@@ -8,15 +16,15 @@ import { gameAudio } from "@/lib/gameAudio";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 
 const controls: Record<string, DrivingControl> = {
-  ArrowLeft: 1,
-  a: 1,
-  A: 1,
-  ArrowRight: 2,
-  d: 2,
-  D: 2,
-  ArrowUp: 3,
-  w: 3,
-  W: 3,
+  ArrowLeft: ControlLeft,
+  a: ControlLeft,
+  A: ControlLeft,
+  ArrowRight: ControlRight,
+  d: ControlRight,
+  D: ControlRight,
+  ArrowUp: ControlNOS,
+  w: ControlNOS,
+  W: ControlNOS,
 };
 const controlFor = (key: string) => controls[key];
 const interactive = (target: EventTarget | null) =>
@@ -186,7 +194,7 @@ export function RaceView({
         </button>
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-heading text-red-400">
-            {context.mode === 2 ? "Road Rage" : "Drag Race"}
+            {context.mode === ModeRoadRage ? "Road Rage" : "Drag Race"}
           </h1>
           <div
             className="flex gap-1"
@@ -225,9 +233,9 @@ export function RaceView({
           </p>
           <p
             className="shrink-0 text-base text-white tabular-nums"
-            data-testid={context.mode === 2 ? "time-remaining" : "distance-remaining"}
+            data-testid={context.mode === ModeRoadRage ? "time-remaining" : "distance-remaining"}
           >
-            {context.mode === 2
+            {context.mode === ModeRoadRage
               ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
               : `${remaining}% left`}
           </p>
@@ -241,7 +249,9 @@ export function RaceView({
           <span
             hidden
             data-testid="nos-status"
-            data-nos-state={(frame?.cars[local].flags ?? 0) & 1 ? "active" : "ready"}
+            data-nos-state={
+              (frame?.cars[local].flags ?? 0) & CarFlagsNOSActive ? "active" : "ready"
+            }
           />
 
           <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">
@@ -250,7 +260,7 @@ export function RaceView({
                 Awaiting confirmation
               </p>
             )}
-            {!((state.room?.seats[1 - local]?.flags ?? 0) & 1) && !outcome && (
+            {!((state.room?.seats[1 - local]?.flags ?? 0) & SeatFlagsConnected) && !outcome && (
               <p role="status" className="bg-black/80 p-2">
                 Opponent disconnected—round continues.
               </p>

@@ -1,20 +1,27 @@
+import {
+  type Barrier,
+  type Baseline,
+  type Context,
+  type decodeMessage,
+  DispositionCodeIgnored,
+  type Identity,
+  type Input,
+  InputIntentRefresh,
+  LaneLeft,
+  LaneRight,
+  type Messages,
+  type Outcome,
+  projectBaseline,
+  RecoveryReasonResynchronize,
+  SeatIndexPlayer1,
+  type Verification,
+} from "@dashdevil/contracts/protocol";
+
 import { RaceSession } from "./RaceSession";
 import { RaceVerification } from "./RaceVerification";
 import { initialCar, validateMessage } from "@dashdevil/contracts/validation";
 import { BaselineTransfer } from "@dashdevil/contracts/transfer";
 import { crc32c } from "@dashdevil/contracts/wire";
-import {
-  projectBaseline,
-  type decodeMessage,
-  type Baseline,
-  type Barrier,
-  type Context,
-  type Identity,
-  type Input,
-  type Messages,
-  type Outcome,
-  type Verification,
-} from "@dashdevil/contracts/protocol";
 
 type AuthorityKind =
   "Initialization" | "BaselineChunk" | "Disposition" | "Event" | "Coverage" | "Outcome" | "Barrier";
@@ -239,14 +246,14 @@ export class AuthoritativeRoundState {
         }
         if (
           value.authority !== this.baseline.progress.authority + 1 ||
-          value.disposition !== 1 ||
-          value.intent !== 2
+          value.disposition !== DispositionCodeIgnored ||
+          value.intent !== InputIntentRefresh
         )
           throw new Error("Unexpected diagnostic disposition");
         this.baseline.cars[value.seat] = value.car;
         this.baseline.contact = value.contact;
         this.baseline.progress.authority = value.authority;
-        if (value.seat === 0) {
+        if (value.seat === SeatIndexPlayer1) {
           this.baseline.progress.processed1 = value.processed;
           this.baseline.progress.disposed1 = value.processed;
         } else {
@@ -398,7 +405,7 @@ export class AuthoritativeRoundState {
     return structuredClone({
       identity: b.identity,
       round: b.round,
-      reason: 0,
+      reason: RecoveryReasonResynchronize,
       epoch: b.epoch,
       tick: b.tick,
       progress: b.progress,
@@ -419,7 +426,7 @@ export class AuthoritativeRoundState {
       objects: [],
       renderedCars: outcome.cars.map((car) => ({ ...car, tilt: 0 })),
       cars: outcome.cars.map((car, seat) => ({
-        ...initialCar(seat === 0 ? 0 : 2, car.hp),
+        ...initialCar(seat === SeatIndexPlayer1 ? LaneLeft : LaneRight, car.hp),
         ...car,
         normalSpeed: this.context!.gameplay.startingRoadSpeed,
       })),

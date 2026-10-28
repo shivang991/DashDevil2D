@@ -15,7 +15,7 @@ func ValidateVersion(version uint16) error {
 	return require(version == ProtocolVersion, "incompatible protocol version")
 }
 func NextCounter(value uint32, bits int) (uint32, error) {
-	var max uint32 = math.MaxUint32
+	var max uint32 = CounterMax
 	if bits == 16 {
 		max = math.MaxUint16
 	} else if bits != 32 {
@@ -40,32 +40,32 @@ func ValidateCar(car Car, timeUs uint64, context Context) error {
 	if e := require(car.Progress >= 0 && math.Abs(car.Lateral) <= g.LaneSpacing, "car outside world"); e != nil {
 		return e
 	}
-	if e := require(car.Phase == 0 || (car.MovementStartUs <= timeUs && timeUs <= car.MovementEndUs && car.MovementStartUs < car.MovementEndUs), "movement timing"); e != nil {
+	if e := require(car.Phase == MovementPhaseSteady || (car.MovementStartUs <= timeUs && timeUs <= car.MovementEndUs && car.MovementStartUs < car.MovementEndUs), "movement timing"); e != nil {
 		return e
 	}
-	if e := require(car.Phase != 1 || math.Abs(float64(car.Departure)-float64(car.Target)) == 1, "nonadjacent shift"); e != nil {
+	if e := require(car.Phase != MovementPhaseShift || math.Abs(float64(car.Departure)-float64(car.Target)) == 1, "nonadjacent shift"); e != nil {
 		return e
 	}
 
 	if math.Abs(car.MovementOrigin) > g.LaneSpacing || math.Abs(car.MovementTarget) > g.LaneSpacing {
 		return invalid("movement coordinates outside world")
 	}
-	if car.Phase == 1 && (car.MovementOrigin != (float64(car.Departure)-1)*g.LaneSpacing || car.MovementTarget != (float64(car.Target)-1)*g.LaneSpacing) {
+	if car.Phase == MovementPhaseShift && (car.MovementOrigin != (float64(car.Departure)-1)*g.LaneSpacing || car.MovementTarget != (float64(car.Target)-1)*g.LaneSpacing) {
 		return invalid("shift destination/origin disagrees with lane")
 	}
-	if car.Phase == 2 && car.MovementTarget != (float64(car.Departure)-1)*g.LaneSpacing {
+	if car.Phase == MovementPhaseReturn && car.MovementTarget != (float64(car.Departure)-1)*g.LaneSpacing {
 		return invalid("return destination disagrees with departure")
 	}
-	if e := require(car.Phase != 2 || (car.Effective != 3 && car.Flags&1 == 0), "return NOS"); e != nil {
+	if e := require(car.Phase != MovementPhaseReturn || (car.Effective != ControlNOS && car.Flags&CarFlagsNOSActive == 0), "return NOS"); e != nil {
 		return e
 	}
-	if e := require(car.Controls == 0 || car.HeldMask&(1<<(car.Controls-1)) != 0, "winning control is not held"); e != nil {
+	if e := require(car.Controls == ControlNone || car.HeldMask&(1<<(car.Controls-1)) != 0, "winning control is not held"); e != nil {
 		return e
 	}
-	if e := require(car.Effective == 0 || car.FreshnessUs > timeUs, "expired effective controls"); e != nil {
+	if e := require(car.Effective == ControlNone || car.FreshnessUs > timeUs, "expired effective controls"); e != nil {
 		return e
 	}
-	return require(car.Flags&1 == 0 || (car.HeldMask&4 != 0 && car.Effective != 0), "NOS requires held boost")
+	return require(car.Flags&CarFlagsNOSActive == 0 || (car.HeldMask&HeldControlsNOS != 0 && car.Effective != ControlNone), "NOS requires held boost")
 }
 func ValidateWindow(w Window) error {
 	if e := require(w.Start <= w.End && w.FirstSlice <= w.LastSlice, "window bounds"); e != nil {
@@ -77,8 +77,8 @@ func ValidateWindow(w Window) error {
 			return e
 		}
 		last = o.Id
-		kind := o.Flags & 3
-		if e := require(kind != 0 && ((kind == 2 && o.Flags&4 == 0) || (kind != 2 && o.Flags&24 == 0)), "consumption flags"); e != nil {
+		kind := ObjectKind(o.Flags & ObjectFlagsKindMask)
+		if e := require(kind != ObjectKindEmpty && ((kind == ObjectKindObstacle && o.Flags&ObjectFlagsSharedConsumed == 0) || (kind != ObjectKindObstacle && o.Flags&ObjectFlagsSpentMask == 0)), "consumption flags"); e != nil {
 			return e
 		}
 	}
@@ -162,7 +162,7 @@ type Resources struct {
 // for an already semantically validated context, using the same enclosure as TypeScript.
 func ConfigurationResources(context Context) (Resources, error) {
 	var result Resources
-	if context.Mode == 0 {
+	if context.Mode == ModeLongDrive {
 		return result, nil
 	}
 	g := context.Gameplay
@@ -172,12 +172,12 @@ func ConfigurationResources(context Context) (Resources, error) {
 	window := boosted + 2*extent + g.SliceSpacing
 	random := math.Ceil(window/g.SliceSpacing) + 2
 	reserved := 0.0
-	if context.Mode == 1 {
+	if context.Mode == ModeDragRace {
 		reserved = g.ReservedHearts
 	}
 	objects := 2*random + reserved
 	progress := boosted * g.TimeLimit
-	if context.Mode == 1 {
+	if context.Mode == ModeDragRace {
 		progress = g.FinishDistance
 	}
 	for _, v := range []float64{progress + window, -extent, g.LaneSpacing + math.Max(g.CarWidth, math.Max(g.ObstacleW, math.Max(g.CoinSize, g.HeartSize)))/2} {
@@ -188,14 +188,14 @@ func ConfigurationResources(context Context) (Resources, error) {
 	if math.IsNaN(objects) || math.IsInf(objects, 0) || objects != math.Trunc(objects) || objects < 0 || random+reserved > 40000 {
 		return result, invalid("serialized baseline object count exceeds schema window bound")
 	}
-	if g.MaxHealth > math.MaxUint32 || g.ObstacleDamage > math.MaxUint32 || g.PlayerContactDamage > math.MaxUint32 {
+	if g.MaxHealth > CounterMax || g.ObstacleDamage > CounterMax || g.PlayerContactDamage > CounterMax {
 		return result, invalid("HP/damage exceeds uint32")
 	}
 	duration := g.TimeLimit
-	if context.Mode == 1 {
+	if context.Mode == ModeDragRace {
 		duration = g.FinishDistance / g.StartingRoadSpeed
 	}
-	if math.IsNaN(duration) || math.IsInf(duration, 0) || math.Ceil(duration*g.TickRate) > math.MaxUint32 {
+	if math.IsNaN(duration) || math.IsInf(duration, 0) || math.Ceil(duration*g.TickRate) > CounterMax {
 		return result, invalid("round tick counter would exhaust")
 	}
 	micros := math.Floor((duration+math.Max(math.Max(g.InvincibleDuration, g.LaneShiftDuration), math.Max(g.LaneReturnDuration, c.ControlFreshnessExpiry)))*1e6 + .5)
@@ -203,7 +203,7 @@ func ConfigurationResources(context Context) (Resources, error) {
 		return result, invalid("round continuation timestamp exceeds exact microseconds")
 	}
 	slices := math.Ceil((progress+window)/g.SliceSpacing) + 2
-	if slices+reserved >= math.MaxUint32 || 10*(slices+reserved) > math.MaxUint32 {
+	if slices+reserved >= CounterMax || 10*(slices+reserved) > CounterMax {
 		return result, invalid("object identity/score exceeds uint32")
 	}
 	b := Baseline{Context: context}
@@ -227,7 +227,7 @@ func ConfigurationResources(context Context) (Resources, error) {
 	if e != nil {
 		return result, e
 	}
-	header, e := EncodeMessage(BaselineChunk{}, 65536)
+	header, e := EncodeMessage(BaselineChunk{}, DefaultFrameBytes)
 	if e != nil {
 		return result, e
 	}
@@ -253,7 +253,7 @@ func ConfigurationResources(context Context) (Resources, error) {
 // ValidateMessage checks static record semantics after mechanical decoding.
 // Stateful admission, ordered application and lifecycle decisions remain #28/#29.
 func ValidateMessage(value any, context Context) error {
-	if _, e := EncodeMessage(value, 65536); e != nil {
+	if _, e := EncodeMessage(value, DefaultFrameBytes); e != nil {
 		return e
 	}
 	v := reflect.ValueOf(value)
@@ -281,11 +281,11 @@ func ValidateMessage(value any, context Context) error {
 	}
 	switch x := value.(type) {
 	case Handshake:
-		return require(x.DatagramBytes == 10, "required ten-byte datagram schema/capacity")
+		return require(x.DatagramBytes == VerificationDatagramBytes, "required ten-byte datagram schema/capacity")
 	case Admission:
-		return require(len(x.Credential) == 32 && len(x.RoomTicket) > 0 && len(x.GameplayTicket) > 0 && len(x.Origin) > 0, "admission credential/tickets/origin")
+		return require(len(x.Credential) == CredentialBytes && len(x.RoomTicket) > 0 && len(x.GameplayTicket) > 0 && len(x.Origin) > 0, "admission credential/tickets/origin")
 	case AdmissionRequest:
-		code := len(x.Code) == 4
+		code := len(x.Code) == RoomCodeLength
 		for _, r := range x.Code {
 			if r < '0' || r > '9' {
 				code = false
@@ -294,12 +294,12 @@ func ValidateMessage(value any, context Context) error {
 		if x.Operation != AdmissionOperationCreate && !code {
 			return invalid("four-digit room code required")
 		}
-		return require(x.Operation != AdmissionOperationResume || len(x.Credential) == 32, "resume credential must be 256 bits")
+		return require(x.Operation != AdmissionOperationResume || len(x.Credential) == CredentialBytes, "resume credential must be 256 bits")
 	case Input:
-		if x.Sequence == 0 || x.Intent == 0 && x.Control == 0 {
+		if x.Sequence == 0 || x.Intent == InputIntentPress && x.Control == ControlNone {
 			return invalid("fresh input sequence/control")
 		}
-		return require(x.Intent != 2 || x.Control == 0 || x.HeldMask&(1<<(x.Control-1)) != 0, "refresh control must be held")
+		return require(x.Intent != InputIntentRefresh || x.Control == ControlNone || x.HeldMask&(1<<(x.Control-1)) != 0, "refresh control must be held")
 	case ClockReply:
 		return require(x.ServerReceiveUs <= x.ServerSendUs, "clock reply reverses server time")
 	case Disposition:

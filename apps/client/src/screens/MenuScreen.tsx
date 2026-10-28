@@ -1,10 +1,12 @@
+import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
+import type { MultiplayerMode } from "@/transport/PairedConnection";
 import { localName } from "@/transport/localName";
 import { MenuItem } from "@/components/MenuItem";
 
 interface MenuScreenProps {
   playerName?: string;
   onStartGame: () => void;
-  onMultiplayer: (mode: 1 | 2) => void;
+  onMultiplayer: (mode: MultiplayerMode) => void;
 }
 
 export function MenuScreen({ onStartGame, onMultiplayer, playerName }: MenuScreenProps) {
@@ -23,12 +25,12 @@ export function MenuScreen({ onStartGame, onMultiplayer, playerName }: MenuScree
           <MenuItem
             title="Drag Race"
             subtitle="Private two-player race"
-            onClick={() => onMultiplayer(1)}
+            onClick={() => onMultiplayer(ModeDragRace)}
           />
           <MenuItem
             title="Road Rage"
             subtitle="Multiplayer aggressive run"
-            onClick={() => onMultiplayer(2)}
+            onClick={() => onMultiplayer(ModeRoadRage)}
           />
         </div>
       </div>

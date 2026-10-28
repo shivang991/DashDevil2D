@@ -1,13 +1,18 @@
+import {
+  type Outcome,
+  OutcomeResultAbandoned,
+  OutcomeResultTie,
+} from "@dashdevil/contracts/protocol";
 import { Crown } from "lucide-react";
-import type { Outcome } from "@dashdevil/contracts/protocol";
+
 import portrait from "@/assets/racer-portrait.png";
 
 export function RoundResult({ outcome, local }: { outcome: Outcome; local: number }) {
   const neutral = outcome.result >= 2;
   const result =
-    outcome.result === 3
+    outcome.result === OutcomeResultAbandoned
       ? "Round Abandoned"
-      : outcome.result === 2
+      : outcome.result === OutcomeResultTie
         ? "Tie"
         : outcome.result === local
           ? "You Won"

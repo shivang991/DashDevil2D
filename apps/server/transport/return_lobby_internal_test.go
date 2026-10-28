@@ -13,8 +13,8 @@ func finalizedRoomForReturn() (*Server, *room, [2]*pair) {
 	r := &room{phase: 3, revision: 1, roundID: 1, idle: now.Add(time.Minute)}
 	var pairs [2]*pair
 	for i := range pairs {
-		participant := &seat{room: r, index: uint8(i), connected: true}
-		identity := p.Identity{RoomId: 1, SeatSession: uint32(i + 1), PairGeneration: 1, Seat: uint8(i)}
+		participant := &seat{room: r, index: p.SeatIndex(i), connected: true}
+		identity := p.Identity{RoomId: 1, SeatSession: uint32(i + 1), PairGeneration: 1, Seat: p.SeatIndex(i)}
 		pairs[i] = &pair{server: s, seat: participant, identity: identity}
 		participant.pair = pairs[i]
 		r.seats[i] = participant

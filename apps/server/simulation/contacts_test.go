@@ -63,7 +63,7 @@ func TestSharedContacts(t *testing.T) {
 				if math.Abs(car.Progress-scenario.Expected.Progress[seat]) > 1e-6+1e-12*math.Abs(scenario.Expected.Progress[seat]) || math.Abs(car.Lateral-scenario.Expected.Lateral[seat]) > 1e-6+1e-12*math.Abs(scenario.Expected.Lateral[seat]) {
 					t.Fatalf("seat %d position: %g %g", seat, car.Progress, car.Lateral)
 				}
-				if car.Phase != scenario.Expected.Phase[seat] || car.Effective != scenario.Expected.Effective[seat] || car.Hp != 3 {
+				if uint8(car.Phase) != scenario.Expected.Phase[seat] || uint8(car.Effective) != scenario.Expected.Effective[seat] || car.Hp != 3 {
 					t.Fatalf("seat %d: %#v", seat, car)
 				}
 				if err := protocol.ValidateCar(car, state.TimeUs, cfg.Context(scenario.Seed)); err != nil {
@@ -117,7 +117,7 @@ func TestReturnRequiresFreshControls(t *testing.T) {
 		return events
 	}
 	submit := func(seq uint32, intent, control, held uint8) {
-		ok, err := game.Submit(ids[0], protocol.Input{Identity: ids[0], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: seq, Intent: intent, Control: control, HeldMask: held})
+		ok, err := game.Submit(ids[0], protocol.Input{Identity: ids[0], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: seq, Intent: protocol.InputIntent(intent), Control: protocol.Control(control), HeldMask: held})
 		if err != nil || !ok {
 			t.Fatalf("submit %v %v", ok, err)
 		}

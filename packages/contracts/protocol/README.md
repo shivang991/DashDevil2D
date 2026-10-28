@@ -78,7 +78,8 @@ Protocol 3 appends `roundOverDelay` (float64 seconds) to `Presentation` in the i
 `AdmissionRequest.operation` remains a `u8` on the wire. Its `enum: "admissionOperation"`
 reference selects the canonical explicit assignments in `schema.json`:
 `{ "create": 0, "join": 1, "resume": 2 }`. These values are protocol assignments;
-never reorder or renumber them. Existing name arrays for other domains are unchanged.
+never reorder or renumber them. Issue #53 extended this explicit assignment style
+to the remaining semantic domains; see [inventory](../../../docs/issue-53-named-codes.md).
 
 Generation emits individual TypeScript constants `AdmissionOperationCreate`,
 `AdmissionOperationJoin`, `AdmissionOperationResume` and the literal union type
@@ -86,11 +87,11 @@ Generation emits individual TypeScript constants `AdmissionOperationCreate`,
 names as typed compile-time constants. Both generated request types associate the
 field with that domain. No hand-maintained duplicate declarations or startup fetch.
 
-The generator currently accepts contiguous, explicit assignments starting at zero
-and only associates these domains with `u8` fields. It derives the existing wire
-layout ceiling from the domain, so encoders and decoders still reject operations
-above 2 without adding a lookup table. Sparse domains require a separate design;
-they must not silently reuse ceiling-only validation.
+The generator accepts contiguous, explicit assignments starting at zero and only
+associates these domains with `u8` fields. It derives the existing wire layout
+ceiling from the domain. Flags declare separate `bits` and `masks` with an `all`
+mask; the generator validates and emits the same field mask. Sparse domains
+require a separate design; they must not silently reuse ceiling-only validation.
 
 Callers read `client.connect(AdmissionOperationJoin, code)` and
 `case p.AdmissionOperationResume:`. Room commands remain a separate domain.

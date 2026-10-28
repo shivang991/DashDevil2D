@@ -1,14 +1,30 @@
-import type { Outcome, RoomState } from "@dashdevil/contracts/protocol";
+import {
+  type Identity,
+  ModeDragRace,
+  type Outcome,
+  OutcomeReasonFinish,
+  OutcomeResultPlayer1Win,
+  RoomPhaseLobby,
+  type RoomState,
+  SeatFlagsConnectedReady,
+  SeatIndexPlayer1,
+} from "@dashdevil/contracts/protocol";
+
 import type { PairedState } from "@/transport/PairedConnection";
-export const identity = { roomId: 1, seatSession: 1, pairGeneration: 1, seat: 0 };
+export const identity: Identity = {
+  roomId: 1,
+  seatSession: 1,
+  pairGeneration: 1,
+  seat: SeatIndexPlayer1,
+};
 export const outcome: Outcome = {
   identity,
   roundId: 1,
   outcomeId: 1,
   tick: 900,
   timeUs: 15_000_000,
-  result: 0,
-  reason: 0,
+  result: OutcomeResultPlayer1Win,
+  reason: OutcomeReasonFinish,
   cars: [
     { progress: 1000, lateral: 0, hp: 2, score: 120 },
     { progress: 950, lateral: 0, hp: 1, score: 90 },
@@ -18,16 +34,16 @@ export const outcome: Outcome = {
 export const room: RoomState = {
   identity,
   revision: 1,
-  mode: 1,
-  phase: 0,
-  host: 0,
+  mode: ModeDragRace,
+  phase: RoomPhaseLobby,
+  host: SeatIndexPlayer1,
   roundId: 1,
   startUs: 3_000_000,
   idleWarningUs: 0,
   idleExpiryUs: 0,
   seats: [
-    { session: 1, name: "Driver 01", flags: 3, reservationUs: 0 },
-    { session: 2, name: "Driver 02", flags: 3, reservationUs: 0 },
+    { session: 1, name: "Driver 01", flags: SeatFlagsConnectedReady, reservationUs: 0 },
+    { session: 2, name: "Driver 02", flags: SeatFlagsConnectedReady, reservationUs: 0 },
   ],
 };
 export const disconnected: PairedState = {
