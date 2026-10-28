@@ -20,8 +20,8 @@ func cloneBaseline(b p.Baseline) p.Baseline {
 	}
 	return b
 }
-func (s *Server) finalizeRaceLocked(r *room, result, reason uint8, tick uint32, timeUs uint64) {
-	if r.outcome != nil || r.phase != 2 {
+func (s *Server) finalizeRaceLocked(r *room, result p.OutcomeResult, reason p.OutcomeReason, tick uint32, timeUs uint64) {
+	if r.outcome != nil || r.phase != p.RoomPhaseActive {
 		return
 	}
 	b := r.zero
@@ -36,15 +36,15 @@ func (s *Server) finalizeRaceLocked(r *room, result, reason uint8, tick uint32, 
 	}
 	r.idle = s.nowTime().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
 	r.outcome = &outcome
-	r.phase = 3
+	r.phase = p.RoomPhaseEnded
 	r.revision++
 	s.config.Logger.Info("race_finalized", "room", r.id, "round", r.roundID, "time_us", timeUs, "server_us", s.nowUs(), "result", result, "reason", reason)
 }
 
 // A lifecycle terminal instant cannot overtake gameplay in an unfinished group.
 // StopAt resolves the exact partial interval without advancing past the cutoff.
-func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs uint64) {
-	if r.phase != 2 || r.outcome != nil {
+func (s *Server) finalizeLifecycleLocked(r *room, result p.OutcomeResult, reason p.OutcomeReason, cutoffUs uint64) {
+	if r.phase != p.RoomPhaseActive || r.outcome != nil {
 		return
 	}
 	if r.engine != nil {
@@ -54,7 +54,7 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 		}
 		events, err := r.engine.StopAt(float64(elapsed) / 1e6)
 		if err != nil {
-			s.finalizeRaceLocked(r, 3, 6, r.zero.Tick, r.zero.TimeUs)
+			s.finalizeRaceLocked(r, p.OutcomeResultAbandoned, p.OutcomeReasonServerLag, r.zero.Tick, r.zero.TimeUs)
 			return
 		}
 		lag := false
@@ -78,8 +78,8 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 			return
 		}
 		if lag || state.Abandoned && !halted {
-			result = 3
-			reason = 6
+			result = p.OutcomeResultAbandoned
+			reason = p.OutcomeReasonServerLag
 		}
 	}
 	if r.engine == nil {
@@ -92,7 +92,7 @@ func (s *Server) finalizeLifecycleLocked(r *room, result, reason uint8, cutoffUs
 func (s *Server) advanceRacesLocked() []*room {
 	var changed []*room
 	for _, r := range s.rooms {
-		if r.phase != 2 || r.engine == nil {
+		if r.phase != p.RoomPhaseActive || r.engine == nil {
 			continue
 		}
 		targetUs := s.nowUs()
@@ -126,7 +126,7 @@ func (s *Server) advanceRacesLocked() []*room {
 			events, err = r.engine.AdvanceTo(float64(targetUs-r.startUs) / 1e6)
 		}
 		if err != nil {
-			s.finalizeRaceLocked(r, 3, 6, r.zero.Tick, r.zero.TimeUs)
+			s.finalizeRaceLocked(r, p.OutcomeResultAbandoned, p.OutcomeReasonServerLag, r.zero.Tick, r.zero.TimeUs)
 			changed = append(changed, r)
 			continue
 		}
@@ -146,11 +146,11 @@ func (s *Server) advanceRacesLocked() []*room {
 		r.zero.Tick = state.Tick
 		r.zero.TimeUs = state.TimeUs
 		if state.Abandoned {
-			reason := uint8(6)
+			reason := p.OutcomeReasonServerLag
 			if maintenanceEnded {
-				reason = 7
+				reason = p.OutcomeReasonMaintenance
 			}
-			s.finalizeRaceLocked(r, 3, reason, state.Tick, state.TimeUs)
+			s.finalizeRaceLocked(r, p.OutcomeResultAbandoned, reason, state.Tick, state.TimeUs)
 			changed = append(changed, r)
 		} else if state.Finish != nil {
 			s.finalizeRaceLocked(r, state.Finish.Result, state.Finish.Reason, state.Finish.Tick, state.Finish.TimeUs)
@@ -185,14 +185,14 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 	if event.Type == "input" {
 		seat := *event.Seat
 		sequence := *event.Sequence
-		disposition := uint8(2)
+		disposition := p.DispositionCodeRejected
 		if event.Disposition == "accepted" {
-			disposition = 0
+			disposition = p.DispositionCodeAccepted
 		}
 		if event.Disposition == "ignored" {
-			disposition = 1
+			disposition = p.DispositionCodeIgnored
 		}
-		if seat == 0 {
+		if seat == p.SeatIndexPlayer1 {
 			b.Progress.Processed1 = sequence
 			b.Progress.Disposed1 = sequence
 		} else {
@@ -207,7 +207,7 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 		r.history = append(r.history, raceRecord{b.Progress.Authority, value})
 	} else if event.Car != nil || (event.Type == "objects" || event.Type == "contact") {
 		if event.Car != nil && event.Seat != nil && event.Car.InputGeneration != b.Cars[*event.Seat].InputGeneration {
-			if *event.Seat == 0 {
+			if *event.Seat == p.SeatIndexPlayer1 {
 				b.Progress.Processed1 = event.Car.LastInput
 				b.Progress.Disposed1 = event.Car.LastInput
 			} else {
@@ -217,19 +217,19 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 		}
 		b.Progress.Event++
 		cars := event.Cars
-		kind := uint8(8)
+		kind := p.EventKindRoundEvent
 		if event.Type == "expiry" {
-			kind = 6
+			kind = p.EventKindFreshnessExpiry
 		}
 		if event.Type == "release" {
-			kind = 7
+			kind = p.EventKindControlRelease
 		}
-		mask := uint8(3)
+		mask := uint8(p.SeatMaskAll)
 		if event.Seat != nil {
-			mask = 1 << *event.Seat
+			mask = p.SeatMaskPlayer1 << *event.Seat
 		}
 		if event.Type == "objects" {
-			kind = 2
+			kind = p.EventKindHPScoreProtection
 		}
 		value := p.Event{Authority: b.Progress.Authority, EventId: b.Progress.Event, Tick: event.Tick, TimeUs: event.TimeUs, Kind: kind, SeatMask: mask, Cars: cars, Contact: b.Contact, Objects: append([]p.ObjectState{}, event.Objects...)}
 		r.history = append(r.history, raceRecord{b.Progress.Authority, value})
@@ -242,7 +242,7 @@ func (pair *pair) submitRace(input p.Input) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	r := pair.seat.room
-	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.connected || !pair.seat.leaving.IsZero() || r.phase != 2 || r.engine == nil || r.outcome != nil || !pair.seat.focused {
+	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.connected || !pair.seat.leaving.IsZero() || r.phase != p.RoomPhaseActive || r.engine == nil || r.outcome != nil || !pair.seat.focused {
 		return nil
 	}
 	if input.Round.RoundId != r.roundID || input.Round.InputGeneration != pair.seat.inputGeneration {

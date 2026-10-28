@@ -246,7 +246,7 @@ func TestGameplayPrecedesGraceAtCanonicalBoundary(t *testing.T) {
 			roomState(t, f.sockets[0], func(r p.RoomState) bool { return r.Seats[1].Flags&4 != 0 })
 			f.advance(scenario.elapsed + time.Microsecond)
 			outcome := receiveOutcome(t, f.outcomes[0])
-			if outcome.Result != scenario.result || outcome.Reason != scenario.reason || outcome.TimeUs != scenario.timeUs {
+			if uint8(outcome.Result) != scenario.result || uint8(outcome.Reason) != scenario.reason || outcome.TimeUs != scenario.timeUs {
 				t.Fatalf("boundary outcome: %+v", outcome)
 			}
 		})
@@ -448,7 +448,7 @@ func TestQueuedLeavePreservesBoostedGameplayThroughCutoff(t *testing.T) {
 			}
 			f.advance(time.Microsecond)
 			outcome := receiveOutcome(t, f.outcomes[1])
-			if outcome.Result != scenario.result || outcome.Reason != scenario.reason || outcome.TimeUs != scenario.timeUs || math.Abs(outcome.Cars[0].Progress-scenario.progress) > 1e-6+1e-12*math.Abs(scenario.progress) {
+			if uint8(outcome.Result) != scenario.result || uint8(outcome.Reason) != scenario.reason || outcome.TimeUs != scenario.timeUs || math.Abs(outcome.Cars[0].Progress-scenario.progress) > 1e-6+1e-12*math.Abs(scenario.progress) {
 				t.Fatalf("leave erased boosted gameplay: %+v", outcome)
 			}
 		})

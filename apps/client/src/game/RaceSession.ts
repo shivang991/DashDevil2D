@@ -1,4 +1,30 @@
 import {
+  type Baseline,
+  type Car,
+  CarFlagsNone,
+  ControlNone,
+  ControlRight,
+  type Coverage,
+  type Disposition,
+  DispositionCodeRejected,
+  type Event,
+  HeldControlsNone,
+  type Input,
+  InputIntentPress,
+  ModeDragRace,
+  MovementPhaseReturn,
+  MovementPhaseShift,
+  MovementPhaseSteady,
+  ObjectFlagsKindMask,
+  ObjectFlagsSharedConsumed,
+  ObjectFlagsSpentPlayer1,
+  ObjectKindHeart,
+  ObjectKindObstacle,
+  type Outcome,
+  SeatIndexPlayer1,
+} from "@dashdevil/contracts/protocol";
+
+import {
   Multiplayer,
   canonicalTime,
   type MultiplayerConfiguration,
@@ -7,15 +33,6 @@ import {
 import { firstContact } from "@dashdevil/simulation/geometry";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { validateBaseline, validateMessage } from "@dashdevil/contracts/validation";
-import type {
-  Baseline,
-  Car,
-  Coverage,
-  Disposition,
-  Event,
-  Input,
-  Outcome,
-} from "@dashdevil/contracts/protocol";
 
 const sameIdentity = (a: Baseline["identity"], b: Baseline["identity"]) =>
   a.roomId === b.roomId &&
@@ -65,7 +82,7 @@ export class RaceSession {
     this.baseline = structuredClone(baseline);
     this.soundEpisode = Math.max(this.soundEpisode, baseline.contact.episode);
     const c = baseline.context;
-    const mode = c.mode === 1 ? "drag-race" : "road-rage";
+    const mode = c.mode === ModeDragRace ? "drag-race" : "road-rage";
     // Wire Gameplay includes fields for all modes; capture only this mode's keys.
     const defaults = captureConfiguration(mode).gameplay;
     const gameplay = Object.fromEntries(
@@ -105,7 +122,9 @@ export class RaceSession {
     this.baseline = structuredClone(baseline);
     this.soundEpisode = Math.max(this.soundEpisode, baseline.contact.episode);
     const cutoff =
-      baseline.identity.seat === 0 ? baseline.progress.processed1 : baseline.progress.processed2;
+      baseline.identity.seat === SeatIndexPlayer1
+        ? baseline.progress.processed1
+        : baseline.progress.processed2;
     this.pending = this.pending.filter((p) => p.input.sequence > cutoff);
     this.lastAuthorityUs = baseline.timeUs;
   }
@@ -146,7 +165,7 @@ export class RaceSession {
     )
       return;
     const cutoff =
-      this.baseline.identity.seat === 0
+      this.baseline.identity.seat === SeatIndexPlayer1
         ? this.baseline.progress.processed1
         : this.baseline.progress.processed2;
     if (input.sequence <= cutoff || this.pending.some((p) => p.input.sequence >= input.sequence))
@@ -168,13 +187,17 @@ export class RaceSession {
     )
       return;
     this.beforeCorrection();
-    if (record.disposition === 2 && record.intent === 0 && record.control <= 2)
+    if (
+      record.disposition === DispositionCodeRejected &&
+      record.intent === InputIntentPress &&
+      record.control <= ControlRight
+    )
       this.snapCorrection = true;
     this.advanceAuthority(record.tick);
     this.baseline.cars[record.seat] = { ...record.car };
     this.baseline.contact = { ...record.contact };
     this.baseline.progress.authority = record.authority;
-    if (record.seat === 0) {
+    if (record.seat === SeatIndexPlayer1) {
       this.baseline.progress.processed1 = record.processed;
       this.baseline.progress.disposed1 = record.processed;
     } else {
@@ -205,7 +228,7 @@ export class RaceSession {
         car.inputGeneration === this.baseline.cars[seat].inputGeneration
       )
         continue;
-      if (seat === 0) {
+      if (seat === SeatIndexPlayer1) {
         this.baseline.progress.processed1 = car.lastInput;
         this.baseline.progress.disposed1 = car.lastInput;
       } else {
@@ -296,13 +319,25 @@ export class RaceSession {
   }
   private observeObjects(objects: readonly import("@dashdevil/contracts/protocol").ObjectState[]) {
     for (const object of objects) {
-      const kind = object.flags & 3;
-      if (!(object.flags & (kind === 2 ? 8 << this.baseline.identity.seat : 4))) continue;
+      const kind = object.flags & ObjectFlagsKindMask;
+      if (
+        !(
+          object.flags &
+          (kind === ObjectKindObstacle
+            ? ObjectFlagsSpentPlayer1 << this.baseline.identity.seat
+            : ObjectFlagsSharedConsumed)
+        )
+      )
+        continue;
       const key = `${object.id}:${kind}`;
       if (this.feedbackSeen.has(key)) continue;
       this.feedbackSeen.add(key);
       this.feedback.push(
-        kind === 2 ? "Obstacle hit" : kind === 3 ? "Heart consumed" : "Coin consumed",
+        kind === ObjectKindObstacle
+          ? "Obstacle hit"
+          : kind === ObjectKindHeart
+            ? "Heart consumed"
+            : "Coin consumed",
       );
     }
   }
@@ -323,19 +358,19 @@ export class RaceSession {
       this.sounds.push(sound);
     };
     for (const object of objects) {
-      const kind = object.flags & 3;
-      if (kind === 2) {
-        if (object.flags & (8 << seat))
+      const kind = object.flags & ObjectFlagsKindMask;
+      if (kind === ObjectKindObstacle) {
+        if (object.flags & (ObjectFlagsSpentPlayer1 << seat))
           emit(`object:${object.id}`, {
             type: "impact",
             protected: previousCars[seat].protectionUs > timeUs,
           });
         continue;
       }
-      if (!(object.flags & 4)) continue;
+      if (!(object.flags & ObjectFlagsSharedConsumed)) continue;
       // Pickup consumption is global. Identify the sole overlapping collector,
       // including hearts consumed at full HP. A simultaneous contested pickup is silent.
-      const size = kind === 3 ? g.heartSize : g.coinSize;
+      const size = kind === ObjectKindHeart ? g.heartSize : g.coinSize;
       const overlaps = cars.map(
         (candidate) =>
           Math.abs(candidate.lateral - (object.lane - 1) * g.laneSpacing) <=
@@ -343,7 +378,7 @@ export class RaceSession {
           Math.abs(candidate.progress - object.distance) <= (g.carHeight + size) / 2 + 0.001,
       );
       if (overlaps[seat] && !overlaps[1 - seat])
-        emit(`object:${object.id}`, { type: kind === 3 ? "heart" : "coin" });
+        emit(`object:${object.id}`, { type: kind === ObjectKindHeart ? "heart" : "coin" });
     }
     if (episode > this.soundEpisode) {
       this.soundEpisode = episode;
@@ -355,9 +390,9 @@ export class RaceSession {
     if ((!observation || observation.type === "objects") && car.hp < previousCars[seat].hp)
       emit(`damage:${timeUs}`, { type: "damage" });
     if (
-      car.phase === 1 &&
+      car.phase === MovementPhaseShift &&
       ((observation?.type === "shift" && observation.seat === seat) ||
-        previousCars[seat].phase !== 1 ||
+        previousCars[seat].phase !== MovementPhaseShift ||
         car.movementStartUs !== previousCars[seat].movementStartUs)
     )
       emit(`lane:${car.inputGeneration}:${car.movementStartUs}`, { type: "lane" });
@@ -377,10 +412,10 @@ export class RaceSession {
         cars: this.outcome.cars.map((c, seat) => ({
           ...this.baseline.cars[seat],
           ...c,
-          effective: 0,
-          controls: 0,
-          heldMask: 0,
-          flags: 0,
+          effective: ControlNone,
+          controls: ControlNone,
+          heldMask: HeldControlsNone,
+          flags: CarFlagsNone,
         })) as Car[],
         timeUs: this.outcome.timeUs,
         outcome: this.outcome,
@@ -433,7 +468,7 @@ export class RaceSession {
         offset.some(
           (o) => Math.abs(o.progress) > g.carHeight || Math.abs(o.lateral) > g.laneSpacing,
         ) ||
-        repaired.cars.some((c) => c.phase === 2) ||
+        repaired.cars.some((c) => c.phase === MovementPhaseReturn) ||
         (Math.abs(repaired.renderedCars[0].progress - repaired.renderedCars[1].progress) <=
           g.carHeight &&
           Math.abs(repaired.renderedCars[0].lateral - repaired.renderedCars[1].lateral) <=
@@ -479,7 +514,7 @@ export class RaceSession {
     const renderedCars = state.renderedCars.map((car, seat) => {
       const movement = state.cars[seat];
       const laneDiff =
-        movement.phase === 0
+        movement.phase === MovementPhaseSteady
           ? 0
           : (movement.movementTarget - car.lateral) / this.configuration.gameplay.laneSpacing;
       const targetTilt = Math.max(-1, Math.min(1, laneDiff)) * carTiltMaxAngle;
@@ -507,7 +542,7 @@ export class RaceSession {
       needsRecovery: state.needsRecovery,
       awaiting:
         state.cars.some((c) => c.hp === 0) ||
-        (this.baseline.context.mode === 1
+        (this.baseline.context.mode === ModeDragRace
           ? state.cars.some(
               (c) =>
                 c.progress + this.configuration.gameplay.carHeight / 2 >=

@@ -1,3 +1,4 @@
+import { CounterMax } from "@dashdevil/contracts/protocol";
 import { firstContact, type Bounds } from "./geometry";
 import { appendSlice, createTrack, draw, retireSlices } from "./track";
 import {
@@ -34,7 +35,7 @@ export interface LongDrive {
   eventId: number;
   countdownDisplay?: number;
 }
-const freshSeed = () => Math.floor(Math.random() * 0xffffffff) + 1;
+const freshSeed = () => Math.floor(Math.random() * CounterMax) + 1;
 const seedSources = new WeakMap<object, () => number>();
 export function createLongDrive(
   source: number | (() => number) | undefined = undefined,

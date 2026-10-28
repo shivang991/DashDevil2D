@@ -84,7 +84,7 @@ func TestSharedObjects(t *testing.T) {
 						reason = 1
 					}
 				}
-				if actual.Reason != reason {
+				if uint8(actual.Reason) != reason {
 					t.Fatalf("terminal reason %d expected %d", actual.Reason, reason)
 				}
 				game.Disconnect(ids[0])

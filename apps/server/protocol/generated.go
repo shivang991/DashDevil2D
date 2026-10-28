@@ -3,6 +3,105 @@ package protocol
 
 const DefaultConfigurationJSON = "{\n  \"version\": 1,\n  \"units\": {\n    \"distance\": \"world units\",\n    \"speed\": \"world units/second\",\n    \"duration\": \"seconds\",\n    \"rate\": \"inverse seconds\",\n    \"tickRate\": \"Hz\",\n    \"size\": \"bytes\"\n  },\n  \"fixed\": {\n    \"laneCount\": 3,\n    \"coinScore\": 10,\n    \"heartHealing\": 1,\n    \"predictionHorizon\": 1,\n    \"verificationDatagramBytes\": 10\n  },\n  \"gameplay\": {\n    \"long-drive\": {\n      \"maxHealth\": 2,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 10,\n      \"invincibleDuration\": 2.0,\n      \"laneLerpSpeed\": 10,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"minSpawnInterval\": 0.35,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"difficultyRampInterval\": 1,\n      \"roadSpeedIncrement\": 15,\n      \"maxRoadSpeed\": 900,\n      \"spawnIntervalDecrement\": 0.03,\n      \"startingRoadSpeed\": 400,\n      \"initialSpawnInterval\": 1,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 55,\n      \"coinWeight\": 45,\n      \"heartWeight\": 0\n    },\n    \"drag-race\": {\n      \"maxHealth\": 3,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 2,\n      \"invincibleDuration\": 0,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"maxRoadSpeed\": 400,\n      \"startingRoadSpeed\": 400,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 1,\n      \"coinWeight\": 0,\n      \"heartWeight\": 0,\n      \"tickRate\": 60,\n      \"speedGrowth\": 0,\n      \"laneShiftDuration\": 0.15,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"laneReturnDuration\": 0.15,\n      \"sliceSpacing\": 400,\n      \"initialClearDistance\": 800,\n      \"countdownDuration\": 3,\n      \"finishDistance\": 24000,\n      \"reservedHearts\": 4,\n      \"heartExclusionDistance\": 200\n    },\n    \"road-rage\": {\n      \"maxHealth\": 3,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 2,\n      \"invincibleDuration\": 2,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"maxRoadSpeed\": 400,\n      \"startingRoadSpeed\": 400,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 1,\n      \"coinWeight\": 0,\n      \"heartWeight\": 0,\n      \"tickRate\": 60,\n      \"speedGrowth\": 0,\n      \"laneShiftDuration\": 0.15,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"laneReturnDuration\": 0.15,\n      \"sliceSpacing\": 400,\n      \"initialClearDistance\": 800,\n      \"countdownDuration\": 3,\n      \"playerContactDamage\": 1,\n      \"timeLimit\": 120\n    }\n  },\n  \"presentation\": {\n    \"carBottomMargin\": 40,\n    \"accelCarOffset\": 80,\n    \"accelLerpSpeed\": 8,\n    \"blinkCount\": 3,\n    \"shakeDuration\": 0.5,\n    \"shakeIntensity\": 24,\n    \"narrowScreenWidth\": 320,\n    \"roadWidthRatioNarrow\": 1.0,\n    \"roadWidthRatioNormal\": 0.6,\n    \"carTiltMaxAngle\": 1,\n    \"carTiltLerpSpeed\": 12,\n    \"gameOverFadeMaxOpacity\": 0.75,\n    \"gameOverShakeMultiplier\": 1.5,\n    \"gameOverShakeDuration\": 0.5,\n    \"gameOverFadeSpeed\": 2,\n    \"correctionSmoothing\": 0.1,\n    \"roundOverDelay\": 1\n  },\n  \"room\": {\n    \"reconnectGrace\": 15,\n    \"idleExpiry\": 900,\n    \"idleWarning\": 60\n  },\n  \"connection\": {\n    \"verificationInterval\": 0.1,\n    \"controlRefreshInterval\": 0.25,\n    \"controlFreshnessExpiry\": 1,\n    \"replayHistory\": 2,\n    \"clockSyncInterval\": 1,\n    \"clockSamples\": 8,\n    \"reliableFrameBytes\": 65536,\n    \"baselineBytes\": 1048576,\n    \"queueBytes\": 262144,\n    \"queueMessages\": 512,\n    \"essentialQueueWait\": 0.5,\n    \"essentialProgressDeadline\": 1,\n    \"inputRate\": 60,\n    \"inputBurst\": 120,\n    \"clockRequestRate\": 2,\n    \"recoveryRequestRate\": 1,\n    \"admissionTicketLifetime\": 30,\n    \"networkBytesPerSecond\": 16384,\n    \"networkBudgetWindow\": 60\n  },\n  \"operational\": {\n    \"simulationLagThreshold\": 1\n  }\n}\n"
 const ProtocolVersion uint16 = 3
+const VerificationDatagramBytes = 10
+const CredentialBytes = 32
+const RoomCodeLength = 4
+const DefaultFrameBytes = 65536
+const RecordLimitBytes = 1048576
+const CounterMax = 4294967295
+const ProjectionScale = 1024
+const HeldControlsLeft = 1
+const HeldControlsRight = 2
+const HeldControlsNOS = 4
+const HeldControlsNone = 0
+const HeldControlsAll = 7
+const CarFlagsNOSActive = 1
+const CarFlagsFreshSteeringRequired = 2
+const CarFlagsFreshNOSRequired = 4
+const CarFlagsForwardBlocked = 8
+const CarFlagsNone = 0
+const CarFlagsAll = 15
+const ContactFlagsEpisodeActive = 1
+const ContactFlagsDamageDecided = 2
+const ContactFlagsTailgating = 4
+const ContactFlagsNone = 0
+const ContactFlagsEpisodeDamageDecided = 3
+const ContactFlagsAll = 7
+const SeatFlagsConnected = 1
+const SeatFlagsReady = 2
+const SeatFlagsReserved = 4
+const SeatFlagsReturned = 8
+const SeatFlagsNone = 0
+const SeatFlagsConnectedReady = 3
+const SeatFlagsAll = 15
+const ObjectFlagsSharedConsumed = 4
+const ObjectFlagsSpentPlayer1 = 8
+const ObjectFlagsSpentPlayer2 = 16
+const ObjectFlagsNone = 0
+const ObjectFlagsKindMask = 3
+const ObjectFlagsSpentMask = 24
+const ObjectFlagsConsumptionMask = 28
+const ObjectFlagsAll = 31
+const SeatMaskPlayer1 = 1
+const SeatMaskPlayer2 = 2
+const SeatMaskNone = 0
+const SeatMaskAll = 3
+
+type Mode uint8
+
+const (
+	ModeLongDrive Mode = 0
+	ModeDragRace  Mode = 1
+	ModeRoadRage  Mode = 2
+)
+
+type SeatIndex uint8
+
+const (
+	SeatIndexPlayer1 SeatIndex = 0
+	SeatIndexPlayer2 SeatIndex = 1
+)
+
+type SeatOrNone uint8
+
+const (
+	SeatOrNoneNone    SeatOrNone = 0
+	SeatOrNonePlayer1 SeatOrNone = 1
+	SeatOrNonePlayer2 SeatOrNone = 2
+)
+
+type Lane uint8
+
+const (
+	LaneLeft   Lane = 0
+	LaneMiddle Lane = 1
+	LaneRight  Lane = 2
+)
+
+type Control uint8
+
+const (
+	ControlNone  Control = 0
+	ControlLeft  Control = 1
+	ControlRight Control = 2
+	ControlNOS   Control = 3
+)
+
+type InputIntent uint8
+
+const (
+	InputIntentPress   InputIntent = 0
+	InputIntentRelease InputIntent = 1
+	InputIntentRefresh InputIntent = 2
+)
+
+type DispositionCode uint8
+
+const (
+	DispositionCodeAccepted DispositionCode = 0
+	DispositionCodeIgnored  DispositionCode = 1
+	DispositionCodeRejected DispositionCode = 2
+)
 
 type AdmissionOperation uint8
 
@@ -10,6 +109,125 @@ const (
 	AdmissionOperationCreate AdmissionOperation = 0
 	AdmissionOperationJoin   AdmissionOperation = 1
 	AdmissionOperationResume AdmissionOperation = 2
+)
+
+type RoomPhase uint8
+
+const (
+	RoomPhaseLobby     RoomPhase = 0
+	RoomPhaseCountdown RoomPhase = 1
+	RoomPhaseActive    RoomPhase = 2
+	RoomPhaseEnded     RoomPhase = 3
+)
+
+type RoomCommandCode uint8
+
+const (
+	RoomCommandCodeSelectMode    RoomCommandCode = 0
+	RoomCommandCodeReady         RoomCommandCode = 1
+	RoomCommandCodeStart         RoomCommandCode = 2
+	RoomCommandCodeLeave         RoomCommandCode = 3
+	RoomCommandCodeFocus         RoomCommandCode = 4
+	RoomCommandCodeReturnToLobby RoomCommandCode = 5
+)
+
+type OutcomeResult uint8
+
+const (
+	OutcomeResultPlayer1Win OutcomeResult = 0
+	OutcomeResultPlayer2Win OutcomeResult = 1
+	OutcomeResultTie        OutcomeResult = 2
+	OutcomeResultAbandoned  OutcomeResult = 3
+)
+
+type OutcomeReason uint8
+
+const (
+	OutcomeReasonFinish           OutcomeReason = 0
+	OutcomeReasonHP               OutcomeReason = 1
+	OutcomeReasonDeadline         OutcomeReason = 2
+	OutcomeReasonExplicitLeave    OutcomeReason = 3
+	OutcomeReasonGraceExpiry      OutcomeReason = 4
+	OutcomeReasonBothDisconnected OutcomeReason = 5
+	OutcomeReasonServerLag        OutcomeReason = 6
+	OutcomeReasonMaintenance      OutcomeReason = 7
+)
+
+type EventKind uint8
+
+const (
+	EventKindPickup            EventKind = 0
+	EventKindObstacle          EventKind = 1
+	EventKindHPScoreProtection EventKind = 2
+	EventKindContact           EventKind = 3
+	EventKindReturn            EventKind = 4
+	EventKindBlocking          EventKind = 5
+	EventKindFreshnessExpiry   EventKind = 6
+	EventKindControlRelease    EventKind = 7
+	EventKindRoundEvent        EventKind = 8
+)
+
+type MovementPhase uint8
+
+const (
+	MovementPhaseSteady MovementPhase = 0
+	MovementPhaseShift  MovementPhase = 1
+	MovementPhaseReturn MovementPhase = 2
+)
+
+type WireBoolean uint8
+
+const (
+	WireBooleanFalse WireBoolean = 0
+	WireBooleanTrue  WireBoolean = 1
+)
+
+type ObjectKind uint8
+
+const (
+	ObjectKindEmpty    ObjectKind = 0
+	ObjectKindCoin     ObjectKind = 1
+	ObjectKindObstacle ObjectKind = 2
+	ObjectKindHeart    ObjectKind = 3
+)
+
+type ProtocolErrorCode uint8
+
+const (
+	ProtocolErrorCodeReserved0                    ProtocolErrorCode = 0
+	ProtocolErrorCodeIncompatibleHandshake        ProtocolErrorCode = 1
+	ProtocolErrorCodeAdmissionRejected            ProtocolErrorCode = 2
+	ProtocolErrorCodeMalformedOrProcessingFailure ProtocolErrorCode = 3
+	ProtocolErrorCodeCapacityUnavailable          ProtocolErrorCode = 4
+	ProtocolErrorCodeRoomNotFound                 ProtocolErrorCode = 5
+	ProtocolErrorCodeRoomUnavailable              ProtocolErrorCode = 6
+	ProtocolErrorCodeRoomExpired                  ProtocolErrorCode = 7
+	ProtocolErrorCodeMaintenance                  ProtocolErrorCode = 8
+	ProtocolErrorCodeReserved9                    ProtocolErrorCode = 9
+	ProtocolErrorCodeReserved10                   ProtocolErrorCode = 10
+	ProtocolErrorCodeReserved11                   ProtocolErrorCode = 11
+	ProtocolErrorCodeReserved12                   ProtocolErrorCode = 12
+	ProtocolErrorCodeReserved13                   ProtocolErrorCode = 13
+	ProtocolErrorCodeReserved14                   ProtocolErrorCode = 14
+	ProtocolErrorCodeReserved15                   ProtocolErrorCode = 15
+)
+
+type RecoveryReason uint8
+
+const (
+	RecoveryReasonResynchronize RecoveryReason = 0
+	RecoveryReasonReserved1     RecoveryReason = 1
+	RecoveryReasonReserved2     RecoveryReason = 2
+	RecoveryReasonReserved3     RecoveryReason = 3
+	RecoveryReasonReserved4     RecoveryReason = 4
+)
+
+type LatestSeatCode uint8
+
+const (
+	LatestSeatCodePlayer1  LatestSeatCode = 0
+	LatestSeatCodePlayer2  LatestSeatCode = 1
+	LatestSeatCodeReserved LatestSeatCode = 2
 )
 
 var layouts = map[string][]field{
@@ -57,10 +275,10 @@ var layouts = map[string][]field{
 }
 
 type Identity struct {
-	RoomId         uint32 `json:"roomId"`
-	SeatSession    uint32 `json:"seatSession"`
-	PairGeneration uint32 `json:"pairGeneration"`
-	Seat           uint8  `json:"seat"`
+	RoomId         uint32    `json:"roomId"`
+	SeatSession    uint32    `json:"seatSession"`
+	PairGeneration uint32    `json:"pairGeneration"`
+	Seat           SeatIndex `json:"seat"`
 }
 
 func EncodeIdentity(value Identity, limit int) ([]byte, error) {
@@ -105,28 +323,28 @@ func DecodeProgress(bytes []byte, limit int) (Progress, error) {
 }
 
 type Car struct {
-	Progress        float64 `json:"progress"`
-	Lateral         float64 `json:"lateral"`
-	NormalSpeed     float64 `json:"normalSpeed"`
-	Lane            uint8   `json:"lane"`
-	Departure       uint8   `json:"departure"`
-	Target          uint8   `json:"target"`
-	Phase           uint8   `json:"phase"`
-	Controls        uint8   `json:"controls"`
-	Effective       uint8   `json:"effective"`
-	Flags           uint8   `json:"flags"`
-	MovementOrigin  float64 `json:"movementOrigin"`
-	MovementTarget  float64 `json:"movementTarget"`
-	MovementStartUs uint64  `json:"movementStartUs"`
-	MovementEndUs   uint64  `json:"movementEndUs"`
-	NextShiftUs     uint64  `json:"nextShiftUs"`
-	FreshnessUs     uint64  `json:"freshnessUs"`
-	ProtectionUs    uint64  `json:"protectionUs"`
-	Hp              uint32  `json:"hp"`
-	Score           uint32  `json:"score"`
-	LastInput       uint32  `json:"lastInput"`
-	HeldMask        uint8   `json:"heldMask"`
-	InputGeneration uint32  `json:"inputGeneration"`
+	Progress        float64       `json:"progress"`
+	Lateral         float64       `json:"lateral"`
+	NormalSpeed     float64       `json:"normalSpeed"`
+	Lane            Lane          `json:"lane"`
+	Departure       Lane          `json:"departure"`
+	Target          Lane          `json:"target"`
+	Phase           MovementPhase `json:"phase"`
+	Controls        Control       `json:"controls"`
+	Effective       Control       `json:"effective"`
+	Flags           uint8         `json:"flags"`
+	MovementOrigin  float64       `json:"movementOrigin"`
+	MovementTarget  float64       `json:"movementTarget"`
+	MovementStartUs uint64        `json:"movementStartUs"`
+	MovementEndUs   uint64        `json:"movementEndUs"`
+	NextShiftUs     uint64        `json:"nextShiftUs"`
+	FreshnessUs     uint64        `json:"freshnessUs"`
+	ProtectionUs    uint64        `json:"protectionUs"`
+	Hp              uint32        `json:"hp"`
+	Score           uint32        `json:"score"`
+	LastInput       uint32        `json:"lastInput"`
+	HeldMask        uint8         `json:"heldMask"`
+	InputGeneration uint32        `json:"inputGeneration"`
 }
 
 func EncodeCar(value Car, limit int) ([]byte, error) { return encodeRecord("Car", value, limit, false) }
@@ -137,14 +355,14 @@ func DecodeCar(bytes []byte, limit int) (Car, error) {
 }
 
 type Contact struct {
-	Episode        uint32 `json:"episode"`
-	Flags          uint8  `json:"flags"`
-	BlockedSeat    uint8  `json:"blockedSeat"`
-	LatestSeat     uint8  `json:"latestSeat"`
-	LatestControl  uint8  `json:"latestControl"`
-	LatestSequence uint32 `json:"latestSequence"`
-	LatestTimeUs   uint64 `json:"latestTimeUs"`
-	LatestOrder    uint32 `json:"latestOrder"`
+	Episode        uint32         `json:"episode"`
+	Flags          uint8          `json:"flags"`
+	BlockedSeat    SeatOrNone     `json:"blockedSeat"`
+	LatestSeat     LatestSeatCode `json:"latestSeat"`
+	LatestControl  Control        `json:"latestControl"`
+	LatestSequence uint32         `json:"latestSequence"`
+	LatestTimeUs   uint64         `json:"latestTimeUs"`
+	LatestOrder    uint32         `json:"latestOrder"`
 }
 
 func EncodeContact(value Contact, limit int) ([]byte, error) {
@@ -159,7 +377,7 @@ func DecodeContact(bytes []byte, limit int) (Contact, error) {
 type ObjectState struct {
 	Id       uint32  `json:"id"`
 	SliceId  uint32  `json:"sliceId"`
-	Lane     uint8   `json:"lane"`
+	Lane     Lane    `json:"lane"`
 	Flags    uint8   `json:"flags"`
 	Distance float64 `json:"distance"`
 }
@@ -350,7 +568,7 @@ type Context struct {
 	ConfigurationId      uint32       `json:"configurationId"`
 	GenerationVersion    uint32       `json:"generationVersion"`
 	Seed                 uint32       `json:"seed"`
-	Mode                 uint8        `json:"mode"`
+	Mode                 Mode         `json:"mode"`
 	StartUs              uint64       `json:"startUs"`
 	Gameplay             Gameplay     `json:"gameplay"`
 	Presentation         Presentation `json:"presentation"`
@@ -460,9 +678,9 @@ func DecodeAdmission(bytes []byte, limit int) (Admission, error) {
 }
 
 type ProtocolError struct {
-	Code            uint8  `json:"code"`
-	ExpectedVersion uint16 `json:"expectedVersion"`
-	Detail          string `json:"detail"`
+	Code            ProtocolErrorCode `json:"code"`
+	ExpectedVersion uint16            `json:"expectedVersion"`
+	Detail          string            `json:"detail"`
 }
 
 func EncodeProtocolError(value ProtocolError, limit int) ([]byte, error) {
@@ -490,16 +708,16 @@ func DecodeRoomInitialization(bytes []byte, limit int) (RoomInitialization, erro
 }
 
 type RoomState struct {
-	Identity      Identity `json:"identity"`
-	Revision      uint32   `json:"revision"`
-	Mode          uint8    `json:"mode"`
-	Phase         uint8    `json:"phase"`
-	Host          uint8    `json:"host"`
-	Seats         [2]Seat  `json:"seats"`
-	RoundId       uint32   `json:"roundId"`
-	StartUs       uint64   `json:"startUs"`
-	IdleWarningUs uint64   `json:"idleWarningUs"`
-	IdleExpiryUs  uint64   `json:"idleExpiryUs"`
+	Identity      Identity  `json:"identity"`
+	Revision      uint32    `json:"revision"`
+	Mode          Mode      `json:"mode"`
+	Phase         RoomPhase `json:"phase"`
+	Host          SeatIndex `json:"host"`
+	Seats         [2]Seat   `json:"seats"`
+	RoundId       uint32    `json:"roundId"`
+	StartUs       uint64    `json:"startUs"`
+	IdleWarningUs uint64    `json:"idleWarningUs"`
+	IdleExpiryUs  uint64    `json:"idleExpiryUs"`
 }
 
 func EncodeRoomState(value RoomState, limit int) ([]byte, error) {
@@ -512,12 +730,12 @@ func DecodeRoomState(bytes []byte, limit int) (RoomState, error) {
 }
 
 type RoomCommand struct {
-	Identity Identity `json:"identity"`
-	Sequence uint32   `json:"sequence"`
-	Revision uint32   `json:"revision"`
-	Command  uint8    `json:"command"`
-	Mode     uint8    `json:"mode"`
-	Ready    uint8    `json:"ready"`
+	Identity Identity        `json:"identity"`
+	Sequence uint32          `json:"sequence"`
+	Revision uint32          `json:"revision"`
+	Command  RoomCommandCode `json:"command"`
+	Mode     Mode            `json:"mode"`
+	Ready    WireBoolean     `json:"ready"`
 }
 
 func EncodeRoomCommand(value RoomCommand, limit int) ([]byte, error) {
@@ -607,12 +825,12 @@ func DecodeClockReply(bytes []byte, limit int) (ClockReply, error) {
 }
 
 type Recovery struct {
-	Identity Identity `json:"identity"`
-	Round    Round    `json:"round"`
-	Reason   uint8    `json:"reason"`
-	Epoch    uint16   `json:"epoch"`
-	Tick     uint32   `json:"tick"`
-	Progress Progress `json:"progress"`
+	Identity Identity       `json:"identity"`
+	Round    Round          `json:"round"`
+	Reason   RecoveryReason `json:"reason"`
+	Epoch    uint16         `json:"epoch"`
+	Tick     uint32         `json:"tick"`
+	Progress Progress       `json:"progress"`
 }
 
 func EncodeRecovery(value Recovery, limit int) ([]byte, error) {
@@ -642,15 +860,15 @@ func DecodeAuthorityAck(bytes []byte, limit int) (AuthorityAck, error) {
 }
 
 type Outcome struct {
-	Identity  Identity    `json:"identity"`
-	RoundId   uint32      `json:"roundId"`
-	OutcomeId uint32      `json:"outcomeId"`
-	Tick      uint32      `json:"tick"`
-	TimeUs    uint64      `json:"timeUs"`
-	Result    uint8       `json:"result"`
-	Reason    uint8       `json:"reason"`
-	Cars      [2]FinalCar `json:"cars"`
-	Progress  Progress    `json:"progress"`
+	Identity  Identity      `json:"identity"`
+	RoundId   uint32        `json:"roundId"`
+	OutcomeId uint32        `json:"outcomeId"`
+	Tick      uint32        `json:"tick"`
+	TimeUs    uint64        `json:"timeUs"`
+	Result    OutcomeResult `json:"result"`
+	Reason    OutcomeReason `json:"reason"`
+	Cars      [2]FinalCar   `json:"cars"`
+	Progress  Progress      `json:"progress"`
 }
 
 func EncodeOutcome(value Outcome, limit int) ([]byte, error) {
@@ -663,12 +881,12 @@ func DecodeOutcome(bytes []byte, limit int) (Outcome, error) {
 }
 
 type Input struct {
-	Identity Identity `json:"identity"`
-	Round    Round    `json:"round"`
-	Sequence uint32   `json:"sequence"`
-	Intent   uint8    `json:"intent"`
-	Control  uint8    `json:"control"`
-	HeldMask uint8    `json:"heldMask"`
+	Identity Identity    `json:"identity"`
+	Round    Round       `json:"round"`
+	Sequence uint32      `json:"sequence"`
+	Intent   InputIntent `json:"intent"`
+	Control  Control     `json:"control"`
+	HeldMask uint8       `json:"heldMask"`
 }
 
 func EncodeInput(value Input, limit int) ([]byte, error) {
@@ -681,19 +899,19 @@ func DecodeInput(bytes []byte, limit int) (Input, error) {
 }
 
 type Disposition struct {
-	Identity    Identity `json:"identity"`
-	Round       Round    `json:"round"`
-	Authority   uint32   `json:"authority"`
-	Tick        uint32   `json:"tick"`
-	TimeUs      uint64   `json:"timeUs"`
-	Seat        uint8    `json:"seat"`
-	Sequence    uint32   `json:"sequence"`
-	Processed   uint32   `json:"processed"`
-	Disposition uint8    `json:"disposition"`
-	Intent      uint8    `json:"intent"`
-	Control     uint8    `json:"control"`
-	Car         Car      `json:"car"`
-	Contact     Contact  `json:"contact"`
+	Identity    Identity        `json:"identity"`
+	Round       Round           `json:"round"`
+	Authority   uint32          `json:"authority"`
+	Tick        uint32          `json:"tick"`
+	TimeUs      uint64          `json:"timeUs"`
+	Seat        SeatIndex       `json:"seat"`
+	Sequence    uint32          `json:"sequence"`
+	Processed   uint32          `json:"processed"`
+	Disposition DispositionCode `json:"disposition"`
+	Intent      InputIntent     `json:"intent"`
+	Control     Control         `json:"control"`
+	Car         Car             `json:"car"`
+	Contact     Contact         `json:"contact"`
 }
 
 func EncodeDisposition(value Disposition, limit int) ([]byte, error) {
@@ -712,7 +930,7 @@ type Event struct {
 	EventId    uint32        `json:"eventId"`
 	Tick       uint32        `json:"tick"`
 	TimeUs     uint64        `json:"timeUs"`
-	Kind       uint8         `json:"kind"`
+	Kind       EventKind     `json:"kind"`
 	CauseInput uint32        `json:"causeInput"`
 	ObjectId   uint32        `json:"objectId"`
 	EpisodeId  uint32        `json:"episodeId"`
@@ -831,11 +1049,11 @@ func DecodeCoverage(bytes []byte, limit int) (Coverage, error) {
 }
 
 type RoomReply struct {
-	Identity Identity `json:"identity"`
-	Sequence uint32   `json:"sequence"`
-	Revision uint32   `json:"revision"`
-	Accepted uint8    `json:"accepted"`
-	Detail   string   `json:"detail"`
+	Identity Identity    `json:"identity"`
+	Sequence uint32      `json:"sequence"`
+	Revision uint32      `json:"revision"`
+	Accepted WireBoolean `json:"accepted"`
+	Detail   string      `json:"detail"`
 }
 
 func EncodeRoomReply(value RoomReply, limit int) ([]byte, error) {
@@ -863,7 +1081,7 @@ func DecodeRoomPulse(bytes []byte, limit int) (RoomPulse, error) {
 	return value, err
 }
 func ProjectBaseline(value Baseline) ([]byte, error) {
-	return encodeRecord("Projection", Projection{Round: value.Round, ConfigurationId: value.Context.ConfigurationId, GenerationVersion: value.Context.GenerationVersion, Seed: value.Context.Seed, Tick: value.Tick, TimeUs: value.TimeUs, Progress: value.Progress, Cars: value.Cars, Contact: value.Contact, Generator: value.Generator, Windows: value.Windows}, 1048576, true)
+	return encodeRecord("Projection", Projection{Round: value.Round, ConfigurationId: value.Context.ConfigurationId, GenerationVersion: value.Context.GenerationVersion, Seed: value.Context.Seed, Tick: value.Tick, TimeUs: value.TimeUs, Progress: value.Progress, Cars: value.Cars, Contact: value.Contact, Generator: value.Generator, Windows: value.Windows}, RecordLimitBytes, true)
 }
 func EncodeMessage(value any, limit int) ([]byte, error) {
 	switch v := value.(type) {

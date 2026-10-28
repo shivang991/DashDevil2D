@@ -1,4 +1,16 @@
-import { AdmissionOperationJoin } from "@dashdevil/contracts/protocol";
+import {
+  AdmissionOperationJoin,
+  ModeDragRace,
+  ModeRoadRage,
+  OutcomeResultTie,
+  RoomPhaseActive,
+  RoomPhaseCountdown,
+  RoomPhaseEnded,
+  SeatFlagsConnected,
+  SeatFlagsNone,
+  SeatIndexPlayer2,
+} from "@dashdevil/contracts/protocol";
+
 import { useMemo, useState, type ComponentProps } from "react";
 import { RaceView } from "@/components/RaceView";
 import { playingFixture } from "@/stories/playingFixture";
@@ -10,7 +22,7 @@ const meta = {
   title: "Screens/Multiplayer",
   component: MultiplayerView,
   args: {
-    mode: 1,
+    mode: ModeDragRace,
     onBack: fn(),
     playerName: "Driver 01",
     state: disconnected,
@@ -22,7 +34,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const Entry: Story = {};
-export const RoadRage: Story = { args: { mode: 2 } };
+export const RoadRage: Story = { args: { mode: ModeRoadRage } };
 export const Loading: Story = { args: { state: undefined } };
 export const Joining: Story = { args: { state: { ...disconnected, pending: "Joining room" } } };
 export const Error: Story = { args: { error: "Unable to join: room is full." } };
@@ -36,13 +48,13 @@ export const JoinError: Story = {
 };
 export const Creating: Story = { args: { state: { ...disconnected, pending: "Creating room" } } };
 export const Guest: Story = {
-  args: { state: { ...lobby, identity: { ...lobby.identity!, seat: 1 } } },
+  args: { state: { ...lobby, identity: { ...lobby.identity!, seat: SeatIndexPlayer2 } } },
 };
 export const HostNotReady: Story = {
   args: {
     state: {
       ...lobby,
-      room: { ...room, seats: room.seats.map((seat) => ({ ...seat, flags: 1 })) },
+      room: { ...room, seats: room.seats.map((seat) => ({ ...seat, flags: SeatFlagsConnected })) },
     },
   },
 };
@@ -62,16 +74,33 @@ export const WaitingForPlayer: Story = {
       ...lobby,
       room: {
         ...room,
-        seats: [room.seats[0], { session: 0, name: "", flags: 0, reservationUs: 0 }],
+        seats: [
+          room.seats[0],
+          {
+            session: 0,
+            name: "",
+            flags: SeatFlagsNone,
+            reservationUs: 0,
+          },
+        ],
       },
     },
   },
 };
 export const Reconnecting: Story = { args: { state: { ...lobby, status: "Reconnecting" } } };
 export const Countdown: Story = {
-  args: { state: { ...lobby, room: { ...room, phase: 1 }, roundId: 1, startUs: room.startUs } },
+  args: {
+    state: {
+      ...lobby,
+      room: { ...room, phase: RoomPhaseCountdown },
+      roundId: 1,
+      startUs: room.startUs,
+    },
+  },
 };
-export const Synchronizing: Story = { args: { state: { ...lobby, room: { ...room, phase: 2 } } } };
+export const Synchronizing: Story = {
+  args: { state: { ...lobby, room: { ...room, phase: RoomPhaseActive } } },
+};
 export const ResultInLobby: Story = { args: { state: { ...lobby, outcome } } };
 export const LeaveConfirmation: Story = {
   ...Countdown,
@@ -98,7 +127,7 @@ const roadRage = playingFixture(2);
 
 export const RoundOver: Story = {
   args: {
-    state: { ...dragRace.state, room: { ...dragRace.state.room!, phase: 3 }, outcome },
+    state: { ...dragRace.state, room: { ...dragRace.state.room!, phase: RoomPhaseEnded }, outcome },
   },
   render: PlayingPreview,
 };
@@ -106,8 +135,8 @@ export const TiedRound: Story = {
   args: {
     state: {
       ...dragRace.state,
-      room: { ...dragRace.state.room!, phase: 3 },
-      outcome: { ...outcome, result: 2 },
+      room: { ...dragRace.state.room!, phase: RoomPhaseEnded },
+      outcome: { ...outcome, result: OutcomeResultTie },
     },
   },
   render: PlayingPreview,
@@ -123,7 +152,7 @@ function PlayingPreview(args: ComponentProps<typeof MultiplayerView>) {
   }));
   const connection = useMemo(
     () => ({
-      frame: () => (args.mode === 2 ? roadRage.frame : dragRace.frame),
+      frame: () => (args.mode === ModeRoadRage ? roadRage.frame : dragRace.frame),
       input: fn(),
       releaseControls: fn(),
       recordDraw: () => {},
@@ -163,7 +192,7 @@ export const PlayingDragRace: Story = {
 };
 export const PlayingRoadRage: Story = {
   ...PlayingDragRace,
-  args: { mode: 2, state: roadRage.state },
+  args: { mode: ModeRoadRage, state: roadRage.state },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await expect(canvas.getByRole("img", { name: "Multiplayer race" })).toBeVisible();

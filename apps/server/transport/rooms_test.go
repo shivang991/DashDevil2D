@@ -29,7 +29,7 @@ func roomState(t *testing.T, socket *ws.Conn, match func(p.RoomState) bool) p.Ro
 }
 func roomSend(t *testing.T, socket *ws.Conn, a p.Admission, sequence uint32, state p.RoomState, command, mode, ready uint8) {
 	t.Helper()
-	wire, err := p.EncodeMessage(p.RoomCommand{Identity: a.Identity, Sequence: sequence, Revision: state.Revision, Command: command, Mode: mode, Ready: ready}, 65536)
+	wire, err := p.EncodeMessage(p.RoomCommand{Identity: a.Identity, Sequence: sequence, Revision: state.Revision, Command: p.RoomCommandCode(command), Mode: p.Mode(mode), Ready: p.WireBoolean(ready)}, 65536)
 	if err != nil {
 		t.Fatal(err)
 	}

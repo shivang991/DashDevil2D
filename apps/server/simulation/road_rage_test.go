@@ -73,7 +73,7 @@ func TestSharedRoadRage(t *testing.T) {
 			if (state.Finish == nil) != (expected.Finish == nil) {
 				t.Fatalf("finish %#v expected %#v", state.Finish, expected.Finish)
 			}
-			if expected.Finish != nil && (state.Finish.Tick != expected.Finish.Tick || state.Finish.TimeUs != expected.Finish.TimeUs || state.Finish.Result != expected.Finish.Result || state.Finish.Reason != *expected.Reason) {
+			if expected.Finish != nil && (state.Finish.Tick != expected.Finish.Tick || state.Finish.TimeUs != expected.Finish.TimeUs || state.Finish.Result != expected.Finish.Result || uint8(state.Finish.Reason) != *expected.Reason) {
 				t.Fatalf("finish %#v expected %#v reason %d", state.Finish, expected.Finish, *expected.Reason)
 			}
 			spent := map[string]uint8{}

@@ -4,12 +4,14 @@ import { gameAudio } from "@/lib/gameAudio";
 import { GameWorld } from "@/components/GameWorld";
 import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
+import { ModeDragRace } from "@dashdevil/contracts/protocol";
+import type { MultiplayerMode } from "@/transport/PairedConnection";
 
 type Screen = "menu" | "game" | "multiplayer";
 
 function App() {
   const hasStarted = useRef(false);
-  const [mode, setMode] = useState<1 | 2>(1);
+  const [mode, setMode] = useState<MultiplayerMode>(ModeDragRace);
   const [countdown, setCountdown] = useState<5 | 3>(5);
   const [screen, setScreen] = useState<Screen>("menu");
   const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);

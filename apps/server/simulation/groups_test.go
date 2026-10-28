@@ -170,7 +170,7 @@ func TestFreshInputsSurviveResetDuringPendingGroup(t *testing.T) {
 			}
 			game.ResetSeat(identity, generation, 12)
 			for i, intent := range []uint8{0, 2} {
-				accepted, err := game.Submit(identity, protocol.Input{Identity: identity, Round: protocol.Round{RoundId: 1, InputGeneration: generation}, Sequence: uint32(13 + i), Intent: intent, Control: 3, HeldMask: 4})
+				accepted, err := game.Submit(identity, protocol.Input{Identity: identity, Round: protocol.Round{RoundId: 1, InputGeneration: generation}, Sequence: uint32(13 + i), Intent: protocol.InputIntent(intent), Control: 3, HeldMask: 4})
 				if err != nil || !accepted {
 					t.Fatalf("fresh input %d rejected after reset: accepted=%v err=%v", 13+i, accepted, err)
 				}

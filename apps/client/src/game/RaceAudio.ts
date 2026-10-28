@@ -1,3 +1,4 @@
+import { CarFlagsNOSActive } from "@dashdevil/contracts/protocol";
 import { GameAudio } from "../lib/gameAudio";
 import type { RaceSession } from "./RaceSession";
 
@@ -34,7 +35,7 @@ export class RaceAudio {
       score: car.score,
       health: car.hp,
       currentLane: car.lane,
-      accelerating: Boolean(car.flags & 1),
+      accelerating: Boolean(car.flags & CarFlagsNOSActive),
       roadSpeed: car.normalSpeed,
       countdownTimer: 0,
     });

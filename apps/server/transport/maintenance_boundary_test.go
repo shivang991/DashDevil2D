@@ -25,7 +25,7 @@ func TestLeaveAfterMaintenanceCutoffCannotAwardForfeit(t *testing.T) {
 	}
 	r := &room{id: 1, code: "test", mode: 1, phase: 2, roundID: 1, settings: cfg, engine: engine, zero: &p.Baseline{}}
 	for i := range r.seats {
-		participant := &seat{room: r, index: uint8(i), session: ids[i].SeatSession, generation: 1, connected: true}
+		participant := &seat{room: r, index: p.SeatIndex(i), session: ids[i].SeatSession, generation: 1, connected: true}
 		participant.pair = newPair(s, participant)
 		r.seats[i] = participant
 	}
@@ -66,7 +66,7 @@ func TestGraceExpiryCannotOvertakePendingFinish(t *testing.T) {
 	r := &room{id: 1, code: "test", mode: 1, phase: 2, roundID: 1, settings: cfg, engine: engine, zero: &zero}
 	s.start = time.Now().Add(-1200 * time.Millisecond)
 	for i := range r.seats {
-		participant := &seat{room: r, index: uint8(i), session: ids[i].SeatSession, generation: 1, connected: i == 0}
+		participant := &seat{room: r, index: p.SeatIndex(i), session: ids[i].SeatSession, generation: 1, connected: i == 0}
 		participant.pair = newPair(s, participant)
 		r.seats[i] = participant
 	}

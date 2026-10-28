@@ -19,7 +19,7 @@ const exactMax uint64 = 9007199254740991
 
 func invalid(s string) error { return fmt.Errorf("invalid wire record: %s", s) }
 func Quantize(v float64) (int64, error) {
-	q := math.Floor(v*1024 + .5)
+	q := math.Floor(v*ProjectionScale + .5)
 	if math.IsNaN(v) || math.IsInf(v, 0) || math.Abs(q) > float64(exactMax) {
 		return 0, invalid("position projection overflow")
 	}
@@ -27,7 +27,7 @@ func Quantize(v float64) (int64, error) {
 }
 func CRC32C(bytes []byte) uint32 { return crc32.Checksum(bytes, crc32.MakeTable(crc32.Castagnoli)) }
 func encodeRecord(name string, value any, limit int, projection bool) ([]byte, error) {
-	if limit < 0 || uint64(limit) > math.MaxUint32 {
+	if limit < 0 || uint64(limit) > CounterMax {
 		return nil, invalid("record limit")
 	}
 	out := make([]byte, 0, min(limit, 1024))
@@ -340,7 +340,7 @@ type FrameReader struct {
 }
 
 func (r *FrameReader) Push(part []byte) ([][]byte, error) {
-	if r.Limit < 5 || uint64(r.Limit) > math.MaxUint32 {
+	if r.Limit < 5 || uint64(r.Limit) > CounterMax {
 		return nil, invalid("frame limit")
 	}
 	var result [][]byte

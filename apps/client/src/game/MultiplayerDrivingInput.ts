@@ -1,4 +1,10 @@
-export type DrivingControl = 1 | 2 | 3;
+import {
+  type Control,
+  ControlNone,
+  InputIntentPress,
+  InputIntentRelease,
+} from "@dashdevil/contracts/protocol";
+export type DrivingControl = Exclude<Control, typeof ControlNone>;
 
 export interface DrivingInputContext {
   menu: boolean;
@@ -13,7 +19,10 @@ export class MultiplayerDrivingInput {
   private readonly sources = new Map<string, DrivingControl>();
   private context?: DrivingInputContext;
   private readonly output: {
-    input: (intent: 0 | 1, control: DrivingControl) => void;
+    input: (
+      intent: typeof InputIntentPress | typeof InputIntentRelease,
+      control: DrivingControl,
+    ) => void;
     releaseControls: () => void;
   };
   private readonly clearKeys: () => void;
@@ -51,7 +60,7 @@ export class MultiplayerDrivingInput {
     const held = [...this.sources.values()].includes(control);
     this.sources.set(source, control);
     // Record the source even if the connection rejects delivery, preserving admission behavior.
-    if (!held) this.output.input(0, control);
+    if (!held) this.output.input(InputIntentPress, control);
     return true;
   }
 
@@ -59,7 +68,8 @@ export class MultiplayerDrivingInput {
     const control = this.sources.get(source);
     if (!control) return false;
     this.sources.delete(source);
-    if (![...this.sources.values()].includes(control)) this.output.input(1, control);
+    if (![...this.sources.values()].includes(control))
+      this.output.input(InputIntentRelease, control);
     return true;
   }
 

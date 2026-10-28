@@ -17,20 +17,20 @@ func (e *Engine) objects(placements track.PlacementState) []protocol.ObjectState
 	objects := []protocol.ObjectState{}
 	for _, slice := range placements.Slices {
 		for lane, kind := range slice.Cells {
-			flag := uint8(0)
+			flag := protocol.ObjectKindEmpty
 			switch kind {
 			case "coin":
-				flag = 1
+				flag = protocol.ObjectKindCoin
 			case "obstacle":
-				flag = 2
+				flag = protocol.ObjectKindObstacle
 			case "heart":
-				flag = 3
+				flag = protocol.ObjectKindHeart
 			}
-			if flag == 0 {
+			if flag == protocol.ObjectKindEmpty {
 				continue
 			}
 			id := uint32(slice.ID)*3 + uint32(lane) + 1
-			objects = append(objects, protocol.ObjectState{Id: id, SliceId: uint32(slice.ID), Lane: uint8(lane), Distance: slice.Distance, Flags: flag | e.consumption[id]})
+			objects = append(objects, protocol.ObjectState{Id: id, SliceId: uint32(slice.ID), Lane: protocol.Lane(lane), Distance: slice.Distance, Flags: uint8(flag) | e.consumption[id]})
 		}
 	}
 	return objects
@@ -43,10 +43,10 @@ func (e *Engine) objectContacts(start, end float64) []objectContact {
 	g := e.context.Gameplay
 	for _, object := range e.currentSnapshot().Objects {
 		for seat, car := range e.state.Cars {
-			kind := object.Flags & 3
-			spent := uint8(4)
-			if kind == 2 {
-				spent = 8 << seat
+			kind := protocol.ObjectKind(object.Flags & protocol.ObjectFlagsKindMask)
+			spent := uint8(protocol.ObjectFlagsSharedConsumed)
+			if kind == protocol.ObjectKindObstacle {
+				spent = protocol.ObjectFlagsSpentPlayer1 << seat
 			}
 			pending := false
 			if e.group != nil {
@@ -61,16 +61,16 @@ func (e *Engine) objectContacts(start, end float64) []objectContact {
 				continue
 			}
 			width, height := g.HeartSize, g.HeartSize
-			if kind == 1 {
+			if kind == protocol.ObjectKindCoin {
 				width = g.CoinSize
 				height = g.CoinSize
 			}
-			if kind == 2 {
+			if kind == protocol.ObjectKindObstacle {
 				width = g.ObstacleW
 				height = g.ObstacleH
 			}
 			lateralExtent, forwardExtent := (g.CarWidth+width)/2, (g.CarHeight+height)/2
-			center := (float64(object.Lane) - 1) * g.LaneSpacing
+			center := (float64(object.Lane) - float64(protocol.LaneMiddle)) * g.LaneSpacing
 			multiplier := e.multiplier(seat)
 			progress := func(at float64) float64 { return car.Progress + forwardDistance(g, start, at-start)*multiplier }
 			if progress(end) < object.Distance-forwardExtent || car.Progress >= object.Distance+forwardExtent {
@@ -146,37 +146,37 @@ func (e *Engine) resolveObjects(contacts []objectContact, events *[]Observation,
 			seats = append(seats, contacts[i].seat)
 			i++
 		}
-		kind := object.Flags & 3
-		if kind == 2 {
+		kind := protocol.ObjectKind(object.Flags & protocol.ObjectFlagsKindMask)
+		if kind == protocol.ObjectKindObstacle {
 			for _, seat := range seats {
-				object.Flags |= 8 << seat
-				if e.context.Mode == 2 {
+				object.Flags |= protocol.ObjectFlagsSpentPlayer1 << seat
+				if e.context.Mode == protocol.ModeRoadRage {
 					damage[seat] = max(damage[seat], uint64(g.ObstacleDamage))
 				} else {
 					damage[seat] += uint64(g.ObstacleDamage)
 				}
 			}
 		} else {
-			object.Flags |= 4
+			object.Flags |= protocol.ObjectFlagsSharedConsumed
 			if len(seats) == 1 {
 				car := &e.state.Cars[seats[0]]
-				if kind == 3 {
+				if kind == protocol.ObjectKindHeart {
 					car.Hp = min(uint32(g.MaxHealth), car.Hp+1)
 				} else {
 					car.Score += 10
 				}
 			}
 		}
-		e.consumption[object.Id] = object.Flags & 28
+		e.consumption[object.Id] = object.Flags & protocol.ObjectFlagsConsumptionMask
 		objects = append(objects, object)
 	}
 	for seat := range e.state.Cars {
 		car := &e.state.Cars[seat]
-		if e.context.Mode == 2 && car.ProtectionUs > timeUs {
+		if e.context.Mode == protocol.ModeRoadRage && car.ProtectionUs > timeUs {
 			continue
 		}
 		car.Hp = uint32(max(0, int64(car.Hp)-int64(damage[seat])))
-		if e.context.Mode == 2 && damage[seat] > 0 {
+		if e.context.Mode == protocol.ModeRoadRage && damage[seat] > 0 {
 			duration, _ := CanonicalTime(g.InvincibleDuration)
 			car.ProtectionUs = timeUs + duration
 		}
