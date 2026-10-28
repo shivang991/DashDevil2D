@@ -1,14 +1,25 @@
 import { RaceAudio } from "@/game/RaceAudio";
 import { Settings } from "lucide-react";
 import { TouchControls } from "./TouchControls";
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { MultiplayerDrivingInput, type DrivingControl } from "@/game/MultiplayerDrivingInput";
 import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
 import { multiplayerRoadScale } from "@/lib/roadProjection";
 import { gameAudio } from "@/lib/gameAudio";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 
-const controlFor = (key: string) =>
-  ({ ArrowLeft: 1, a: 1, A: 1, ArrowRight: 2, d: 2, D: 2, ArrowUp: 3, w: 3, W: 3 })[key];
+const controls: Record<string, DrivingControl> = {
+  ArrowLeft: 1,
+  a: 1,
+  A: 1,
+  ArrowRight: 2,
+  d: 2,
+  D: 2,
+  ArrowUp: 3,
+  w: 3,
+  W: 3,
+};
+const controlFor = (key: string) => controls[key];
 const interactive = (target: EventTarget | null) =>
   target instanceof Element &&
   Boolean(target.closest('button,input,select,textarea,a,[contenteditable="true"]'));
@@ -45,18 +56,17 @@ export function RaceView({
     };
   }, [state.roundId]);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const pressed = useRef(new Set<string>());
-  const sources = useRef(new Map<string, number>());
-  const controlInput = useCallback(
-    (source: string, control: number, down: boolean) => {
-      const wasHeld = [...sources.current.values()].includes(control);
-      if (down) sources.current.set(source, control);
-      else sources.current.delete(source);
-      const isHeld = [...sources.current.values()].includes(control);
-      if (wasHeld !== isHeld) connection.input(isHeld ? 0 : 1, control);
-    },
-    [connection],
-  );
+  const { pressed, driving } = useMemo(() => {
+    const pressed = new Set<string>();
+    const driving = new MultiplayerDrivingInput(
+      {
+        input: (intent, control) => connection.input(intent, control),
+        releaseControls: () => connection.releaseControls(),
+      },
+      () => pressed.clear(),
+    );
+    return { pressed, driving };
+  }, [connection]);
   const [muted, setMuted] = useState(!audio.enabled);
   const [menu, setMenu] = useState(false);
   const [frame, setFrame] = useState<Frame>();
@@ -64,24 +74,20 @@ export function RaceView({
   const context = state.context!;
   useEffect(() => {
     canvas.current?.focus();
-    return () => connection.releaseControls();
-  }, [connection]);
+    return () => driving.reset();
+  }, [driving]);
   useEffect(() => {
-    const release = () => {
-      pressed.current.clear();
-      sources.current.clear();
-      connection.releaseControls();
-    };
+    const release = () => driving.reset();
     const down = (event: KeyboardEvent) => {
-      if (event.repeat || pressed.current.has(event.code)) return;
-      pressed.current.add(event.code);
+      if (event.repeat || pressed.has(event.code)) return;
+      pressed.add(event.code);
       if (suspended || state.outcome) return;
       if (
         (event.key === "Escape" && (menu || !interactive(event.target))) ||
         (event.code === "Space" && !interactive(event.target))
       ) {
         event.preventDefault();
-        connection.releaseControls();
+        driving.reset();
         setMenu((value) => !value);
         return;
       }
@@ -91,24 +97,15 @@ export function RaceView({
         return;
       }
       const control = controlFor(event.key);
-      if (
-        control &&
-        !menu &&
-        !interactive(event.target) &&
-        state.status === "Connected" &&
-        document.hasFocus() &&
-        !document.hidden
-      ) {
-        event.preventDefault();
-        controlInput(`key:${event.code}`, control, true);
+      if (control && !interactive(event.target) && document.hasFocus() && !document.hidden) {
+        if (driving.press(`key:${event.code}`, control)) event.preventDefault();
       }
     };
     const up = (event: KeyboardEvent) => {
-      pressed.current.delete(event.code);
+      pressed.delete(event.code);
       if (suspended) return;
       const control = controlFor(event.key);
-      if (control && sources.current.has(`key:${event.code}`)) {
-        controlInput(`key:${event.code}`, control, false);
+      if (control && driving.release(`key:${event.code}`)) {
         if (!interactive(event.target)) event.preventDefault();
       }
     };
@@ -122,14 +119,18 @@ export function RaceView({
       window.removeEventListener("blur", release);
       document.removeEventListener("visibilitychange", release);
     };
-  }, [connection, controlInput, menu, suspended, state.outcome, state.status, audio]);
+  }, [driving, pressed, menu, suspended, state.outcome, audio]);
   useLayoutEffect(() => {
-    pressed.current.clear();
-    sources.current.clear();
-    connection.releaseControls();
+    driving.update({
+      menu,
+      suspended,
+      outcome: state.outcome,
+      status: state.status,
+      roundId: state.roundId,
+    });
     if (!menu && !suspended && !state.outcome && state.status === "Connected")
       canvas.current?.focus();
-  }, [connection, menu, suspended, state.outcome, state.status, state.roundId]);
+  }, [driving, menu, suspended, state.outcome, state.status, state.roundId]);
   useEffect(() => {
     let handle = 0,
       lastHud = 0;
@@ -301,7 +302,7 @@ export function RaceView({
           aria-label="Settings"
           aria-expanded={menu}
           onClick={() => {
-            connection.releaseControls();
+            driving.reset();
             setMenu((value) => !value);
           }}
         >
@@ -402,11 +403,7 @@ export function RaceView({
             role="img"
             aria-label="Multiplayer race"
             className="block h-full w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400"
-            onBlur={() => {
-              pressed.current.clear();
-              sources.current.clear();
-              connection.releaseControls();
-            }}
+            onBlur={() => driving.reset()}
           />
         </div>
       </div>
@@ -414,7 +411,8 @@ export function RaceView({
         disabled={menu || suspended || Boolean(outcome) || state.status !== "Connected"}
         onControl={(control, down) => {
           if (down) canvas.current?.focus({ preventScroll: true });
-          controlInput(`touch:${control}`, control, down);
+          if (down) driving.press(`touch:${control}`, control);
+          else driving.release(`touch:${control}`);
         }}
       />
       {menu && !outcome && (
