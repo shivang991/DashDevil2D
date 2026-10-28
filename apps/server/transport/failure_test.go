@@ -81,7 +81,7 @@ func failurePair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Ad
 
 func TestBaselineTransferHonorsConfiguredFrameAndQueueBounds(t *testing.T) {
 	s, c, roots := configuredServer(t, transport.Config{DragRaceOverrides: []byte(`{"connection":{"reliableFrameBytes":1024,"queueBytes":2048},"gameplay":{"sliceSpacing":50,"initialClearDistance":0}}`)})
-	_, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
+	_, value := admit(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	_, _, _, _, _, chunk := failurePair(t, s, roots, value.(p.Admission), 1024)
 	if chunk.Count < 2 {
 		t.Fatal("fixture must require multiple bounded chunks")
@@ -92,7 +92,7 @@ func TestRecoveryRejectsUninstalledEpoch(t *testing.T) {
 	for _, epoch := range []uint16{0, 2} {
 		t.Run(string(rune('0'+epoch)), func(t *testing.T) {
 			s, c, roots := serverMode(t, false)
-			_, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
+			_, value := admit(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin)
 			a := value.(p.Admission)
 			socket, session, control, _, authority, chunk := failurePair(t, s, roots, a)
 			sendRecord(t, control, p.Recovery{Identity: a.Identity, Round: chunk.Round, Epoch: epoch, Tick: chunk.Tick, Progress: chunk.Progress})
@@ -186,7 +186,7 @@ func TestMalformedAndExcessiveTrafficFailsBothChannels(t *testing.T) {
 		for _, tc := range cases {
 			t.Run(fmt.Sprintf("mode%d/%s", mode, tc.name), func(t *testing.T) {
 				s, c, roots := serverMode(t, false)
-				_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin, mode)
+				_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin, mode)
 				a := value.(p.Admission)
 				socket, session, control, inputs, _, chunk := failurePair(t, s, roots, a)
 				tc.attack(t, session, control, inputs, a, chunk)
@@ -211,7 +211,7 @@ func TestMalformedAndExcessiveTrafficFailsBothChannels(t *testing.T) {
 
 func TestReusedPairRetainsConnectionSettingsAcrossModeChange(t *testing.T) {
 	s, c, roots := configuredServer(t, transport.Config{RoadRageOverrides: []byte(`{"connection":{"controlRefreshInterval":0.1,"controlFreshnessExpiry":0.6}}`)})
-	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := value.(p.Admission)
 	initializations := make(chan p.Initialization, 4)
 	dispositions := make(chan p.Disposition, 16)
@@ -229,7 +229,7 @@ func TestReusedPairRetainsConnectionSettingsAcrossModeChange(t *testing.T) {
 			dispositions <- x
 		}
 	})
-	_, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+	_, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}, origin)
 	b := value.(p.Admission)
 	guest, _ := initializedPair(t, s, roots, b, true)
 	state := roomState(t, host, func(r p.RoomState) bool { return r.Seats[1].Flags&1 != 0 })
@@ -267,7 +267,7 @@ func TestReusedPairRetainsConnectionSettingsAcrossModeChange(t *testing.T) {
 	}
 	// A replacement pair captures the now-selected mode's settings, while the
 	// reused pair above retained its original settings through the same round.
-	_, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+	_, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 	replacement := value.(p.Admission)
 	_, _, _, replacementInput, authority, installed := failurePair(t, s, roots, replacement)
 	baseline, err := p.DecodeBaseline(installed.Data, 1048576)

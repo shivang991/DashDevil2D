@@ -72,3 +72,26 @@ RoomCommand values are 0 select mode, 1 readiness, 2 start, 3 leave, 4 focus and
 Protocol 2 adds Outcome reason 7 (`maintenance`) for an abandoned round at planned shutdown. Earlier clients are rejected at admission with the expected version before any seat is allocated; a cached v1 tab must reload. Production clients and servers use the generated protocol version rather than duplicated literals. Existing wire record widths and historical fixture bytes are retained. Shared fixture set 2 adds a literal v2 Handshake and maintenance Outcome; v1 headers in older named vectors test mechanical codecs and do not claim live v1 acceptance. Configuration and track-generation versions remain 1.
 
 Protocol 3 appends `roundOverDelay` (float64 seconds) to `Presentation` in the immutable round context. Default/minimum is one second. Clients apply and acknowledge confirmed outcomes immediately, keep the final scene visible, then open Round Over after their local receipt delay. Reconnects preserve an existing wait; leaving the room or starting another round cancels it. Long Drive is unaffected. Clients and servers must deploy together; cached protocol-1/2 clients must reload. Fixture set 3 extends literal context bytes and resource sizes by eight bytes, adds v3 admission/handshake vectors, and retains historical admission vectors for rejection checks.
+
+## Admission-operation pilot (#52)
+
+`AdmissionRequest.operation` remains a `u8` on the wire. Its `enum: "admissionOperation"`
+reference selects the canonical explicit assignments in `schema.json`:
+`{ "create": 0, "join": 1, "resume": 2 }`. These values are protocol assignments;
+never reorder or renumber them. Existing name arrays for other domains are unchanged.
+
+Generation emits individual TypeScript constants `AdmissionOperationCreate`,
+`AdmissionOperationJoin`, `AdmissionOperationResume` and the literal union type
+`AdmissionOperation`. Go gets `type AdmissionOperation uint8` with the same three
+names as typed compile-time constants. Both generated request types associate the
+field with that domain. No hand-maintained duplicate declarations or startup fetch.
+
+The generator currently accepts contiguous, explicit assignments starting at zero
+and only associates these domains with `u8` fields. It derives the existing wire
+layout ceiling from the domain, so encoders and decoders still reject operations
+above 2 without adding a lookup table. Sparse domains require a separate design;
+they must not silently reuse ceiling-only validation.
+
+Callers read `client.connect(AdmissionOperationJoin, code)` and
+`case p.AdmissionOperationResume:`. Room commands remain a separate domain.
+See [pilot review and production evidence](../../../docs/admission-operation-pilot.md).

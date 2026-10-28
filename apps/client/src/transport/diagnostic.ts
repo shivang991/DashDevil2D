@@ -1,3 +1,8 @@
+import {
+  AdmissionOperationCreate,
+  AdmissionOperationJoin,
+  AdmissionOperationResume,
+} from "@dashdevil/contracts/protocol";
 import { PairedConnection, type ConnectionOptions } from "./PairedConnection";
 import "./diagnostic.css";
 
@@ -28,12 +33,16 @@ const connection = new PairedConnection({ ...config, diagnostic: true }, (state)
   );
 });
 const code = document.querySelector<HTMLInputElement>("#code")!;
-document.querySelector("#create")!.addEventListener("click", () => void connection.connect(0));
+document
+  .querySelector("#create")!
+  .addEventListener("click", () => void connection.connect(AdmissionOperationCreate));
 document
   .querySelector("#join")!
-  .addEventListener("click", () => void connection.connect(1, code.value));
+  .addEventListener("click", () => void connection.connect(AdmissionOperationJoin, code.value));
 for (const id of ["recover", "replace"])
-  document.querySelector(`#${id}`)!.addEventListener("click", () => void connection.connect(2));
+  document
+    .querySelector(`#${id}`)!
+    .addEventListener("click", () => void connection.connect(AdmissionOperationResume));
 document.querySelector("#leave")!.addEventListener("click", () => connection.leave());
 document.querySelector("#drop-room")!.addEventListener("click", () => connection.drop("room"));
 document

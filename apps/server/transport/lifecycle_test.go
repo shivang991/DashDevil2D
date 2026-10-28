@@ -17,10 +17,10 @@ import (
 
 func TestRoomUsesConfiguredIdleAndReconnectWindows(t *testing.T) {
 	s, c, roots := configuredServer(t, transport.Config{DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2,"idleExpiry":120,"idleWarning":10}}`)})
-	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, game := initializedPair(t, s, roots, a, true)
-	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}, origin)
 	b := v.(p.Admission)
 	guest, _ := initializedPair(t, s, roots, b, true)
 	roomSend(t, guest, b, 1, p.RoomState{}, 4, 1, 1)
@@ -47,7 +47,7 @@ func lifecycleClock() (func() time.Time, func(time.Duration)) {
 func TestDuplicateLobbyActionsDoNotExtendIdleExpiry(t *testing.T) {
 	now, advance := lifecycleClock()
 	s, c, roots := configuredServer(t, transport.Config{Now: now})
-	_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	socket, _ := initializedPair(t, s, roots, a, true)
 	roomSend(t, socket, a, 1, p.RoomState{}, 4, 1, 1)
@@ -72,22 +72,22 @@ func TestRecoveryAdmissionStrictGraceBoundary(t *testing.T) {
 		t.Run(offset.String(), func(t *testing.T) {
 			now, advance := lifecycleClock()
 			s, c, _ := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
-			_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+			_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 			a := v.(p.Admission)
 			advance(2*time.Second + offset)
-			status, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+			status, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 			if offset < 0 {
 				if status != 201 || v.(p.Admission).Identity.SeatSession != a.Identity.SeatSession {
 					t.Fatalf("before grace: %d %+v", status, v)
 				}
 				// Issuing replacement tickets must not extend the original reservation.
 				advance(time.Microsecond)
-				status, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+				status, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 			}
 			if status != 410 {
 				t.Fatalf("at/after grace: %d %+v", status, v)
 			}
-			status, _ = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+			status, _ = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}, origin)
 			if status != 404 {
 				t.Fatalf("empty expired room retained code: %d", status)
 			}
@@ -127,8 +127,7 @@ func activeLifecycle(t *testing.T, overrides string) activeLifecycleRoom {
 	now, advance := lifecycleClock()
 	s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(overrides)})
 	f := activeLifecycleRoom{server: s, client: c, roots: roots, advance: advance}
-	for i := 0; i < 2; i++ {
-		operation := uint8(i)
+	for i, operation := range []p.AdmissionOperation{p.AdmissionOperationCreate, p.AdmissionOperationJoin} {
 		_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: operation, Code: f.code, Name: "Driver"}, origin)
 		if i == 0 {
 			f.code = code
@@ -179,17 +178,17 @@ func TestIdleExpiryBoundaryCannotBeResetByRecovery(t *testing.T) {
 		t.Run(offset.String(), func(t *testing.T) {
 			now, advance := lifecycleClock()
 			s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"idleExpiry":120,"idleWarning":10}}`)})
-			_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+			_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 			a := v.(p.Admission)
 			initializedPair(t, s, roots, a, true)
 			advance(120*time.Second + offset)
-			status, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+			status, v := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 			if offset < 0 {
 				if status != 201 {
 					t.Fatalf("before idle: %d %+v", status, v)
 				}
 				advance(time.Microsecond)
-				status, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+				status, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 			}
 			if status != 410 {
 				t.Fatalf("at/after idle: %d %+v", status, v)
@@ -201,10 +200,10 @@ func TestIdleExpiryBoundaryCannotBeResetByRecovery(t *testing.T) {
 func TestReservedHostBlocksGuestsUntilExactGraceThenTransfers(t *testing.T) {
 	now, advance := lifecycleClock()
 	s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
-	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, game := initializedPair(t, s, roots, a, true)
-	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}, origin)
 	b := v.(p.Admission)
 	guest, _ := initializedPair(t, s, roots, b, true)
 	host.Close()
@@ -214,12 +213,12 @@ func TestReservedHostBlocksGuestsUntilExactGraceThenTransfers(t *testing.T) {
 		t.Fatal("temporary disconnect transferred host")
 	}
 	advance(2*time.Second - time.Microsecond)
-	status, _ := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Intruder"}, origin)
+	status, _ := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Intruder"}, origin)
 	if status != 409 {
 		t.Fatalf("reserved seat admitted a guest: %d", status)
 	}
 	advance(time.Microsecond)
-	status, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Replacement"}, origin)
+	status, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Replacement"}, origin)
 	if status != 201 || v.(p.Admission).Identity.SeatSession == a.Identity.SeatSession {
 		t.Fatalf("expired host seat unavailable: %d %+v", status, v)
 	}
@@ -269,7 +268,7 @@ func TestAbandonmentIsRecoverableBeforeRemainingReservationExpires(t *testing.T)
 	}
 	// A leave while the opponent is disconnected abandons at 500000us.
 	f.advance(time.Microsecond)
-	status, value := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: f.admissions[1].Credential}, origin)
+	status, value := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: f.admissions[1].Credential}, origin)
 	if status != 201 {
 		t.Fatalf("reserved participant cannot recover: %d %+v", status, value)
 	}
@@ -288,17 +287,17 @@ func TestAbandonmentIsRecoverableBeforeRemainingReservationExpires(t *testing.T)
 func TestExpiredEmptyRoomCodeIsImmediatelyReusableWithNewIdentity(t *testing.T) {
 	now, advance := lifecycleClock()
 	s, c, _ := configuredServer(t, transport.Config{Now: now, CodeStart: func() (uint16, error) { return 42, nil }, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
-	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Original"}, origin)
+	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Original"}, origin)
 	a := value.(p.Admission)
 	if code != "0042" {
 		t.Fatalf("leading zero code: %s", code)
 	}
 	advance(2 * time.Second)
-	status, value, reused := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Replacement"}, origin)
+	status, value, reused := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Replacement"}, origin)
 	if status != 201 || reused != "0042" || value.(p.Admission).Identity.RoomId == a.Identity.RoomId {
 		t.Fatalf("released code did not identify a fresh room: %d %s %+v", status, reused, value)
 	}
-	status, _ = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+	status, _ = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 	if status != 410 {
 		t.Fatal("old credential recovered a reused code")
 	}
@@ -307,9 +306,9 @@ func TestExpiredEmptyRoomCodeIsImmediatelyReusableWithNewIdentity(t *testing.T) 
 func TestBothChannelsInitializedJustBeforeGraceClearReservation(t *testing.T) {
 	now, advance := lifecycleClock()
 	s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
-	_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
+	_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	original := value.(p.Admission)
-	status, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: original.Credential}, origin)
+	status, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: original.Credential}, origin)
 	if status != 201 {
 		t.Fatal(status)
 	}
@@ -317,7 +316,7 @@ func TestBothChannelsInitializedJustBeforeGraceClearReservation(t *testing.T) {
 	advance(2*time.Second - time.Microsecond)
 	initializedPair(t, s, roots, replacement, true)
 	advance(time.Microsecond)
-	status, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: original.Credential}, origin)
+	status, value = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: original.Credential}, origin)
 	if status != 201 || value.(p.Admission).Identity.SeatSession != original.Identity.SeatSession {
 		t.Fatalf("fully initialized recovery did not clear reservation: %d %+v", status, value)
 	}
@@ -342,12 +341,12 @@ func TestSameInstantExplicitDeparturesReleaseBothSeats(t *testing.T) {
 				}
 			}
 			for _, a := range f.admissions {
-				status, _ := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+				status, _ := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 				if status != 410 {
 					t.Fatalf("departed seat recovered: %d", status)
 				}
 			}
-			status, _ := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: f.code, Name: "Guest"}, origin)
+			status, _ := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: f.code, Name: "Guest"}, origin)
 			if status != 404 {
 				t.Fatalf("empty room still joinable: %d", status)
 			}
@@ -364,7 +363,7 @@ func TestEqualTimeGraceAndDisconnectAreOrderIndependent(t *testing.T) {
 			roomState(t, f.sockets[0], func(r p.RoomState) bool { return r.Seats[1].Flags&4 != 0 })
 			f.advance(2 * time.Second)
 			sweepThroughAdmission := func() {
-				admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: make([]byte, 32)}, origin)
+				admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: make([]byte, 32)}, origin)
 			}
 			if expiryFirst {
 				sweepThroughAdmission()
@@ -373,7 +372,7 @@ func TestEqualTimeGraceAndDisconnectAreOrderIndependent(t *testing.T) {
 			f.games[0].CloseWithError(1, "equal-time disconnect")
 			// Replacement admission synchronously closes the old pair at the same clock
 			// instant, establishing disconnection even if QUIC/WS close delivery is pending.
-			status, value := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: f.admissions[0].Credential}, origin)
+			status, value := admit(t, f.server, f.client, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: f.admissions[0].Credential}, origin)
 			if status != 201 {
 				t.Fatalf("remaining reservation lost: %d %+v", status, value)
 			}
@@ -401,11 +400,11 @@ func TestPairedBaselineAcknowledgementMustPrecedeGrace(t *testing.T) {
 		t.Run(offset.String(), func(t *testing.T) {
 			now, advance := lifecycleClock()
 			s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
-			_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Driver"}, origin)
+			_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin)
 			a := value.(p.Admission)
 			pairAtReady(t, s, roots, a, false, nil, func() { advance(2*time.Second + offset) }, offset < 0)
 			if offset >= 0 {
-				status, _ := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 2, Credential: a.Credential}, origin)
+				status, _ := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: a.Credential}, origin)
 				if status != 410 {
 					t.Fatalf("late baseline acknowledgement revived reservation: %d", status)
 				}

@@ -1,3 +1,4 @@
+import { AdmissionOperationCreate, AdmissionOperationResume } from "@dashdevil/contracts/protocol";
 import { afterEach, expect, test, vi } from "vitest";
 import { PairedConnection } from "../../src/transport/PairedConnection";
 import { captureConfiguration } from "@dashdevil/simulation/config";
@@ -115,7 +116,7 @@ test("an essential room command fails the pair when the browser room queue is fu
     () => {},
   );
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     RoomSocket.latest.bufferedAmount = 262144;
     client.command(4, 1, 1, "Focus");
     expect(client.state.errors).toContain("Reliable room queue overflow");
@@ -153,7 +154,7 @@ test("a buffered essential room command fails within its queue-wait deadline", a
     () => {},
   );
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     RoomSocket.latest.bufferedAmount = 32;
     client.command(4, 1, 1, "Focus");
     await vi.advanceTimersByTimeAsync(600);
@@ -188,7 +189,7 @@ test("expired authority clears the unusable room and credential without inventin
   );
   const client = new PairedConnection({ server: "https://localhost:8443" }, () => {});
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const old = RoomSocket.latest;
     const room: RoomState = {
       identity,
@@ -213,7 +214,7 @@ test("expired authority clears the unusable room and credential without inventin
     expect(client.state.room).toBeUndefined();
     expect(client.state.outcome).toBeUndefined();
     expect(client.hasCredential).toBe(false);
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     old.onclose?.({ reason: "superseded" });
     old.onmessage?.({ data: wire.slice().buffer as ArrayBuffer });
     expect(client.state.status).toBe("Connecting");
@@ -259,14 +260,14 @@ test("a delayed input stream from a superseded pair cannot capture inputs for th
       }),
     );
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const old = Gameplay.instances[0];
     old.inputStream = new Promise((resolve) => {
       resolveOld = resolve;
     });
     initialize(old, 1);
     await vi.waitFor(() => expect(old.inputCalls).toBe(1));
-    await client.connect(2);
+    await client.connect(AdmissionOperationResume);
     const current = Gameplay.instances[1];
     initialize(current, 1);
     await vi.waitFor(() => expect(current.inputWrites).toHaveLength(1));
@@ -316,7 +317,7 @@ test("verified diagnostics count successful comparisons across recovery epochs, 
   );
   let releaseAck!: () => void;
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const gameplay = Gameplay.instances[0];
     let authority!: ReadableStreamDefaultController<Uint8Array>;
     gameplay.authority.enqueue(
@@ -437,7 +438,7 @@ test("stalled authoritative progress retains the seat credential for paired reco
   );
   const client = new PairedConnection({ server: "https://localhost:8443" }, () => {});
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const gameplay = Gameplay.instances[0];
     let authority!: ReadableStreamDefaultController<Uint8Array>;
     gameplay.authority.enqueue(

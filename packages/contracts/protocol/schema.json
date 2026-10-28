@@ -741,7 +741,7 @@
       {
         "name": "operation",
         "type": "u8",
-        "max": 2
+        "enum": "admissionOperation"
       },
       {
         "name": "version",
@@ -1535,7 +1535,7 @@
     "control": ["none", "left", "right", "NOS"],
     "inputIntent": ["press", "release", "refresh"],
     "disposition": ["accepted", "ignored", "rejected"],
-    "admissionOperation": ["create", "join", "resume"],
+    "admissionOperation": { "create": 0, "join": 1, "resume": 2 },
     "roomPhase": ["lobby", "countdown", "active", "ended"],
     "roomCommand": ["select-mode", "ready", "start", "leave", "focus"],
     "outcomeResult": ["player1-win", "player2-win", "tie", "abandoned"],

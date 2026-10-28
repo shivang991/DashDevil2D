@@ -1,3 +1,4 @@
+import { AdmissionOperationJoin } from "@dashdevil/contracts/protocol";
 import { useMemo, useState, type ComponentProps } from "react";
 import { RaceView } from "@/components/RaceView";
 import { playingFixture } from "@/stories/playingFixture";
@@ -88,7 +89,7 @@ export const JoinWithCode: Story = {
     await expect(canvas.getByRole("button", { name: "Join Room" })).toBeDisabled();
     await userEvent.type(canvas.getByLabelText("Room code"), "1234");
     await userEvent.click(canvas.getByRole("button", { name: "Join Room" }));
-    await expect(args.actions?.connect).toHaveBeenCalledWith(1, "1234");
+    await expect(args.actions?.connect).toHaveBeenCalledWith(AdmissionOperationJoin, "1234");
   },
 };
 

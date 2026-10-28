@@ -321,7 +321,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	}()
 	var participant *seat
 	switch request.Operation {
-	case 0, 1:
+	case p.AdmissionOperationCreate, p.AdmissionOperationJoin:
 		if s.draining {
 			s.mu.Unlock()
 			return s.failure(c, 503, 8, maintenanceMessage)
@@ -331,7 +331,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			return s.failure(c, 400, 2, "Invalid admission")
 		}
 		var r *room
-		if request.Operation == 0 {
+		if request.Operation == p.AdmissionOperationCreate {
 			if request.Code != "" {
 				s.mu.Unlock()
 				return s.failure(c, 400, 2, "Invalid room code")
@@ -435,7 +435,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		r.seats[index] = participant
 		r.idle = now.Add(roomDuration(r, "idleExpiry"))
 		s.credentials[token(credential)] = participant
-	case 2:
+	case p.AdmissionOperationResume:
 		if len(request.Credential) != 32 {
 			s.mu.Unlock()
 			return s.failure(c, 403, 2, "Admission rejected")

@@ -14,14 +14,45 @@ const scalars = {
   bytes: ["Uint8Array", "[]byte"],
 };
 const title = (s) => s[0].toUpperCase() + s.slice(1);
-const tsType = (f) => (scalars[f.type]?.[0] ?? f.type) + (f.array ? "[]" : "");
+const tsType = (f) =>
+  (f.enum ? title(f.enum) : (scalars[f.type]?.[0] ?? f.type)) + (f.array ? "[]" : "");
 const goType = (f) =>
-  (f.array ? (f.fixed ? `[${f.array}]` : "[]") : "") + (scalars[f.type]?.[1] ?? f.type);
+  (f.array ? (f.fixed ? `[${f.array}]` : "[]") : "") +
+  (f.enum ? title(f.enum) : (scalars[f.type]?.[1] ?? f.type));
+// Only explicitly assigned domains participate in this pilot. Legacy name arrays stay untouched.
+const domains = Object.entries(schema.enums).filter(([, values]) => !Array.isArray(values));
+for (const [name, values] of domains) {
+  const assignments = Object.values(values).sort((a, b) => a - b);
+  if (!assignments.length || assignments.some((value, index) => value !== index))
+    throw new Error(`${name}: expected unique contiguous numeric assignments from zero`);
+}
+const wireTypes = Object.fromEntries(
+  Object.entries(schema.types).map(([name, fields]) => [
+    name,
+    fields.map((f) => {
+      if (!f.enum) return f;
+      const domain = schema.enums[f.enum];
+      if (!domain || Array.isArray(domain) || f.type !== "u8" || Object.keys(domain).length > 256)
+        throw new Error(`${name}.${f.name}: invalid enum domain`);
+      const wire = { ...f, max: Math.max(...Object.values(domain)) };
+      delete wire.enum;
+      return wire;
+    }),
+  ]),
+);
 let ts = "// Generated from protocol/schema.json. Run pnpm generate; do not edit.\n";
 ts +=
   "import { encodeRecord, decodeRecord, encodeFrame, decodeFrame, projectRecord } from '../protocol/runtime';\n";
 ts += `export const protocolVersion = ${schema.version};\n`;
-ts += `export const layouts = ${JSON.stringify(schema.types, null, 2)} as const;\n`;
+for (const [name, values] of domains) {
+  const domain = title(name);
+  for (const [member, value] of Object.entries(values))
+    ts += `export const ${domain}${title(member)} = ${value};\n`;
+  ts += `export type ${domain} = ${Object.keys(values)
+    .map((member) => `typeof ${domain}${title(member)}`)
+    .join(" | ")};\n`;
+}
+ts += `export const layouts = ${JSON.stringify(wireTypes, null, 2)} as const;\n`;
 for (const [name, fields] of Object.entries(schema.types)) {
   ts += `export interface ${name} {\n${fields.map((f) => `  ${f.name}: ${tsType(f)};`).join("\n")}\n}\n`;
   ts += `export function encode${name}(value: ${name}, limit = 1048576): Uint8Array { return encodeRecord(layouts, '${name}', value, limit); }\n`;
@@ -37,8 +68,15 @@ ts += `export function projectBaseline(value: Baseline): Uint8Array { return pro
 let go = "// Code generated from protocol/schema.json; DO NOT EDIT.\npackage protocol\n\n";
 go += `const DefaultConfigurationJSON = ${JSON.stringify(readFileSync(new URL("../configuration/defaults.json", import.meta.url), "utf8"))}\n`;
 go += `const ProtocolVersion uint16 = ${schema.version}\n`;
+for (const [name, values] of domains) {
+  const domain = title(name);
+  go += `type ${domain} uint8\nconst (\n`;
+  for (const [member, value] of Object.entries(values))
+    go += `${domain}${title(member)} ${domain} = ${value}\n`;
+  go += ")\n";
+}
 go += "var layouts = map[string][]field{\n";
-for (const [name, fields] of Object.entries(schema.types))
+for (const [name, fields] of Object.entries(wireTypes))
   go += `"${name}": {${fields.map((f) => `{Name: "${title(f.name)}", Type: "${f.type}", Array: ${f.array ?? 0}, Fixed: ${f.fixed ?? false}, Max: ${f.max ?? 0}, Mask: ${f.mask ?? 0}, Projection: ${f.projection ?? false}, Bits: ${f.bits ?? 0}}`).join(",")}},\n`;
 go += "}\n";
 for (const [name, fields] of Object.entries(schema.types)) {

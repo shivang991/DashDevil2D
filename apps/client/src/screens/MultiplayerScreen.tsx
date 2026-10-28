@@ -1,3 +1,4 @@
+import { AdmissionOperationResume } from "@dashdevil/contracts/protocol";
 import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -34,7 +35,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
         setClient(client);
         setState({ ...client.state });
         focus();
-        if (client.hasCredential) await client.connect(2);
+        if (client.hasCredential) await client.connect(AdmissionOperationResume);
       } catch (failure) {
         if (!disposed) setError(String(failure instanceof Error ? failure.message : failure));
       }

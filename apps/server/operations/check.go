@@ -116,7 +116,7 @@ func Public(ctx context.Context, origin string, tlsConfig *tls.Config) error {
 	if readErr != nil || response.StatusCode != 200 || !bytes.Contains(bytes.ToLower(body), []byte("<html")) {
 		return errors.New("public client assets unavailable")
 	}
-	wire, err := p.EncodeMessage(p.AdmissionRequest{Version: 0}, 65536)
+	wire, err := p.EncodeMessage(p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: 0}, 65536)
 	if err != nil {
 		return err
 	}
