@@ -14,7 +14,7 @@ func TestMaintenanceRejectsNewAdmissionsButAllowsReservedSeatRecovery(t *testing
 	if err := s.BeginDrain(3 * time.Minute); err != nil {
 		t.Fatal(err)
 	}
-	for _, request := range []p.AdmissionRequest{{Version: p.ProtocolVersion, Name: "New host"}, {Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}} {
+	for _, request := range []p.AdmissionRequest{{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "New host"}, {Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}} {
 		status, value := admit(t, s, c, request, origin)
 		problem, ok := value.(p.ProtocolError)
 		if status != 503 || !ok || problem.Detail != "Server maintenance. Try again later." {

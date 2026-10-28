@@ -29,9 +29,11 @@ test("two admitted browser seats verify real streams/datagrams and recover eithe
         .toBeGreaterThan(0);
     }
     await pages[0].getByRole("button", { name: "Request fresh baseline", exact: true }).click();
+    // Two 1065-byte baselines: protocol 3 adds an 8-byte roundOverDelay to each
+    // historical 1057-byte diagnostic baseline (2114 + 2 * 8 = 2130).
     await expect
       .poll(async () => JSON.parse(await pages[0].locator("#evidence").innerText()).baselineBytes)
-      .toBe(2114);
+      .toBe(2130);
     await expect(pages[0].getByTestId("status")).toHaveText("Connected");
     const sessions = await Promise.all(pages.map((p) => p.getByTestId("seat-session").innerText()));
     for (const channel of ["room", "gameplay"]) {
