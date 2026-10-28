@@ -1,7 +1,7 @@
 import { expect, test, vi } from "vitest";
 import { advanceLongDrive, createLongDrive } from "@dashdevil/simulation/longDrive";
 import { captureConfiguration, renderingConfig } from "@dashdevil/simulation/config";
-import { renderLongDrive } from "../../src/lib/gameRenderer";
+import { LongDriveDrawing } from "../../src/lib/gameRenderer";
 import { Multiplayer } from "@dashdevil/simulation/multiplayer";
 import { multiplayerRoadScale } from "../../src/lib/roadProjection";
 import { drawCar, drawObstacle } from "../../src/lib/renderUtils";
@@ -28,12 +28,11 @@ for (const accelerating of [false, true])
         carY: height - config.carHeight - config.carBottomMargin,
       });
       advanceLongDrive(game, 1, { accelerating });
-      renderLongDrive(
+      new LongDriveDrawing(config).draw(
         { save: vi.fn(), restore: vi.fn(), scale: vi.fn() } as unknown as CanvasRenderingContext2D,
         606,
         height,
         game.state,
-        config,
       );
       const call = vi.mocked(drawObstacle).mock.lastCall!;
       expect(call[2] + call[4]).toBeLessThanOrEqual(0.000001);
@@ -94,6 +93,7 @@ for (const availableHeight of [600, 806, 1440, 2160])
         carOffset: offset,
         obstacles: [{ id: 1, lane: 0, distance: 900, y: 0, width: 48, height: 40 }],
       });
+      const drawing = new LongDriveDrawing(config);
       let scale = 1;
       const ctx = {
         save: vi.fn(),
@@ -106,7 +106,7 @@ for (const availableHeight of [600, 806, 1440, 2160])
       for (let progress = 0; progress <= 1100; progress += 5) {
         game.state.roadOffset = progress;
         scale = 1;
-        renderLongDrive(ctx, 606, height, game.state, config);
+        drawing.draw(ctx, 606, height, game.state);
         positions.push(vi.mocked(drawObstacle).mock.lastCall![2] * scale);
       }
       expect(positions[0] + 40 * scale).toBeLessThan(0);
@@ -119,7 +119,7 @@ for (const availableHeight of [600, 806, 1440, 2160])
       const contact = (config.carHeight + 40) / 2;
       for (const distance of [contact, -contact]) {
         game.state.obstacles[0].distance = game.state.roadOffset + offset + distance;
-        renderLongDrive(ctx, 606, height, game.state, config);
+        drawing.draw(ctx, 606, height, game.state);
         const obstacle = vi.mocked(drawObstacle).mock.lastCall!;
         const car = vi.mocked(drawCar).mock.lastCall!;
         if (distance > 0) expect(obstacle[2] + obstacle[4]).toBeCloseTo(car[2].carY, 8);
@@ -147,6 +147,6 @@ test("Long Drive never stretches the canvas or sprite proportions", () => {
   const game = createLongDrive(1);
   const scale = vi.fn();
   const ctx = { save: vi.fn(), restore: vi.fn(), scale } as unknown as CanvasRenderingContext2D;
-  renderLongDrive(ctx, 606, 2160, game.state);
+  new LongDriveDrawing().draw(ctx, 606, 2160, game.state);
   expect(scale).not.toHaveBeenCalled();
 });
