@@ -1,3 +1,4 @@
+import { AdmissionOperationCreate, AdmissionOperationJoin } from "@dashdevil/contracts/protocol";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
 import defaults from "@dashdevil/contracts/configuration";
@@ -224,7 +225,7 @@ export function MultiplayerView({
               <Button
                 className="multiplayer-action"
                 disabled={!state || pending}
-                onClick={() => void actions?.connect(0, "", selectedMode)}
+                onClick={() => void actions?.connect(AdmissionOperationCreate, "", selectedMode)}
               >
                 {state?.pending === "Creating room" ? (
                   <>
@@ -486,7 +487,8 @@ export function MultiplayerView({
               className="multiplayer-join-form"
               onSubmit={(event) => {
                 event.preventDefault();
-                if (/^\d{4}$/.test(code) && !pending && state) void actions?.connect(1, code);
+                if (/^\d{4}$/.test(code) && !pending && state)
+                  void actions?.connect(AdmissionOperationJoin, code);
               }}
             >
               <label htmlFor="room-code">Room code</label>

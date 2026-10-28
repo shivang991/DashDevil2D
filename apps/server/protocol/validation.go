@@ -291,10 +291,10 @@ func ValidateMessage(value any, context Context) error {
 				code = false
 			}
 		}
-		if x.Operation != 0 && !code {
+		if x.Operation != AdmissionOperationCreate && !code {
 			return invalid("four-digit room code required")
 		}
-		return require(x.Operation != 2 || len(x.Credential) == 32, "resume credential must be 256 bits")
+		return require(x.Operation != AdmissionOperationResume || len(x.Credential) == 32, "resume credential must be 256 bits")
 	case Input:
 		if x.Sequence == 0 || x.Intent == 0 && x.Control == 0 {
 			return invalid("fresh input sequence/control")

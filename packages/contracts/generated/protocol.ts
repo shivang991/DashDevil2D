@@ -1,6 +1,10 @@
 // Generated from protocol/schema.json. Run pnpm generate; do not edit.
 import { encodeRecord, decodeRecord, encodeFrame, decodeFrame, projectRecord } from '../protocol/runtime';
 export const protocolVersion = 3;
+export const AdmissionOperationCreate = 0;
+export const AdmissionOperationJoin = 1;
+export const AdmissionOperationResume = 2;
+export type AdmissionOperation = typeof AdmissionOperationCreate | typeof AdmissionOperationJoin | typeof AdmissionOperationResume;
 export const layouts = {
   "Identity": [
     {
@@ -1668,7 +1672,7 @@ export interface Seat {
 export function encodeSeat(value: Seat, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'Seat', value, limit); }
 export function decodeSeat(bytes: Uint8Array, limit = 1048576): Seat { return decodeRecord(layouts, 'Seat', bytes, limit) as Seat; }
 export interface AdmissionRequest {
-  operation: number;
+  operation: AdmissionOperation;
   version: number;
   code: string;
   name: string;

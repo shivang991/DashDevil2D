@@ -4,6 +4,14 @@ package protocol
 const DefaultConfigurationJSON = "{\n  \"version\": 1,\n  \"units\": {\n    \"distance\": \"world units\",\n    \"speed\": \"world units/second\",\n    \"duration\": \"seconds\",\n    \"rate\": \"inverse seconds\",\n    \"tickRate\": \"Hz\",\n    \"size\": \"bytes\"\n  },\n  \"fixed\": {\n    \"laneCount\": 3,\n    \"coinScore\": 10,\n    \"heartHealing\": 1,\n    \"predictionHorizon\": 1,\n    \"verificationDatagramBytes\": 10\n  },\n  \"gameplay\": {\n    \"long-drive\": {\n      \"maxHealth\": 2,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 10,\n      \"invincibleDuration\": 2.0,\n      \"laneLerpSpeed\": 10,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"minSpawnInterval\": 0.35,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"difficultyRampInterval\": 1,\n      \"roadSpeedIncrement\": 15,\n      \"maxRoadSpeed\": 900,\n      \"spawnIntervalDecrement\": 0.03,\n      \"startingRoadSpeed\": 400,\n      \"initialSpawnInterval\": 1,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 55,\n      \"coinWeight\": 45,\n      \"heartWeight\": 0\n    },\n    \"drag-race\": {\n      \"maxHealth\": 3,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 2,\n      \"invincibleDuration\": 0,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"maxRoadSpeed\": 400,\n      \"startingRoadSpeed\": 400,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 1,\n      \"coinWeight\": 0,\n      \"heartWeight\": 0,\n      \"tickRate\": 60,\n      \"speedGrowth\": 0,\n      \"laneShiftDuration\": 0.15,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"laneReturnDuration\": 0.15,\n      \"sliceSpacing\": 400,\n      \"initialClearDistance\": 800,\n      \"countdownDuration\": 3,\n      \"finishDistance\": 24000,\n      \"reservedHearts\": 4,\n      \"heartExclusionDistance\": 200\n    },\n    \"road-rage\": {\n      \"maxHealth\": 3,\n      \"carWidth\": 50,\n      \"carHeight\": 80,\n      \"accelSpeedMultiplier\": 2,\n      \"invincibleDuration\": 2,\n      \"coinSize\": 28,\n      \"obstacleW\": 48,\n      \"obstacleH\": 40,\n      \"maxRoadSpeed\": 400,\n      \"startingRoadSpeed\": 400,\n      \"obstacleDamage\": 1,\n      \"laneSpacing\": 120,\n      \"heartSize\": 28,\n      \"emptyWeight\": 0,\n      \"obstacleWeight\": 1,\n      \"coinWeight\": 0,\n      \"heartWeight\": 0,\n      \"tickRate\": 60,\n      \"speedGrowth\": 0,\n      \"laneShiftDuration\": 0.15,\n      \"laneSwitchCooldownDuration\": 0.15,\n      \"laneReturnDuration\": 0.15,\n      \"sliceSpacing\": 400,\n      \"initialClearDistance\": 800,\n      \"countdownDuration\": 3,\n      \"playerContactDamage\": 1,\n      \"timeLimit\": 120\n    }\n  },\n  \"presentation\": {\n    \"carBottomMargin\": 40,\n    \"accelCarOffset\": 80,\n    \"accelLerpSpeed\": 8,\n    \"blinkCount\": 3,\n    \"shakeDuration\": 0.5,\n    \"shakeIntensity\": 24,\n    \"narrowScreenWidth\": 320,\n    \"roadWidthRatioNarrow\": 1.0,\n    \"roadWidthRatioNormal\": 0.6,\n    \"carTiltMaxAngle\": 1,\n    \"carTiltLerpSpeed\": 12,\n    \"gameOverFadeMaxOpacity\": 0.75,\n    \"gameOverShakeMultiplier\": 1.5,\n    \"gameOverShakeDuration\": 0.5,\n    \"gameOverFadeSpeed\": 2,\n    \"correctionSmoothing\": 0.1,\n    \"roundOverDelay\": 1\n  },\n  \"room\": {\n    \"reconnectGrace\": 15,\n    \"idleExpiry\": 900,\n    \"idleWarning\": 60\n  },\n  \"connection\": {\n    \"verificationInterval\": 0.1,\n    \"controlRefreshInterval\": 0.25,\n    \"controlFreshnessExpiry\": 1,\n    \"replayHistory\": 2,\n    \"clockSyncInterval\": 1,\n    \"clockSamples\": 8,\n    \"reliableFrameBytes\": 65536,\n    \"baselineBytes\": 1048576,\n    \"queueBytes\": 262144,\n    \"queueMessages\": 512,\n    \"essentialQueueWait\": 0.5,\n    \"essentialProgressDeadline\": 1,\n    \"inputRate\": 60,\n    \"inputBurst\": 120,\n    \"clockRequestRate\": 2,\n    \"recoveryRequestRate\": 1,\n    \"admissionTicketLifetime\": 30,\n    \"networkBytesPerSecond\": 16384,\n    \"networkBudgetWindow\": 60\n  },\n  \"operational\": {\n    \"simulationLagThreshold\": 1\n  }\n}\n"
 const ProtocolVersion uint16 = 3
 
+type AdmissionOperation uint8
+
+const (
+	AdmissionOperationCreate AdmissionOperation = 0
+	AdmissionOperationJoin   AdmissionOperation = 1
+	AdmissionOperationResume AdmissionOperation = 2
+)
+
 var layouts = map[string][]field{
 	"Identity":           {{Name: "RoomId", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "SeatSession", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "PairGeneration", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Seat", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}},
 	"Round":              {{Name: "RoundId", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "InputGeneration", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
@@ -416,11 +424,11 @@ func DecodeSeat(bytes []byte, limit int) (Seat, error) {
 }
 
 type AdmissionRequest struct {
-	Operation  uint8  `json:"operation"`
-	Version    uint16 `json:"version"`
-	Code       string `json:"code"`
-	Name       string `json:"name"`
-	Credential []byte `json:"credential"`
+	Operation  AdmissionOperation `json:"operation"`
+	Version    uint16             `json:"version"`
+	Code       string             `json:"code"`
+	Name       string             `json:"name"`
+	Credential []byte             `json:"credential"`
 }
 
 func EncodeAdmissionRequest(value AdmissionRequest, limit int) ([]byte, error) {

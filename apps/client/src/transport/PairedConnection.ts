@@ -1,3 +1,9 @@
+import {
+  AdmissionOperationCreate,
+  AdmissionOperationJoin,
+  AdmissionOperationResume,
+  type AdmissionOperation,
+} from "@dashdevil/contracts/protocol";
 import { localName } from "./localName";
 import { AuthoritativeRoundState, type AuthorityEffect } from "@/game/AuthoritativeRoundState";
 import {
@@ -191,7 +197,7 @@ export class PairedConnection {
         this.recoverUntil =
           performance.now() + (this.state.context?.room.reconnectGrace ?? 15) * 1000;
       if (performance.now() < this.recoverUntil)
-        this.recoveryTimer = setTimeout(() => void this.connect(2), 500);
+        this.recoveryTimer = setTimeout(() => void this.connect(AdmissionOperationResume), 500);
     }
   }
   private teardown() {
@@ -222,20 +228,24 @@ export class PairedConnection {
     this.queuedMessages = 0;
     this.roomWrites = [];
   }
-  async connect(operation: 0 | 1 | 2, code = "", mode: 1 | 2 = 1): Promise<void> {
+  async connect(operation: AdmissionOperation, code = "", mode: 1 | 2 = 1): Promise<void> {
     this.teardown();
     this.terminal = false;
     const generation = this.generation;
     // Keep the last view visible and frozen while an authenticated seat recovers.
     // Input remains barred until the new pair has installed current authority.
-    const retained = operation === 2 ? this.state : undefined;
+    const retained = operation === AdmissionOperationResume ? this.state : undefined;
     this.state = {
       ...emptyState(),
       ...retained,
       code: retained?.code ?? code,
       errors: this.state.errors,
       pending:
-        operation === 0 ? "Creating room" : operation === 1 ? "Joining room" : "Recovering room",
+        operation === AdmissionOperationCreate
+          ? "Creating room"
+          : operation === AdmissionOperationJoin
+            ? "Joining room"
+            : "Recovering room",
     };
     this.pulseSequence = 0;
     this.publish();
@@ -253,7 +263,7 @@ export class PairedConnection {
     this.publish();
     try {
       const response = await fetch(
-        `${this.options.server}/admission${operation === 0 && !this.options.diagnostic ? `?mode=${mode}` : ""}`,
+        `${this.options.server}/admission${operation === AdmissionOperationCreate && !this.options.diagnostic ? `?mode=${mode}` : ""}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/octet-stream" },
@@ -262,8 +272,9 @@ export class PairedConnection {
             operation,
             version: protocolVersion,
             code,
-            name: operation === 2 ? "" : localName(),
-            credential: operation === 2 ? this.credential() : new Uint8Array(),
+            name: operation === AdmissionOperationResume ? "" : localName(),
+            credential:
+              operation === AdmissionOperationResume ? this.credential() : new Uint8Array(),
           }) as Uint8Array<ArrayBuffer>,
         },
       );

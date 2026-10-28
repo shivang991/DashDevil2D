@@ -1,5 +1,7 @@
 import {
   protocolVersion,
+  AdmissionOperationCreate,
+  AdmissionOperationResume,
   layouts,
   encodeBaseline,
   encodeContext,
@@ -493,11 +495,11 @@ export function validateMessage<K extends keyof import("../generated/protocol").
     );
   if (type === "AdmissionRequest") {
     requireState(
-      v.operation === 0 || (v.code as string).match(/^\d{4}$/) !== null,
+      v.operation === AdmissionOperationCreate || (v.code as string).match(/^\d{4}$/) !== null,
       "four-digit room code required",
     );
     requireState(
-      v.operation !== 2 || (v.credential as Uint8Array).length === 32,
+      v.operation !== AdmissionOperationResume || (v.credential as Uint8Array).length === 32,
       "resume credential must be 256 bits",
     );
   }

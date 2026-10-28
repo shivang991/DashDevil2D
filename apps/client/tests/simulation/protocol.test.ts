@@ -330,3 +330,45 @@ for (const scenario of fixtures.semanticInvalid)
     const value = hydrate("Baseline", scenario.value) as Baseline;
     expect(() => validateBaseline(value, value.context)).toThrow();
   });
+
+import {
+  AdmissionOperationCreate,
+  AdmissionOperationJoin,
+  AdmissionOperationResume,
+  type AdmissionOperation,
+} from "@dashdevil/contracts/protocol";
+
+describe("named admission operations preserve literal wire assignments", () => {
+  it.each<[AdmissionOperation, string]>([
+    [AdmissionOperationCreate, "000000110100000300000000000000014100000000"],
+    [AdmissionOperationJoin, "00000015010100030000000430313233000000014100000000"],
+    [AdmissionOperationResume, "000000110102000300000000000000014100000000"],
+  ])("round trips operation %i with independently authored bytes", (operation, hex) => {
+    const value = {
+      operation,
+      version: 3,
+      code: operation === AdmissionOperationJoin ? "0123" : "",
+      name: "A",
+      credential: new Uint8Array(),
+    };
+    const wire = Uint8Array.from(hex.match(/../g)!, (byte) => parseInt(byte, 16));
+    expect(encodeMessage("AdmissionRequest", value)).toEqual(wire);
+    expect(decodeMessage(wire)).toEqual({ type: "AdmissionRequest", value });
+  });
+  it("rejects an unknown operation on encode and decode", () => {
+    const wire = Uint8Array.from(
+      "000000110103000300000000000000014100000000".match(/../g)!,
+      (byte) => parseInt(byte, 16),
+    );
+    expect(() => decodeMessage(wire)).toThrow(/invalid enum/);
+    expect(() =>
+      encodeMessage("AdmissionRequest", {
+        operation: 3 as AdmissionOperation,
+        version: 3,
+        code: "",
+        name: "A",
+        credential: new Uint8Array(),
+      }),
+    ).toThrow();
+  });
+});
