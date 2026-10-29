@@ -1074,6 +1074,7 @@
       "seed": 1,
       "overrides": {
         "gameplay": {
+          "heartWeight": 0,
           "obstacleWeight": 0,
           "emptyWeight": 1
         }
