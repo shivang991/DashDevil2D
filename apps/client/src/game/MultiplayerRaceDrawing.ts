@@ -15,6 +15,13 @@ import { multiplayerRoadScale } from "@/lib/roadProjection";
 
 type DrawingFrame = Pick<ReturnType<RaceSession["frame"]>, "cars" | "renderedCars" | "objects">;
 
+/** The synchronized three-second countdown spends its first 1.5s revealing the grid. */
+export function countdownReveal(remainingUs: number, reducedMotion = false): number {
+  if (reducedMotion) return 1;
+  const progress = Math.max(0, Math.min(1, (3_000_000 - remainingUs) / 1_500_000));
+  return progress * progress * (3 - 2 * progress);
+}
+
 /** One instance per drawing lifetime; replacing it clears damage cue history. */
 export class MultiplayerRaceDrawing {
   private readonly previousHp: number[] = [];
@@ -33,10 +40,22 @@ export class MultiplayerRaceDrawing {
     height: number,
     view: DrawingFrame,
     time: number,
+    reveal = 1,
   ): void {
     const { context, local } = this;
     const g = context.gameplay,
       scale = width / (g.laneSpacing * 3.9);
+    // Zoom into the existing projection so the intro never exposes ungenerated road.
+    const close = 1 - Math.max(0, Math.min(1, reveal));
+    if (close > 0) {
+      const x = width / 2 + view.renderedCars[local].lateral * scale;
+      const y = height * 0.76;
+      const zoom = 1 + 1.4 * close;
+      ctx.save();
+      ctx.translate(x + (width / 2 - x) * close, y + (height * 0.56 - y) * close);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-x, -y);
+    }
     const camera = view.renderedCars[local].progress;
     const roadScale = multiplayerRoadScale(
       scale,
@@ -168,5 +187,6 @@ export class MultiplayerRaceDrawing {
       ctx.textAlign = "center";
       ctx.fillText(seat === local ? "You" : "Rival", x, cy + (g.carHeight * roadScale) / 2 + 20);
     });
+    if (close > 0) ctx.restore();
   }
 }

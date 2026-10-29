@@ -41,7 +41,11 @@ interface MultiplayerViewProps {
   clock: number;
   focused: boolean;
   actions?: Pick<PairedConnection, "connect" | "command" | "leave" | "releaseControls">;
-  renderRace?: (props: { suspended: boolean; onLeave: () => void }) => ReactNode;
+  renderRace?: (props: {
+    suspended: boolean;
+    countdown?: number;
+    onLeave: () => void;
+  }) => ReactNode;
 }
 
 /** Transport-free view shared by the live screen and isolated stories. */
@@ -120,14 +124,15 @@ export function MultiplayerView({
   }, [resultKey, outcomeReceivedUs, resultDelayMs]);
   const waitingForOther = room?.phase === RoomPhaseEnded && returned;
   const countdown = room?.phase === RoomPhaseCountdown && !finalized;
-  const showCountdown = inRoom && countdown && connected;
   const active = room?.phase === RoomPhaseActive;
   const race =
-    (active ||
+    (countdown ||
+      active ||
       (room?.phase === RoomPhaseEnded && !returned) ||
       (finalized && room?.phase !== RoomPhaseLobby && !returned)) &&
     (room?.mode === ModeDragRace || room?.mode === ModeRoadRage);
   const installed = room && state?.roundId === room.roundId && state?.startUs === room.startUs;
+  const previewReady = countdown && installed && Boolean(renderRace);
   const remaining = room
     ? Math.max(
         1,
@@ -207,7 +212,13 @@ export function MultiplayerView({
       className={race ? "multiplayer-match bg-neutral-950 text-white" : "multiplayer-screen"}
       onKeyDown={(event) => {
         if (event.key !== "Escape" || event.repeat || event.defaultPrevented) return;
-        if (showJoin || showCountdown || confirmLeave || race) return;
+        if (showJoin || confirmLeave) return;
+        if (countdown) {
+          event.preventDefault();
+          requestLeave();
+          return;
+        }
+        if (race) return;
         if (inRoom) requestLeave();
         else if (!pending) onBack();
       }}
@@ -378,14 +389,27 @@ export function MultiplayerView({
                 </p>
               </>
             )}
-            {countdown ? null : race ? (
-              renderRace ? (
+            {race ? (
+              renderRace && (!countdown || previewReady) ? (
                 renderRace({
-                  suspended: confirmLeave || state?.status !== "Connected",
+                  suspended: countdown || confirmLeave || state?.status !== "Connected",
+                  countdown: countdown ? remaining : undefined,
                   onLeave: requestLeave,
                 })
               ) : (
-                <p>Synchronizing…</p>
+                <div className="multiplayer-countdown-pending" role="status">
+                  {countdown && connected && (
+                    <p className="multiplayer-countdown" data-testid="countdown">
+                      {remaining}
+                    </p>
+                  )}
+                  <p data-testid="connection-state">
+                    {!connected ? state?.status : countdown ? "Preparing round…" : "Synchronizing…"}
+                  </p>
+                  <button className="multiplayer-text-button" onClick={requestLeave}>
+                    Leave
+                  </button>
+                </div>
               )
             ) : active ? (
               <p>{installed ? "Players synchronized." : "Synchronizing…"}</p>
@@ -568,26 +592,6 @@ export function MultiplayerView({
             </form>
           </>
         )}
-      </MultiplayerDialog>
-      <MultiplayerDialog
-        open={Boolean(showCountdown && !confirmLeave)}
-        title="Starting"
-        description="The race starts after the countdown."
-        onDismiss={requestLeave}
-        returnFocus={main}
-      >
-        <p
-          className="multiplayer-countdown"
-          data-testid="countdown"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {remaining}
-        </p>
-        <p className="multiplayer-note">{installed ? "Get ready!" : "Preparing round…"}</p>
-        <button className="multiplayer-text-button" onClick={requestLeave}>
-          Leave
-        </button>
       </MultiplayerDialog>
       <MultiplayerDialog
         open={confirmLeave && inRoom && (!race || !state?.outcome)}

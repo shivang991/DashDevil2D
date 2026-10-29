@@ -58,7 +58,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: MultiplayerMode; onB
     };
   }, []);
 
-  // Countdown lives in the lobby; RaceView takes over playback when racing starts.
+  // Countdown cues precede RaceView playback at the synchronized race start.
   const countdownPlayer = useRef<GameAudio | undefined>(undefined);
   const previousCount = useRef<string | undefined>(undefined);
   useEffect(() => {
@@ -98,7 +98,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: MultiplayerMode; onB
       focused={!document.hidden && document.hasFocus()}
       renderRace={
         client && state?.context
-          ? (props) => <RaceView connection={client} state={state} {...props} />
+          ? (props) => <RaceView key={state.roundId} connection={client} state={state} {...props} />
           : undefined
       }
     />

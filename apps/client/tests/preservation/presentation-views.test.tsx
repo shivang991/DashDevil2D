@@ -77,7 +77,8 @@ test("leave confirmation focuses cancel and resets on a server outcome", () => {
   act(() => vi.advanceTimersByTime(1000));
   expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Round Over");
   render();
-  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Starting");
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  expect(host.querySelector('[data-testid="countdown"]')?.textContent).toBe("3");
   expect(actions.leave).not.toHaveBeenCalled();
 });
 
@@ -382,7 +383,8 @@ test("lobby exit always confirms, including with a previous result, and explains
 
 test("server countdown cancellation returns to lobby with feedback and no ready checks", () => {
   const props = renderMultiplayer({ state: { ...lobby, room: { ...room, phase: 1 } } });
-  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Starting");
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
+  expect(host.querySelector('[data-testid="countdown"]')?.textContent).toBe("3");
   renderMultiplayer({ ...props, state: { ...props.state, status: "Reconnecting" } });
   expect(host.querySelector('[role="dialog"]')).toBeNull();
   expect(host.querySelector('[data-testid="connection-state"]')?.textContent).toBe("Reconnecting");
@@ -400,4 +402,45 @@ test("server countdown cancellation returns to lobby with feedback and no ready 
   );
   expect(host.querySelectorAll('svg[aria-label="Ready"]')).toHaveLength(0);
   expect(getButton("Ready").disabled).toBe(false);
+});
+
+test("countdown mounts the installed race, retains it at Go, and resets after cancellation", () => {
+  const context = configurationContext(captureConfiguration("drag-race"), 1, room.startUs);
+  const state = {
+    ...lobby,
+    context,
+    roundId: room.roundId,
+    startUs: room.startUs,
+    room: { ...room, phase: 1 as const },
+  };
+  const renderRace = vi.fn(() => <canvas aria-label="Race preview" />);
+  const props = renderMultiplayer({ state, renderRace });
+  const canvas = host.querySelector("canvas");
+  expect(canvas).not.toBeNull();
+  act(() => canvas!.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
+  expect(host.querySelector('[role="dialog"]')?.textContent).toContain("Leave room?");
+  clickButton("Cancel");
+  expect(renderRace).toHaveBeenLastCalledWith(
+    expect.objectContaining({ countdown: 3, suspended: true }),
+  );
+  renderMultiplayer({ ...props, clock: 2_100_000 });
+  expect(renderRace).toHaveBeenLastCalledWith(
+    expect.objectContaining({ countdown: 1, suspended: true }),
+  );
+  renderMultiplayer({ ...props, state: { ...state, room: { ...state.room, phase: 2 } } });
+  expect(host.querySelector("canvas")).toBe(canvas);
+  expect(renderRace).toHaveBeenLastCalledWith(
+    expect.objectContaining({ countdown: undefined, suspended: false }),
+  );
+  renderMultiplayer({ ...props, state: lobby });
+  expect(host.querySelector("canvas")).toBeNull();
+  renderRace.mockClear();
+  renderMultiplayer({ ...props, state: { ...state, roundId: undefined } });
+  expect(renderRace).not.toHaveBeenCalled();
+  expect(host.textContent).toContain("Preparing round");
+  renderMultiplayer(props);
+  expect(host.querySelector("canvas")).not.toBe(canvas);
+  expect(renderRace).toHaveBeenLastCalledWith(
+    expect.objectContaining({ countdown: 3, suspended: true }),
+  );
 });

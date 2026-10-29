@@ -4,7 +4,8 @@ import { expect, test, vi } from "vitest";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
 import { RaceSession } from "../../src/game/RaceSession";
-import { MultiplayerRaceDrawing } from "../../src/game/MultiplayerRaceDrawing";
+import { countdownReveal, MultiplayerRaceDrawing } from "../../src/game/MultiplayerRaceDrawing";
+import { RaceAudio } from "../../src/game/RaceAudio";
 import { RaceView } from "../../src/components/RaceView";
 import type { PairedState } from "../../src/transport/PairedConnection";
 
@@ -21,6 +22,7 @@ function fixture(mode: "drag-race" | "road-rage" = "drag-race") {
     fillRect,
     fillText,
     rotate,
+    scale: vi.fn(),
     save: vi.fn(),
     restore: vi.fn(),
     translate: vi.fn(),
@@ -287,3 +289,112 @@ test("RaceView reuses drawing history, acquires each frame once, and cancels on 
     cancel.mockRestore();
   }
 });
+
+test("intro follows the countdown deadline, holds its final view, and respects reduced motion", () => {
+  expect(countdownReveal(4_000_000)).toBe(0);
+  expect(countdownReveal(3_000_000)).toBe(0);
+  expect(countdownReveal(2_250_000)).toBe(0.5);
+  expect(countdownReveal(1_500_000)).toBe(1);
+  expect(countdownReveal(0)).toBe(1);
+  expect(countdownReveal(-1_000_000)).toBe(1);
+  expect(countdownReveal(3_000_000, true)).toBe(1);
+});
+
+for (const seat of [0, 1])
+  test(`intro centers seat ${seat} and finishes at the unchanged gameplay projection`, () => {
+    const { context, frame, ctx } = fixture();
+    const drawing = new MultiplayerRaceDrawing(context, seat);
+    drawing.draw(ctx, 560, 600, frame, 0, 0);
+    expect(ctx.scale).toHaveBeenCalledWith(2.4, 2.4);
+    expect(ctx.translate).toHaveBeenNthCalledWith(1, 280, expect.closeTo(336));
+    vi.mocked(ctx.scale).mockClear();
+    vi.mocked(ctx.translate).mockClear();
+    drawing.draw(ctx, 560, 600, frame, 1500, 1);
+    expect(ctx.scale).not.toHaveBeenCalled();
+    // Only the normal per-car transforms remain.
+    expect(ctx.translate).toHaveBeenCalledTimes(4);
+  });
+
+for (const reduced of [false, true])
+  test(`countdown retains canvas and drawing at Go, blocks input/audio; reduced motion ${reduced}`, () => {
+    const { context, baseline, frame, ctx } = fixture();
+    const connection = {
+      frame: vi.fn(() => frame),
+      input: vi.fn(),
+      releaseControls: vi.fn(),
+      recordDraw: vi.fn(),
+      recordResultCommit: vi.fn(),
+    };
+    const state = {
+      context,
+      identity: baseline.identity,
+      status: "Connected",
+      startUs: 3_000_000,
+      clockOffsetUs: 0,
+      roundId: 1,
+    } as PairedState;
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn(() => ({ matches: reduced, addEventListener: vi.fn(), removeEventListener: vi.fn() })),
+    );
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(ctx);
+    const drawingSpy = vi.spyOn(MultiplayerRaceDrawing.prototype, "draw");
+    const audioSpy = vi.spyOn(RaceAudio.prototype, "update").mockImplementation(() => {});
+    const focusSpy = vi.spyOn(document, "hasFocus").mockReturnValue(true);
+    const nowSpy = vi.spyOn(performance, "now").mockReturnValue(0);
+    let next: FrameRequestCallback;
+    const raf = vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
+      next = callback;
+      return 1;
+    });
+    const cancel = vi.spyOn(window, "cancelAnimationFrame").mockImplementation(() => {});
+    const host = document.createElement("div");
+    document.body.append(host);
+    const root = createRoot(host);
+    const render = (countdown?: number) =>
+      act(() =>
+        root.render(
+          createElement(RaceView, {
+            connection,
+            state,
+            countdown,
+            suspended: false,
+            onLeave: () => {},
+          }),
+        ),
+      );
+    try {
+      frame.stale = true;
+      render(3);
+      const canvas = host.querySelector("canvas");
+      act(() => next(100));
+      expect(drawingSpy.mock.calls[0][5] ?? 1).toBe(reduced ? 1 : 0);
+      expect(audioSpy).not.toHaveBeenCalled();
+      expect(host.textContent).not.toContain("Reconnecting");
+      act(() =>
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", code: "ArrowLeft" })),
+      );
+      expect(connection.input).not.toHaveBeenCalled();
+      nowSpy.mockReturnValue(2250);
+      render(1);
+      act(() => next(2250));
+      expect(drawingSpy.mock.calls[1][5] ?? 1).toBe(1);
+      frame.stale = false;
+      render();
+      act(() => next(3000));
+      expect(host.querySelector("canvas")).toBe(canvas);
+      expect(host.querySelector('[data-testid="countdown"]')).toBeNull();
+      expect(drawingSpy.mock.contexts[2]).toBe(drawingSpy.mock.contexts[0]);
+      expect(audioSpy).toHaveBeenCalledOnce();
+      act(() =>
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", code: "ArrowLeft" })),
+      );
+      expect(connection.input).toHaveBeenCalledOnce();
+    } finally {
+      act(() => root.unmount());
+      host.remove();
+      for (const spy of [contextSpy, drawingSpy, audioSpy, focusSpy, nowSpy, raf, cancel])
+        spy.mockRestore();
+      vi.unstubAllGlobals();
+    }
+  });
