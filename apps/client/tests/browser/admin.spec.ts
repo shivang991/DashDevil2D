@@ -32,8 +32,6 @@ test("admin creates, edits, resets and deletes users; normal accounts have no ad
     await driver.getByRole("button", { name: "Save password" }).click();
     await expect(driver.getByRole("button", { name: /Drag Race/ })).toBeEnabled();
     await expect(driver.getByRole("button", { name: "Admin", exact: true })).toHaveCount(0);
-    await page.getByRole("button", { name: "Dismiss password" }).click();
-    await expect(page.getByLabel("Temporary password", { exact: true })).toHaveCount(0);
     const row = page.getByRole("row").filter({ hasText: "Panel_Driver" });
     await row.getByRole("button", { name: "Edit", exact: true }).click();
     await page.getByLabel("Username", { exact: true }).fill("bad name");
@@ -48,8 +46,21 @@ test("admin creates, edits, resets and deletes users; normal accounts have no ad
         "base64",
       ),
     });
+    let release!: () => void;
+    const pendingSave = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    await page.route("**/api/account/admin/users/*/profile", async (route) => {
+      await pendingSave;
+      await route.continue();
+    });
     await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Copy password", exact: true })).toBeDisabled();
+    release();
     await expect(page.getByRole("status")).toContainText("Profile saved");
+    await page.unroute("**/api/account/admin/users/*/profile");
+    await page.getByRole("button", { name: "Dismiss password" }).click();
+    await expect(page.getByLabel("Temporary password", { exact: true })).toHaveCount(0);
     await driver.reload();
     await expect(driver.getByText("Panel_Renamed", { exact: true })).toBeVisible();
     await page

@@ -1,4 +1,5 @@
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { useAvatarDraft } from "./useAvatarDraft";
 import { AlertDialog } from "radix-ui";
 import { Avatar } from "@/components/Avatar";
 import { accountAPI, adminAPI, type Account, type ManagedUser } from "@/transport/account";
@@ -119,6 +120,7 @@ export function AdminScreen({
               <div className="flex gap-3">
                 <button
                   className={button}
+                  disabled={busy}
                   onClick={() =>
                     void run(async () => {
                       await navigator.clipboard.writeText(secret.password);
@@ -338,16 +340,7 @@ function ProfileEditor({
   onError: (error: string) => void;
 }) {
   const [username, setUsername] = useState(user.username);
-  const [avatar, setAvatar] = useState<string>();
-  const [preview, setPreview] = useState<string>();
-  const [reading, setReading] = useState(false);
-  const epoch = useRef(0);
-  useEffect(
-    () => () => {
-      epoch.current++;
-    },
-    [],
-  );
+  const { avatar, preview, reading, read, remove } = useAvatarDraft(onError);
   return (
     <form
       className="flex max-w-sm flex-col gap-3"
@@ -381,54 +374,16 @@ function ProfileEditor({
           type="file"
           accept="image/jpeg,image/png,image/webp"
           disabled={busy}
-          onChange={async (event) => {
+          onChange={(event) => {
             const file = event.target.files?.[0];
             event.target.value = "";
-            if (!file) return;
-            const current = ++epoch.current;
-            setReading(false);
-            onError("");
-            if (
-              file.size === 0 ||
-              file.size > 2 * 1024 * 1024 ||
-              !["image/jpeg", "image/png", "image/webp"].includes(file.type)
-            ) {
-              onError("Choose a JPEG, PNG, or WebP up to 2 MB");
-              return;
-            }
-            setReading(true);
-            try {
-              const data = await new Promise<string>((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(String(reader.result));
-                reader.onerror = () => reject(new Error("Unable to read avatar"));
-                reader.readAsDataURL(file);
-              });
-              if (epoch.current === current) {
-                setAvatar(data.split(",")[1]);
-                setPreview(data);
-              }
-            } catch {
-              if (epoch.current === current) onError("Unable to read avatar");
-            } finally {
-              if (epoch.current === current) setReading(false);
-            }
+            if (file) void read(file);
           }}
         />
       </label>
       <p className="text-xs text-neutral-400">JPEG, PNG, WebP · up to 2 MB</p>
       {(user.avatar || avatar) && (
-        <button
-          type="button"
-          className={button}
-          disabled={busy}
-          onClick={() => {
-            epoch.current++;
-            setReading(false);
-            setAvatar("");
-            setPreview(undefined);
-          }}
-        >
+        <button type="button" className={button} disabled={busy} onClick={remove}>
           Remove avatar
         </button>
       )}
