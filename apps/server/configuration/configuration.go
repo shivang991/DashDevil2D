@@ -29,10 +29,10 @@ func (c Configuration) Context(seed uint32) protocol.Context {
 	result.GenerationVersion = 1
 	result.Seed = seed
 	if c.mode == "drag-race" {
-		result.Mode = 1
+		result.Mode = protocol.ModeDragRace
 	}
 	if c.mode == "road-rage" {
-		result.Mode = 2
+		result.Mode = protocol.ModeRoadRage
 	}
 	return result
 }
@@ -196,7 +196,7 @@ func Capture(definition []byte, mode string, overrides []byte) (Configuration, e
 			return Configuration{}, failure("connection.baselineBytes", "cannot represent consumption bits")
 		}
 		for _, key := range strings.Fields("laneSpacing carWidth carHeight obstacleW obstacleH coinSize heartSize finishDistance initialClearDistance heartExclusionDistance") {
-			if v, exists := g[key]; exists && !exact(math.Ceil(v*1024)) {
+			if v, exists := g[key]; exists && !exact(math.Ceil(v*protocol.ProjectionScale)) {
 				return Configuration{}, failure("gameplay."+key, "projection must remain exact")
 			}
 		}

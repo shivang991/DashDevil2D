@@ -1,3 +1,5 @@
+import { CounterMax, ProjectionScale } from "@dashdevil/contracts/protocol";
+
 import { createTrack, draw, selectCell, type RoadSlice } from "./track";
 import type { MultiplayerConfiguration } from "./multiplayer";
 /** Placement generation v1: chronological opportunities; reserved before random
@@ -18,7 +20,7 @@ export class MultiplayerTrack {
     if (
       !Number.isFinite(distance) ||
       distance < 0 ||
-      !Number.isSafeInteger(Math.ceil(distance * 1024))
+      !Number.isSafeInteger(Math.ceil(distance * ProjectionScale))
     )
       throw new Error("Unrepresentable track coverage");
     const g = this.configuration.gameplay;
@@ -37,7 +39,7 @@ export class MultiplayerTrack {
         this.heartIndex <= hearts ? (this.heartIndex / (hearts + 1)) * finish : Infinity;
       const anchor = Math.min(randomDistance, heartDistance);
       if (anchor > limit || anchor >= finish) break;
-      if (this.generator.nextId > 0xffffffff) throw new Error("Track identity exhausted");
+      if (this.generator.nextId > CounterMax) throw new Error("Track identity exhausted");
       const cells: [
         "empty" | "coin" | "obstacle" | "heart",
         "empty" | "coin" | "obstacle" | "heart",

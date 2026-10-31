@@ -79,7 +79,7 @@ func TestGuestsCannotAdmitOrRecoverMultiplayer(t *testing.T) {
 	}
 	t.Cleanup(func() { store.Close() })
 	s, c, _ := configuredServer(t, transport.Config{Accounts: store})
-	for _, operation := range []uint8{0, 1, 2} {
+	for _, operation := range []p.AdmissionOperation{p.AdmissionOperationCreate, p.AdmissionOperationJoin, p.AdmissionOperationResume} {
 		status, _ := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: operation, Name: "Spoofed"}, origin)
 		if status != 401 {
 			t.Fatalf("guest operation %d: %d", operation, status)

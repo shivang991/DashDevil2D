@@ -1,22 +1,30 @@
+import {
+  CarFlagsNOSActive,
+  ControlLeft,
+  ControlNOS,
+  ControlRight,
+  ModeRoadRage,
+  SeatFlagsConnected,
+} from "@dashdevil/contracts/protocol";
 import { RaceAudio } from "@/game/RaceAudio";
 import { Settings } from "lucide-react";
 import { TouchControls } from "./TouchControls";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MultiplayerDrivingInput, type DrivingControl } from "@/game/MultiplayerDrivingInput";
-import { MultiplayerRaceDrawing } from "@/game/MultiplayerRaceDrawing";
+import { countdownReveal, MultiplayerRaceDrawing } from "@/game/MultiplayerRaceDrawing";
 import { gameAudio } from "@/lib/gameAudio";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 
 const controls: Record<string, DrivingControl> = {
-  ArrowLeft: 1,
-  a: 1,
-  A: 1,
-  ArrowRight: 2,
-  d: 2,
-  D: 2,
-  ArrowUp: 3,
-  w: 3,
-  W: 3,
+  ArrowLeft: ControlLeft,
+  a: ControlLeft,
+  A: ControlLeft,
+  ArrowRight: ControlRight,
+  d: ControlRight,
+  D: ControlRight,
+  ArrowUp: ControlNOS,
+  w: ControlNOS,
+  W: ControlNOS,
 };
 const controlFor = (key: string) => controls[key];
 const interactive = (target: EventTarget | null) =>
@@ -29,7 +37,8 @@ export function RaceView({
   connection,
   state,
   onLeave,
-  suspended,
+  suspended: externallySuspended,
+  countdown,
   audio = gameAudio,
 }: {
   connection: Pick<
@@ -38,9 +47,26 @@ export function RaceView({
   >;
   state: PairedState;
   suspended: boolean;
+  countdown?: number;
   onLeave: () => void;
   audio?: Pick<typeof gameAudio, "enabled" | "setEnabled">;
 }) {
+  const suspended = externallySuspended || countdown !== undefined;
+  const intro = useRef({ countdown, startUs: state.startUs, offsetUs: state.clockOffsetUs });
+  useLayoutEffect(() => {
+    intro.current = { countdown, startUs: state.startUs, offsetUs: state.clockOffsetUs };
+  }, [countdown, state.startUs, state.clockOffsetUs]);
+  const reducedMotion = useRef(false);
+  useLayoutEffect(() => {
+    const preference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!preference) return;
+    const update = () => {
+      reducedMotion.current = preference.matches;
+    };
+    update();
+    preference.addEventListener("change", update);
+    return () => preference.removeEventListener("change", update);
+  }, []);
   const playback = useRef<RaceAudio | undefined>(undefined);
   const suspendedAudio = useRef(suspended);
   useEffect(() => {
@@ -136,11 +162,21 @@ export function RaceView({
     const drawing = new MultiplayerRaceDrawing(context, local);
     const draw = (time: number) => {
       const view = connection.frame();
-      if (view) playback.current?.update(view, local, suspendedAudio.current);
+      if (view && intro.current.countdown === undefined)
+        playback.current?.update(view, local, suspendedAudio.current);
       const element = canvas.current,
         ctx = element?.getContext("2d");
       if (view && ctx && element) {
-        drawing.draw(ctx, element.width, element.height, view, time);
+        const { countdown, startUs, offsetUs } = intro.current;
+        const reveal =
+          countdown === undefined || startUs === undefined
+            ? 1
+            : countdownReveal(
+                startUs - (performance.now() * 1000 + offsetUs),
+                reducedMotion.current,
+              );
+        if (reveal < 1) drawing.draw(ctx, element.width, element.height, view, time, reveal);
+        else drawing.draw(ctx, element.width, element.height, view, time);
         connection.recordDraw();
         if (time - lastHud > 40) {
           lastHud = time;
@@ -177,6 +213,7 @@ export function RaceView({
           className="settings-trigger absolute top-0 right-0"
           aria-label="Settings"
           aria-expanded={menu}
+          disabled={countdown !== undefined}
           onClick={() => {
             driving.reset();
             setMenu((value) => !value);
@@ -186,7 +223,7 @@ export function RaceView({
         </button>
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl font-heading text-red-400">
-            {context.mode === 2 ? "Road Rage" : "Drag Race"}
+            {context.mode === ModeRoadRage ? "Road Rage" : "Drag Race"}
           </h1>
           <div
             className="flex gap-1"
@@ -225,9 +262,9 @@ export function RaceView({
           </p>
           <p
             className="shrink-0 text-base text-white tabular-nums"
-            data-testid={context.mode === 2 ? "time-remaining" : "distance-remaining"}
+            data-testid={context.mode === ModeRoadRage ? "time-remaining" : "distance-remaining"}
           >
-            {context.mode === 2
+            {context.mode === ModeRoadRage
               ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
               : `${remaining}% left`}
           </p>
@@ -241,25 +278,28 @@ export function RaceView({
           <span
             hidden
             data-testid="nos-status"
-            data-nos-state={(frame?.cars[local].flags ?? 0) & 1 ? "active" : "ready"}
+            data-nos-state={
+              (frame?.cars[local].flags ?? 0) & CarFlagsNOSActive ? "active" : "ready"
+            }
           />
 
           <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">
-            {frame?.awaiting && !outcome && (
+            {countdown === undefined && frame?.awaiting && !outcome && (
               <p role="status" className="bg-black/80 p-2">
                 Awaiting confirmation
               </p>
             )}
-            {!((state.room?.seats[1 - local]?.flags ?? 0) & 1) && !outcome && (
+            {!((state.room?.seats[1 - local]?.flags ?? 0) & SeatFlagsConnected) && !outcome && (
               <p role="status" className="bg-black/80 p-2">
                 Opponent disconnected—round continues.
               </p>
             )}
-            {(frame?.stale || state.status !== "Connected") && !outcome && (
-              <p role="alert" className="bg-black/80 p-2">
-                Reconnecting—round continues.
-              </p>
-            )}
+            {((countdown === undefined && frame?.stale) || state.status !== "Connected") &&
+              !outcome && (
+                <p role="alert" className="bg-black/80 p-2">
+                  Reconnecting—round continues.
+                </p>
+              )}
             {state.pending && (
               <p role="status" className="bg-black/80 p-2">
                 {state.pending}…
@@ -271,6 +311,22 @@ export function RaceView({
               </p>
             )}
           </div>
+          {countdown !== undefined && (
+            <div
+              className="race-countdown pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-start text-center"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <p className="multiplayer-countdown" data-testid="countdown">
+                {countdown}
+              </p>
+              <p className="text-sm text-white">Get ready!</p>
+              <button className="multiplayer-text-button pointer-events-auto" onClick={onLeave}>
+                Leave
+              </button>
+            </div>
+          )}
           <canvas
             ref={canvas}
             width={560}

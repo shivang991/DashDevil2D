@@ -1,9 +1,26 @@
-import type { Context } from "@dashdevil/contracts/protocol";
+import {
+  type Context,
+  ModeDragRace,
+  ObjectFlagsKindMask,
+  ObjectFlagsSharedConsumed,
+  ObjectFlagsSpentPlayer1,
+  ObjectKindCoin,
+  ObjectKindHeart,
+  ObjectKindObstacle,
+} from "@dashdevil/contracts/protocol";
+
 import type { RaceSession } from "./RaceSession";
 import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
 import { multiplayerRoadScale } from "@/lib/roadProjection";
 
 type DrawingFrame = Pick<ReturnType<RaceSession["frame"]>, "cars" | "renderedCars" | "objects">;
+
+/** The synchronized three-second countdown spends its first 1.5s revealing the grid. */
+export function countdownReveal(remainingUs: number, reducedMotion = false): number {
+  if (reducedMotion) return 1;
+  const progress = Math.max(0, Math.min(1, (3_000_000 - remainingUs) / 1_500_000));
+  return progress * progress * (3 - 2 * progress);
+}
 
 /** One instance per drawing lifetime; replacing it clears damage cue history. */
 export class MultiplayerRaceDrawing {
@@ -23,10 +40,22 @@ export class MultiplayerRaceDrawing {
     height: number,
     view: DrawingFrame,
     time: number,
+    reveal = 1,
   ): void {
     const { context, local } = this;
     const g = context.gameplay,
       scale = width / (g.laneSpacing * 3.9);
+    // Zoom into the existing projection so the intro never exposes ungenerated road.
+    const close = 1 - Math.max(0, Math.min(1, reveal));
+    if (close > 0) {
+      const x = width / 2 + view.renderedCars[local].lateral * scale;
+      const y = height * 0.76;
+      const zoom = 1 + 1.4 * close;
+      ctx.save();
+      ctx.translate(x + (width / 2 - x) * close, y + (height * 0.56 - y) * close);
+      ctx.scale(zoom, zoom);
+      ctx.translate(-x, -y);
+    }
     const camera = view.renderedCars[local].progress;
     const roadScale = multiplayerRoadScale(
       scale,
@@ -45,24 +74,38 @@ export class MultiplayerRaceDrawing {
     );
     ctx.textAlign = "left";
     const finishY = y(g.finishDistance);
-    if (context.mode === 1 && finishY > -30 && finishY < height + 30) {
+    if (context.mode === ModeDragRace && finishY > -30 && finishY < height + 30) {
       ctx.fillStyle = "#f3f4f6";
       ctx.fillRect(0, finishY - 6, width, 12);
       ctx.font = "18px sans-serif";
       ctx.fillText("FINISH", 12, finishY - 18);
     }
     for (const object of view.objects) {
-      const kind = object.flags & 3;
-      if (object.flags & (kind === 2 ? 8 << local : 4)) continue;
+      const kind = object.flags & ObjectFlagsKindMask;
+      if (
+        object.flags &
+        (kind === ObjectKindObstacle ? ObjectFlagsSpentPlayer1 << local : ObjectFlagsSharedConsumed)
+      )
+        continue;
       const x = width / 2 + (object.lane - 1) * g.laneSpacing * scale,
         cy = y(object.distance);
-      const ow = (kind === 2 ? g.obstacleW : kind === 1 ? g.coinSize : g.heartSize) * scale;
-      const oh = (kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize) * roadScale;
+      const ow =
+        (kind === ObjectKindObstacle
+          ? g.obstacleW
+          : kind === ObjectKindCoin
+            ? g.coinSize
+            : g.heartSize) * scale;
+      const oh =
+        (kind === ObjectKindObstacle
+          ? g.obstacleH
+          : kind === ObjectKindCoin
+            ? g.coinSize
+            : g.heartSize) * roadScale;
       if (cy < -oh || cy > height + oh) continue;
       if (
         drawSprite(
           ctx,
-          kind === 2 ? "barrier" : kind === 3 ? "heart" : "coin",
+          kind === ObjectKindObstacle ? "barrier" : kind === ObjectKindHeart ? "heart" : "coin",
           x - ow / 2,
           cy - oh / 2,
           ow,
@@ -70,15 +113,16 @@ export class MultiplayerRaceDrawing {
         )
       )
         continue;
-      ctx.fillStyle = kind === 2 ? "#f59e0b" : kind === 3 ? "#fb7185" : "#fde047";
-      if (kind === 2) {
+      ctx.fillStyle =
+        kind === ObjectKindObstacle ? "#f59e0b" : kind === ObjectKindHeart ? "#fb7185" : "#fde047";
+      if (kind === ObjectKindObstacle) {
         ctx.fillRect(x - ow / 2, cy - oh / 2, ow, oh);
         ctx.fillStyle = "#171b24";
         ctx.fillRect(x - ow / 2, cy - oh / 8, ow, oh / 4);
       } else {
         ctx.font = `${ow}px sans-serif`;
         ctx.textAlign = "center";
-        ctx.fillText(kind === 3 ? "♥" : "●", x, cy + oh / 3);
+        ctx.fillText(kind === ObjectKindHeart ? "♥" : "●", x, cy + oh / 3);
       }
     }
     view.renderedCars.forEach((car, seat) => {
@@ -143,5 +187,6 @@ export class MultiplayerRaceDrawing {
       ctx.textAlign = "center";
       ctx.fillText(seat === local ? "You" : "Rival", x, cy + (g.carHeight * roadScale) / 2 + 20);
     });
+    if (close > 0) ctx.restore();
   }
 }

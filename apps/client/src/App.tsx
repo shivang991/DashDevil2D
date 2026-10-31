@@ -7,12 +7,14 @@ import { AdminScreen } from "@/screens/AdminScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { accountAPI, AccountError, clearReconnectState, type Account } from "@/transport/account";
+import { ModeDragRace } from "@dashdevil/contracts/protocol";
+import type { MultiplayerMode } from "@/transport/PairedConnection";
 
 type Screen = "menu" | "game" | "multiplayer" | "login" | "admin";
 
 function App() {
   const hasStarted = useRef(false);
-  const [mode, setMode] = useState<1 | 2>(1);
+  const [mode, setMode] = useState<MultiplayerMode>(ModeDragRace);
   const [countdown, setCountdown] = useState<5 | 3>(5);
   const [screen, setScreen] = useState<Screen>("menu");
   const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);

@@ -1,6 +1,12 @@
+import { AdmissionOperationResume, RoomPhaseCountdown } from "@dashdevil/contracts/protocol";
+
 import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
-import { PairedConnection, type PairedState } from "@/transport/PairedConnection";
+import {
+  PairedConnection,
+  type PairedState,
+  type MultiplayerMode,
+} from "@/transport/PairedConnection";
 import { MultiplayerView } from "./MultiplayerView";
 import { RaceView } from "@/components/RaceView";
 import { connectionOptions } from "@/transport/account";
@@ -10,7 +16,7 @@ export function MultiplayerScreen({
   onBack,
   playerName,
 }: {
-  mode: 1 | 2;
+  mode: MultiplayerMode;
   onBack: () => void;
   playerName: string;
 }) {
@@ -33,7 +39,7 @@ export function MultiplayerScreen({
         setClient(client);
         setState({ ...client.state });
         focus();
-        if (client.hasCredential) await client.connect(2);
+        if (client.hasCredential) await client.connect(AdmissionOperationResume);
       } catch (failure) {
         if (!disposed) setError(String(failure instanceof Error ? failure.message : failure));
       }
@@ -54,7 +60,7 @@ export function MultiplayerScreen({
     };
   }, []);
 
-  // Countdown lives in the lobby; RaceView takes over playback when racing starts.
+  // Countdown cues precede RaceView playback at the synchronized race start.
   const countdownPlayer = useRef<GameAudio | undefined>(undefined);
   const previousCount = useRef<string | undefined>(undefined);
   useEffect(() => {
@@ -67,7 +73,7 @@ export function MultiplayerScreen({
     };
   }, []);
   useEffect(() => {
-    if (state?.room?.phase !== 1 || state.status !== "Connected") {
+    if (state?.room?.phase !== RoomPhaseCountdown || state.status !== "Connected") {
       previousCount.current = undefined;
       return;
     }
@@ -94,7 +100,7 @@ export function MultiplayerScreen({
       focused={!document.hidden && document.hasFocus()}
       renderRace={
         client && state?.context
-          ? (props) => <RaceView connection={client} state={state} {...props} />
+          ? (props) => <RaceView key={state.roundId} connection={client} state={state} {...props} />
           : undefined
       }
     />

@@ -377,3 +377,32 @@ func TestInvalidContinuation(t *testing.T) {
 		})
 	}
 }
+
+func TestNamedAdmissionOperationsPreserveWire(t *testing.T) {
+	// Literal vectors authored from the wire specification, independent of generation.
+	for _, tc := range []struct {
+		operation AdmissionOperation
+		hex       string
+	}{
+		{AdmissionOperationCreate, "000000110100000300000000000000014100000000"},
+		{AdmissionOperationJoin, "000000110101000300000000000000014100000000"},
+		{AdmissionOperationResume, "000000110102000300000000000000014100000000"},
+	} {
+		request := AdmissionRequest{Operation: tc.operation, Version: 3, Name: "A", Credential: []byte{}}
+		wire := unhex(t, tc.hex)
+		encoded, err := EncodeMessage(request, 65536)
+		if err != nil || !bytes.Equal(encoded, wire) {
+			t.Fatalf("encode operation %d: %x %v", tc.operation, encoded, err)
+		}
+		decoded, err := DecodeMessage(wire, 65536)
+		if err != nil || !reflect.DeepEqual(decoded, request) {
+			t.Fatalf("decode operation %d: %+v %v", tc.operation, decoded, err)
+		}
+	}
+	if _, err := EncodeMessage(AdmissionRequest{Operation: 3, Version: 3}, 65536); err == nil {
+		t.Fatal("encoded unknown operation")
+	}
+	if _, err := DecodeMessage(unhex(t, "000000110103000300000000000000014100000000"), 65536); err == nil {
+		t.Fatal("decoded unknown operation")
+	}
+}

@@ -1,7 +1,29 @@
+import {
+  AdmissionOperationCreate,
+  AdmissionOperationJoin,
+  type Mode,
+  ModeDragRace,
+  ModeRoadRage,
+  RoomCommandCodeReady,
+  RoomCommandCodeReturnToLobby,
+  RoomCommandCodeSelectMode,
+  RoomCommandCodeStart,
+  RoomPhaseActive,
+  RoomPhaseCountdown,
+  RoomPhaseEnded,
+  RoomPhaseLobby,
+  SeatFlagsConnected,
+  SeatFlagsConnectedReady,
+  SeatFlagsReady,
+  SeatFlagsReturned,
+  WireBooleanFalse,
+  WireBooleanTrue,
+} from "@dashdevil/contracts/protocol";
+
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
 import defaults from "@dashdevil/contracts/configuration";
-import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
+import type { MultiplayerMode, PairedConnection, PairedState } from "@/transport/PairedConnection";
 import { Avatar } from "@/components/Avatar";
 import { RoundResult } from "@/components/RoundResult";
 import { Button } from "@/components/ui/button";
@@ -9,10 +31,10 @@ import { Loader } from "@/components/ui/loader";
 import { MultiplayerDialog } from "./MultiplayerDialog";
 import "./multiplayer.css";
 
-const modeName = (mode: number) => (mode === 2 ? "Road Rage" : "Drag Race");
+const modeName = (mode: Mode) => (mode === ModeRoadRage ? "Road Rage" : "Drag Race");
 
 interface MultiplayerViewProps {
-  mode: 1 | 2;
+  mode: MultiplayerMode;
   onBack: () => void;
   playerName: string;
   state?: PairedState;
@@ -20,7 +42,11 @@ interface MultiplayerViewProps {
   clock: number;
   focused: boolean;
   actions?: Pick<PairedConnection, "connect" | "command" | "leave" | "releaseControls">;
-  renderRace?: (props: { suspended: boolean; onLeave: () => void }) => ReactNode;
+  renderRace?: (props: {
+    suspended: boolean;
+    countdown?: number;
+    onLeave: () => void;
+  }) => ReactNode;
 }
 
 /** Transport-free view shared by the live screen and isolated stories. */
@@ -52,13 +78,17 @@ export function MultiplayerView({
   const eligible = connected && !pending;
   // Losing focus clears readiness on the server; remote focus is not exposed separately.
   const canStart =
-    eligible && focused && room?.seats.every((seat) => seat.session && (seat.flags & 3) === 3);
-  const ready = Boolean(room && room.seats[local].flags & 2);
+    eligible &&
+    focused &&
+    room?.seats.every(
+      (seat) => seat.session && (seat.flags & SeatFlagsConnectedReady) === SeatFlagsConnectedReady,
+    );
+  const ready = Boolean(room && room.seats[local].flags & SeatFlagsReady);
   const inRoom = Boolean(room && state?.identity && state.status !== "Disconnected");
   const finalized = Boolean(state?.outcome && state.outcome.roundId === room?.roundId);
-  const returned = Boolean(room && room.seats[local].flags & 8);
+  const returned = Boolean(room && room.seats[local].flags & SeatFlagsReturned);
   const resultKey =
-    inRoom && finalized && room?.phase !== 0 && !returned
+    inRoom && finalized && room?.phase !== RoomPhaseLobby && !returned
       ? `${room!.identity.roomId}:${room!.roundId}`
       : undefined;
   const [readyResult, setReadyResult] = useState<string>();
@@ -93,14 +123,17 @@ export function MultiplayerView({
     timer = setTimeout(wait, 0);
     return () => clearTimeout(timer);
   }, [resultKey, outcomeReceivedUs, resultDelayMs]);
-  const waitingForOther = room?.phase === 3 && returned;
-  const countdown = room?.phase === 1 && !finalized;
-  const showCountdown = inRoom && countdown && connected;
-  const active = room?.phase === 2;
+  const waitingForOther = room?.phase === RoomPhaseEnded && returned;
+  const countdown = room?.phase === RoomPhaseCountdown && !finalized;
+  const active = room?.phase === RoomPhaseActive;
   const race =
-    (active || (room?.phase === 3 && !returned) || (finalized && room?.phase !== 0 && !returned)) &&
-    (room?.mode === 1 || room?.mode === 2);
+    (countdown ||
+      active ||
+      (room?.phase === RoomPhaseEnded && !returned) ||
+      (finalized && room?.phase !== RoomPhaseLobby && !returned)) &&
+    (room?.mode === ModeDragRace || room?.mode === ModeRoadRage);
   const installed = room && state?.roundId === room.roundId && state?.startUs === room.startUs;
+  const previewReady = countdown && installed && Boolean(renderRace);
   const remaining = room
     ? Math.max(
         1,
@@ -151,13 +184,19 @@ export function MultiplayerView({
     setConfirmLeave(true);
   };
   const leave = () => {
-    if (room) setSelectedMode(room.mode as 1 | 2);
+    if (room) setSelectedMode(room.mode as MultiplayerMode);
     setJoinOpen(false);
     setCopy("");
     actions?.leave();
     setConfirmLeave(false);
   };
-  const toggleReady = () => actions?.command(1, room!.mode, ready ? 0 : 1, "Confirming readiness");
+  const toggleReady = () =>
+    actions?.command(
+      RoomCommandCodeReady,
+      room!.mode,
+      ready ? WireBooleanFalse : WireBooleanTrue,
+      "Confirming readiness",
+    );
   const copyCode = async () => {
     try {
       await navigator.clipboard.writeText(state?.code ?? "");
@@ -174,7 +213,13 @@ export function MultiplayerView({
       className={race ? "multiplayer-match bg-neutral-950 text-white" : "multiplayer-screen"}
       onKeyDown={(event) => {
         if (event.key !== "Escape" || event.repeat || event.defaultPrevented) return;
-        if (showJoin || showCountdown || confirmLeave || race) return;
+        if (showJoin || confirmLeave) return;
+        if (countdown) {
+          event.preventDefault();
+          requestLeave();
+          return;
+        }
+        if (race) return;
         if (inRoom) requestLeave();
         else if (!pending) onBack();
       }}
@@ -201,10 +246,18 @@ export function MultiplayerView({
                     type="button"
                     className="multiplayer-mode"
                     aria-pressed={shownMode === value}
-                    disabled={inRoom ? !host || !eligible || room!.phase !== 0 : pending}
+                    disabled={
+                      inRoom ? !host || !eligible || room!.phase !== RoomPhaseLobby : pending
+                    }
                     onClick={() => {
                       if (shownMode === value) return;
-                      if (inRoom) actions?.command(0, value, 0, "Changing mode");
+                      if (inRoom)
+                        actions?.command(
+                          RoomCommandCodeSelectMode,
+                          value,
+                          WireBooleanFalse,
+                          "Changing mode",
+                        );
                       else setSelectedMode(value);
                     }}
                   >
@@ -225,7 +278,7 @@ export function MultiplayerView({
               <Button
                 className="multiplayer-action"
                 disabled={!state || pending}
-                onClick={() => void actions?.connect(0, "", selectedMode)}
+                onClick={() => void actions?.connect(AdmissionOperationCreate, "", selectedMode)}
               >
                 {state?.pending === "Creating room" ? (
                   <>
@@ -274,7 +327,7 @@ export function MultiplayerView({
                           {seat.session > 0 && <Avatar username={seat.name} avatar={seat.avatar} />}
                           <div className="multiplayer-player-info">
                             <span className="multiplayer-player-label">
-                              {seat.session > 0 && Boolean(seat.flags & 2) && (
+                              {seat.session > 0 && Boolean(seat.flags & SeatFlagsReady) && (
                                 <Check className="multiplayer-ready-check" aria-label="Ready" />
                               )}
                               <span
@@ -296,7 +349,7 @@ export function MultiplayerView({
                             <span className="multiplayer-seat-status">
                               {!seat.session
                                 ? "Waiting for player"
-                                : !(seat.flags & 1)
+                                : !(seat.flags & SeatFlagsConnected)
                                   ? "Reconnecting…"
                                   : index === room!.host
                                     ? "Host"
@@ -338,14 +391,27 @@ export function MultiplayerView({
                 </p>
               </>
             )}
-            {countdown ? null : race ? (
-              renderRace ? (
+            {race ? (
+              renderRace && (!countdown || previewReady) ? (
                 renderRace({
-                  suspended: confirmLeave || state?.status !== "Connected",
+                  suspended: countdown || confirmLeave || state?.status !== "Connected",
+                  countdown: countdown ? remaining : undefined,
                   onLeave: requestLeave,
                 })
               ) : (
-                <p>Synchronizing…</p>
+                <div className="multiplayer-countdown-pending" role="status">
+                  {countdown && connected && (
+                    <p className="multiplayer-countdown" data-testid="countdown">
+                      {remaining}
+                    </p>
+                  )}
+                  <p data-testid="connection-state">
+                    {!connected ? state?.status : countdown ? "Preparing round…" : "Synchronizing…"}
+                  </p>
+                  <button className="multiplayer-text-button" onClick={requestLeave}>
+                    Leave
+                  </button>
+                </div>
               )
             ) : active ? (
               <p>{installed ? "Players synchronized." : "Synchronizing…"}</p>
@@ -360,7 +426,13 @@ export function MultiplayerView({
                   disabled={!eligible || !focused || (ready && (!host || !canStart))}
                   onClick={
                     host && canStart
-                      ? () => actions?.command(2, room!.mode, 0, "Starting round")
+                      ? () =>
+                          actions?.command(
+                            RoomCommandCodeStart,
+                            room!.mode,
+                            WireBooleanFalse,
+                            "Starting round",
+                          )
                       : toggleReady
                   }
                 >
@@ -453,8 +525,15 @@ export function MultiplayerView({
         )}
         <Button
           className="round-result-return"
-          disabled={!eligible || room?.phase !== 3}
-          onClick={() => actions?.command(5, room!.mode, 0, "Returning to lobby")}
+          disabled={!eligible || room?.phase !== RoomPhaseEnded}
+          onClick={() =>
+            actions?.command(
+              RoomCommandCodeReturnToLobby,
+              room!.mode,
+              WireBooleanFalse,
+              "Returning to lobby",
+            )
+          }
         >
           Return to Lobby
         </Button>
@@ -490,7 +569,8 @@ export function MultiplayerView({
               className="multiplayer-join-form"
               onSubmit={(event) => {
                 event.preventDefault();
-                if (/^\d{4}$/.test(code) && !pending && state) void actions?.connect(1, code);
+                if (/^\d{4}$/.test(code) && !pending && state)
+                  void actions?.connect(AdmissionOperationJoin, code);
               }}
             >
               <label htmlFor="room-code">Room code</label>
@@ -518,26 +598,6 @@ export function MultiplayerView({
         )}
       </MultiplayerDialog>
       <MultiplayerDialog
-        open={Boolean(showCountdown && !confirmLeave)}
-        title="Starting"
-        description="The race starts after the countdown."
-        onDismiss={requestLeave}
-        returnFocus={main}
-      >
-        <p
-          className="multiplayer-countdown"
-          data-testid="countdown"
-          aria-live="polite"
-          aria-atomic="true"
-        >
-          {remaining}
-        </p>
-        <p className="multiplayer-note">{installed ? "Get ready!" : "Preparing round…"}</p>
-        <button className="multiplayer-text-button" onClick={requestLeave}>
-          Leave
-        </button>
-      </MultiplayerDialog>
-      <MultiplayerDialog
         open={confirmLeave && inRoom && (!race || !state?.outcome)}
         title="Leave room?"
         description="Confirm before leaving your multiplayer room."
@@ -550,7 +610,7 @@ export function MultiplayerView({
             ? "Leaving cancels the countdown for both players."
             : !race
               ? "You’ll return to the multiplayer screen."
-              : room!.seats[1 - local].flags & 1
+              : room!.seats[1 - local].flags & SeatFlagsConnected
                 ? "Leaving forfeits this round to the connected opponent."
                 : "Leaving abandons this round while the opponent is disconnected."}
         </p>

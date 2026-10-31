@@ -245,6 +245,7 @@
       ],
       "overrides": {
         "gameplay": {
+          "obstacleWeight": 1,
           "carHeight": 900,
           "carWidth": 40,
           "heartSize": 40,

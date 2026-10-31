@@ -14,11 +14,11 @@ import (
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
 	"github.com/shivang991/DashDevil2D/apps/server/simulation"
 	"log/slog"
-	"math"
 	"math/big"
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -32,7 +32,7 @@ import (
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
-const frameLimit = 65536
+const frameLimit = p.DefaultFrameBytes
 
 // Config uses one hostname/port for TCP HTTPS and UDP HTTP/3. Local tests may
 // request port zero; the UDP listener then binds the allocated TCP port.
@@ -79,7 +79,7 @@ type room struct {
 	outcomeSessions [2]uint32
 	primed          [2]bool
 	inputs          [2]map[uint32]p.Input
-	phase           uint8
+	phase           p.RoomPhase
 	roundID         uint32
 	startUs         uint64
 	seed            uint32
@@ -90,8 +90,8 @@ type room struct {
 	code     string
 	seats    [2]*seat
 	revision uint32
-	host     uint8
-	mode     uint8
+	host     p.SeatIndex
+	mode     p.Mode
 	idle     time.Time
 }
 type seat struct {
@@ -99,7 +99,7 @@ type seat struct {
 	accountID        int64
 	accountExpires   time.Time
 	room             *room
-	index            uint8
+	index            p.SeatIndex
 	session          uint32
 	savedName        string
 	savedAvatar      string
@@ -202,7 +202,7 @@ func (s *Server) Start() error {
 			if strings.HasPrefix(c.Path(), "/api/account") {
 				return accountError(c, 403, "Request rejected")
 			}
-			return s.failure(c, 403, 2, "Admission rejected")
+			return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
 		}
 		if from == s.config.Origin {
 			c.Set("Access-Control-Allow-Credentials", "true")
@@ -221,11 +221,11 @@ func (s *Server) Start() error {
 	s.app.Post("/admission", s.admission)
 	s.app.Get("/room", func(c *fiber.Ctx) error {
 		if c.Get("Origin") != s.config.Origin || !websocket.IsWebSocketUpgrade(c) {
-			return s.failure(c, 403, 2, "Admission rejected")
+			return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
 		}
 		pair, err := s.consume(c.Query("ticket"), "room", c.Get("Origin"))
 		if err != nil {
-			return s.failure(c, 403, 2, "Admission rejected")
+			return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
 		}
 		c.Locals("pair", pair)
 		return c.Next()
@@ -291,7 +291,7 @@ func (s *Server) Close() {
 		}
 	})
 }
-func (s *Server) failure(c *fiber.Ctx, status int, code uint8, detail string) error {
+func (s *Server) failure(c *fiber.Ctx, status int, code p.ProtocolErrorCode, detail string) error {
 	wire, _ := p.EncodeMessage(p.ProtocolError{Code: code, ExpectedVersion: p.ProtocolVersion, Detail: detail}, frameLimit)
 	c.Type("bin")
 	return c.Status(status).Send(wire)
@@ -311,30 +311,30 @@ func newTrackSeed() (uint32, error) {
 func token(b []byte) string { return base64.RawURLEncoding.EncodeToString(b) }
 func (s *Server) admission(c *fiber.Ctx) error {
 	if c.Get("Origin") != s.config.Origin {
-		return s.failure(c, 403, 2, "Admission rejected")
+		return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
 	}
 	message, err := p.DecodeMessage(c.Body(), frameLimit)
 	if err != nil {
-		return s.failure(c, 400, 3, "Malformed admission")
+		return s.failure(c, 400, p.ProtocolErrorCodeMalformedOrProcessingFailure, "Malformed admission")
 	}
 	request, ok := message.(p.AdmissionRequest)
 	if !ok {
-		return s.failure(c, 400, 3, "Admission request required")
+		return s.failure(c, 400, p.ProtocolErrorCodeMalformedOrProcessingFailure, "Admission request required")
 	}
 	if request.Version != p.ProtocolVersion {
-		return s.failure(c, 409, 1, "Incompatible protocol version")
+		return s.failure(c, 409, p.ProtocolErrorCodeIncompatibleHandshake, "Incompatible protocol version")
 	}
 	credential, err := randomBytes()
 	if err != nil {
-		return s.failure(c, 503, 2, "Unable to connect")
+		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 	}
 	roomTicket, err := randomBytes()
 	if err != nil {
-		return s.failure(c, 503, 2, "Unable to connect")
+		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 	}
 	gameplayTicket, err := randomBytes()
 	if err != nil {
-		return s.failure(c, 503, 2, "Unable to connect")
+		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 	}
 	var account accounts.Session
 	if !s.config.Diagnostic {
@@ -363,30 +363,30 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	}()
 	var participant *seat
 	switch request.Operation {
-	case 0, 1:
+	case p.AdmissionOperationCreate, p.AdmissionOperationJoin:
 		if s.draining {
 			s.mu.Unlock()
-			return s.failure(c, 503, 8, maintenanceMessage)
+			return s.failure(c, 503, p.ProtocolErrorCodeMaintenance, maintenanceMessage)
 		}
 		if len(request.Credential) != 0 || len(request.Name) == 0 || len(request.Name) > 128 || !utf8.ValidString(request.Name) {
 			s.mu.Unlock()
-			return s.failure(c, 400, 2, "Invalid admission")
+			return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid admission")
 		}
 		var r *room
-		if request.Operation == 0 {
+		if request.Operation == p.AdmissionOperationCreate {
 			if request.Code != "" {
 				s.mu.Unlock()
-				return s.failure(c, 400, 2, "Invalid room code")
+				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid room code")
 			}
 			if len(s.rooms) >= s.config.RoomLimit {
 				s.config.Logger.Info("capacity_rejected", "rooms", len(s.rooms), "limit", s.config.RoomLimit)
 				s.mu.Unlock()
-				return s.failure(c, 503, 4, "Server full. Try again later.")
+				return s.failure(c, 503, p.ProtocolErrorCodeCapacityUnavailable, "Server full. Try again later.")
 			}
 			n, e := s.config.CodeStart()
 			if e != nil || n >= 10000 {
 				s.mu.Unlock()
-				return s.failure(c, 503, 2, "Unable to connect")
+				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 			}
 			code := ""
 			for i := 0; i < 10000; i++ {
@@ -398,79 +398,79 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			}
 			if code == "" {
 				s.mu.Unlock()
-				return s.failure(c, 503, 4, "No rooms available")
+				return s.failure(c, 503, p.ProtocolErrorCodeCapacityUnavailable, "No rooms available")
 			}
-			if s.nextID == math.MaxUint32 {
+			if s.nextID == p.CounterMax {
 				s.mu.Unlock()
-				return s.failure(c, 503, 2, "Identity exhausted")
+				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Identity exhausted")
 			}
 			s.nextID++
-			r = &room{id: s.nextID, code: code, revision: 1, mode: 1, idle: now.Add(15 * time.Minute)}
-			mode := uint8(1)
-			if c.Query("mode") == "2" {
-				mode = 2
-			} else if c.Query("mode") != "" && c.Query("mode") != "1" {
+			r = &room{id: s.nextID, code: code, revision: 1, mode: p.ModeDragRace, idle: now.Add(15 * time.Minute)}
+			mode := p.ModeDragRace
+			if c.Query("mode") == strconv.Itoa(int(p.ModeRoadRage)) {
+				mode = p.ModeRoadRage
+			} else if c.Query("mode") != "" && c.Query("mode") != strconv.Itoa(int(p.ModeDragRace)) {
 				s.mu.Unlock()
-				return s.failure(c, 400, 2, "Invalid mode")
+				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid mode")
 			}
 			r.mode = mode
 			r.roundID = 1
 			r.seed, err = newTrackSeed()
 			if err != nil {
 				s.mu.Unlock()
-				return s.failure(c, 503, 2, "Unable to connect")
+				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 			}
 			modeName := "drag-race"
-			if mode == 2 {
+			if mode == p.ModeRoadRage {
 				modeName = "road-rage"
 			}
 			definition := []byte(p.DefaultConfigurationJSON)
 			r.settings, err = configuration.Capture(definition, modeName, s.roundOverrides(mode))
 			if err != nil {
 				s.mu.Unlock()
-				return s.failure(c, 503, 2, "Invalid configuration")
+				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Invalid configuration")
 			}
 			s.rooms[code] = r
 		} else {
-			if len(request.Code) != 4 {
+			if len(request.Code) != p.RoomCodeLength {
 				s.mu.Unlock()
-				return s.failure(c, 400, 2, "Invalid room code")
+				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid room code")
 			}
 			for _, v := range request.Code {
 				if v < '0' || v > '9' {
 					s.mu.Unlock()
-					return s.failure(c, 400, 2, "Invalid room code")
+					return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid room code")
 				}
 			}
 			r = s.rooms[request.Code]
 			if r == nil {
 				s.mu.Unlock()
-				return s.failure(c, 404, 5, "Room not found")
+				return s.failure(c, 404, p.ProtocolErrorCodeRoomNotFound, "Room not found")
 			}
 		}
-		if r.phase == 1 || r.phase == 2 {
+		if r.phase == p.RoomPhaseCountdown || r.phase == p.RoomPhaseActive {
 			s.mu.Unlock()
-			return s.failure(c, 409, 6, "Round in progress")
+			return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, "Round in progress")
 		}
-		index := uint8(0)
+		index := p.SeatIndexPlayer1
 		if r.seats[0] != nil {
-			index = 1
+			index = p.SeatIndexPlayer2
 		}
 		if r.seats[index] != nil {
 			s.mu.Unlock()
-			return s.failure(c, 409, 6, "Room full")
+			return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, "Room full")
 		}
-		if s.nextID == math.MaxUint32 {
+		if s.nextID == p.CounterMax {
 			s.mu.Unlock()
-			return s.failure(c, 503, 2, "Identity exhausted")
+			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Identity exhausted")
 		}
 		s.nextID++
 		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(roomDuration(r, "reconnectGrace"))}
 		participant.accountSession, participant.accountID, participant.accountExpires = account.ID, account.User.ID, account.Expires
 		participant.avatar = account.Avatar
 		participant.savedName, participant.savedAvatar = request.Name, account.Avatar
-		if r.phase == 3 {
-			r.phase = 0
+		if r.phase == p.RoomPhaseEnded {
+			r.phase = p.RoomPhaseLobby
 		}
 		for _, other := range r.seats {
 			if other != nil {
@@ -480,23 +480,23 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		r.seats[index] = participant
 		r.idle = now.Add(roomDuration(r, "idleExpiry"))
 		s.credentials[token(credential)] = participant
-	case 2:
+	case p.AdmissionOperationResume:
 		if len(request.Credential) != 32 {
 			s.mu.Unlock()
-			return s.failure(c, 403, 2, "Admission rejected")
+			return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
 		}
 		participant = s.credentials[token(request.Credential)]
 		if participant == nil || (!s.config.Diagnostic && participant.accountSession != account.ID) || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !now.Before(participant.deadline)) {
 			s.mu.Unlock()
-			return s.failure(c, 410, 7, "Room expired")
+			return s.failure(c, 410, p.ProtocolErrorCodeRoomExpired, "Room expired")
 		}
 	default:
 		s.mu.Unlock()
-		return s.failure(c, 400, 2, "Invalid admission")
+		return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid admission")
 	}
-	if participant.generation == math.MaxUint32 || participant.inputGeneration == math.MaxUint32 {
+	if participant.generation == p.CounterMax || participant.inputGeneration == p.CounterMax {
 		s.mu.Unlock()
-		return s.failure(c, 409, 2, "Connection generation exhausted")
+		return s.failure(c, 409, p.ProtocolErrorCodeAdmissionRejected, "Connection generation exhausted")
 	}
 	old := participant.pair
 	// Ticket issuance alone cannot extend an existing disconnected reservation.
@@ -515,7 +515,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	participant.inputGeneration++
 	pair := newPair(s, participant)
 	participant.pair = pair
-	if r := participant.room; r.phase == 2 && r.engine != nil {
+	if r := participant.room; r.phase == p.RoomPhaseActive && r.engine != nil {
 		r.engine.ResetSeat(pair.identity, participant.inputGeneration, 0)
 		r.primed[participant.index] = false
 		r.zero.Cars = r.engine.Snapshot().Cars
@@ -537,7 +537,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	s.broadcast(participant.room)
 	wire, err := p.EncodeMessage(response, frameLimit)
 	if err != nil {
-		return s.failure(c, 500, 2, "Unable to connect")
+		return s.failure(c, 500, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 	}
 	c.Set("X-Room-Code", code)
 	c.Type("bin")
@@ -577,7 +577,7 @@ func (s *Server) expireLocked(now time.Time) []*room {
 	for code, r := range s.rooms {
 		modified := false
 		s.resolveDeparturesLocked(r, now)
-		idleExpired := (r.phase == 0 || r.phase == 3) && !now.Before(r.idle)
+		idleExpired := (r.phase == p.RoomPhaseLobby || r.phase == p.RoomPhaseEnded) && !now.Before(r.idle)
 		for i, participant := range r.seats {
 			if participant == nil {
 				continue
@@ -585,11 +585,11 @@ func (s *Server) expireLocked(now time.Time) []*room {
 			expired := !participant.deadline.IsZero() && !now.Before(participant.deadline)
 			leaving := !participant.leaving.IsZero()
 			// Keep every active equal-time departure group open until its instant closes.
-			if r.phase == 2 && !earliestDeparture(r).IsZero() && !now.After(earliestDeparture(r)) {
+			if r.phase == p.RoomPhaseActive && !earliestDeparture(r).IsZero() && !now.After(earliestDeparture(r)) {
 				continue
 			}
 			if expired || leaving || idleExpired {
-				s.removeSeatLocked(r, uint8(i))
+				s.removeSeatLocked(r, p.SeatIndex(i))
 				modified = true
 				reason := "Reconnect grace expired"
 				if idleExpired {
@@ -647,11 +647,11 @@ func (s *Server) sweep() {
 	}
 }
 
-func (s *Server) roundOverrides(mode uint8) []byte {
-	if mode == 1 {
+func (s *Server) roundOverrides(mode p.Mode) []byte {
+	if mode == p.ModeDragRace {
 		return s.config.DragRaceOverrides
 	}
-	if mode == 2 {
+	if mode == p.ModeRoadRage {
 		return s.config.RoadRageOverrides
 	}
 	return nil

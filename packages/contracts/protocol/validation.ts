@@ -1,18 +1,52 @@
 import {
-  protocolVersion,
-  layouts,
-  encodeBaseline,
-  encodeContext,
-  encodeObjectState,
-  encodeMessage,
-  projectBaseline,
+  AdmissionOperationCreate,
+  AdmissionOperationResume,
   type Baseline,
   type BaselineChunk,
   type Car,
+  CarFlagsNone,
+  CarFlagsNOSActive,
+  ContactFlagsNone,
   type Context,
+  ControlNone,
+  ControlNOS,
+  CounterMax,
+  CredentialBytes,
+  encodeBaseline,
+  encodeContext,
+  encodeMessage,
+  encodeObjectState,
+  HeldControlsNone,
+  HeldControlsNOS,
+  InputIntentPress,
+  InputIntentRefresh,
+  type Lane,
+  LaneLeft,
+  LaneRight,
+  layouts,
+  ModeDragRace,
+  ModeLongDrive,
+  ModeRoadRage,
+  MovementPhaseReturn,
+  MovementPhaseShift,
+  MovementPhaseSteady,
+  ObjectFlagsKindMask,
+  ObjectFlagsNone,
+  ObjectFlagsSharedConsumed,
+  ObjectFlagsSpentMask,
+  ObjectKindEmpty,
+  ObjectKindHeart,
+  ObjectKindObstacle,
   type Progress,
+  projectBaseline,
+  protocolVersion,
+  RoomCodeLength,
+  SeatIndexPlayer1,
+  SeatOrNoneNone,
+  VerificationDatagramBytes,
   type Window,
 } from "../generated/protocol";
+
 import { quantize, WireError } from "./runtime";
 import defaults from "../configuration/defaults.json";
 
@@ -47,7 +81,9 @@ export function configurationContext(
     configurationId: 1,
     generationVersion: 1,
     seed,
-    mode: ["long-drive", "drag-race", "road-rage"].indexOf(config.mode),
+    mode: (
+      { "long-drive": ModeLongDrive, "drag-race": ModeDragRace, "road-rage": ModeRoadRage } as const
+    )[config.mode],
     startUs,
     gameplay: group("Gameplay", config.gameplay) as unknown as Context["gameplay"],
     presentation: group("Presentation", config.presentation) as unknown as Context["presentation"],
@@ -64,7 +100,7 @@ const emptyProgress = (): Progress => ({
   disposed1: 0,
   disposed2: 0,
 });
-export function initialCar(lane: number, hp: number): Car {
+export function initialCar(lane: Lane, hp: number): Car {
   return {
     progress: 0,
     lateral: (lane - 1) * 120,
@@ -72,10 +108,10 @@ export function initialCar(lane: number, hp: number): Car {
     lane,
     departure: lane,
     target: lane,
-    phase: 0,
-    controls: 0,
-    effective: 0,
-    flags: 0,
+    phase: MovementPhaseSteady,
+    controls: ControlNone,
+    effective: ControlNone,
+    flags: CarFlagsNone,
     movementOrigin: (lane - 1) * 120,
     movementTarget: (lane - 1) * 120,
     movementStartUs: 0,
@@ -86,14 +122,14 @@ export function initialCar(lane: number, hp: number): Car {
     hp,
     score: 0,
     lastInput: 0,
-    heldMask: 0,
+    heldMask: HeldControlsNone,
     inputGeneration: 1,
   };
 }
 export function initialBaseline(context: Context): Baseline {
   const cars = [
-    initialCar(0, context.gameplay.maxHealth),
-    initialCar(2, context.gameplay.maxHealth),
+    initialCar(LaneLeft, context.gameplay.maxHealth),
+    initialCar(LaneRight, context.gameplay.maxHealth),
   ];
   for (const car of cars) {
     car.lateral = (car.lane - 1) * context.gameplay.laneSpacing;
@@ -102,7 +138,7 @@ export function initialBaseline(context: Context): Baseline {
     car.normalSpeed = context.gameplay.startingRoadSpeed;
   }
   return {
-    identity: { roomId: 1, seatSession: 1, pairGeneration: 1, seat: 0 },
+    identity: { roomId: 1, seatSession: 1, pairGeneration: 1, seat: SeatIndexPlayer1 },
     round: { roundId: 1, inputGeneration: 1 },
     epoch: 1,
     tick: 0,
@@ -112,10 +148,10 @@ export function initialBaseline(context: Context): Baseline {
     cars,
     contact: {
       episode: 0,
-      flags: 0,
-      blockedSeat: 0,
-      latestSeat: 0,
-      latestControl: 0,
+      flags: ContactFlagsNone,
+      blockedSeat: SeatOrNoneNone,
+      latestSeat: SeatOrNoneNone,
+      latestControl: ControlNone,
       latestSequence: 0,
       latestTimeUs: 0,
       latestOrder: 0,
@@ -173,15 +209,15 @@ export function configurationResources(config: ConfigurationDefinition): {
     "serialized baseline object count exceeds schema window bound",
   );
   requireState(
-    g.maxHealth <= 0xffffffff &&
-      g.obstacleDamage <= 0xffffffff &&
-      (g.playerContactDamage ?? 0) <= 0xffffffff,
+    g.maxHealth <= CounterMax &&
+      g.obstacleDamage <= CounterMax &&
+      (g.playerContactDamage ?? 0) <= CounterMax,
     "HP/damage exceeds uint32",
   );
   const duration =
     config.mode === "drag-race" ? g.finishDistance / g.startingRoadSpeed : g.timeLimit;
   requireState(
-    Number.isFinite(duration) && Math.ceil(duration * g.tickRate) <= 0xffffffff,
+    Number.isFinite(duration) && Math.ceil(duration * g.tickRate) <= CounterMax,
     "round tick counter would exhaust",
   );
   requireState(
@@ -202,7 +238,7 @@ export function configurationResources(config: ConfigurationDefinition): {
   );
   const totalSlices = Math.ceil((maxProgress + windowLength) / g.sliceSpacing) + 2;
   requireState(
-    totalSlices + reserved < 0xffffffff && 10 * (totalSlices + reserved) <= 0xffffffff,
+    totalSlices + reserved < CounterMax && 10 * (totalSlices + reserved) <= CounterMax,
     "object identity/score exceeds uint32 before round end",
   );
   // Known fixed record size is measured using the codec; count overflow is rejected before allocation.
@@ -218,8 +254,8 @@ export function configurationResources(config: ConfigurationDefinition): {
   const objectBytes = encodeObjectState({
     id: 0,
     sliceId: 0,
-    lane: 0,
-    flags: 0,
+    lane: LaneLeft,
+    flags: ObjectFlagsNone,
     distance: 0,
   }).length;
   requireState(
@@ -235,8 +271,8 @@ export function configurationResources(config: ConfigurationDefinition): {
     objects: Array.from({ length: count }, (_, index) => ({
       id: id++,
       sliceId: index + 1,
-      lane: index % 3,
-      flags: index < randomCount ? 2 : 3,
+      lane: (index % 3) as Lane,
+      flags: index < randomCount ? ObjectKindObstacle : ObjectKindHeart,
       distance: index * g.sliceSpacing,
     })),
   }));
@@ -271,7 +307,7 @@ export function configurationResources(config: ConfigurationDefinition): {
     throw new WireError("initialization exceeds reliable frame limit");
   }
   const chunks = Math.ceil(baselineBytes / payloadBytes);
-  requireState(chunks <= 0xffffffff, "baseline chunk count exceeds uint32");
+  requireState(chunks <= CounterMax, "baseline chunk count exceeds uint32");
   chunk.count = chunks;
   chunk.data = new Uint8Array(Math.min(baselineBytes, payloadBytes));
   try {
@@ -316,14 +352,14 @@ export function validateCar(car: Car, timeUs: number, context: Context): void {
     "car outside world lanes/progress",
   );
   requireState(
-    car.phase === 0 ||
+    car.phase === MovementPhaseSteady ||
       (car.movementStartUs <= timeUs &&
         timeUs <= car.movementEndUs &&
         car.movementStartUs < car.movementEndUs),
     "invalid movement timing",
   );
   requireState(
-    car.phase !== 1 || Math.abs(car.departure - car.target) === 1,
+    car.phase !== MovementPhaseShift || Math.abs(car.departure - car.target) === 1,
     "shift must target adjacent lane",
   );
   requireState(
@@ -331,26 +367,31 @@ export function validateCar(car: Car, timeUs: number, context: Context): void {
     "movement coordinates outside world",
   );
   requireState(
-    car.phase !== 1 ||
+    car.phase !== MovementPhaseShift ||
       (car.movementOrigin === (car.departure - 1) * g.laneSpacing &&
         car.movementTarget === (car.target - 1) * g.laneSpacing),
     "shift destination/origin disagrees with lane",
   );
   requireState(
-    car.phase !== 2 || car.movementTarget === (car.departure - 1) * g.laneSpacing,
+    car.phase !== MovementPhaseReturn || car.movementTarget === (car.departure - 1) * g.laneSpacing,
     "return destination disagrees with departure",
   );
   requireState(
-    car.phase !== 2 || (car.effective !== 3 && (car.flags & 1) === 0),
+    car.phase !== MovementPhaseReturn ||
+      (car.effective !== ControlNOS && (car.flags & CarFlagsNOSActive) === 0),
     "return cannot enable NOS",
   );
-  requireState(car.effective === 0 || car.freshnessUs > timeUs, "effective controls expired");
   requireState(
-    car.controls === 0 || (car.heldMask & (1 << (car.controls - 1))) !== 0,
+    car.effective === ControlNone || car.freshnessUs > timeUs,
+    "effective controls expired",
+  );
+  requireState(
+    car.controls === ControlNone || (car.heldMask & (1 << (car.controls - 1))) !== 0,
     "winning control is not held",
   );
   requireState(
-    (car.flags & 1) === 0 || ((car.heldMask & 4) !== 0 && car.effective !== 0),
+    (car.flags & CarFlagsNOSActive) === 0 ||
+      ((car.heldMask & HeldControlsNOS) !== 0 && car.effective !== ControlNone),
     "NOS requires held boost",
   );
 }
@@ -370,9 +411,12 @@ export function validateWindow(window: Window): void {
       "object identity/order/coverage invalid",
     );
     last = object.id;
-    const kind = object.flags & 3;
+    const kind = object.flags & ObjectFlagsKindMask;
     requireState(
-      kind !== 0 && (kind === 2 ? (object.flags & 4) === 0 : (object.flags & 24) === 0),
+      kind !== ObjectKindEmpty &&
+        (kind === ObjectKindObstacle
+          ? (object.flags & ObjectFlagsSharedConsumed) === 0
+          : (object.flags & ObjectFlagsSpentMask) === 0),
       "invalid consumption flags",
     );
   }
@@ -451,7 +495,7 @@ export function validateBaseline(b: Baseline, expectedContext: Context): void {
 }
 export function nextCounter(value: number, bits: 16 | 32): number {
   requireState(
-    Number.isInteger(value) && value >= 0 && value < (bits === 16 ? 65535 : 0xffffffff),
+    Number.isInteger(value) && value >= 0 && value < (bits === 16 ? 65535 : CounterMax),
     "counter exhausted; renew context",
   );
   return value + 1;
@@ -482,10 +526,13 @@ export function validateMessage<K extends keyof import("../generated/protocol").
   }
   if ("progress" in v) validateProgress(v.progress as Progress);
   if (type === "Handshake")
-    requireState(v.datagramBytes === 10, "required ten-byte datagram schema/capacity");
+    requireState(
+      v.datagramBytes === VerificationDatagramBytes,
+      "required ten-byte datagram schema/capacity",
+    );
   if (type === "Admission")
     requireState(
-      (v.credential as Uint8Array).length === 32 &&
+      (v.credential as Uint8Array).length === CredentialBytes &&
         (v.roomTicket as Uint8Array).length > 0 &&
         (v.gameplayTicket as Uint8Array).length > 0 &&
         (v.origin as string).length > 0,
@@ -493,20 +540,25 @@ export function validateMessage<K extends keyof import("../generated/protocol").
     );
   if (type === "AdmissionRequest") {
     requireState(
-      v.operation === 0 || (v.code as string).match(/^\d{4}$/) !== null,
+      v.operation === AdmissionOperationCreate ||
+        ((v.code as string).length === RoomCodeLength && /^\d+$/.test(v.code as string)),
       "four-digit room code required",
     );
     requireState(
-      v.operation !== 2 || (v.credential as Uint8Array).length === 32,
+      v.operation !== AdmissionOperationResume ||
+        (v.credential as Uint8Array).length === CredentialBytes,
       "resume credential must be 256 bits",
     );
   }
   if (type === "Input") {
     requireState((v.sequence as number) > 0, "input sequence must increase from one");
-    requireState(v.intent !== 0 || v.control !== 0, "fresh press requires control");
     requireState(
-      v.intent !== 2 ||
-        v.control === 0 ||
+      v.intent !== InputIntentPress || v.control !== ControlNone,
+      "fresh press requires control",
+    );
+    requireState(
+      v.intent !== InputIntentRefresh ||
+        v.control === ControlNone ||
         ((v.heldMask as number) & (1 << ((v.control as number) - 1))) !== 0,
       "refresh control must be held",
     );

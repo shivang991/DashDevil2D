@@ -517,3 +517,21 @@
     animation: none;
   }
 }
+
+.race-countdown {
+  padding-top: 6%;
+  text-shadow:
+    0 2px 12px #000,
+    0 0 32px #000;
+}
+.race-countdown .multiplayer-countdown {
+  font-size: clamp(48px, 18cqw, 104px);
+  padding: 0 0 8px;
+}
+.multiplayer-countdown-pending {
+  display: grid;
+  place-content: center;
+  flex: 1;
+  text-align: center;
+  gap: 12px;
+}

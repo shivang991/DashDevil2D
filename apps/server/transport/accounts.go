@@ -266,7 +266,7 @@ func (s *Server) revokeSeatsLocked(matches func(*seat) bool, at time.Time) []*ro
 			if r.phase != 2 {
 				for i, seat := range r.seats {
 					if seat != nil && matches(seat) {
-						s.removeSeatLocked(r, uint8(i))
+						s.removeSeatLocked(r, p.SeatIndex(i))
 					}
 				}
 			}

@@ -1,20 +1,59 @@
-import { localName } from "./localName";
-import { AuthoritativeRoundState, type AuthorityEffect } from "@/game/AuthoritativeRoundState";
 import {
-  protocolVersion,
-  decodeMessage,
-  encodeMessage,
-  decodeVerification,
-  type Outcome,
   type Admission,
+  type AdmissionOperation,
+  AdmissionOperationCreate,
+  AdmissionOperationJoin,
+  AdmissionOperationResume,
   type Baseline,
   type Context,
+  type Control,
+  ControlLeft,
+  ControlNone,
+  ControlNOS,
+  ControlRight,
+  CounterMax,
+  CredentialBytes,
+  decodeMessage,
+  decodeVerification,
+  DefaultFrameBytes,
+  encodeMessage,
+  HeldControlsLeft,
+  HeldControlsNone,
+  HeldControlsNOS,
+  HeldControlsRight,
   type Identity,
+  type Input,
+  InputIntentPress,
+  InputIntentRefresh,
+  InputIntentRelease,
   type Messages,
-  type RoomState,
+  type Mode,
+  ModeDragRace,
+  ModeRoadRage,
+  type Outcome,
+  protocolVersion,
+  type RoomCommandCode,
+  RoomCommandCodeFocus,
+  RoomCommandCodeLeave,
+  RoomPhaseActive,
+  RoomPhaseCountdown,
+  RoomPhaseEnded,
+  RoomPhaseLobby,
   type RoomReply,
+  type RoomState,
+  SeatFlagsConnected,
+  VerificationDatagramBytes,
+  type WireBoolean,
+  WireBooleanFalse,
+  WireBooleanTrue,
 } from "@dashdevil/contracts/protocol";
+
+import { localName } from "./localName";
+import { AuthoritativeRoundState, type AuthorityEffect } from "@/game/AuthoritativeRoundState";
+
 import { FrameReader } from "@dashdevil/contracts/wire";
+
+export type MultiplayerMode = typeof ModeDragRace | typeof ModeRoadRage;
 
 export interface PairedState {
   status: string;
@@ -104,7 +143,7 @@ export class PairedConnection {
     return this.authority?.round;
   }
   private heldMask = 0;
-  private winningControl = 0;
+  private winningControl: Control = ControlNone;
   private lastDrawnLocalUs = 0;
   private lastDrawnRemoteUs = 0;
   private admission?: Admission;
@@ -194,7 +233,7 @@ export class PairedConnection {
         this.recoverUntil =
           performance.now() + (this.state.context?.room.reconnectGrace ?? 15) * 1000;
       if (performance.now() < this.recoverUntil)
-        this.recoveryTimer = setTimeout(() => void this.connect(2), 500);
+        this.recoveryTimer = setTimeout(() => void this.connect(AdmissionOperationResume), 500);
     }
   }
   private teardown() {
@@ -202,8 +241,8 @@ export class PairedConnection {
     this.lastUsable = 0;
     this.authority = undefined;
     this.context = undefined;
-    this.heldMask = 0;
-    this.winningControl = 0;
+    this.heldMask = HeldControlsNone;
+    this.winningControl = ControlNone;
     clearTimeout(this.recoveryRequestTimer);
     this.recoveryRequestTimer = undefined;
     this.lastRecoveryRequest = -Infinity;
@@ -225,20 +264,28 @@ export class PairedConnection {
     this.queuedMessages = 0;
     this.roomWrites = [];
   }
-  async connect(operation: 0 | 1 | 2, code = "", mode: 1 | 2 = 1): Promise<void> {
+  async connect(
+    operation: AdmissionOperation,
+    code = "",
+    mode: typeof ModeDragRace | typeof ModeRoadRage = ModeDragRace,
+  ): Promise<void> {
     this.teardown();
     this.terminal = false;
     const generation = this.generation;
     // Keep the last view visible and frozen while an authenticated seat recovers.
     // Input remains barred until the new pair has installed current authority.
-    const retained = operation === 2 ? this.state : undefined;
+    const retained = operation === AdmissionOperationResume ? this.state : undefined;
     this.state = {
       ...emptyState(),
       ...retained,
       code: retained?.code ?? code,
       errors: this.state.errors,
       pending:
-        operation === 0 ? "Creating room" : operation === 1 ? "Joining room" : "Recovering room",
+        operation === AdmissionOperationCreate
+          ? "Creating room"
+          : operation === AdmissionOperationJoin
+            ? "Joining room"
+            : "Recovering room",
     };
     this.pulseSequence = 0;
     this.publish();
@@ -256,7 +303,7 @@ export class PairedConnection {
     this.publish();
     try {
       const response = await fetch(
-        `${this.options.server}/admission${operation === 0 && !this.options.diagnostic ? `?mode=${mode}` : ""}`,
+        `${this.options.server}/admission${operation === AdmissionOperationCreate && !this.options.diagnostic ? `?mode=${mode}` : ""}`,
         {
           method: "POST",
           credentials: "include",
@@ -266,8 +313,10 @@ export class PairedConnection {
             operation,
             version: protocolVersion,
             code,
-            name: operation === 2 || !this.options.diagnostic ? "" : localName(),
-            credential: operation === 2 ? this.credential() : new Uint8Array(),
+            name:
+              operation === AdmissionOperationResume || !this.options.diagnostic ? "" : localName(),
+            credential:
+              operation === AdmissionOperationResume ? this.credential() : new Uint8Array(),
           }) as Uint8Array<ArrayBuffer>,
         },
       );
@@ -344,7 +393,7 @@ export class PairedConnection {
         gameplay.close();
         return;
       }
-      if (gameplay.datagrams.maxDatagramSize < 10)
+      if (gameplay.datagrams.maxDatagramSize < VerificationDatagramBytes)
         throw new Error("Required datagram payload unavailable");
       const control = await gameplay.createBidirectionalStream();
       if (generation !== this.generation) {
@@ -383,7 +432,11 @@ export class PairedConnection {
           this.state.status = "Connection warning";
           this.releaseControls();
           this.publish();
-          if (!this.options.diagnostic && this.state.room?.phase === 2 && !this.state.outcome) {
+          if (
+            !this.options.diagnostic &&
+            this.state.room?.phase === RoomPhaseActive &&
+            !this.state.outcome
+          ) {
             this.fail(
               new Error("Authoritative history expired; recovering connection"),
               generation,
@@ -428,12 +481,17 @@ export class PairedConnection {
           this.revision = message.value.revision;
           const previous = this.state.room;
           this.state.room = message.value;
-          if (previous?.phase !== message.value.phase && message.value.phase !== 3)
+          if (previous?.phase !== message.value.phase && message.value.phase !== RoomPhaseEnded)
             this.releaseControls();
-          if (previous?.phase === 1 && message.value.phase === 0)
+          if (previous?.phase === RoomPhaseCountdown && message.value.phase === RoomPhaseLobby)
             this.state.notice = "Countdown cancelled. Both players must ready again.";
-          this.state.connectedSeats = message.value.seats.filter((seat) => seat.flags & 1).length;
-          if (message.value.seats[admission.identity.seat].flags & 1 && this.round) {
+          this.state.connectedSeats = message.value.seats.filter(
+            (seat) => seat.flags & SeatFlagsConnected,
+          ).length;
+          if (
+            message.value.seats[admission.identity.seat].flags & SeatFlagsConnected &&
+            this.round
+          ) {
             this.state.status = "Connected";
             if (![...this.pendingCommands.values()].some((command) => command.label !== "Focus"))
               this.state.pending = undefined;
@@ -444,7 +502,7 @@ export class PairedConnection {
           if (
             !this.options.diagnostic &&
             this.state.status === "Connected" &&
-            !((previous?.seats[admission.identity.seat]?.flags ?? 0) & 1)
+            !((previous?.seats[admission.identity.seat]?.flags ?? 0) & SeatFlagsConnected)
           )
             this.focus(this.focused, this.hidden);
         } else if (message.type === "RoomReply") {
@@ -495,7 +553,11 @@ export class PairedConnection {
     if (generation !== this.generation) return;
     const writer = input ? this.inputs : this.control;
     if (!writer) throw new Error("Reliable writer unavailable");
-    const bytes = encodeMessage(type, value, this.context?.connection.reliableFrameBytes ?? 65536);
+    const bytes = encodeMessage(
+      type,
+      value,
+      this.context?.connection.reliableFrameBytes ?? DefaultFrameBytes,
+    );
     this.state.diagnostics.reliableAttemptedBytes =
       (this.state.diagnostics.reliableAttemptedBytes ?? 0) + bytes.length;
     this.checkQueue(bytes.length, "Reliable queue overflow");
@@ -577,7 +639,7 @@ export class PairedConnection {
         if (
           channel !== "control" ||
           message.value.version !== protocolVersion ||
-          message.value.datagramBytes !== 10
+          message.value.datagramBytes !== VerificationDatagramBytes
         )
           throw new Error("Gameplay handshake rejected");
         break;
@@ -604,7 +666,7 @@ export class PairedConnection {
           break;
         if (message.value.sequence <= this.pulseSequence) throw new Error("Stale room pulse");
         this.pulseSequence = message.value.sequence;
-        if (this.state.room?.phase !== 2) this.lastUsable = performance.now();
+        if (this.state.room?.phase !== RoomPhaseActive) this.lastUsable = performance.now();
         if (this.state.status === "Connection warning") this.state.status = "Connected";
         await this.send("RoomPulse", message.value, generation);
         if (generation !== this.generation) return;
@@ -651,8 +713,8 @@ export class PairedConnection {
       if (generation !== this.generation) return;
       switch (effect.type) {
         case "initialize": {
-          this.heldMask = 0;
-          this.winningControl = 0;
+          this.heldMask = HeldControlsNone;
+          this.winningControl = ControlNone;
           this.inputSequence = 0;
           if (!this.inputs) {
             const inputs = await this.gameplay!.createUnidirectionalStream();
@@ -668,9 +730,9 @@ export class PairedConnection {
               identity: this.admission!.identity,
               round: effect.round,
               sequence: ++this.inputSequence,
-              intent: 2,
-              control: 0,
-              heldMask: 0,
+              intent: InputIntentRefresh,
+              control: ControlNone,
+              heldMask: HeldControlsNone,
             },
             generation,
             true,
@@ -703,8 +765,8 @@ export class PairedConnection {
           this.state.diagnostics.lastRemoteReceiveUs = nowUs();
           break;
         case "outcome":
-          this.heldMask = 0;
-          this.winningControl = 0;
+          this.heldMask = HeldControlsNone;
+          this.winningControl = ControlNone;
           this.state.diagnostics.outcomeReceivedUs = nowUs();
           this.state.diagnostics.resultDelayEstimateUs =
             nowUs() + this.state.clockOffsetUs - this.context!.startUs - this.state.outcome!.timeUs;
@@ -728,21 +790,22 @@ export class PairedConnection {
       setInterval(
         () => {
           if (!this.round || generation !== this.generation || this.state.outcome) return;
-          if (this.inputSequence >= 0xffffffff) {
+          if (this.inputSequence >= CounterMax) {
             this.fail(new Error("Input counter exhausted"), generation);
             return;
           }
-          const input = {
+          const input: Input = {
             identity: this.admission!.identity,
             round: this.round!,
             sequence: ++this.inputSequence,
-            intent: 2,
+            intent: InputIntentRefresh,
             control: this.winningControl,
             heldMask: this.heldMask,
           };
           if (
             this.authority?.canPredict &&
-            (this.state.room?.phase === 2 || this.state.room?.phase === 3)
+            (this.state.room?.phase === RoomPhaseActive ||
+              this.state.room?.phase === RoomPhaseEnded)
           )
             this.authority!.input(input, this.estimatedRoundUs());
           void this.send("Input", input, generation, true).catch((e) => this.fail(e, generation));
@@ -752,7 +815,7 @@ export class PairedConnection {
     );
     const clock = () => {
       if (generation !== this.generation) return;
-      if (this.clocks.size >= 8 || this.clockSequence >= 0xffffffff) {
+      if (this.clocks.size >= 8 || this.clockSequence >= CounterMax) {
         this.fail(new Error("Clock progress exhausted"), generation);
         return;
       }
@@ -774,7 +837,7 @@ export class PairedConnection {
         if (done || generation !== this.generation) return;
         this.state.diagnostics.verificationReceivedBytes =
           (this.state.diagnostics.verificationReceivedBytes ?? 0) + value.length;
-        if (value.length !== 10) continue;
+        if (value.length !== VerificationDatagramBytes) continue;
         const verification = decodeVerification(value);
         if (this.state.outcome) continue;
         if (this.authority?.verify(verification)) this.requestBaseline();
@@ -842,12 +905,12 @@ export class PairedConnection {
     if (frame?.needsRecovery) this.requestBaseline();
     return frame;
   }
-  input(intent: 0 | 1, control: number) {
+  input(intent: typeof InputIntentPress | typeof InputIntentRelease, control: Control) {
     if (
       !this.round ||
       !this.admission ||
       !this.authority?.canPredict ||
-      (this.state.room?.phase !== 2 && this.state.room?.phase !== 3) ||
+      (this.state.room?.phase !== RoomPhaseActive && this.state.room?.phase !== RoomPhaseEnded) ||
       this.state.status !== "Connected" ||
       this.state.outcome ||
       !this.focused ||
@@ -855,7 +918,7 @@ export class PairedConnection {
     )
       return;
     const mask = 1 << (control - 1);
-    if (intent === 0) {
+    if (intent === InputIntentPress) {
       if (this.heldMask & mask) return;
       this.heldMask |= mask;
       this.winningControl = control;
@@ -863,9 +926,15 @@ export class PairedConnection {
       this.heldMask &= ~mask;
       if (this.winningControl === control)
         this.winningControl =
-          this.heldMask & 4 ? 3 : this.heldMask & 2 ? 2 : this.heldMask & 1 ? 1 : 0;
+          this.heldMask & HeldControlsNOS
+            ? ControlNOS
+            : this.heldMask & HeldControlsRight
+              ? ControlRight
+              : this.heldMask & HeldControlsLeft
+                ? ControlLeft
+                : ControlNone;
     }
-    const input = {
+    const input: Input = {
       identity: this.admission.identity,
       round: this.round!,
       sequence: ++this.inputSequence,
@@ -880,24 +949,24 @@ export class PairedConnection {
     void this.send("Input", input, generation, true).catch((e) => this.fail(e, generation));
   }
   releaseControls() {
-    const hadInput = this.heldMask !== 0;
-    this.heldMask = 0;
-    this.winningControl = 0;
+    const hadInput = this.heldMask !== HeldControlsNone;
+    this.heldMask = HeldControlsNone;
+    this.winningControl = ControlNone;
     if (!hadInput || !this.round || !this.admission || !this.inputs || this.state.outcome) return;
-    const input = {
+    const input: Input = {
       identity: this.admission.identity,
       round: this.round!,
       sequence: ++this.inputSequence,
-      intent: 1,
-      control: 0,
-      heldMask: 0,
+      intent: InputIntentRelease,
+      control: ControlNone,
+      heldMask: HeldControlsNone,
     };
     this.authority?.input(input, this.estimatedRoundUs());
     const generation = this.generation;
     void this.send("Input", input, generation, true).catch((e) => this.fail(e, generation));
   }
   get hasCredential() {
-    return this.credential().length === 32;
+    return this.credential().length === CredentialBytes;
   }
   focus(focused: boolean, hidden: boolean) {
     const restoring = focused && !hidden && (!this.focused || this.hidden);
@@ -907,19 +976,33 @@ export class PairedConnection {
     if (
       restoring &&
       !this.options.diagnostic &&
-      this.state.room?.phase === 2 &&
+      this.state.room?.phase === RoomPhaseActive &&
       !this.state.outcome
     ) {
       this.fail(new Error("Restoring current authority after suspension"), this.generation);
       return;
     }
     if (!this.options.diagnostic && this.state.status === "Connected")
-      this.command(4, hidden ? 0 : 1, focused && !hidden ? 1 : 0, "Focus");
+      this.sendFocus({ visible: !hidden, focused: focused && !hidden });
   }
-  command(command: 0 | 1 | 2 | 3 | 4 | 5, mode = 1, ready = 0, label = "Updating room") {
+  /** Focus reuses mode for visibility and ready for focus on the existing wire. */
+  private sendFocus(state: { visible: boolean; focused: boolean }) {
+    this.command(
+      RoomCommandCodeFocus,
+      state.visible ? WireBooleanTrue : WireBooleanFalse,
+      state.focused ? WireBooleanTrue : WireBooleanFalse,
+      "Focus",
+    );
+  }
+  command(
+    command: RoomCommandCode,
+    mode: Mode = ModeDragRace,
+    ready: WireBoolean = WireBooleanFalse,
+    label = "Updating room",
+  ) {
     if (!this.admission || this.socket?.readyState !== WebSocket.OPEN) return;
-    if (command !== 4 && this.state.pending) return;
-    if (this.roomSequence >= 0xffffffff) {
+    if (command !== RoomCommandCodeFocus && this.state.pending) return;
+    if (this.roomSequence >= CounterMax) {
       this.fail(new Error("Room counter exhausted"), this.generation);
       return;
     }
@@ -942,7 +1025,7 @@ export class PairedConnection {
       (this.context?.connection.essentialProgressDeadline ?? 1) * 1000,
     );
     this.pendingCommands.set(sequence, { label, timeout });
-    if (command !== 4) this.state.pending = label;
+    if (command !== RoomCommandCodeFocus) this.state.pending = label;
     try {
       this.sendRoom(bytes);
     } catch (error) {
@@ -978,9 +1061,9 @@ export class PairedConnection {
           identity: this.admission.identity,
           sequence: ++this.roomSequence,
           revision: this.revision,
-          command: 3,
-          mode: 1,
-          ready: 0,
+          command: RoomCommandCodeLeave,
+          mode: ModeDragRace,
+          ready: WireBooleanFalse,
         }),
       );
     this.terminal = true;

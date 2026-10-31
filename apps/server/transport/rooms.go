@@ -11,7 +11,7 @@ import (
 func (s *Server) prepareRoundLocked(r *room) error {
 	var ids [2]p.Identity
 	for i, seat := range r.seats {
-		ids[i] = p.Identity{RoomId: r.id, SeatSession: 1, PairGeneration: 1, Seat: uint8(i)}
+		ids[i] = p.Identity{RoomId: r.id, SeatSession: 1, PairGeneration: 1, Seat: p.SeatIndex(i)}
 		if seat != nil {
 			ids[i] = seat.pair.identity
 		}
@@ -48,10 +48,10 @@ func (s *Server) prepareRoundLocked(r *room) error {
 	return nil
 }
 func (s *Server) cancelCountdownLocked(r *room) {
-	if r.phase != 1 {
+	if r.phase != p.RoomPhaseCountdown {
 		return
 	}
-	r.phase = 0
+	r.phase = p.RoomPhaseLobby
 	s.refreshRoomIdentityLocked(r)
 	s.cleanupAvatarsLocked()
 	r.startUs = 0
@@ -67,7 +67,7 @@ func (s *Server) cancelCountdownLocked(r *room) {
 func (s *Server) advanceCountdownsLocked() []*room {
 	var changed []*room
 	for _, r := range s.rooms {
-		if r.phase != 1 || s.nowUs() < r.startUs {
+		if r.phase != p.RoomPhaseCountdown || s.nowUs() < r.startUs {
 			continue
 		}
 		valid := true
@@ -77,7 +77,7 @@ func (s *Server) advanceCountdownsLocked() []*room {
 			}
 		}
 		if valid {
-			r.phase = 2
+			r.phase = p.RoomPhaseActive
 			r.revision++
 		} else {
 			s.cancelCountdownLocked(r)
@@ -170,7 +170,7 @@ func earliestDeparture(r *room) time.Time {
 	return earliest
 }
 func (s *Server) resolveDeparturesLocked(r *room, now time.Time) bool {
-	if r.phase != 2 {
+	if r.phase != p.RoomPhaseActive {
 		return false
 	}
 	at := earliestDeparture(r)
@@ -178,29 +178,29 @@ func (s *Server) resolveDeparturesLocked(r *room, now time.Time) bool {
 		return false
 	}
 	survivors := -1
-	reason := uint8(4)
+	reason := p.OutcomeReasonGraceExpiry
 	for i, participant := range r.seats {
 		if participant == nil {
 			continue
 		}
 		if !participant.leaving.IsZero() && participant.leaving.Equal(at) {
-			reason = 3
+			reason = p.OutcomeReasonExplicitLeave
 		}
 		cutoff := departureAt(participant)
 		if participant.connected && (cutoff.IsZero() || cutoff.After(at)) {
 			survivors = i
 		}
 	}
-	result := uint8(3)
+	result := p.OutcomeResultAbandoned
 	if survivors >= 0 {
-		result = uint8(survivors)
+		result = p.OutcomeResult(survivors)
 	} else {
-		reason = 5
+		reason = p.OutcomeReasonBothDisconnected
 	}
 	s.finalizeLifecycleLocked(r, result, reason, uint64(max(0, at.Sub(s.start).Microseconds())))
 	return true
 }
-func (s *Server) removeSeatLocked(r *room, index uint8) {
+func (s *Server) removeSeatLocked(r *room, index p.SeatIndex) {
 	participant := r.seats[index]
 	if participant == nil {
 		return
@@ -214,8 +214,8 @@ func (s *Server) removeSeatLocked(r *room, index uint8) {
 	r.seats[index] = nil
 	s.cleanupAvatarsLocked()
 	s.cancelCountdownLocked(r)
-	if r.phase == 3 && r.seats[1-index] != nil && r.seats[1-index].returned {
-		r.phase = 0
+	if r.phase == p.RoomPhaseEnded && r.seats[1-index] != nil && r.seats[1-index].returned {
+		r.phase = p.RoomPhaseLobby
 		s.refreshRoomIdentityLocked(r)
 		s.cleanupAvatarsLocked()
 	}

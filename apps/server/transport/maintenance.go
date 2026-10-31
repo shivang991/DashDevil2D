@@ -2,6 +2,7 @@ package transport
 
 import (
 	"errors"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"time"
 )
 
@@ -23,7 +24,7 @@ func (s *Server) Maintenance() MaintenanceStatus {
 		status.DeadlineUs = uint64(s.drainDeadline.Sub(s.start).Microseconds())
 	}
 	for _, r := range s.rooms {
-		if r.phase == 2 {
+		if r.phase == p.RoomPhaseActive {
 			status.ActiveRounds++
 		}
 	}
@@ -44,7 +45,7 @@ func (s *Server) BeginDrain(timeout time.Duration) error {
 	s.drainDeadline = s.start.Add(time.Duration(s.nowUs())*time.Microsecond + timeout)
 	var changed []*room
 	for _, r := range s.rooms {
-		if r.phase == 1 {
+		if r.phase == p.RoomPhaseCountdown {
 			s.cancelCountdownLocked(r)
 			changed = append(changed, r)
 		}
@@ -67,7 +68,7 @@ func (s *Server) advanceMaintenanceLocked(now time.Time) ([]*room, []*pair) {
 	var changed []*room
 	active := false
 	for _, r := range s.rooms {
-		if r.phase != 2 {
+		if r.phase != p.RoomPhaseActive {
 			continue
 		}
 		if now.Before(s.drainDeadline) {

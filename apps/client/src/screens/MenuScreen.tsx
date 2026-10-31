@@ -1,4 +1,6 @@
 import { Avatar } from "@/components/Avatar";
+import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
+import type { MultiplayerMode } from "@/transport/PairedConnection";
 import { MenuItem } from "@/components/MenuItem";
 import type { Account } from "@/transport/account";
 import { ProfileDialog } from "./ProfileDialog";
@@ -11,7 +13,7 @@ interface MenuScreenProps {
   onLogout?: () => Promise<void>;
   onAccountSaved?: (account: Account) => void;
   onStartGame: () => void;
-  onMultiplayer: (mode: 1 | 2) => void;
+  onMultiplayer: (mode: MultiplayerMode) => void;
 }
 
 export function MenuScreen({
@@ -63,13 +65,13 @@ export function MenuScreen({
             title="Drag Race"
             disabled={!authenticated}
             subtitle="Private two-player race"
-            onClick={() => onMultiplayer(1)}
+            onClick={() => onMultiplayer(ModeDragRace)}
           />
           <MenuItem
             title="Road Rage"
             disabled={!authenticated}
             subtitle="Multiplayer aggressive run"
-            onClick={() => onMultiplayer(2)}
+            onClick={() => onMultiplayer(ModeRoadRage)}
           />
         </div>
         {!authenticated && (

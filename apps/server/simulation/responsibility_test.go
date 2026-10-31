@@ -71,7 +71,7 @@ func TestSharedResponsibility(t *testing.T) {
 			for _, step := range scenario.Steps {
 				for _, input := range step.Inputs {
 					sequences[input.Seat]++
-					accepted, err := game.Submit(ids[input.Seat], protocol.Input{Identity: ids[input.Seat], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: sequences[input.Seat], Control: input.Control, Intent: input.Intent, HeldMask: input.HeldMask})
+					accepted, err := game.Submit(ids[input.Seat], protocol.Input{Identity: ids[input.Seat], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: sequences[input.Seat], Control: protocol.Control(input.Control), Intent: protocol.InputIntent(input.Intent), HeldMask: input.HeldMask})
 					if err != nil || !accepted {
 						t.Fatalf("submit: %v %v", accepted, err)
 					}
@@ -90,7 +90,7 @@ func TestSharedResponsibility(t *testing.T) {
 						t.Fatalf("contact bytes %x: %v", bytes, err)
 					}
 				}
-				if step.Finish != nil && (state.Finish == nil || state.Finish.Tick != step.Finish.Tick || state.Finish.TimeUs != step.Finish.TimeUs || state.Finish.Result != step.Finish.Result || state.Finish.Reason != *step.Reason) {
+				if step.Finish != nil && (state.Finish == nil || state.Finish.Tick != step.Finish.Tick || state.Finish.TimeUs != step.Finish.TimeUs || state.Finish.Result != step.Finish.Result || uint8(state.Finish.Reason) != *step.Reason) {
 					t.Fatalf("finish %#v", state.Finish)
 				}
 				for seat, car := range state.Cars {
@@ -107,7 +107,7 @@ func TestSharedResponsibility(t *testing.T) {
 						}
 					}
 				}
-				if step.LatestSeat != nil && (state.LatestPress == nil || state.LatestPress.Seat != *step.LatestSeat) {
+				if step.LatestSeat != nil && (state.LatestPress == nil || uint8(state.LatestPress.Seat) != *step.LatestSeat) {
 					t.Fatalf("latest press %#v", state.LatestPress)
 				}
 				if step.LatestOrder != nil && (state.LatestPress == nil || state.LatestPress.Order != *step.LatestOrder) {
@@ -116,7 +116,7 @@ func TestSharedResponsibility(t *testing.T) {
 				if step.Separated && math.Abs(state.Cars[0].Lateral-state.Cars[1].Lateral) < 50-1e-6 && math.Abs(state.Cars[0].Progress-state.Cars[1].Progress) < 80-1e-6 {
 					t.Fatal("cars interpenetrate")
 				}
-				if step.ReturnDeparture != nil && state.Cars[0].Departure != *step.ReturnDeparture {
+				if step.ReturnDeparture != nil && uint8(state.Cars[0].Departure) != *step.ReturnDeparture {
 					t.Fatal("return changed departure")
 				}
 				for seat, car := range state.Cars {
