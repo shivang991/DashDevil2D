@@ -61,7 +61,7 @@ export const WaitingForPlayer: Story = {
       ...lobby,
       room: {
         ...room,
-        seats: [room.seats[0], { session: 0, name: "", flags: 0, reservationUs: 0 }],
+        seats: [room.seats[0], { session: 0, name: "", avatar: "", flags: 0, reservationUs: 0 }],
       },
     },
   },

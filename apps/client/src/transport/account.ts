@@ -3,6 +3,7 @@ import type { ConnectionOptions } from "./PairedConnection";
 export interface Account {
   id: number;
   username: string;
+  avatar?: string;
   admin: boolean;
   mustChangePassword: boolean;
   expires: string;
@@ -41,6 +42,10 @@ export const accountAPI = {
   current: () => request<Account>(""),
   login: (username: string, password: string) => request<Account>("/login", { username, password }),
   changeTemporaryPassword: (password: string) => request<Account>("/password", { password }),
+  updateProfile: (username: string, avatar?: string) =>
+    request<Account>("/profile", { username, avatar }),
+  changePassword: (currentPassword: string, password: string) =>
+    request<Account>("/password", { currentPassword, password }),
   logout: () => request<{ ok: boolean }>("/logout", {}),
 };
 export function clearReconnectState() {

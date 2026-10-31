@@ -146,7 +146,7 @@ func (s *Server) broadcast(r *room) {
 			if !seat.deadline.IsZero() {
 				reservation = uint64(max(seat.deadline.Sub(s.start).Microseconds(), 0))
 			}
-			state.Seats[i] = p.Seat{Session: seat.session, Name: seat.name, Flags: flags, ReservationUs: reservation}
+			state.Seats[i] = p.Seat{Session: seat.session, Name: seat.name, Avatar: seat.avatar, Flags: flags, ReservationUs: reservation}
 		}
 		messages = append(messages, struct {
 			pair  *pair
@@ -410,6 +410,8 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			seat.returned = false
 		}
 		resetIdle = true
+		s.refreshRoomIdentityLocked(r)
+		s.cleanupAvatarsLocked()
 		r.roundID++
 		r.phase = 1
 		r.startUs = s.nowUs() + uint64(r.settings.Value("gameplay", "countdownDuration")*1e6)
@@ -434,6 +436,8 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		if r.seats[1-participant.index] == nil || r.seats[1-participant.index].returned {
 			// Keep the outcome for reserved seats recovering in the lobby.
 			r.phase = 0
+			s.refreshRoomIdentityLocked(r)
+			s.cleanupAvatarsLocked()
 			for _, other := range r.seats {
 				if other != nil {
 					other.ready = false

@@ -1,8 +1,17 @@
 import { Crown } from "lucide-react";
 import type { Outcome } from "@dashdevil/contracts/protocol";
-import portrait from "@/assets/racer-portrait.png";
+import type { Seat } from "@dashdevil/contracts/protocol";
+import { Avatar } from "./Avatar";
 
-export function RoundResult({ outcome, local }: { outcome: Outcome; local: number }) {
+export function RoundResult({
+  outcome,
+  local,
+  identities,
+}: {
+  outcome: Outcome;
+  local: number;
+  identities?: Seat[];
+}) {
   const neutral = outcome.result >= 2;
   const result =
     outcome.result === 3
@@ -23,7 +32,10 @@ export function RoundResult({ outcome, local }: { outcome: Outcome; local: numbe
         {!neutral && <Crown className="round-result-crown" fill="currentColor" strokeWidth={1.5} />}
         {seats.map((seat) => (
           <div key={seat} className={`round-result-portrait round-result-portrait--seat-${seat}`}>
-            <img src={portrait} alt="" />
+            <Avatar
+              username={identities?.[seat]?.name ?? `Player_${seat + 1}`}
+              avatar={identities?.[seat]?.avatar}
+            />
           </div>
         ))}
       </div>

@@ -28,6 +28,7 @@ var usernamePattern = regexp.MustCompile(`^[A-Za-z0-9_]{3,24}$`)
 type User struct {
 	ID                 int64  `json:"id"`
 	Username           string `json:"username"`
+	Avatar             string `json:"avatar"`
 	Admin              bool   `json:"admin"`
 	MustChangePassword bool   `json:"mustChangePassword"`
 }
@@ -67,12 +68,19 @@ func Open(path string) (*Store, error) {
  CREATE TABLE IF NOT EXISTS sessions (
  id TEXT PRIMARY KEY, account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
  expires INTEGER NOT NULL);
- CREATE INDEX IF NOT EXISTS account_sessions ON sessions(account_id);`)
+ CREATE INDEX IF NOT EXISTS account_sessions ON sessions(account_id);
+ CREATE TABLE IF NOT EXISTS avatars(id TEXT PRIMARY KEY, content BLOB NOT NULL);
+ CREATE TABLE IF NOT EXISTS profiles(account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE, avatar TEXT NOT NULL REFERENCES avatars(id));`)
 	if err != nil {
 		db.Close()
 		return nil, err
 	}
-	return &Store{db: db}, nil
+	store := &Store{db: db}
+	if err := store.CleanupAvatars(nil); err != nil {
+		db.Close()
+		return nil, err
+	}
+	return store, nil
 }
 func (s *Store) Close() error { return s.db.Close() }
 func Validate(username, password string) error {
@@ -147,7 +155,7 @@ func (s *Store) Login(username, password string, now time.Time) (Session, string
 	if len(username) > 24 || len(password) > 4096 {
 		return Session{}, "", ErrCredentials
 	}
-	err := s.db.QueryRow(`SELECT id,username,password_hash,admin,must_change FROM accounts WHERE username=?`, username).Scan(&user.ID, &user.Username, &hash, &user.Admin, &user.MustChangePassword)
+	err := s.db.QueryRow(`SELECT a.id,a.username,a.password_hash,a.admin,a.must_change,COALESCE(p.avatar,'') FROM accounts a LEFT JOIN profiles p ON p.account_id=a.id WHERE a.username=?`, username).Scan(&user.ID, &user.Username, &hash, &user.Admin, &user.MustChangePassword, &user.Avatar)
 	// Unknown accounts perform the same expensive work as known accounts.
 	matches := passwordMatches(hash, password)
 	if err != nil || !matches {
@@ -177,7 +185,7 @@ func (s *Store) Authenticate(token string, now time.Time) (Session, error) {
 func (s *Store) Session(id string, now time.Time) (Session, error) {
 	var result Session
 	var expires int64
-	err := s.db.QueryRow(`SELECT a.id,a.username,a.admin,a.must_change,s.expires FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=? AND s.expires>?`, id, now.Unix()).Scan(&result.User.ID, &result.Username, &result.Admin, &result.MustChangePassword, &expires)
+	err := s.db.QueryRow(`SELECT a.id,a.username,a.admin,a.must_change,s.expires,COALESCE(p.avatar,'') FROM sessions s JOIN accounts a ON a.id=s.account_id LEFT JOIN profiles p ON p.account_id=a.id WHERE s.id=? AND s.expires>?`, id, now.Unix()).Scan(&result.User.ID, &result.Username, &result.Admin, &result.MustChangePassword, &expires, &result.Avatar)
 	if err != nil {
 		return Session{}, ErrSession
 	}

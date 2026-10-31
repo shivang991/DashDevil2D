@@ -1,6 +1,6 @@
 // Generated from protocol/schema.json. Run pnpm generate; do not edit.
 import { encodeRecord, decodeRecord, encodeFrame, decodeFrame, projectRecord } from '../protocol/runtime';
-export const protocolVersion = 3;
+export const protocolVersion = 4;
 export const layouts = {
   "Identity": [
     {
@@ -724,6 +724,11 @@ export const layouts = {
       "name": "name",
       "type": "string",
       "max": 128
+    },
+    {
+      "name": "avatar",
+      "type": "string",
+      "max": 43
     },
     {
       "name": "flags",
@@ -1662,6 +1667,7 @@ export function decodeFinalCar(bytes: Uint8Array, limit = 1048576): FinalCar { r
 export interface Seat {
   session: number;
   name: string;
+  avatar: string;
   flags: number;
   reservationUs: number;
 }

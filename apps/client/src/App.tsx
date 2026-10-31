@@ -96,6 +96,11 @@ function App() {
           account={account}
           onLogin={() => setScreen("login")}
           onLogout={logout}
+          onAccountSaved={(next) => {
+            authEpoch.current++;
+            setAccount(next);
+            channel.current?.postMessage("changed");
+          }}
           onMultiplayer={(mode) => {
             if (!account || account.mustChangePassword) return;
             setMode(mode);

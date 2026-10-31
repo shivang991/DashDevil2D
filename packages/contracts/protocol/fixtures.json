@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "configurationVersion": 1,
   "seed": 1,
   "requirements": [
@@ -8,7 +8,8 @@
     "https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6171130505",
     "Stage 5 room replies use explicit sequence/revision/acceptance; focus command 4 carries visible/focused state; RoomPulse is application liveness distinct from gameplay tick/time. Literal big-endian vectors independently authored with Python struct, not the production codec.",
     "Fixture set 2 retains original v1 mechanical byte vectors, adds protocol-2 Handshake and explicit maintenance Outcome reason 7. Active services require protocol 2; old version fields remain codec vectors, not live compatibility claims.",
-    "Protocol 3 appends one big-endian float64 roundOverDelay to Presentation. Literal context vectors insert 3ff0000000000000 (one second); framed Initialization length and exact baseline/chunk resource lengths increase by eight. No production codec used to derive these expectations. Historical v1/v2 admission vectors remain mechanical checks; live protocol is 3."
+    "Protocol 3 appends one big-endian float64 roundOverDelay to Presentation. Literal context vectors insert 3ff0000000000000 (one second); framed Initialization length and exact baseline/chunk resource lengths increase by eight. No production codec used to derive these expectations. Historical v1/v2 admission vectors remain mechanical checks; live protocol is 3.",
+    "Protocol 4 adds a length-prefixed immutable avatar ID after each RoomState seat name. Independent RoomState vector inserts two zero lengths; frame length increases by eight."
   ],
   "records": [
     {
@@ -86,13 +87,15 @@
             "session": 5,
             "name": "P1",
             "flags": 7,
-            "reservationUs": 0
+            "reservationUs": 0,
+            "avatar": ""
           },
           {
             "session": 9,
             "name": "P2",
             "flags": 3,
-            "reservationUs": 15000000
+            "reservationUs": 15000000,
+            "avatar": ""
           }
         ],
         "roundId": 7,
@@ -100,7 +103,7 @@
         "idleWarningUs": 840000000,
         "idleExpiryUs": 900000000
       },
-      "hex": "000000570501020304000000050000000600000000040101000000000500000002503107000000000000000000000009000000025032030000000000e4e1c00000000700000000002dc6c000000000321162000000000035a4e900"
+      "hex": "0000005f05010203040000000500000006000000000401010000000005000000025031000000000700000000000000000000000900000002503200000000030000000000e4e1c00000000700000000002dc6c000000000321162000000000035a4e900"
     },
     {
       "name": "RoomCommand",
@@ -1397,6 +1400,40 @@
         "revision": 0
       },
       "hex": "000000140400030102030400000005000000060000000000"
+    },
+    {
+      "name": "Handshake protocol 4",
+      "type": "Handshake",
+      "value": {
+        "version": 4,
+        "identity": {
+          "roomId": 16909060,
+          "seatSession": 5,
+          "pairGeneration": 6,
+          "seat": 0
+        },
+        "datagramBytes": 10
+      },
+      "hex": "0000001207000401020304000000050000000600000a"
+    },
+    {
+      "name": "Admission protocol 4",
+      "type": "Admission",
+      "value": {
+        "version": 4,
+        "identity": {
+          "roomId": 16909060,
+          "seatSession": 5,
+          "pairGeneration": 6,
+          "seat": 0
+        },
+        "credential": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+        "roomTicket": "cm9vbQ==",
+        "gameplayTicket": "Z2FtZQ==",
+        "expiresUs": 30000000,
+        "origin": "https://game.example"
+      },
+      "hex": "000000640200040102030400000005000000060000000020000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f00000004726f6f6d0000000467616d650000000001c9c3800000001468747470733a2f2f67616d652e6578616d706c65"
     }
   ],
   "malformed": [

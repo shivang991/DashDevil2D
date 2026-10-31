@@ -122,11 +122,14 @@ type activeLifecycleRoom struct {
 	state        p.RoomState
 }
 
-func activeLifecycle(t *testing.T, overrides string) activeLifecycleRoom {
+func activeLifecycle(t *testing.T, overrides string, beforeAdmission ...func(*transport.Server, *http.Client)) activeLifecycleRoom {
 	t.Helper()
 	now, advance := lifecycleClock()
 	s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(overrides)})
 	f := activeLifecycleRoom{server: s, client: c, roots: roots, advance: advance}
+	for _, setup := range beforeAdmission {
+		setup(s, c)
+	}
 	for i := 0; i < 2; i++ {
 		operation := uint8(i)
 		_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: operation, Code: f.code, Name: "Driver"}, origin)

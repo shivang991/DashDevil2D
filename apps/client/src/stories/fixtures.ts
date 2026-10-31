@@ -26,8 +26,8 @@ export const room: RoomState = {
   idleWarningUs: 0,
   idleExpiryUs: 0,
   seats: [
-    { session: 1, name: "Driver 01", flags: 3, reservationUs: 0 },
-    { session: 2, name: "Driver 02", flags: 3, reservationUs: 0 },
+    { session: 1, name: "Driver 01", avatar: "", flags: 3, reservationUs: 0 },
+    { session: 2, name: "Driver 02", avatar: "", flags: 3, reservationUs: 0 },
   ],
 };
 export const disconnected: PairedState = {

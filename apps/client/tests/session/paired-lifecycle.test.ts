@@ -197,8 +197,8 @@ test("expired authority clears the unusable room and credential without inventin
       phase: 0,
       host: 0,
       seats: [
-        { session: 2, name: "Driver", flags: 1, reservationUs: 0 },
-        { session: 0, name: "", flags: 0, reservationUs: 0 },
+        { session: 2, name: "Driver", avatar: "", flags: 1, reservationUs: 0 },
+        { session: 0, name: "", avatar: "", flags: 0, reservationUs: 0 },
       ],
       roundId: 1,
       startUs: 0,
@@ -484,8 +484,8 @@ test("stalled authoritative progress retains the seat credential for paired reco
       phase: 2,
       host: 0,
       seats: [
-        { session: 2, name: "Driver", flags: 1, reservationUs: 0 },
-        { session: 3, name: "Guest", flags: 1, reservationUs: 0 },
+        { session: 2, name: "Driver", avatar: "", flags: 1, reservationUs: 0 },
+        { session: 3, name: "Guest", avatar: "", flags: 1, reservationUs: 0 },
       ],
       roundId: 1,
       startUs: 1000000,

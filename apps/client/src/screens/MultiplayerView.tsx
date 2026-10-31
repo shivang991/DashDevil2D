@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
 import defaults from "@dashdevil/contracts/configuration";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
+import { Avatar } from "@/components/Avatar";
 import { RoundResult } from "@/components/RoundResult";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
@@ -270,6 +271,7 @@ export function MultiplayerView({
                               vs
                             </span>
                           )}
+                          {seat.session > 0 && <Avatar username={seat.name} avatar={seat.avatar} />}
                           <div className="multiplayer-player-info">
                             <span className="multiplayer-player-label">
                               {seat.session > 0 && Boolean(seat.flags & 2) && (
@@ -446,7 +448,9 @@ export function MultiplayerView({
         className="round-result-dialog"
         returnFocus={main}
       >
-        {state?.outcome && <RoundResult outcome={state.outcome} local={local} />}
+        {state?.outcome && (
+          <RoundResult outcome={state.outcome} local={local} identities={state.room?.seats} />
+        )}
         <Button
           className="round-result-return"
           disabled={!eligible || room?.phase !== 3}

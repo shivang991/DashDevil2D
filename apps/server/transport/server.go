@@ -19,6 +19,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 	"unicode/utf8"
@@ -47,26 +48,28 @@ type Config struct {
 	RoadRageOverrides                                                            []byte
 }
 type Server struct {
-	accountAdmission accountAdmission
-	authMu           sync.Mutex // serializes durable auth with admission/revocation; never held by gameplay ticks
-	draining         bool
-	drainComplete    bool
-	drainDeadline    time.Time
-	drainClosing     time.Time
-	config           Config
-	mu               sync.Mutex // serializes room, admission and pair ownership; never hold across I/O
-	rooms            map[string]*room
-	credentials      map[string]*seat
-	tickets          map[string]ticket
-	nextID           uint32
-	start            time.Time
-	app              *fiber.App
-	webtransport     *wt.Server
-	tcp              net.Listener
-	udp              net.PacketConn
-	stop             chan struct{}
-	closeOnce        sync.Once
-	errors           chan error
+	accountAdmission  accountAdmission
+	avatarCleanup     chan struct{}
+	avatarCleanupDone chan struct{}
+	authMu            sync.Mutex // serializes durable auth with admission/revocation; never held by gameplay ticks
+	draining          bool
+	drainComplete     bool
+	drainDeadline     time.Time
+	drainClosing      time.Time
+	config            Config
+	mu                sync.Mutex // serializes room, admission and pair ownership; never hold across I/O
+	rooms             map[string]*room
+	credentials       map[string]*seat
+	tickets           map[string]ticket
+	nextID            uint32
+	start             time.Time
+	app               *fiber.App
+	webtransport      *wt.Server
+	tcp               net.Listener
+	udp               net.PacketConn
+	stop              chan struct{}
+	closeOnce         sync.Once
+	errors            chan error
 }
 type room struct {
 	engine          *simulation.Engine
@@ -97,6 +100,9 @@ type seat struct {
 	room             *room
 	index            uint8
 	session          uint32
+	savedName        string
+	savedAvatar      string
+	avatar           string
 	name             string
 	credential       []byte
 	generation       uint32
@@ -157,7 +163,7 @@ func New(config Config) (*Server, error) {
 	if config.Now == nil {
 		config.Now = time.Now
 	}
-	return &Server{accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
+	return &Server{avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
 }
 func (s *Server) nowUs() uint64 { return uint64(max(0, s.config.Now().Sub(s.start).Microseconds())) }
 
@@ -186,12 +192,15 @@ func (s *Server) Start() error {
 		s.tcp.Close()
 		return err
 	}
-	s.app = fiber.New(fiber.Config{DisableStartupMessage: true, BodyLimit: frameLimit, ReadTimeout: 5 * time.Second, WriteTimeout: time.Second, IdleTimeout: 30 * time.Second})
+	s.app = fiber.New(fiber.Config{DisableStartupMessage: true, BodyLimit: 3 * 1024 * 1024, ReadTimeout: 5 * time.Second, WriteTimeout: time.Second, IdleTimeout: 30 * time.Second})
 	s.app.Use(func(c *fiber.Ctx) error {
 		c.Set("Cache-Control", "no-store")
 		c.Set("Referrer-Policy", "no-referrer")
 		from := c.Get("Origin")
 		if from != "" && from != s.config.Origin {
+			if strings.HasPrefix(c.Path(), "/api/account") {
+				return accountError(c, 403, "Request rejected")
+			}
 			return s.failure(c, 403, 2, "Admission rejected")
 		}
 		if from == s.config.Origin {
@@ -242,6 +251,8 @@ func (s *Server) Start() error {
 			s.errors <- err
 		}
 	}()
+	s.avatarCleanupDone = make(chan struct{})
+	go s.avatarCleanupLoop()
 	go s.sweep()
 	return nil
 }
@@ -272,6 +283,9 @@ func (s *Server) Close() {
 		}
 		if s.tcp != nil {
 			s.tcp.Close()
+		}
+		if s.avatarCleanupDone != nil {
+			<-s.avatarCleanupDone
 		}
 	})
 }
@@ -451,6 +465,8 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		s.nextID++
 		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(roomDuration(r, "reconnectGrace"))}
 		participant.accountSession, participant.accountID, participant.accountExpires = account.ID, account.User.ID, account.Expires
+		participant.avatar = account.Avatar
+		participant.savedName, participant.savedAvatar = request.Name, account.Avatar
 		if r.phase == 3 {
 			r.phase = 0
 		}

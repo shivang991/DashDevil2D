@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "byteOrder": "big-endian",
   "timestampMax": 9007199254740991,
   "projection": "signed-int64; floor(position*1024+0.5); exact-JS-integer subset",
@@ -726,6 +726,11 @@
         "name": "name",
         "type": "string",
         "max": 128
+      },
+      {
+        "name": "avatar",
+        "type": "string",
+        "max": 43
       },
       {
         "name": "flags",

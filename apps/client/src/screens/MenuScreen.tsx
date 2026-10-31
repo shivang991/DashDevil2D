@@ -1,3 +1,4 @@
+import { Avatar } from "@/components/Avatar";
 import { MenuItem } from "@/components/MenuItem";
 import type { Account } from "@/transport/account";
 import { ProfileDialog } from "./ProfileDialog";
@@ -7,6 +8,7 @@ interface MenuScreenProps {
   account?: Account;
   onLogin?: () => void;
   onLogout?: () => Promise<void>;
+  onAccountSaved?: (account: Account) => void;
   onStartGame: () => void;
   onMultiplayer: (mode: 1 | 2) => void;
 }
@@ -18,6 +20,7 @@ export function MenuScreen({
   account,
   onLogin,
   onLogout,
+  onAccountSaved,
 }: MenuScreenProps) {
   const authenticated = Boolean(account && !account.mustChangePassword);
   return (
@@ -28,10 +31,13 @@ export function MenuScreen({
           <h1 className="text-white text-xl tracking-wide">Branding</h1>
         </div>
 
-        <p className="text-neutral-400 text-sm">{account?.username ?? playerName ?? "Guest"}</p>
+        <div className="flex items-center gap-3 text-neutral-400 text-sm">
+          {account && <Avatar username={account.username} avatar={account.avatar} />}
+          <span>{account?.username ?? playerName ?? "Guest"}</span>
+        </div>
         {authenticated && account && onLogout && (
           <div className="flex gap-3">
-            <ProfileDialog account={account} onLogout={onLogout} />
+            <ProfileDialog account={account} onLogout={onLogout} onSaved={onAccountSaved} />
             <button
               disabled
               className="rounded-lg border border-neutral-700 px-3 py-2 text-sm text-neutral-500"

@@ -1,7 +1,9 @@
 package transport
 
 import (
+	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"strings"
 	"sync"
 	"time"
@@ -29,6 +31,20 @@ func (s *Server) accountRoutes() {
 			return accountError(c, 401, err.Error())
 		}
 		return c.JSON(user)
+	})
+	s.app.Post("/api/account/profile", s.updateProfile)
+	s.app.Get("/api/account/avatars/:id", func(c *fiber.Ctx) error {
+		if s.config.Accounts == nil {
+			return c.SendStatus(404)
+		}
+		data, err := s.config.Accounts.Avatar(c.Params("id"))
+		if err != nil {
+			return c.SendStatus(404)
+		}
+		c.Set("X-Content-Type-Options", "nosniff")
+		c.Set("Content-Security-Policy", "default-src 'none'; sandbox")
+		c.Type("png")
+		return c.Send(data)
 	})
 	s.app.Post("/api/account/login", s.login)
 	s.app.Post("/api/account/logout", func(c *fiber.Ctx) error {
@@ -139,9 +155,10 @@ func (s *Server) changeTemporaryPassword(c *fiber.Ctx) error {
 		return accountError(c, 401, accounts.ErrSession.Error())
 	}
 	var request struct {
-		Password string `json:"password"`
+		Password        string `json:"password"`
+		CurrentPassword string `json:"currentPassword"`
 	}
-	if len(c.Body()) > 8192 || json.Unmarshal(c.Body(), &request) != nil {
+	if len(c.Body()) > 16384 || json.Unmarshal(c.Body(), &request) != nil {
 		return accountError(c, 400, "Enter a new password")
 	}
 	select {
@@ -149,6 +166,22 @@ func (s *Server) changeTemporaryPassword(c *fiber.Ctx) error {
 		defer func() { <-s.accountAdmission.hashing }()
 	default:
 		return accountError(c, 429, "Password change busy. Try again shortly")
+	}
+	if !session.MustChangePassword {
+		if !s.allowLogin(c.IP(), session.Username) {
+			return accountError(c, 429, "Too many attempts. Try again in 15 minutes")
+		}
+		next, err := s.config.Accounts.ChangePassword(session.ID, request.CurrentPassword, request.Password, s.config.Now())
+		if err != nil {
+			return accountError(c, 400, err.Error())
+		}
+		s.mu.Lock()
+		changed := s.revokeSeatsLocked(func(seat *seat) bool { return seat.accountID == session.User.ID && seat.accountSession != session.ID }, s.nowTime())
+		s.mu.Unlock()
+		for _, r := range changed {
+			s.broadcast(r)
+		}
+		return c.JSON(next)
 	}
 	next, token, err := s.config.Accounts.ChangeTemporaryPassword(session.ID, request.Password, s.config.Now())
 	if err != nil {
@@ -267,4 +300,112 @@ func (s *Server) expireAccountSeatsLocked(now time.Time) []*room {
 // Unbound seats exist only in the stationary diagnostic and native fixtures.
 func (seat *seat) accountLive(now time.Time) bool {
 	return seat.accountSession == "" || now.Before(seat.accountExpires)
+}
+
+func (s *Server) updateProfile(c *fiber.Ctx) error {
+	if !s.accountMutation(c) {
+		return accountError(c, 403, "Request rejected")
+	}
+	s.authMu.Lock()
+	defer s.authMu.Unlock()
+	session, err := s.account(c)
+	if err != nil {
+		return accountError(c, 401, accounts.ErrSession.Error())
+	}
+	if session.MustChangePassword {
+		return accountError(c, 403, "Change your temporary password first")
+	}
+	var request struct {
+		Username string  `json:"username"`
+		Avatar   *string `json:"avatar"`
+	}
+	if len(c.Body()) > 3*1024*1024 || json.Unmarshal(c.Body(), &request) != nil {
+		return accountError(c, 400, "Invalid profile")
+	}
+	var avatar *[]byte
+	if request.Avatar != nil {
+		data, err := base64.StdEncoding.DecodeString(*request.Avatar)
+		if err != nil {
+			return accountError(c, 400, "Invalid avatar")
+		}
+		avatar = &data
+	}
+	next, err := s.config.Accounts.UpdateProfile(session.ID, request.Username, avatar, s.config.Now())
+	if err != nil {
+		status := 400
+		if errors.Is(err, accounts.ErrUsernameConflict) {
+			status = 409
+		}
+		return accountError(c, status, err.Error())
+	}
+	s.mu.Lock()
+	var changed []*room
+	for _, r := range s.rooms {
+		modified := false
+		for _, seat := range r.seats {
+			if seat != nil && seat.accountID == next.User.ID {
+				seat.savedName, seat.savedAvatar = next.Username, next.Avatar
+				modified = true
+			}
+		}
+		if modified && r.phase == 0 {
+			s.refreshRoomIdentityLocked(r)
+			r.revision++
+			changed = append(changed, r)
+		}
+	}
+	s.mu.Unlock()
+	s.cleanupAvatars()
+	for _, r := range changed {
+		s.broadcast(r)
+	}
+	return c.JSON(next)
+}
+func (s *Server) refreshRoomIdentityLocked(r *room) {
+	for _, seat := range r.seats {
+		if seat != nil && seat.accountSession != "" {
+			seat.name, seat.avatar = seat.savedName, seat.savedAvatar
+		}
+	}
+}
+
+// Schedule I/O outside gameplay ownership; revocation/profile writes share authMu.
+func (s *Server) cleanupAvatarsLocked() {
+	select {
+	case s.avatarCleanup <- struct{}{}:
+	default:
+	}
+}
+func (s *Server) avatarCleanupLoop() {
+	defer close(s.avatarCleanupDone)
+	for {
+		select {
+		case <-s.stop:
+			return
+		case <-s.avatarCleanup:
+			s.authMu.Lock()
+			s.cleanupAvatars()
+			s.authMu.Unlock()
+		}
+	}
+}
+
+// Caller holds authMu, preventing a profile change between snapshot and deletion.
+func (s *Server) cleanupAvatars() {
+	if s.config.Accounts == nil {
+		return
+	}
+	s.mu.Lock()
+	var retained []string
+	for _, r := range s.rooms {
+		for _, seat := range r.seats {
+			if seat != nil && seat.avatar != "" {
+				retained = append(retained, seat.avatar)
+			}
+		}
+	}
+	s.mu.Unlock()
+	if err := s.config.Accounts.CleanupAvatars(retained); err != nil {
+		s.config.Logger.Error("avatar_cleanup", "error", err)
+	}
 }
