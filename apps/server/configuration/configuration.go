@@ -29,10 +29,10 @@ func (c Configuration) Context(seed uint32) protocol.Context {
 	result.GenerationVersion = 1
 	result.Seed = seed
 	if c.mode == "drag-race" {
-		result.Mode = 1
+		result.Mode = protocol.ModeDragRace
 	}
 	if c.mode == "road-rage" {
-		result.Mode = 2
+		result.Mode = protocol.ModeRoadRage
 	}
 	return result
 }
@@ -40,7 +40,7 @@ func contains(list, key string) bool { return strings.Contains(" "+list+" ", " "
 
 const integers = "maxHealth obstacleDamage playerContactDamage reservedHearts tickRate blinkCount clockSamples reliableFrameBytes baselineBytes queueBytes queueMessages inputBurst networkBytesPerSecond"
 const nonnegative = "obstacleDamage playerContactDamage reservedHearts invincibleDuration roadSpeedIncrement spawnIntervalDecrement speedGrowth initialClearDistance heartExclusionDistance emptyWeight obstacleWeight coinWeight heartWeight carBottomMargin accelCarOffset blinkCount shakeDuration shakeIntensity carTiltMaxAngle gameOverFadeMaxOpacity gameOverShakeMultiplier gameOverShakeDuration gameOverFadeSpeed correctionSmoothing"
-const durations = "invincibleDuration initialSpawnInterval minSpawnInterval difficultyRampInterval laneSwitchCooldownDuration laneShiftDuration laneReturnDuration countdownDuration timeLimit reconnectGrace idleExpiry idleWarning verificationInterval controlRefreshInterval controlFreshnessExpiry replayHistory clockSyncInterval essentialQueueWait essentialProgressDeadline admissionTicketLifetime networkBudgetWindow simulationLagThreshold correctionSmoothing"
+const durations = "invincibleDuration initialSpawnInterval minSpawnInterval difficultyRampInterval laneSwitchCooldownDuration laneShiftDuration laneReturnDuration countdownDuration timeLimit reconnectGrace idleExpiry idleWarning verificationInterval controlRefreshInterval controlFreshnessExpiry replayHistory clockSyncInterval essentialQueueWait essentialProgressDeadline admissionTicketLifetime networkBudgetWindow simulationLagThreshold correctionSmoothing roundOverDelay"
 
 func finite(v float64) bool              { return !math.IsNaN(v) && !math.IsInf(v, 0) }
 func exact(v float64) bool               { return finite(v) && math.Trunc(v) == v && math.Abs(v) <= maxExact }
@@ -128,6 +128,7 @@ func Capture(definition []byte, mode string, overrides []byte) (Configuration, e
 		{p["roadWidthRatioNarrow"] <= 1, "presentation.roadWidthRatioNarrow", "must be at most one"},
 		{p["gameOverFadeMaxOpacity"] <= 1, "presentation.gameOverFadeMaxOpacity", "must be at most one"},
 		{p["correctionSmoothing"] <= .25, "presentation.correctionSmoothing", "must be at most 250 ms"},
+		{p["roundOverDelay"] >= 1, "presentation.roundOverDelay", "must be at least one second"},
 		{p["gameOverFadeMaxOpacity"] == 0 || p["gameOverFadeSpeed"] > 0, "presentation.gameOverFadeSpeed", "positive opacity requires positive fade rate"},
 		{r["idleWarning"] < r["idleExpiry"], "room.idleWarning", "must precede idle expiry"},
 		{c["verificationInterval"] <= .25, "connection.verificationInterval", "must be at most 250 ms"},
@@ -195,7 +196,7 @@ func Capture(definition []byte, mode string, overrides []byte) (Configuration, e
 			return Configuration{}, failure("connection.baselineBytes", "cannot represent consumption bits")
 		}
 		for _, key := range strings.Fields("laneSpacing carWidth carHeight obstacleW obstacleH coinSize heartSize finishDistance initialClearDistance heartExclusionDistance") {
-			if v, exists := g[key]; exists && !exact(math.Ceil(v*1024)) {
+			if v, exists := g[key]; exists && !exact(math.Ceil(v*protocol.ProjectionScale)) {
 				return Configuration{}, failure("gameplay."+key, "projection must remain exact")
 			}
 		}

@@ -143,6 +143,7 @@ for (const delivery of ["clean", "delayed", "recovering", "unordered"])
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
       await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
       const code = await pages[0].getByTestId("room-code").innerText();
+      await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
       await pages[1].getByLabel("Room code").fill(code);
       await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
       await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
@@ -160,7 +161,7 @@ for (const delivery of ["clean", "delayed", "recovering", "unordered"])
       await expect(canvas).toBeVisible();
       await canvas.focus();
       await pages[0].keyboard.down("ArrowUp");
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       // Platform event fixture for an off-window keyup: no W keyup is
       // delivered between blur and a fresh press. Not physical OS-focus evidence.
       await canvas.evaluate((element) =>
@@ -169,25 +170,25 @@ for (const delivery of ["clean", "delayed", "recovering", "unordered"])
         ),
       );
       await pages[0].evaluate(() => window.dispatchEvent(new Event("blur")));
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
       await canvas.evaluate((element) =>
         element.dispatchEvent(
           new KeyboardEvent("keydown", { key: "w", code: "KeyW", bubbles: true }),
         ),
       );
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       await pages[0].keyboard.down("ArrowRight");
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
       await pages[0].keyboard.up("ArrowRight");
       await pages[0].keyboard.up("ArrowUp");
       await pages[0].keyboard.down("ArrowUp");
-      await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
       await info.attach("race.png", {
         body: await pages[0].screenshot({ fullPage: true }),
         contentType: "image/png",
       });
       for (const page of pages)
-        await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+        await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
           timeout: 15000,
         });
       if (delayedAuthority) await pages[0].waitForTimeout(1200); // Allow late authority to reach the already-finalized clients.

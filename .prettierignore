@@ -12,3 +12,5 @@
 *.local.*
 *.tsbuildinfo
 **/generated/
+
+**/storybook-static/

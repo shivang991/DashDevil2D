@@ -23,6 +23,7 @@ for (const leader of [0, 1])
       }
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
       await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
+      await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
       await pages[1]
         .getByLabel("Room code")
         .fill(await pages[0].getByTestId("room-code").innerText());
@@ -93,7 +94,10 @@ for (const leader of [0, 1])
           { intervals: [20] },
         )
         .toBeLessThan(1e-6);
-      await expect(pages[follower].getByTestId("nos-status")).toHaveText("NOS active");
+      await expect(pages[follower].getByTestId("nos-status")).toHaveAttribute(
+        "data-nos-state",
+        "active",
+      );
       samples.push(await Promise.all(pages.map(read)));
       await pages[follower].waitForTimeout(250);
       const locked = (await read(pages[follower])).cars!;
@@ -122,7 +126,7 @@ for (const leader of [0, 1])
         contentType: "image/png",
       });
       for (const page of pages)
-        await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+        await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
           timeout: 20000,
         });
       const outcomes = await Promise.all(

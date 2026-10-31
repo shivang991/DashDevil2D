@@ -1,4 +1,4 @@
-# Protocol schema version 2
+# Protocol schema version 3
 
 Issue [#27](https://github.com/shivang991/DashDevil2D/issues/27). Governing [protocol](https://github.com/shivang991/DashDevil2D/issues/14#issuecomment-6142660562), [resource gate](https://github.com/shivang991/DashDevil2D/issues/16#issuecomment-6171130505), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139) and [sequence](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).
 
@@ -21,6 +21,8 @@ All multibyte scalars are big-endian. Reliable records have `u32 bodyLength | u8
 | adjacent `bits` fields | fill a byte from low bits upwards in schema order; start a new byte if the next field does not fit; unused high bits zero |
 
 Car lane/departure/target/phase occupy one byte (2 bits each); winning/effective controls and four flags occupy the next (2+2+4). Object lane and kind/consumption flags occupy seven bits, with the high bit reserved. Held physical controls are a separate three-bit mask (left/right/NOS); winning/effective controls remain distinct so releases, expiry and return restrictions can continue correctly. HP, scores, identities and progress are uint32; accepted configuration proves their resource/numeric limits. Enum names and flags are specified in `schema.json`. A missing/unused mode-specific configuration field is zero; expected Context comparison rejects mismatched captures.
+
+Steering and NOS can be held together. The NOS flag follows the held boost bit independently of the winning control; steering uses the effective direction, falling back to held right then left when NOS is the winner. Releasing the winner selects a remaining held control (NOS, right, left), preserving the existing freshness deadline. Expiry, focus loss and forced returns still clear all controls. Client and server simulations must be deployed together for these input semantics.
 
 | Datagram offset | Field  | Width |
 | --------------- | ------ | ----- |
@@ -63,8 +65,34 @@ An applied self-contained `Outcome` acknowledges its terminal tick/progress usin
 
 ## Shared lobby return (#35)
 
-RoomCommand values are 0 select mode, 1 readiness, 2 start, 3 leave, 4 focus and 5 Return to Lobby. Command 5 is accepted only for a finalized round, moves the shared room to lobby, clears readiness and retains its code, host and idle deadline. Existing seat sessions retain their result summary; replacement guests do not inherit it. The coordinated version-1 schema now bounds this enum at 5; no existing record width or fixture bytes change. The new literal command-5 fixture is independently reviewed and consumed in both languages.
+RoomCommand values are 0 select mode, 1 readiness, 2 start, 3 leave, 4 focus and 5 Return to Lobby. Command 5 is accepted only for a finalized round and marks that seat returned (Seat flag 3). The shared room enters the lobby when both seats return, or when the other seat leaves. Readiness clears and the room retains its code, host and idle deadline. Existing seat sessions retain their result summary; replacement guests do not inherit it.
 
 ## Maintenance deployment compatibility
 
 Protocol 2 adds Outcome reason 7 (`maintenance`) for an abandoned round at planned shutdown. Earlier clients are rejected at admission with the expected version before any seat is allocated; a cached v1 tab must reload. Production clients and servers use the generated protocol version rather than duplicated literals. Existing wire record widths and historical fixture bytes are retained. Shared fixture set 2 adds a literal v2 Handshake and maintenance Outcome; v1 headers in older named vectors test mechanical codecs and do not claim live v1 acceptance. Configuration and track-generation versions remain 1.
+
+Protocol 3 appends `roundOverDelay` (float64 seconds) to `Presentation` in the immutable round context. Default/minimum is one second. Clients apply and acknowledge confirmed outcomes immediately, keep the final scene visible, then open Round Over after their local receipt delay. Reconnects preserve an existing wait; leaving the room or starting another round cancels it. Long Drive is unaffected. Clients and servers must deploy together; cached protocol-1/2 clients must reload. Fixture set 3 extends literal context bytes and resource sizes by eight bytes, adds v3 admission/handshake vectors, and retains historical admission vectors for rejection checks.
+
+## Admission-operation pilot (#52)
+
+`AdmissionRequest.operation` remains a `u8` on the wire. Its `enum: "admissionOperation"`
+reference selects the canonical explicit assignments in `schema.json`:
+`{ "create": 0, "join": 1, "resume": 2 }`. These values are protocol assignments;
+never reorder or renumber them. Issue #53 extended this explicit assignment style
+to the remaining semantic domains; see [inventory](../../../docs/issue-53-named-codes.md).
+
+Generation emits individual TypeScript constants `AdmissionOperationCreate`,
+`AdmissionOperationJoin`, `AdmissionOperationResume` and the literal union type
+`AdmissionOperation`. Go gets `type AdmissionOperation uint8` with the same three
+names as typed compile-time constants. Both generated request types associate the
+field with that domain. No hand-maintained duplicate declarations or startup fetch.
+
+The generator accepts contiguous, explicit assignments starting at zero and only
+associates these domains with `u8` fields. It derives the existing wire layout
+ceiling from the domain. Flags declare separate `bits` and `masks` with an `all`
+mask; the generator validates and emits the same field mask. Sparse domains
+require a separate design; they must not silently reuse ceiling-only validation.
+
+Callers read `client.connect(AdmissionOperationJoin, code)` and
+`case p.AdmissionOperationResume:`. Room commands remain a separate domain.
+See [pilot review and production evidence](../../../docs/admission-operation-pilot.md).

@@ -46,6 +46,7 @@ test("default course: native menu controls, recovered authority, shared results 
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
     await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
     const code = await pages[0].getByTestId("room-code").innerText();
+    await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[1].getByLabel("Room code").fill(code);
     await pages[1].getByLabel("Room code").press("Enter");
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
@@ -61,7 +62,7 @@ test("default course: native menu controls, recovered authority, shared results 
       for (const page of pages)
         await expect(page.getByRole("img", { name: "Multiplayer race" })).toBeVisible();
       for (const page of pages) {
-        await expect(page.getByTestId("nos-status")).toHaveText("NOS ready");
+        await expect(page.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
         await page.keyboard.up("ArrowUp");
       }
     };
@@ -72,41 +73,38 @@ test("default course: native menu controls, recovered authority, shared results 
     const canvas = pages[0].getByRole("img", { name: "Multiplayer race" });
     await canvas.focus();
     await pages[0].keyboard.down("ArrowUp");
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     await pages[0].keyboard.press("Escape");
     await expect(pages[0].getByRole("button", { name: "Resume", exact: true })).toBeFocused();
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[0].getByRole("button", { name: "Resume", exact: true }).press("Space");
     await expect(canvas).toBeFocused();
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[0].keyboard.up("ArrowUp");
     await pages[0].keyboard.down("ArrowUp");
-    await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[0].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     await pages[0].keyboard.up("ArrowUp");
     await pages[1].evaluate(() =>
       (window as unknown as { closeGameplay: () => void }).closeGameplay(),
     );
     await expect(pages[0].getByText("Opponent disconnected—round continues.")).toBeVisible();
-    await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected", {
-      timeout: 10000,
-    });
     const recovered = await read(pages[1]);
     records.push({ recovered });
     expect(recovered.identity.seatSession).toBe(initial[1].identity.seatSession);
     expect(recovered.identity.pairGeneration).toBeGreaterThan(initial[1].identity.pairGeneration);
     expect(recovered.cars[1].inputGeneration).toBeGreaterThan(initial[1].cars[1].inputGeneration);
     expect(recovered.timeUs).toBeGreaterThan(initial[1].timeUs);
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[0].getByRole("button", { name: "Leave", exact: true }).click();
     await expect(pages[0].getByRole("button", { name: "Cancel", exact: true })).toBeFocused();
     await pages[0].keyboard.press("Escape");
     await expect(canvas).toBeFocused();
     await pages[0].getByRole("button", { name: "Leave", exact: true }).click();
     for (const page of pages)
-      await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 65000,
       });
-    await expect(pages[0].getByRole("dialog")).toHaveCount(0);
+    await expect(pages[0].getByRole("dialog", { name: "Round Over" })).toBeVisible();
     const outcomes = await Promise.all(
       pages.map(async (page) =>
         JSON.parse((await page.getByTestId("outcome-evidence").textContent())!),
@@ -122,19 +120,21 @@ test("default course: native menu controls, recovered authority, shared results 
       contentType: "image/png",
     });
     await pages[1].getByRole("button", { name: "Return to Lobby", exact: true }).click();
+    await expect(pages[1].getByText("Waiting for other player to return…")).toBeVisible();
+    await expect(pages[0].getByRole("dialog", { name: "Round Over" })).toBeVisible();
+    await expect(pages[1].getByRole("heading", { name: "Round Over" })).toHaveCount(0);
+    await pages[0].getByRole("button", { name: "Return to Lobby", exact: true }).click();
     for (const page of pages) {
       await expect(page.getByRole("button", { name: "Ready", exact: true })).toBeVisible();
       await expect(page.getByTestId("room-code")).toHaveText(code);
-      await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "Round Over" })).toHaveCount(0);
     }
     await expect(pages[0].getByLabel("Multiplayer mode")).toBeVisible();
-    await expect(pages[0].getByRole("button", { name: "Start round" })).toBeDisabled();
-    await pages[1].getByRole("button", { name: "Dismiss result" }).click();
-    await expect(pages[1].getByRole("heading", { name: "Round result" })).toHaveCount(0);
+    await expect(pages[0].getByRole("button", { name: "Start round" })).toHaveCount(0);
     // Mode capture changes in lobby, then restore Drag Race for another playable round.
-    await pages[0].getByLabel("Multiplayer mode").selectOption("2");
+    await pages[0].getByRole("button", { name: "Road Rage", exact: true }).click();
     await expect(pages[1].getByTestId("selected-mode")).toHaveText("Road Rage");
-    await pages[0].getByLabel("Multiplayer mode").selectOption("1");
+    await pages[0].getByRole("button", { name: "Drag Race", exact: true }).click();
     await expect(pages[1].getByTestId("selected-mode")).toHaveText("Drag Race");
     await start();
     const rematch = await Promise.all(pages.map(read));
@@ -158,7 +158,7 @@ test("default course: native menu controls, recovered authority, shared results 
       );
     }
     for (const page of pages)
-      await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 65000,
       });
     const again = await Promise.all(
@@ -267,6 +267,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
     await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
     const code = await pages[0].getByTestId("room-code").innerText();
+    await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[1].getByLabel("Room code").fill(code);
     await pages[1].getByLabel("Room code").press("Enter");
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
@@ -278,7 +279,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     await expect(canvas).toBeVisible();
     await canvas.focus();
     await pages[1].keyboard.down("ArrowUp");
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     const before = await read(pages[1]);
     records.push({ before });
     // Explicit platform fixture, not physical tab-suspension or OS-focus evidence.
@@ -286,7 +287,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
       Object.defineProperty(document, "hidden", { configurable: true, value: true });
       document.dispatchEvent(new Event("visibilitychange"));
     });
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await expect.poll(async () => (await read(pages[0])).timeUs).toBeGreaterThan(before.timeUs);
     await pages[1].evaluate(() => {
       Object.defineProperty(document, "hidden", { configurable: true, value: false });
@@ -295,12 +296,11 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     await expect
       .poll(async () => (await read(pages[1])).identity.pairGeneration)
       .toBeGreaterThan(before.identity.pairGeneration);
-    await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
     await expect(canvas).toBeFocused();
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS ready");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
     await pages[1].keyboard.up("ArrowUp");
     await pages[1].keyboard.down("ArrowUp");
-    await expect(pages[1].getByTestId("nos-status")).toHaveText("NOS active");
+    await expect(pages[1].getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
     await pages[1].keyboard.up("ArrowUp");
     const restored = await read(pages[1]);
     records.push({ restored });
@@ -312,26 +312,27 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     expect(restored.cars[1].inputGeneration).toBeGreaterThan(before.cars[1].inputGeneration);
     await pages[1].getByRole("button", { name: "Leave", exact: true }).click();
     await pages[1].getByRole("button", { name: "Confirm leave" }).click();
-    await expect(pages[0].getByText("Forfeit", { exact: true })).toBeVisible();
+    await expect(pages[0].getByText("You Won", { exact: true })).toBeVisible();
     const outcome = JSON.parse((await pages[0].getByTestId("outcome-evidence").textContent())!);
     expect(outcome.result).toBe(0);
     expect(outcome.reason).toBe(3);
     await pages[0].reload();
     await pages[0].getByRole("button", { name: /Drag Race/ }).click();
-    await expect(pages[0].getByText("Forfeit", { exact: true })).toBeVisible();
+    await expect(pages[0].getByText("You Won", { exact: true })).toBeVisible();
     const recoveredOutcome = JSON.parse(
       (await pages[0].getByTestId("outcome-evidence").textContent())!,
     );
     expect(recoveredOutcome.cars).toEqual(outcome.cars);
     expect(recoveredOutcome.timeUs).toBe(outcome.timeUs);
+    await pages[2].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[2].getByLabel("Room code").fill(code);
     await pages[2].getByLabel("Room code").press("Enter");
     await expect(pages[2].getByTestId("connection-state")).toHaveText("Connected");
     for (const page of [pages[0], pages[2]])
       await expect(page.getByRole("button", { name: "Ready", exact: true })).toBeVisible();
-    await expect(pages[0].getByRole("heading", { name: "Round result" })).toBeVisible();
-    await expect(pages[2].getByRole("heading", { name: "Round result" })).toHaveCount(0);
-    await expect(pages[0].getByRole("button", { name: "Start round" })).toBeDisabled();
+    await expect(pages[0].getByRole("heading", { name: "Round Over" })).toHaveCount(0);
+    await expect(pages[2].getByRole("heading", { name: "Round Over" })).toHaveCount(0);
+    await expect(pages[0].getByRole("button", { name: "Start round" })).toHaveCount(0);
     records.push({
       outcome,
       recoveredOutcome,

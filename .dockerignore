@@ -9,6 +9,7 @@
 **/.env.*
 !**/.env.example
 infra/certs
+infra/deploy-vps.local.sh
 **/*.pem
 **/*.key
 **/.DS_Store

@@ -1,10 +1,32 @@
-import { useEffect, useRef, useState } from "react";
-import { RoundResult } from "./RoundResult";
+import {
+  CarFlagsNOSActive,
+  ControlLeft,
+  ControlNOS,
+  ControlRight,
+  ModeRoadRage,
+  SeatFlagsConnected,
+} from "@dashdevil/contracts/protocol";
+import { RaceAudio } from "@/game/RaceAudio";
+import { Settings } from "lucide-react";
+import { TouchControls } from "./TouchControls";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { MultiplayerDrivingInput, type DrivingControl } from "@/game/MultiplayerDrivingInput";
+import { countdownReveal, MultiplayerRaceDrawing } from "@/game/MultiplayerRaceDrawing";
 import { gameAudio } from "@/lib/gameAudio";
 import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
 
-const controlFor = (key: string) =>
-  ({ ArrowLeft: 1, a: 1, A: 1, ArrowRight: 2, d: 2, D: 2, ArrowUp: 3, w: 3, W: 3 })[key];
+const controls: Record<string, DrivingControl> = {
+  ArrowLeft: ControlLeft,
+  a: ControlLeft,
+  A: ControlLeft,
+  ArrowRight: ControlRight,
+  d: ControlRight,
+  D: ControlRight,
+  ArrowUp: ControlNOS,
+  w: ControlNOS,
+  W: ControlNOS,
+};
+const controlFor = (key: string) => controls[key];
 const interactive = (target: EventTarget | null) =>
   target instanceof Element &&
   Boolean(target.closest('button,input,select,textarea,a,[contenteditable="true"]'));
@@ -15,62 +37,101 @@ export function RaceView({
   connection,
   state,
   onLeave,
-  suspended,
+  suspended: externallySuspended,
+  countdown,
+  audio = gameAudio,
 }: {
-  connection: PairedConnection;
+  connection: Pick<
+    PairedConnection,
+    "frame" | "input" | "releaseControls" | "recordDraw" | "recordResultCommit"
+  >;
   state: PairedState;
   suspended: boolean;
+  countdown?: number;
   onLeave: () => void;
+  audio?: Pick<typeof gameAudio, "enabled" | "setEnabled">;
 }) {
+  const suspended = externallySuspended || countdown !== undefined;
+  const intro = useRef({ countdown, startUs: state.startUs, offsetUs: state.clockOffsetUs });
+  useLayoutEffect(() => {
+    intro.current = { countdown, startUs: state.startUs, offsetUs: state.clockOffsetUs };
+  }, [countdown, state.startUs, state.clockOffsetUs]);
+  const reducedMotion = useRef(false);
+  useLayoutEffect(() => {
+    const preference = window.matchMedia?.("(prefers-reduced-motion: reduce)");
+    if (!preference) return;
+    const update = () => {
+      reducedMotion.current = preference.matches;
+    };
+    update();
+    preference.addEventListener("change", update);
+    return () => preference.removeEventListener("change", update);
+  }, []);
+  const playback = useRef<RaceAudio | undefined>(undefined);
+  const suspendedAudio = useRef(suspended);
+  useEffect(() => {
+    suspendedAudio.current = suspended;
+  }, [suspended]);
+  useEffect(() => {
+    const player = new RaceAudio();
+    playback.current = player;
+    return () => {
+      player.dispose();
+      playback.current = undefined;
+    };
+  }, [state.roundId]);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const pressed = useRef(new Set<string>());
-  const [muted, setMuted] = useState(!gameAudio.enabled);
+  const { pressed, driving } = useMemo(() => {
+    const pressed = new Set<string>();
+    const driving = new MultiplayerDrivingInput(
+      {
+        input: (intent, control) => connection.input(intent, control),
+        releaseControls: () => connection.releaseControls(),
+      },
+      () => pressed.clear(),
+    );
+    return { pressed, driving };
+  }, [connection]);
+  const [muted, setMuted] = useState(!audio.enabled);
   const [menu, setMenu] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const [frame, setFrame] = useState<Frame>();
   const local = state.identity?.seat ?? 0;
   const context = state.context!;
   useEffect(() => {
     canvas.current?.focus();
-    return () => connection.releaseControls();
-  }, [connection]);
+    return () => driving.reset();
+  }, [driving]);
   useEffect(() => {
-    const release = () => {
-      pressed.current.clear();
-      connection.releaseControls();
-    };
+    const release = () => driving.reset();
     const down = (event: KeyboardEvent) => {
-      if (event.repeat || pressed.current.has(event.code)) return;
-      pressed.current.add(event.code);
+      if (event.repeat || pressed.has(event.code)) return;
+      pressed.add(event.code);
       if (suspended || state.outcome) return;
       if (
         (event.key === "Escape" && (menu || !interactive(event.target))) ||
         (event.code === "Space" && !interactive(event.target))
       ) {
         event.preventDefault();
-        connection.releaseControls();
+        driving.reset();
         setMenu((value) => !value);
         return;
       }
+      if (event.key.toLowerCase() === "m" && !interactive(event.target)) {
+        audio.setEnabled(!audio.enabled);
+        setMuted(!audio.enabled);
+        return;
+      }
       const control = controlFor(event.key);
-      if (
-        control &&
-        !menu &&
-        event.target === canvas.current &&
-        document.hasFocus() &&
-        !document.hidden
-      ) {
-        event.preventDefault();
-        connection.input(0, control);
+      if (control && !interactive(event.target) && document.hasFocus() && !document.hidden) {
+        if (driving.press(`key:${event.code}`, control)) event.preventDefault();
       }
     };
     const up = (event: KeyboardEvent) => {
-      pressed.current.delete(event.code);
+      pressed.delete(event.code);
       if (suspended) return;
       const control = controlFor(event.key);
-      if (control && !interactive(event.target)) {
-        connection.input(1, control);
-        if (event.target === canvas.current) event.preventDefault();
+      if (control && driving.release(`key:${event.code}`)) {
+        if (!interactive(event.target)) event.preventDefault();
       }
     };
     window.addEventListener("keydown", down);
@@ -83,90 +144,39 @@ export function RaceView({
       window.removeEventListener("blur", release);
       document.removeEventListener("visibilitychange", release);
     };
-  }, [connection, menu, suspended, state.outcome]);
-  useEffect(() => {
-    connection.releaseControls();
+  }, [driving, pressed, menu, suspended, state.outcome, audio]);
+  useLayoutEffect(() => {
+    driving.update({
+      menu,
+      suspended,
+      outcome: state.outcome,
+      status: state.status,
+      roundId: state.roundId,
+    });
     if (!menu && !suspended && !state.outcome && state.status === "Connected")
       canvas.current?.focus();
-  }, [connection, menu, suspended, state.outcome, state.status]);
+  }, [driving, menu, suspended, state.outcome, state.status, state.roundId]);
   useEffect(() => {
     let handle = 0,
       lastHud = 0;
+    const drawing = new MultiplayerRaceDrawing(context, local);
     const draw = (time: number) => {
       const view = connection.frame();
+      if (view && intro.current.countdown === undefined)
+        playback.current?.update(view, local, suspendedAudio.current);
       const element = canvas.current,
         ctx = element?.getContext("2d");
       if (view && ctx && element) {
-        const width = element.width,
-          height = element.height;
-        const g = context.gameplay,
-          scale = width / (g.laneSpacing * 3.5);
-        const camera = view.renderedCars[local].progress;
-        const y = (progress: number) => height * 0.76 - (progress - camera) * scale;
-        ctx.fillStyle = "#171b24";
-        ctx.fillRect(0, 0, width, height);
-        ctx.fillStyle = "#272d38";
-        ctx.fillRect(width / 2 - g.laneSpacing * 1.5 * scale, 0, g.laneSpacing * 3 * scale, height);
-        ctx.strokeStyle = "#737c90";
-        ctx.lineWidth = 2;
-        ctx.setLineDash([20, 24]);
-        for (const lane of [-0.5, 0.5]) {
-          ctx.beginPath();
-          ctx.moveTo(width / 2 + lane * g.laneSpacing * scale, 0);
-          ctx.lineTo(width / 2 + lane * g.laneSpacing * scale, height);
-          ctx.stroke();
-        }
-        ctx.setLineDash([]);
-        ctx.textAlign = "left";
-        const finishY = y(g.finishDistance);
-        if (context.mode === 1 && finishY > -30 && finishY < height + 30) {
-          ctx.fillStyle = "#f3f4f6";
-          ctx.fillRect(0, finishY - 6, width, 12);
-          ctx.font = "18px sans-serif";
-          ctx.fillText("FINISH", 12, finishY - 18);
-        }
-        for (const object of view.objects) {
-          const kind = object.flags & 3;
-          if (object.flags & (kind === 2 ? 8 << local : 4)) continue;
-          const x = width / 2 + (object.lane - 1) * g.laneSpacing * scale,
-            cy = y(object.distance);
-          const ow = (kind === 2 ? g.obstacleW : kind === 1 ? g.coinSize : g.heartSize) * scale;
-          const oh = (kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize) * scale;
-          if (cy < -oh || cy > height + oh) continue;
-          ctx.fillStyle = kind === 2 ? "#f59e0b" : kind === 3 ? "#fb7185" : "#fde047";
-          if (kind === 2) {
-            ctx.fillRect(x - ow / 2, cy - oh / 2, ow, oh);
-            ctx.fillStyle = "#171b24";
-            ctx.fillRect(x - ow / 2, cy - oh / 8, ow, oh / 4);
-          } else {
-            ctx.font = `${ow}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.fillText(kind === 3 ? "♥" : "●", x, cy + oh / 3);
-          }
-        }
-        if (view.feedback.length) setFeedback(view.feedback.join(" · "));
-        view.renderedCars.forEach((car, seat) => {
-          const x = width / 2 + car.lateral * scale,
-            cy = y(car.progress);
-          ctx.fillStyle = seat === local ? "#e74656" : "#40c9d5";
-          ctx.fillRect(
-            x - (g.carWidth * scale) / 2,
-            cy - (g.carHeight * scale) / 2,
-            g.carWidth * scale,
-            g.carHeight * scale,
-          );
-          ctx.fillStyle = "#111827";
-          ctx.fillRect(
-            x - g.carWidth * scale * 0.34,
-            cy - g.carHeight * scale * 0.28,
-            g.carWidth * scale * 0.68,
-            g.carHeight * scale * 0.2,
-          );
-          ctx.fillStyle = "white";
-          ctx.font = "14px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText(seat === local ? "You" : "Rival", x, cy + (g.carHeight * scale) / 2 + 20);
-        });
+        const { countdown, startUs, offsetUs } = intro.current;
+        const reveal =
+          countdown === undefined || startUs === undefined
+            ? 1
+            : countdownReveal(
+                startUs - (performance.now() * 1000 + offsetUs),
+                reducedMotion.current,
+              );
+        if (reveal < 1) drawing.draw(ctx, element.width, element.height, view, time, reveal);
+        else drawing.draw(ctx, element.width, element.height, view, time);
         connection.recordDraw();
         if (time - lastHud > 40) {
           lastHud = time;
@@ -182,88 +192,163 @@ export function RaceView({
   useEffect(() => {
     if (outcome) connection.recordResultCommit();
   }, [connection, outcome]);
+  const hp = frame?.cars[local].hp ?? context.gameplay.maxHealth;
+  const seconds = Math.max(0, Math.ceil(context.gameplay.timeLimit - (frame?.timeUs ?? 0) / 1e6));
+  const remaining = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.ceil(
+        100 *
+          (1 -
+            (frame?.cars[local].progress ?? 0) /
+              (context.gameplay.finishDistance - context.gameplay.carHeight / 2)),
+      ),
+    ),
+  );
   return (
-    <div className="relative flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
-        {state.room?.seats.map((seat, i) => (
-          <div key={i} className="rounded border border-neutral-700 p-3">
-            <p>
-              {seat.name}
-              {i === local ? " (You)" : ""}
-            </p>
-            <p data-testid={`hp-${i}`}>HP {frame?.cars[i].hp ?? context.gameplay.maxHealth}</p>
-            <p>Score {frame?.cars[i].score ?? 0}</p>
-            {context.mode === 1 && (
-              <>
-                <progress
-                  className="w-full"
-                  aria-label={`${i === local ? "Your" : "Opponent"} finish progress`}
-                  value={frame?.cars[i].progress ?? 0}
-                  max={context.gameplay.finishDistance - context.gameplay.carHeight / 2}
+    <div className="race-view">
+      <header className="shrink-0 space-y-2 pr-12">
+        <button
+          className="settings-trigger absolute top-0 right-0"
+          aria-label="Settings"
+          aria-expanded={menu}
+          disabled={countdown !== undefined}
+          onClick={() => {
+            driving.reset();
+            setMenu((value) => !value);
+          }}
+        >
+          <Settings size={22} aria-hidden="true" />
+        </button>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="text-3xl font-heading text-red-400">
+            {context.mode === ModeRoadRage ? "Road Rage" : "Drag Race"}
+          </h1>
+          <div
+            className="flex gap-1"
+            data-testid={`hp-${local}`}
+            aria-label={`Your HP: ${hp} of ${context.gameplay.maxHealth}`}
+          >
+            {context.gameplay.maxHealth <= 8 && <span className="sr-only">HP {hp}</span>}
+            {context.gameplay.maxHealth > 8 ? (
+              <span>
+                ♥ {hp}/{context.gameplay.maxHealth}
+              </span>
+            ) : (
+              Array.from({ length: context.gameplay.maxHealth }, (_, heart) => (
+                <img
+                  key={heart}
+                  src={`${import.meta.env.BASE_URL}textures/heart.png`}
+                  alt=""
+                  width={22}
+                  height={22}
+                  style={{ imageRendering: "pixelated" }}
+                  className={heart < hp ? "object-contain" : "object-contain grayscale opacity-30"}
                 />
-                <p>
-                  {Math.round(
-                    ((frame?.cars[i].progress ?? 0) /
-                      (context.gameplay.finishDistance - context.gameplay.carHeight / 2)) *
-                      100,
-                  )}
-                  %
-                </p>
-              </>
+              ))
             )}
           </div>
-        ))}
+        </div>
+        <div className="flex items-center justify-between gap-3 text-xs text-neutral-400">
+          <p className="flex min-w-0 gap-2">
+            <span className="truncate" title={state.room?.seats[local].name}>
+              {state.room?.seats[local].name}
+            </span>
+            <span className="text-neutral-600">vs</span>
+            <span className="truncate" title={state.room?.seats[1 - local].name}>
+              {state.room?.seats[1 - local].name}
+            </span>
+          </p>
+          <p
+            className="shrink-0 text-base text-white tabular-nums"
+            data-testid={context.mode === ModeRoadRage ? "time-remaining" : "distance-remaining"}
+          >
+            {context.mode === ModeRoadRage
+              ? `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`
+              : `${remaining}% left`}
+          </p>
+        </div>
+      </header>
+      <span className="sr-only" data-testid={`hp-${1 - local}`}>
+        HP {frame?.cars[1 - local].hp ?? context.gameplay.maxHealth}
+      </span>
+      <div className="race-stage">
+        <div className="race-canvas-wrap">
+          <span
+            hidden
+            data-testid="nos-status"
+            data-nos-state={
+              (frame?.cars[local].flags ?? 0) & CarFlagsNOSActive ? "active" : "ready"
+            }
+          />
+
+          <div className="pointer-events-none absolute inset-x-3 top-3 z-10 flex flex-col items-center gap-2 text-center text-xs">
+            {countdown === undefined && frame?.awaiting && !outcome && (
+              <p role="status" className="bg-black/80 p-2">
+                Awaiting confirmation
+              </p>
+            )}
+            {!((state.room?.seats[1 - local]?.flags ?? 0) & SeatFlagsConnected) && !outcome && (
+              <p role="status" className="bg-black/80 p-2">
+                Opponent disconnected—round continues.
+              </p>
+            )}
+            {((countdown === undefined && frame?.stale) || state.status !== "Connected") &&
+              !outcome && (
+                <p role="alert" className="bg-black/80 p-2">
+                  Reconnecting—round continues.
+                </p>
+              )}
+            {state.pending && (
+              <p role="status" className="bg-black/80 p-2">
+                {state.pending}…
+              </p>
+            )}
+            {state.notice && (
+              <p role="alert" className="bg-black/80 p-2">
+                {state.notice}
+              </p>
+            )}
+          </div>
+          {countdown !== undefined && (
+            <div
+              className="race-countdown pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-start text-center"
+              role="status"
+              aria-live="polite"
+              aria-atomic="true"
+            >
+              <p className="multiplayer-countdown" data-testid="countdown">
+                {countdown}
+              </p>
+              <p className="text-sm text-white">Get ready!</p>
+              <button className="multiplayer-text-button pointer-events-auto" onClick={onLeave}>
+                Leave
+              </button>
+            </div>
+          )}
+          <canvas
+            ref={canvas}
+            width={560}
+            height={600}
+            tabIndex={0}
+            role="img"
+            aria-label="Multiplayer race"
+            className="block h-full w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400"
+            onBlur={() => driving.reset()}
+          />
+        </div>
       </div>
-      {context.mode === 2 && (
-        <p data-testid="time-remaining">
-          Time remaining:{" "}
-          {Math.max(0, context.gameplay.timeLimit - (frame?.timeUs ?? 0) / 1e6).toFixed(1)} s
-        </p>
-      )}
-      <p role="status" data-testid="object-feedback">
-        {feedback}
-      </p>
-      <p data-testid="nos-status">
-        {frame?.cars[local].effective === 3 ? "NOS active" : "NOS ready"}
-      </p>
-      {frame?.awaiting && !outcome && <p role="status">Awaiting confirmation</p>}
-      {!((state.room?.seats[1 - local]?.flags ?? 0) & 1) && !outcome && (
-        <p role="status">Opponent disconnected—round continues.</p>
-      )}
-      {(frame?.stale || state.status !== "Connected") && !outcome && (
-        <p role="alert">Reconnecting—round continues.</p>
-      )}
-      <canvas
-        ref={canvas}
-        width={560}
-        height={440}
-        tabIndex={0}
-        role="img"
-        aria-label="Multiplayer race"
-        className="w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400"
-        onBlur={() => {
-          pressed.current.clear();
-          connection.releaseControls();
+      <TouchControls
+        disabled={menu || suspended || Boolean(outcome) || state.status !== "Connected"}
+        onControl={(control, down) => {
+          if (down) canvas.current?.focus({ preventScroll: true });
+          if (down) driving.press(`touch:${control}`, control);
+          else driving.release(`touch:${control}`);
         }}
       />
-      <p className="text-sm text-neutral-400">
-        ← / A and → / D steer · ↑ / W holds NOS · Space / Escape opens menu
-      </p>
-      <button
-        className={button}
-        onClick={() => {
-          connection.releaseControls();
-          setMenu(true);
-        }}
-      >
-        Race menu
-      </button>
       {menu && !outcome && (
-        <div
-          role="dialog"
-          aria-label="Race menu"
-          className="absolute inset-x-4 top-1/3 bg-neutral-950/95 border border-neutral-600 rounded-xl p-5 flex flex-col gap-3"
-        >
+        <div role="dialog" aria-label="Race menu" className="settings-panel race-settings-panel">
           <p>The round continues.</p>
           <button autoFocus className={button} onClick={() => setMenu(false)}>
             Resume
@@ -271,7 +356,7 @@ export function RaceView({
           <button
             className={button}
             onClick={() => {
-              gameAudio.setEnabled(muted);
+              audio.setEnabled(muted);
               setMuted(!muted);
             }}
           >
@@ -282,7 +367,6 @@ export function RaceView({
           </button>
         </div>
       )}
-      {outcome && <RoundResult outcome={outcome} local={local} />}
     </div>
   );
 }

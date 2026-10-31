@@ -1,4 +1,8 @@
+import { CounterMax } from "@dashdevil/contracts/protocol";
 import type { GameConfig } from "./config";
+
+/** Canonical Long Drive spawn horizon, independent of the display. */
+export const LONG_DRIVE_REFERENCE_HEIGHT = 806;
 
 export type Cell = "empty" | "coin" | "obstacle" | "heart";
 export interface RoadSlice {
@@ -16,7 +20,7 @@ export interface Track {
   consumed: Set<number>;
 }
 export function createTrack(seed: number): Track {
-  if (!Number.isInteger(seed) || seed < 1 || seed > 0xffffffff)
+  if (!Number.isInteger(seed) || seed < 1 || seed > CounterMax)
     throw new Error("Seed must be a nonzero uint32");
   return { version: 1, seed, randomState: seed, nextId: 1, slices: [], consumed: new Set() };
 }
@@ -48,7 +52,12 @@ export function appendSlice(
   const slice = Object.freeze({
     id: track.nextId++,
     timeUs,
-    distance: progress + 806 - config.carBottomMargin - config.carHeight / 2 + size / 2,
+    distance:
+      progress +
+      LONG_DRIVE_REFERENCE_HEIGHT -
+      config.carBottomMargin -
+      config.carHeight / 2 +
+      size / 2,
     cells: Object.freeze(cells),
   });
   track.slices.push(slice);

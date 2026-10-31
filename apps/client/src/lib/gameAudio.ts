@@ -1,6 +1,19 @@
 import type { LongDriveEvent } from "@dashdevil/simulation/longDrive";
 import type { GameState } from "@dashdevil/simulation/state";
 
+export type DrivingAudioState = Pick<
+  GameState,
+  | "status"
+  | "paused"
+  | "score"
+  | "health"
+  | "currentLane"
+  | "accelerating"
+  | "countdownTimer"
+  | "roadSpeed"
+>;
+export type AudioCue = LongDriveEvent["type"];
+
 const STORAGE_KEY = "runner-sound-enabled";
 
 /**
@@ -58,21 +71,23 @@ const soundSettings = {
     bodyHz: 150, // Descending tailpipe resonance.
     bodyEndHz: 48,
     bodyGain: 0.55,
-    sweepSeconds: 0.42,
+    sweepSeconds: 0.06,
     resonance: 0.65,
-    gain: 0.26,
+    gain: 0.03, // A brief release puff beneath the dry backfires.
     attackSeconds: 0.012,
-    durationSeconds: 0.55,
+    durationSeconds: 0.08,
   },
   crackle: {
-    gain: 0.5,
-    boostPops: 0,
-    releasePops: 6,
-    gapSeconds: 0.075,
-    timingVariation: 0.45,
-    durationSeconds: 0.055,
-    snapHz: 1400, // Rounded exhaust cracks with a low thump underneath.
-    bodyHz: 125,
+    gain: 0.65,
+    boostPops: 3,
+    releasePops: 0,
+    gapSeconds: 0.065,
+    timingVariation: 0.55, // Uneven spacing avoids a repeating echo cadence.
+    durationSeconds: 0.025, // Short, dry crack; the body decays separately.
+    snapHz: 2400,
+    bodyHz: 145,
+    bangChance: 0.35, // Mix occasional deep bangs into the smaller pops.
+    bangDurationSeconds: 0.055,
   },
 };
 
@@ -213,7 +228,8 @@ export class GameAudio {
       context.state !== "running" ||
       !this.master ||
       !this.noiseBuffer ||
-      settings.gain <= 0
+      settings.gain <= 0 ||
+      popCount <= 0
     )
       return;
 
@@ -221,49 +237,58 @@ export class GameAudio {
     this.stopCrackle();
     let start = context.currentTime;
     for (let i = 0; i < Math.min(8, popCount); i++) {
+      const bang = i === 0 || Math.random() < settings.bangChance;
+      const duration = settings.durationSeconds * (0.8 + Math.random() * 0.4);
+      const bodyDuration = bang ? settings.bangDurationSeconds : duration * 1.4;
       const noise = context.createBufferSource();
       noise.buffer = this.noiseBuffer;
       const filter = context.createBiquadFilter();
       filter.type = "bandpass";
-      filter.frequency.value = settings.snapHz * (0.85 + Math.random() * 0.3);
+      filter.frequency.setValueAtTime(settings.snapHz * (0.8 + Math.random() * 0.4), start);
+      filter.frequency.exponentialRampToValueAtTime(600, start + duration);
       filter.Q.value = 0.7;
       const body = context.createOscillator();
       body.type = "triangle";
-      body.frequency.setValueAtTime(settings.bodyHz, start);
-      body.frequency.exponentialRampToValueAtTime(
-        settings.bodyHz * 0.45,
-        start + settings.durationSeconds,
-      );
+      const bodyHz = settings.bodyHz * (bang ? 0.8 : 1.2) * (0.9 + Math.random() * 0.2);
+      body.frequency.setValueAtTime(bodyHz, start);
+      body.frequency.exponentialRampToValueAtTime(bodyHz * 0.4, start + bodyDuration);
       const envelope = context.createGain();
-      // A 3 ms attack plus a fast decay combines a sharp noise crack with an
-      // exhaust thump. Later pops get softer; random strength avoids a metronome.
-      const strength = settings.gain * (0.75 + Math.random() * 0.25) * Math.pow(0.88, i);
+      const bodyEnvelope = context.createGain();
+      // A sharp crack followed by a separate low tail makes each backfire
+      // percussive. Irregular strength and spacing break up the overrun burst.
+      const strength = settings.gain * (0.65 + Math.random() * 0.35) * Math.pow(0.9, i);
       envelope.gain.setValueAtTime(0, start);
-      envelope.gain.linearRampToValueAtTime(strength, start + 0.003);
-      envelope.gain.exponentialRampToValueAtTime(0.001, start + settings.durationSeconds);
+      envelope.gain.linearRampToValueAtTime(strength, start + 0.001);
+      envelope.gain.exponentialRampToValueAtTime(0.001, start + duration);
+      bodyEnvelope.gain.setValueAtTime(0, start);
+      bodyEnvelope.gain.linearRampToValueAtTime(strength * (bang ? 0.8 : 0.3), start + 0.002);
+      bodyEnvelope.gain.exponentialRampToValueAtTime(0.001, start + bodyDuration);
       noise.connect(filter);
       filter.connect(envelope);
-      body.connect(envelope);
+      body.connect(bodyEnvelope);
+      bodyEnvelope.connect(this.master);
       envelope.connect(this.master);
       const stop = () => {
         // Disconnect scheduled pops immediately on pause, mute, or navigation.
         envelope.disconnect();
+        bodyEnvelope.disconnect();
         noise.stop();
         body.stop();
       };
       this.crackleStops.add(stop);
-      noise.onended = () => {
+      body.onended = () => {
         noise.disconnect();
         filter.disconnect();
         body.disconnect();
         envelope.disconnect();
+        bodyEnvelope.disconnect();
         this.crackleStops.delete(stop);
       };
       // Choose a different part of the shared noise buffer for every pop.
       noise.start(start, Math.random() * this.noiseBuffer.duration * 0.5);
       body.start(start);
-      noise.stop(start + settings.durationSeconds + 0.02);
-      body.stop(start + settings.durationSeconds + 0.02);
+      noise.stop(start + duration + 0.02);
+      body.stop(start + bodyDuration + 0.02);
       start += settings.gapSeconds * (1 + (Math.random() * 2 - 1) * settings.timingVariation);
     }
   }
@@ -411,7 +436,54 @@ export class GameAudio {
     };
   }
 
-  update(state: Readonly<GameState>, events: readonly LongDriveEvent[] = []) {
+  /** Shared one-shot recipes for every game mode. */
+  playEffect(cue: AudioCue) {
+    if (this.disposed) return;
+    switch (cue) {
+      case "countdown":
+        this.tone(440, 440, 0.13, "square", 0.16);
+        break;
+      case "go":
+        this.tone(880, 1100, 0.35, "square", 0.16);
+        break;
+      case "lane":
+        this.tone(180, 90, 0.09, "triangle", 0.2);
+        break;
+      case "heart":
+        [523, 659, 784].forEach((note, index) =>
+          this.tone(note, note, 0.24, "sine", 0.26, index * 0.065),
+        );
+        break;
+      case "coin":
+        this.tone(880, 880, 0.1);
+        this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);
+        break;
+      case "damage":
+        this.tone(130, 30, 0.3, "sawtooth", 0.5);
+        break;
+      case "gameover":
+        [330, 262, 196, 98].forEach((note, index) =>
+          this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16),
+        );
+        break;
+      case "pause":
+        this.tone(440, 220, 0.16);
+        break;
+      case "resume":
+        this.tone(220, 440, 0.16);
+        break;
+    }
+  }
+
+  /** One cue per collision episode; protection gives a lighter bumper tap. */
+  impact(protectedHit = false) {
+    if (this.disposed) return;
+    const strength = protectedHit ? 0.16 : 0.4;
+    this.tone(protectedHit ? 220 : 160, 45, 0.13, "triangle", strength);
+    this.tone(95, 28, 0.22, "sawtooth", strength * 0.65);
+  }
+
+  update(state: Readonly<DrivingAudioState>, events: readonly LongDriveEvent[] = []) {
     if (this.disposed) return;
     // Compare snapshots so effects fire once per event, not every animation frame.
     const previous = this.previous;
@@ -419,44 +491,16 @@ export class GameAudio {
     for (const event of events) {
       if (event.id <= this.lastEventId) continue;
       this.lastEventId = event.id;
-      switch (event.type) {
-        case "countdown":
-          this.tone(440, 440, 0.13, "square", 0.16);
-          break;
-        case "go":
-          this.tone(880, 1100, 0.35, "square", 0.16);
-          break;
-        case "lane":
-          this.tone(180, 90, 0.09, "triangle", 0.2);
-          break;
-        case "heart":
-        case "coin":
-          this.tone(880, 880, 0.1);
-          this.tone(1320, 1320, 0.2, "sine", 0.3, 0.07);
-          break;
-        case "damage":
-          this.tone(130, 30, 0.3, "sawtooth", 0.5);
-          break;
-        case "gameover":
-          [330, 262, 196, 98].forEach((note, index) =>
-            this.tone(note, note * 0.9, 0.3, "triangle", 0.4, index * 0.16),
-          );
-          break;
-        case "pause":
-          this.tone(440, 220, 0.16);
-          break;
-        case "resume":
-          this.tone(220, 440, 0.16);
-          break;
-      }
+      this.playEffect(event.type);
     }
     if (this.context && this.engine && this.engineGain) {
       const running = state.status === "playing" && !state.paused;
       const boosting = running && state.accelerating;
-      if (!running || boosting) {
+      if (!running) {
         this.stopCrackle();
         this.stopRelease();
       }
+      if (boosting) this.stopRelease();
       // Trigger only on throttle edges, not every frame or when resuming pause.
       if (boosting && previous?.status === "playing" && !previous.paused && !previous.accelerating)
         this.exhaustCrackle(soundSettings.crackle.boostPops);

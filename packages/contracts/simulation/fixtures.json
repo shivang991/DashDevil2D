@@ -213,7 +213,7 @@
       }
     },
     {
-      "name": "release preserves shift but never restores older NOS",
+      "name": "release preserves shift and held NOS",
       "mode": "road-rage",
       "seed": 1,
       "overrides": {},
@@ -293,17 +293,17 @@
         ],
         "cars": [
           {
-            "progress": 100,
+            "progress": 160,
             "lateral": 0,
             "lane": 1,
-            "effective": 0,
+            "effective": 3,
             "heldMask": 4
           },
           {
             "progress": 80
           }
         ],
-        "derivation": ".05*800+.15*400=100. Held old boost bit is retained physically; release of winning right clears effective control."
+        "derivation": ".2*800=160. Steering release preserves held acceleration."
       }
     },
     {
@@ -364,6 +364,12 @@
             "tick": 8,
             "timeUs": 150000,
             "seat": 0
+          },
+          {
+            "type": "shift",
+            "tick": 9,
+            "timeUs": 150000,
+            "seat": 0
           }
         ],
         "cars": [
@@ -376,11 +382,11 @@
             "progress": 80
           }
         ],
-        "derivation": ".05*400+.15*800=140; shift is not cancelled."
+        "derivation": ".05*400+.15*800=140; held steering starts its next shift at .15 seconds while NOS continues."
       }
     },
     {
-      "name": "edge steering cancels NOS and counts once; held repeat ignored",
+      "name": "edge steering preserves NOS and counts once; held repeat ignored",
       "mode": "road-rage",
       "seed": 1,
       "overrides": {},
@@ -442,7 +448,7 @@
         ],
         "cars": [
           {
-            "progress": 40,
+            "progress": 80,
             "lateral": -120,
             "effective": 1
           },
@@ -457,7 +463,7 @@
           "timeUs": 0,
           "order": 2
         },
-        "derivation": "Left at left edge has no lateral motion; only fresh press enters history."
+        "derivation": ".1*800=80 with held NOS. Left at left edge has no lateral motion; only fresh press enters history."
       }
     },
     {
@@ -1068,6 +1074,7 @@
       "seed": 1,
       "overrides": {
         "gameplay": {
+          "heartWeight": 0,
           "obstacleWeight": 0,
           "emptyWeight": 1
         }

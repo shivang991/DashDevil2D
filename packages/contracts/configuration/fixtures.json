@@ -405,6 +405,26 @@
         }
       },
       "error": "gameplay.timeLimit"
+    },
+    {
+      "name": "drag-race round-over delay below one second",
+      "mode": "drag-race",
+      "overrides": {
+        "presentation": {
+          "roundOverDelay": 0.999
+        }
+      },
+      "error": "presentation.roundOverDelay"
+    },
+    {
+      "name": "road-rage round-over delay below one second",
+      "mode": "road-rage",
+      "overrides": {
+        "presentation": {
+          "roundOverDelay": 0.999
+        }
+      },
+      "error": "presentation.roundOverDelay"
     }
   ]
 }

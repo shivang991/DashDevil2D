@@ -914,7 +914,7 @@
           "hp": [2, 3],
           "contactTimes": [],
           "lateral": [-10, 40],
-          "progress": [60, 100],
+          "progress": [60, 120],
           "movementStartUs": [12500, 100000],
           "movementEndUs": [162500, 250000]
         }

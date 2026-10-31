@@ -29,7 +29,7 @@ func roomState(t *testing.T, socket *ws.Conn, match func(p.RoomState) bool) p.Ro
 }
 func roomSend(t *testing.T, socket *ws.Conn, a p.Admission, sequence uint32, state p.RoomState, command, mode, ready uint8) {
 	t.Helper()
-	wire, err := p.EncodeMessage(p.RoomCommand{Identity: a.Identity, Sequence: sequence, Revision: state.Revision, Command: command, Mode: mode, Ready: ready}, 65536)
+	wire, err := p.EncodeMessage(p.RoomCommand{Identity: a.Identity, Sequence: sequence, Revision: state.Revision, Command: p.RoomCommandCode(command), Mode: p.Mode(mode), Ready: p.WireBoolean(ready)}, 65536)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,10 +39,10 @@ func roomSend(t *testing.T, socket *ws.Conn, a p.Admission, sequence uint32, sta
 }
 func TestRoomHostChangesModeAndClearsBothReadyStatuses(t *testing.T) {
 	s, c, roots := serverMode(t, false)
-	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Same"}, origin)
+	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Same"}, origin)
 	hostAdmission := v.(p.Admission)
 	host, _ := initializedPair(t, s, roots, hostAdmission, true)
-	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Same"}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Same"}, origin)
 	guestAdmission := v.(p.Admission)
 	guest, _ := initializedPair(t, s, roots, guestAdmission, true)
 	state := roomState(t, host, func(r p.RoomState) bool { return r.Seats[1].Flags&1 != 0 })
@@ -60,10 +60,10 @@ func TestRoomHostChangesModeAndClearsBothReadyStatuses(t *testing.T) {
 
 func TestRoomCountdownDisconnectCancelsAndRequiresFreshReadiness(t *testing.T) {
 	s, c, roots := serverMode(t, false)
-	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, _ := initializedPair(t, s, roots, a, true)
-	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}, origin)
 	b := v.(p.Admission)
 	guest, game := initializedPair(t, s, roots, b, true)
 	state := roomState(t, host, func(r p.RoomState) bool { return r.Seats[1].Flags&1 != 0 })
@@ -103,10 +103,10 @@ func roomReply(t *testing.T, socket *ws.Conn, sequence uint32) p.RoomReply {
 }
 func TestRoomRejectsGuestAuthorityAndHiddenReadinessWithoutDroppingPair(t *testing.T) {
 	s, c, roots := serverMode(t, false)
-	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, _ := initializedPair(t, s, roots, a, true)
-	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code, Name: "Guest"}, origin)
+	_, v = admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin, Code: code, Name: "Guest"}, origin)
 	b := v.(p.Admission)
 	guest, _ := initializedPair(t, s, roots, b, true)
 	state := roomState(t, host, func(r p.RoomState) bool { return r.Seats[1].Flags&1 != 0 })
@@ -140,7 +140,7 @@ func TestRoomRejectsGuestAuthorityAndHiddenReadinessWithoutDroppingPair(t *testi
 
 func TestReturnToLobbyRejectsUnfinishedRoundWithoutDroppingPair(t *testing.T) {
 	s, c, roots := serverMode(t, false)
-	_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Name: "Host"}, origin)
+	_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, _ := initializedPair(t, s, roots, a, true)
 	roomSend(t, host, a, 1, p.RoomState{}, 4, 1, 1)

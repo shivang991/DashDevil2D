@@ -1,3 +1,5 @@
+import { CounterMax, DefaultFrameBytes, ProjectionScale } from "../generated/constants";
+
 /** Mechanical layout interpreter. Game/context semantics belong to validation.ts. */
 export interface Field {
   readonly name: string;
@@ -15,14 +17,14 @@ const widths: Record<string, number> = { u8: 1, u16: 2, u32: 4, us: 8, f64: 8 };
 const maximum: Record<string, number> = {
   u8: 255,
   u16: 65535,
-  u32: 4294967295,
+  u32: CounterMax,
   us: Number.MAX_SAFE_INTEGER,
 };
 function fail(message: string): never {
   throw new WireError(message);
 }
 export function quantize(value: number): number {
-  const q = Math.floor(value * 1024 + 0.5);
+  const q = Math.floor(value * ProjectionScale + 0.5);
   if (!Number.isFinite(value) || !Number.isSafeInteger(q)) fail("position projection overflow");
   return Object.is(q, -0) ? 0 : q;
 }
@@ -50,7 +52,7 @@ export function encodeRecord(
   limit: number,
   projection = false,
 ): Uint8Array {
-  if (!Number.isSafeInteger(limit) || limit < 0 || limit > 0xffffffff) fail("invalid record limit");
+  if (!Number.isSafeInteger(limit) || limit < 0 || limit > CounterMax) fail("invalid record limit");
   // Grow only up to the caller's negotiated bound, rather than trusting section counts.
   let bytes = new Uint8Array(Math.min(limit, 1024));
   let at = 0;
@@ -276,12 +278,12 @@ export function projectRecord(layouts: Layouts, name: string, value: unknown): U
   return encodeRecord(layouts, name, value, 1048576, true);
 }
 export function crc32c(bytes: Uint8Array): number {
-  let crc = 0xffffffff;
+  let crc = CounterMax;
   for (const b of bytes) {
     crc ^= b;
     for (let i = 0; i < 8; i++) crc = (crc >>> 1) ^ (crc & 1 ? 0x82f63b78 : 0);
   }
-  return (crc ^ 0xffffffff) >>> 0;
+  return (crc ^ CounterMax) >>> 0;
 }
 /** Stream boundaries may split a prefix/body or contain many frames. */
 export class FrameReader {
@@ -289,9 +291,9 @@ export class FrameReader {
   private body?: Uint8Array;
   private used = 0;
   private readonly limit: number;
-  constructor(limit = 65536) {
+  constructor(limit = DefaultFrameBytes) {
     this.limit = limit;
-    if (!Number.isSafeInteger(limit) || limit < 5 || limit > 0xffffffff)
+    if (!Number.isSafeInteger(limit) || limit < 5 || limit > CounterMax)
       fail("invalid frame limit");
   }
   push(part: Uint8Array): Uint8Array[] {

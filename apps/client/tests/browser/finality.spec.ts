@@ -48,6 +48,7 @@ for (const delayed of [0, 1])
       }
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
       await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
+      await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
       await pages[1]
         .getByLabel("Room code")
         .fill(await pages[0].getByTestId("room-code").innerText());
@@ -57,11 +58,11 @@ for (const delayed of [0, 1])
         await page.getByRole("button", { name: "Ready", exact: true }).click();
       await pages[0].getByRole("button", { name: "Start round" }).click();
       await expect(pages[delayed].getByTestId("countdown")).toBeVisible();
-      await expect(pages[1 - delayed].getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(pages[1 - delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 15000,
       });
       await expect(pages[delayed].locator("html")).toHaveAttribute("data-delayed-room-state", "3");
-      await expect(pages[delayed].getByRole("heading", { name: "Round result" })).toBeVisible({
+      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
         timeout: 1000,
       });
       const outcomes = await Promise.all(
@@ -112,11 +113,28 @@ for (const delayed of [0, 1])
       await pages[delayed].evaluate(() => sessionStorage.setItem("finalityReload", "1"));
       await pages[delayed].reload();
       await pages[delayed].getByRole("button", { name: /Drag Race/ }).click();
-      await expect(pages[delayed].getByRole("heading", { name: "Round result" })).toBeVisible({
-        timeout: 1200,
-      });
+      // Terminal acceptance is immediate; the results dialog deliberately waits.
+      await expect
+        .poll(async () => {
+          const evidence = pages[delayed].getByTestId("room-evidence");
+          if (!(await evidence.count())) return 0;
+          return JSON.parse((await evidence.textContent())!).diagnostics.outcomeReceivedUs ?? 0;
+        })
+        .toBeGreaterThan(0);
       const before = JSON.parse((await pages[delayed].getByTestId("room-evidence").textContent())!);
       expect(before.baselineBytes).toBe(0);
+      expect(
+        before.cars.map(({ progress, lateral, hp, score }) => ({ progress, lateral, hp, score })),
+      ).toEqual(outcomes[delayed].cars);
+      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toHaveCount(0);
+      await expect(pages[delayed].getByRole("heading", { name: "Round Over" })).toBeVisible({
+        timeout: 3000,
+      });
+      const elapsedUs = await pages[delayed].evaluate(
+        (receivedUs) => performance.now() * 1000 - receivedUs,
+        before.diagnostics.outcomeReceivedUs,
+      );
+      expect(elapsedUs).toBeGreaterThanOrEqual(1_000_000);
       await expect
         .poll(
           async () =>

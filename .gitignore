@@ -8,4 +8,7 @@ apps/client/playwright-report/
 
 .local/
 infra/.env
+infra/deploy-vps.local.sh
 infra/certs/
+
+**/storybook-static/

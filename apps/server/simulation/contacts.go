@@ -13,7 +13,7 @@ func (e *Engine) tailgating(seat int) bool {
 func (e *Engine) multiplier(seat int) float64 {
 	requested := [2]float64{1, 1}
 	for i, car := range e.state.Cars {
-		if car.Effective == 3 {
+		if car.Flags&protocol.CarFlagsNOSActive != 0 {
 			requested[i] = e.context.Gameplay.AccelSpeedMultiplier
 		}
 	}
@@ -23,7 +23,7 @@ func (e *Engine) multiplier(seat int) float64 {
 	return requested[seat]
 }
 func rawLateralSpeed(car protocol.Car) float64 {
-	if car.Phase == 0 {
+	if car.Phase == protocol.MovementPhaseSteady {
 		return 0
 	}
 	return (car.MovementTarget - car.MovementOrigin) * 1e6 / float64(car.MovementEndUs-car.MovementStartUs)
@@ -79,19 +79,19 @@ func (e *Engine) clearance(start, end float64) float64 {
 func (e *Engine) playerContact(start, end float64) float64 {
 	a, b, g := e.state.Cars[0], e.state.Cars[1], e.context.Gameplay
 	e.refreshContact()
-	if e.state.Contact.Flags&1 != 0 {
+	if e.state.Contact.Flags&protocol.ContactFlagsEpisodeActive != 0 {
 		return math.Inf(1)
 	}
-	if a.Phase != 1 && b.Phase != 1 && math.Abs(a.Lateral-b.Lateral) < g.CarWidth && math.Abs(a.Progress-b.Progress) < g.CarHeight-1e-8 {
+	if a.Phase != protocol.MovementPhaseShift && b.Phase != protocol.MovementPhaseShift && math.Abs(a.Lateral-b.Lateral) < g.CarWidth && math.Abs(a.Progress-b.Progress) < g.CarHeight-1e-8 {
 		return math.Inf(1)
 	}
 	entry, exit := start, end
 	x, vx := a.Lateral-b.Lateral, e.lateralSpeed(0)-e.lateralSpeed(1)
 	y, m := a.Progress-b.Progress, e.multiplier(0)-e.multiplier(1)
 	// Test requested motion before the follower constraint hides a shifting impact.
-	if (a.Phase == 1 && a.Progress < b.Progress) || (b.Phase == 1 && b.Progress < a.Progress) {
+	if (a.Phase == protocol.MovementPhaseShift && a.Progress < b.Progress) || (b.Phase == protocol.MovementPhaseShift && b.Progress < a.Progress) {
 		requested := func(car protocol.Car) float64 {
-			if car.Effective == 3 {
+			if car.Flags&protocol.CarFlagsNOSActive != 0 {
 				return g.AccelSpeedMultiplier
 			}
 			return 1
@@ -153,16 +153,16 @@ func (e *Engine) playerContact(start, end float64) float64 {
 func (e *Engine) resolvePlayers(time float64, events *[]Observation) {
 	timeUs, _ := CanonicalTime(time)
 	g := e.context.Gameplay
-	phases := [2]uint8{e.state.Cars[0].Phase, e.state.Cars[1].Phase}
+	phases := [2]protocol.MovementPhase{e.state.Cars[0].Phase, e.state.Cars[1].Phase}
 	e.state.Contact.Episode++
-	e.state.Contact.Flags = 3
-	if e.context.Mode == 2 && !(phases[0] == 1 && phases[1] == 1) && (phases[0] != 0 || phases[1] != 0) && e.state.LatestPress != nil && e.group != nil {
+	e.state.Contact.Flags = protocol.ContactFlagsEpisodeDamageDecided
+	if e.context.Mode == protocol.ModeRoadRage && !(phases[0] == protocol.MovementPhaseShift && phases[1] == protocol.MovementPhaseShift) && (phases[0] != protocol.MovementPhaseSteady || phases[1] != protocol.MovementPhaseSteady) && e.state.LatestPress != nil && e.group != nil {
 		e.group.damage[1-e.state.LatestPress.Seat] = uint64(g.PlayerContactDamage)
 	}
 	for seat := range e.state.Cars {
 		car := &e.state.Cars[seat]
-		if car.Phase == 1 {
-			car.Phase = 2
+		if car.Phase == protocol.MovementPhaseShift {
+			car.Phase = protocol.MovementPhaseReturn
 			car.Target = car.Departure
 			car.MovementOrigin = car.Lateral
 			car.MovementTarget = (float64(car.Departure) - 1) * g.LaneSpacing
@@ -180,7 +180,7 @@ func (e *Engine) resolvePlayers(time float64, events *[]Observation) {
 func (e *Engine) lateralBlocked(seat int) bool {
 	a, b, g := e.state.Cars[seat], e.state.Cars[1-seat], e.context.Gameplay
 	x := a.Lateral - b.Lateral
-	return e.state.Contact.Flags&1 != 0 && a.Phase == 2 && math.Abs(a.Progress-b.Progress) < g.CarHeight-1e-8 && math.Abs(x) <= g.CarWidth+1e-8 && x*rawLateralSpeed(a) < 0 && x*(rawLateralSpeed(a)-rawLateralSpeed(b)) < 0
+	return e.state.Contact.Flags&protocol.ContactFlagsEpisodeActive != 0 && a.Phase == protocol.MovementPhaseReturn && math.Abs(a.Progress-b.Progress) < g.CarHeight-1e-8 && math.Abs(x) <= g.CarWidth+1e-8 && x*rawLateralSpeed(a) < 0 && x*(rawLateralSpeed(a)-rawLateralSpeed(b)) < 0
 }
 func (e *Engine) lateralSpeed(seat int) float64 {
 	if e.lateralBlocked(seat) {
@@ -192,17 +192,17 @@ func (e *Engine) lateralSpeed(seat int) float64 {
 func (e *Engine) refreshContact() {
 	a, b, g := e.state.Cars[0], e.state.Cars[1], e.context.Gameplay
 	if math.Abs(a.Lateral-b.Lateral) > g.CarWidth+1e-8 || math.Abs(a.Progress-b.Progress) > g.CarHeight+1e-8 {
-		e.state.Contact.Flags = 0
+		e.state.Contact.Flags = protocol.ContactFlagsNone
 	}
-	e.state.Contact.Flags = e.state.Contact.Flags & 3
+	e.state.Contact.Flags = e.state.Contact.Flags & protocol.ContactFlagsEpisodeDamageDecided
 	if e.tailgating(0) || e.tailgating(1) {
-		e.state.Contact.Flags |= 4
+		e.state.Contact.Flags |= protocol.ContactFlagsTailgating
 	}
-	e.state.Contact.BlockedSeat = 0
+	e.state.Contact.BlockedSeat = protocol.SeatOrNoneNone
 	if e.tailgating(0) || e.lateralBlocked(0) {
-		e.state.Contact.BlockedSeat = 1
+		e.state.Contact.BlockedSeat = protocol.SeatOrNonePlayer1
 	} else if e.tailgating(1) || e.lateralBlocked(1) {
-		e.state.Contact.BlockedSeat = 2
+		e.state.Contact.BlockedSeat = protocol.SeatOrNonePlayer2
 	}
 
 }

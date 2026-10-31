@@ -154,7 +154,7 @@ for (const fps of [30, 60, 120]) {
     expect(now).toBeLessThanOrEqual(3050);
     expect(context.gameState.status).toBe("playing");
   });
-  test(`${fps} FPS: held steering respects lane bounds and latest-key release`, () => {
+  test(`${fps} FPS: held steering respects lane bounds and independent accelerator release`, () => {
     playing();
     key("ArrowUp");
     frame(fps);
@@ -162,10 +162,10 @@ for (const fps of [30, 60, 120]) {
     key("ArrowLeft");
     advance(0.5, fps);
     expect(context.gameState.currentLane).toBe(0);
-    expect(context.gameState.accelerating).toBe(false);
+    expect(context.gameState.accelerating).toBe(true);
     key("ArrowLeft", "keyup");
     frame(fps);
-    expect(context.gameState.accelerating).toBe(false);
+    expect(context.gameState.accelerating).toBe(true);
     key("d");
     advance(0.5, fps);
     expect(context.gameState.currentLane).toBe(2);

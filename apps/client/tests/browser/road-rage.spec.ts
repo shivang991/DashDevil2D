@@ -24,6 +24,7 @@ test(
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
       await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
       const code = await pages[0].getByTestId("room-code").innerText();
+      await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
       await pages[1].getByLabel("Room code").fill(code);
       await pages[1].getByLabel("Room code").press("Enter");
       await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
@@ -48,7 +49,10 @@ test(
       if (!defaults) {
         await pages[0].getByRole("img", { name: "Multiplayer race" }).focus();
         await pages[0].keyboard.down("ArrowUp");
-        await expect(pages[0].getByTestId("nos-status")).toHaveText("NOS active");
+        await expect(pages[0].getByTestId("nos-status")).toHaveAttribute(
+          "data-nos-state",
+          "active",
+        );
         await expect
           .poll(
             async () => {
@@ -95,7 +99,7 @@ test(
         contentType: "image/png",
       });
       for (const page of pages)
-        await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+        await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
           timeout: 65000,
         });
       await pages[0].keyboard.up("ArrowUp");
@@ -113,7 +117,7 @@ test(
         const hp = outcomes[0].cars.map((car: { hp: number }) => car.hp);
         expect(outcomes[0].result).toBe(hp[0] > hp[1] ? 0 : hp[1] > hp[0] ? 1 : 2);
         for (const page of pages)
-          await expect(page.getByTestId("time-remaining")).toHaveText("Time remaining: 0.0 s");
+          await expect(page.getByTestId("time-remaining")).toHaveText("0:00");
       }
       records.push({ outcomes, final: await Promise.all(pages.map(read)) });
       for (let seat = 0; seat < 2; seat++)
@@ -123,11 +127,13 @@ test(
         });
       if (!defaults) {
         await pages[1].getByRole("button", { name: "Return to Lobby", exact: true }).click();
+        await expect(pages[1].getByText("Waiting for other player to return…")).toBeVisible();
+        await pages[0].getByRole("button", { name: "Return to Lobby", exact: true }).click();
         await expect(pages[0].getByLabel("Multiplayer mode")).toBeVisible();
-        await pages[0].getByLabel("Multiplayer mode").selectOption("1");
+        await pages[0].getByRole("button", { name: "Drag Race", exact: true }).click();
         for (const page of pages)
           await expect(page.getByTestId("selected-mode")).toHaveText("Drag Race");
-        await pages[0].getByLabel("Multiplayer mode").selectOption("2");
+        await pages[0].getByRole("button", { name: "Road Rage", exact: true }).click();
         for (const page of pages)
           await expect(page.getByTestId("selected-mode")).toHaveText("Road Rage");
         await start();
@@ -138,10 +144,13 @@ test(
         for (let seat = 0; seat < 2; seat++) {
           expect(rematch[seat].identity).toEqual(initial[seat].identity);
           expect(rematch[seat].cars.map((car: { hp: number }) => car.hp)).toEqual([6, 6]);
-          await expect(pages[seat].getByTestId("nos-status")).toHaveText("NOS ready");
+          await expect(pages[seat].getByTestId("nos-status")).toHaveAttribute(
+            "data-nos-state",
+            "ready",
+          );
         }
         for (const page of pages)
-          await expect(page.getByRole("heading", { name: "Round result" })).toBeVisible({
+          await expect(page.getByRole("heading", { name: "Round Over" })).toBeVisible({
             timeout: 15000,
           });
       }

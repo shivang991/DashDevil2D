@@ -1,3 +1,4 @@
+import { CounterMax } from "@dashdevil/contracts/protocol";
 import defaults from "@dashdevil/contracts/configuration";
 import { configurationResources } from "@dashdevil/contracts/validation";
 
@@ -108,6 +109,7 @@ const durationFields = new Set([
   "networkBudgetWindow",
   "simulationLagThreshold",
   "correctionSmoothing",
+  "roundOverDelay",
 ]);
 function captureGroup<T extends object>(group: string, baseline: T, override: unknown): Numeric<T> {
   requireValue(
@@ -213,7 +215,7 @@ export function captureConfiguration<M extends Mode>(
       "derived speed must remain finite",
     );
   } else {
-    requireValue(g.tickRate <= 0xffffffff, "gameplay.tickRate", "must fit an unsigned 32-bit tick");
+    requireValue(g.tickRate <= CounterMax, "gameplay.tickRate", "must fit an unsigned 32-bit tick");
     requireValue(
       Number.isFinite(
         g.maxRoadSpeed * g.accelSpeedMultiplier +
@@ -247,7 +249,7 @@ export function captureConfiguration<M extends Mode>(
       }
     } else {
       requireValue(
-        g.timeLimit * g.tickRate <= 0xffffffff,
+        g.timeLimit * g.tickRate <= CounterMax,
         "gameplay.timeLimit",
         "round must end before tick exhaustion",
       );
@@ -268,6 +270,11 @@ export function captureConfiguration<M extends Mode>(
     presentation.correctionSmoothing <= 0.25,
     "presentation.correctionSmoothing",
     "must be zero or at most 250 ms",
+  );
+  requireValue(
+    presentation.roundOverDelay >= 1,
+    "presentation.roundOverDelay",
+    "must be at least one second",
   );
   requireValue(
     presentation.gameOverFadeMaxOpacity === 0 || presentation.gameOverFadeSpeed > 0,
@@ -301,7 +308,7 @@ export function captureConfiguration<M extends Mode>(
     "must fit the length prefix and message discriminator",
   );
   requireValue(
-    connection.reliableFrameBytes - 4 <= 0xffffffff,
+    connection.reliableFrameBytes - 4 <= CounterMax,
     "connection.reliableFrameBytes",
     "body length must fit uint32",
   );

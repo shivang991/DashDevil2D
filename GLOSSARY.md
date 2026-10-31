@@ -89,6 +89,9 @@ Temporary protection after taking damage in Road Rage, preventing further HP los
 **NOS**:
 The unlimited, held speed boost in Drag Race and Road Rage, with no fuel, cooldown, or duration limit; the primary mechanic for overtaking. Release, steering, or a lane return cancels it, and activation requires a fresh boost press outside a lane return.
 
+**Multiplayer driving input**:
+A player's combined steering and NOS holds from keyboard and touch in Drag Race and Road Rage. A control remains held until its last input source releases; interrupted driving requires fresh input to resume.
+
 **Road progress**:
 A multiplayer car's distance along the shared road, advancing independently of the other car's progress.
 
@@ -107,6 +110,9 @@ Following another car in the same lane when contact prevents the trailing car fr
 **Track**:
 The ordered placement of road objects across three lanes along the road, finite in Drag Race and extended during play in Long Drive and Road Rage.
 
+**Road scenery**:
+The visual appearance of the road surface and roadside surroundings. Scenery does not affect lanes, road-object placement, or collisions.
+
 **Road slice**:
 A position along the road with one cell for each lane; each cell is empty or contains a single obstacle, coin, or heart.
 
@@ -121,4 +127,3 @@ A road object that can damage a car on contact. Each multiplayer obstacle's inte
 
 **Coin**:
 A pickup worth ten points, with no effect on multiplayer victory. Long Drive includes coins by default; multiplayer modes exclude them by default.
-

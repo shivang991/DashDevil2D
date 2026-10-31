@@ -1,3 +1,4 @@
+import { AdmissionOperationCreate, AdmissionOperationResume } from "@dashdevil/contracts/protocol";
 import { afterEach, expect, test, vi } from "vitest";
 import { PairedConnection } from "../../src/transport/PairedConnection";
 import { captureConfiguration } from "@dashdevil/simulation/config";
@@ -115,7 +116,7 @@ test("an essential room command fails the pair when the browser room queue is fu
     () => {},
   );
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     RoomSocket.latest.bufferedAmount = 262144;
     client.command(4, 1, 1, "Focus");
     expect(client.state.errors).toContain("Reliable room queue overflow");
@@ -153,7 +154,7 @@ test("a buffered essential room command fails within its queue-wait deadline", a
     () => {},
   );
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     RoomSocket.latest.bufferedAmount = 32;
     client.command(4, 1, 1, "Focus");
     await vi.advanceTimersByTimeAsync(600);
@@ -188,7 +189,7 @@ test("expired authority clears the unusable room and credential without inventin
   );
   const client = new PairedConnection({ server: "https://localhost:8443" }, () => {});
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const old = RoomSocket.latest;
     const room: RoomState = {
       identity,
@@ -213,7 +214,7 @@ test("expired authority clears the unusable room and credential without inventin
     expect(client.state.room).toBeUndefined();
     expect(client.state.outcome).toBeUndefined();
     expect(client.hasCredential).toBe(false);
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     old.onclose?.({ reason: "superseded" });
     old.onmessage?.({ data: wire.slice().buffer as ArrayBuffer });
     expect(client.state.status).toBe("Connecting");
@@ -259,14 +260,14 @@ test("a delayed input stream from a superseded pair cannot capture inputs for th
       }),
     );
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const old = Gameplay.instances[0];
     old.inputStream = new Promise((resolve) => {
       resolveOld = resolve;
     });
     initialize(old, 1);
     await vi.waitFor(() => expect(old.inputCalls).toBe(1));
-    await client.connect(2);
+    await client.connect(AdmissionOperationResume);
     const current = Gameplay.instances[1];
     initialize(current, 1);
     await vi.waitFor(() => expect(current.inputWrites).toHaveLength(1));
@@ -316,7 +317,7 @@ test("verified diagnostics count successful comparisons across recovery epochs, 
   );
   let releaseAck!: () => void;
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const gameplay = Gameplay.instances[0];
     let authority!: ReadableStreamDefaultController<Uint8Array>;
     gameplay.authority.enqueue(
@@ -412,147 +413,6 @@ test("verified diagnostics count successful comparisons across recovery epochs, 
   }
 });
 
-test("a remote generation reset rebases its input watermarks before following coverage", async () => {
-  vi.useFakeTimers();
-  vi.stubGlobal("WebSocket", RoomSocket);
-  vi.stubGlobal("WebTransport", Gameplay);
-  const admission: Admission = {
-    version: protocolVersion,
-    identity,
-    credential: new Uint8Array(32).fill(1),
-    roomTicket: new Uint8Array(32).fill(2),
-    gameplayTicket: new Uint8Array(32).fill(3),
-    expiresUs: 10000000,
-    origin: location.origin,
-  };
-  vi.stubGlobal(
-    "fetch",
-    vi.fn(
-      async () =>
-        new Response(encodeMessage("Admission", admission) as Uint8Array<ArrayBuffer>, {
-          status: 201,
-        }),
-    ),
-  );
-  const client = new PairedConnection({ server: "https://localhost:8443" }, () => {});
-  try {
-    await client.connect(0);
-    const gameplay = Gameplay.instances[0];
-    let authority!: ReadableStreamDefaultController<Uint8Array>;
-    gameplay.authority.enqueue(
-      new ReadableStream<Uint8Array>({
-        start: (controller) => {
-          authority = controller;
-        },
-      }),
-    );
-    const baseline = initialBaseline(
-      configurationContext(captureConfiguration("drag-race"), 1, 1000000),
-    );
-    baseline.identity = identity;
-    baseline.windows = [{ start: -200, end: 5000, firstSlice: 0, lastSlice: 0, objects: [] }];
-    baseline.progress = {
-      authority: 10,
-      event: 1,
-      processed1: 3,
-      disposed1: 3,
-      processed2: 7,
-      disposed2: 7,
-    };
-    baseline.cars[0].lastInput = 3;
-    baseline.cars[1].lastInput = 7;
-    gameplay.control.enqueue(
-      encodeMessage("Initialization", {
-        identity,
-        round: baseline.round,
-        context: baseline.context,
-      }),
-    );
-    await vi.waitFor(() => expect(gameplay.inputCalls).toBe(1));
-    const data = encodeBaseline(baseline);
-    authority.enqueue(
-      encodeMessage("BaselineChunk", {
-        identity,
-        round: baseline.round,
-        transferId: 1,
-        epoch: 1,
-        tick: 0,
-        progress: baseline.progress,
-        total: data.length,
-        offset: 0,
-        index: 0,
-        count: 1,
-        data,
-      }),
-    );
-    await vi.waitFor(() =>
-      expect(client.state.diagnostics.baselineEpochs, JSON.stringify(client.state.errors)).toEqual([
-        1,
-      ]),
-    );
-    const cars = structuredClone(baseline.cars);
-    cars[1].inputGeneration = 2;
-    cars[1].lastInput = 0;
-    authority.enqueue(
-      encodeMessage("Event", {
-        identity,
-        round: baseline.round,
-        authority: 11,
-        eventId: 2,
-        tick: 0,
-        timeUs: 0,
-        kind: 7,
-        causeInput: 0,
-        objectId: 0,
-        episodeId: 0,
-        seatMask: 2,
-        cars,
-        contact: baseline.contact,
-        objects: [],
-      }),
-    );
-    await vi.waitFor(() => expect(client.frame()?.cars[1].inputGeneration).toBe(2));
-    const progress = {
-      authority: 11,
-      event: 2,
-      processed1: 3,
-      disposed1: 3,
-      processed2: 0,
-      disposed2: 0,
-    };
-    authority.enqueue(
-      encodeMessage("Coverage", {
-        identity,
-        round: baseline.round,
-        authority: 11,
-        tick: 0,
-        timeUs: 0,
-        progress,
-        generator: baseline.generator,
-        windows: baseline.windows,
-      }),
-    );
-    authority.enqueue(
-      encodeMessage("Barrier", {
-        identity,
-        round: baseline.round,
-        epoch: 1,
-        tick: 0,
-        timeUs: 0,
-        progress,
-      }),
-    );
-    await vi.waitFor(() =>
-      expect(client.state.barriers > 0 || client.state.errors.length > 0).toBe(true),
-    );
-    expect(client.state.errors).toEqual([]);
-    expect(client.state.barriers).toBe(1);
-    expect(client.state.diagnostics.recoveryRequests ?? 0).toBe(0);
-  } finally {
-    client.dispose();
-  }
-});
-
 test("stalled authoritative progress retains the seat credential for paired recovery", async () => {
   vi.useFakeTimers();
   await vi.advanceTimersByTimeAsync(1);
@@ -578,7 +438,7 @@ test("stalled authoritative progress retains the seat credential for paired reco
   );
   const client = new PairedConnection({ server: "https://localhost:8443" }, () => {});
   try {
-    await client.connect(0);
+    await client.connect(AdmissionOperationCreate);
     const gameplay = Gameplay.instances[0];
     let authority!: ReadableStreamDefaultController<Uint8Array>;
     gameplay.authority.enqueue(

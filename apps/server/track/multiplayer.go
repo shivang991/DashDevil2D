@@ -25,19 +25,19 @@ func NewMultiplayer(context protocol.Context) (*Multiplayer, error) {
 	if e != nil {
 		return nil, e
 	}
-	if context.Mode != 1 && context.Mode != 2 {
+	if context.Mode != protocol.ModeDragRace && context.Mode != protocol.ModeRoadRage {
 		return nil, fmt.Errorf("multiplayer mode required")
 	}
 	return &Multiplayer{context: context, generator: generator, state: PlacementState{RandomIndex: 1, HeartIndex: 1, Slices: []Slice{}}}, nil
 }
 func (t *Multiplayer) EnsureThrough(distance float64) error {
-	if math.IsNaN(distance) || math.IsInf(distance, 0) || distance < 0 || math.Ceil(distance*1024) > 9007199254740991 {
+	if math.IsNaN(distance) || math.IsInf(distance, 0) || distance < 0 || math.Ceil(distance*protocol.ProjectionScale) > 9007199254740991 {
 		return fmt.Errorf("unrepresentable track coverage")
 	}
 	g := t.context.Gameplay
 	hearts := 0.0
 	finish := math.Inf(1)
-	if t.context.Mode == 1 {
+	if t.context.Mode == protocol.ModeDragRace {
 		hearts = g.ReservedHearts
 		finish = g.FinishDistance
 	}

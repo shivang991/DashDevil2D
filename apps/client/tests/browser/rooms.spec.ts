@@ -21,6 +21,7 @@ test("two React participants adopt host mode, ready and share a physics-free cou
     const code = await pages[0].getByTestId("room-code").innerText();
     expect(code).toMatch(/^\d{4}$/);
     await pages[1].getByRole("button", { name: /Drag Race/ }).click();
+    await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[1].getByLabel("Room code").fill(code);
     await expect(pages[1].getByRole("button", { name: "Join Room", exact: true })).toBeEnabled();
     await pages[1].getByLabel("Room code").press("Enter");
@@ -28,7 +29,7 @@ test("two React participants adopt host mode, ready and share a physics-free cou
     await expect(pages[1].getByTestId("selected-mode")).toHaveText("Road Rage");
     for (const page of pages)
       await expect(page.getByText("Same Driver (You)", { exact: true })).toBeVisible();
-    await expect(pages[1].getByLabel("Multiplayer mode")).toHaveCount(0);
+    await expect(pages[1].getByRole("button", { name: "Road Rage", exact: true })).toBeDisabled();
     await info.attach("lobby.png", { body: await pages[0].screenshot(), contentType: "image/png" });
     await pages[0].getByRole("button", { name: "Ready", exact: true }).click();
     await pages[1].getByRole("button", { name: "Ready", exact: true }).click();
@@ -139,6 +140,7 @@ test("four-digit entry retains leading zeros and shows admission errors beside t
   });
   await page.goto("/");
   await page.getByRole("button", { name: /Drag Race/ }).click();
+  await page.getByRole("button", { name: "Join Room", exact: true }).click();
   await page.getByLabel("Room code").fill("0042");
   await expect(page.getByRole("button", { name: "Join Room", exact: true })).toBeEnabled();
   await page.getByLabel("Room code").press("Enter");
@@ -166,6 +168,7 @@ test("storage denial retains one local name across entry, admission and return",
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
   await expect(page.getByText(`${name} (You)`, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Leave", exact: true }).click();
+  await page.getByRole("button", { name: "Confirm leave", exact: true }).click();
   await expect(page.getByText(name, { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Back", exact: true }).click();
   await expect(page.getByText(name, { exact: true })).toBeVisible();
@@ -188,13 +191,14 @@ test("host mode changes clear readiness and a reloaded tab recovers its authenti
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
     await expect(pages[0].getByTestId("connection-state")).toHaveText("Connected");
     const code = await pages[0].getByTestId("room-code").innerText();
+    await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await pages[1].getByLabel("Room code").fill(code);
     await pages[1].getByRole("button", { name: "Join Room", exact: true }).click();
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
     for (const page of pages)
       await page.getByRole("button", { name: "Ready", exact: true }).click();
     await expect(pages[0].getByRole("button", { name: "Start round" })).toBeEnabled();
-    await pages[0].getByLabel("Multiplayer mode").selectOption("2");
+    await pages[0].getByRole("button", { name: "Road Rage", exact: true }).click();
     for (const page of pages) {
       await expect(page.getByTestId("selected-mode")).toHaveText("Road Rage");
       await expect(page.getByRole("button", { name: "Ready", exact: true })).toBeVisible();
@@ -219,7 +223,8 @@ test("host mode changes clear readiness and a reloaded tab recovers its authenti
     await pages[0].getByRole("button", { name: "Leave", exact: true }).click();
     await expect(pages[0].getByRole("button", { name: "Cancel", exact: true })).toBeFocused();
     await pages[0].getByRole("button", { name: "Cancel", exact: true }).press("Escape");
-    await expect(pages[0].getByRole("dialog")).toHaveCount(0);
+    await expect(pages[0].getByRole("dialog", { name: "Leave room?" })).toHaveCount(0);
+    await expect(pages[0].getByRole("dialog", { name: "Starting" })).toBeVisible();
     await pages[0].getByRole("button", { name: "Leave", exact: true }).click();
     await pages[0].getByRole("button", { name: "Confirm leave", exact: true }).click();
     await expect(

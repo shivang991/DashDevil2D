@@ -23,6 +23,8 @@ case "$PUBLIC_HOST" in
 esac
 compose() { docker compose --env-file "$infra_dir/.env" -f "$infra_dir/compose.yml" "$@"; }
 compose config --quiet
+# Download the certificate helper before interrupting the running deployment.
+compose pull certbot
 compose build client server nginx
 # Reject an unsafe supervisor timeout before touching the running deployment.
 compose run --rm --no-deps --entrypoint /usr/local/bin/dashdevil-server server \

@@ -11,6 +11,11 @@ import (
 	"github.com/shivang991/DashDevil2D/apps/server/track"
 )
 
+const (
+	seatMaskPlayer1 uint8 = 1 << protocol.SeatIndexPlayer1
+	seatMaskPlayer2 uint8 = 1 << protocol.SeatIndexPlayer2
+)
+
 type Observation struct {
 	Contact     protocol.Contact       `json:"-"`
 	Objects     []protocol.ObjectState `json:"objects,omitempty"`
@@ -19,22 +24,22 @@ type Observation struct {
 	Type        string                 `json:"type"`
 	Tick        uint32                 `json:"tick"`
 	TimeUs      uint64                 `json:"timeUs"`
-	Seat        *uint8                 `json:"seat,omitempty"`
+	Seat        *protocol.SeatIndex    `json:"seat,omitempty"`
 	Sequence    *uint32                `json:"sequence,omitempty"`
 	Disposition string                 `json:"disposition,omitempty"`
 }
 type Press struct {
-	Seat     uint8  `json:"seat"`
-	Control  uint8  `json:"control"`
-	Sequence uint32 `json:"sequence"`
-	TimeUs   uint64 `json:"timeUs"`
-	Order    uint32 `json:"order"`
+	Seat     protocol.SeatIndex `json:"seat"`
+	Control  protocol.Control   `json:"control"`
+	Sequence uint32             `json:"sequence"`
+	TimeUs   uint64             `json:"timeUs"`
+	Order    uint32             `json:"order"`
 }
 type Finish struct {
-	Reason uint8  `json:"-"`
-	Tick   uint32 `json:"tick"`
-	TimeUs uint64 `json:"timeUs"`
-	Result uint8  `json:"result"`
+	Reason protocol.OutcomeReason `json:"-"`
+	Tick   uint32                 `json:"tick"`
+	TimeUs uint64                 `json:"timeUs"`
+	Result protocol.OutcomeResult `json:"result"`
 }
 type State struct {
 	Contact     protocol.Contact       `json:"contact"`
@@ -63,7 +68,7 @@ type eventGroup struct {
 	hasSample  bool
 }
 type queued struct {
-	seat  uint8
+	seat  protocol.SeatIndex
 	input protocol.Input
 	valid bool
 }
@@ -112,11 +117,11 @@ func New(config configuration.Configuration, seed uint32, identities [2]protocol
 		}
 	}
 	context := config.Context(seed)
-	if context.Mode != 1 && context.Mode != 2 {
+	if context.Mode != protocol.ModeDragRace && context.Mode != protocol.ModeRoadRage {
 		return nil, fmt.Errorf("multiplayer mode required")
 	}
 	e := &Engine{consumption: map[uint32]uint8{}, context: context, connections: [2]protocol.Connection{context.Connection, context.Connection}, identities: identities, roundID: roundID, connected: [2]bool{true, true}, tokens: [2]float64{context.Connection.InputBurst, context.Connection.InputBurst}}
-	for seat, lane := range []uint8{0, 2} {
+	for seat, lane := range []protocol.Lane{protocol.LaneLeft, protocol.LaneRight} {
 		lateral := (float64(lane) - 1) * context.Gameplay.LaneSpacing
 		e.state.Cars[seat] = protocol.Car{Lane: lane, Departure: lane, Target: lane, Lateral: lateral, MovementOrigin: lateral, MovementTarget: lateral, NormalSpeed: context.Gameplay.StartingRoadSpeed, Hp: uint32(context.Gameplay.MaxHealth), InputGeneration: 1}
 	}
@@ -214,13 +219,13 @@ func (e *Engine) updateTrack() error {
 	return nil
 }
 func clear(car *protocol.Car) {
-	car.Controls = 0
-	car.Effective = 0
-	car.HeldMask = 0
-	car.Flags = 0
+	car.Controls = protocol.ControlNone
+	car.Effective = protocol.ControlNone
+	car.HeldMask = protocol.HeldControlsNone
+	car.Flags = protocol.CarFlagsNone
 	car.FreshnessUs = 0
 }
-func (e *Engine) event(kind string, seat uint8, timeUs uint64) Observation {
+func (e *Engine) event(kind string, seat protocol.SeatIndex, timeUs uint64) Observation {
 	copy := seat
 	car := e.state.Cars[seat]
 	return Observation{Contact: e.state.Contact, Type: kind, Tick: e.state.Tick, TimeUs: timeUs, Seat: &copy, Car: &car, Cars: e.state.Cars}
@@ -239,22 +244,34 @@ func (e *Engine) Disconnect(auth protocol.Identity) {
 	}
 	e.releases = append(e.releases, e.event("release", seat, e.state.TimeUs))
 }
-func (e *Engine) shift(car *protocol.Car, seat uint8, timeUs uint64, events *[]Observation) {
+func steering(car *protocol.Car) protocol.Control {
+	if car.Effective == protocol.ControlLeft || car.Effective == protocol.ControlRight {
+		return car.Effective
+	}
+	if car.HeldMask&protocol.HeldControlsRight != 0 {
+		return 2
+	}
+	if car.HeldMask&protocol.HeldControlsLeft != 0 {
+		return 1
+	}
+	return 0
+}
+func (e *Engine) shift(car *protocol.Car, seat protocol.SeatIndex, timeUs uint64, events *[]Observation) {
 	g := e.context.Gameplay
-	if e.tailgating(int(seat)) || car.Phase != 0 || (car.Effective != 1 && car.Effective != 2) || timeUs < car.NextShiftUs {
+	if e.tailgating(int(seat)) || car.Phase != protocol.MovementPhaseSteady || steering(car) == 0 || timeUs < car.NextShiftUs {
 		return
 	}
 	delta := 1
-	if car.Effective == 1 {
+	if steering(car) == 1 {
 		delta = -1
 	}
 	target := max(0, min(2, int(car.Lane)+delta))
 	if target == int(car.Lane) {
 		return
 	}
-	car.Phase = 1
+	car.Phase = protocol.MovementPhaseShift
 	car.Departure = car.Lane
-	car.Target = uint8(target)
+	car.Target = protocol.Lane(target)
 	car.MovementOrigin = car.Lateral
 	car.MovementTarget = (float64(target) - 1) * g.LaneSpacing
 	car.MovementStartUs = timeUs
@@ -267,15 +284,15 @@ func (e *Engine) shift(car *protocol.Car, seat uint8, timeUs uint64, events *[]O
 func (e *Engine) boundaries(timeUs uint64, events *[]Observation) {
 	for seat := range e.state.Cars {
 		car := &e.state.Cars[seat]
-		if car.Effective != 0 && car.FreshnessUs <= timeUs {
+		if car.Effective != protocol.ControlNone && car.FreshnessUs <= timeUs {
 			clear(car)
-			*events = append(*events, e.event("expiry", uint8(seat), timeUs))
+			*events = append(*events, e.event("expiry", protocol.SeatIndex(seat), timeUs))
 		}
-		if car.Phase != 0 && car.MovementEndUs <= timeUs {
+		if car.Phase != protocol.MovementPhaseSteady && car.MovementEndUs <= timeUs {
 			car.Lateral = car.MovementTarget
 			car.Lane = car.Target
-			car.Phase = 0
-			*events = append(*events, e.event("shift-end", uint8(seat), timeUs))
+			car.Phase = protocol.MovementPhaseSteady
+			*events = append(*events, e.event("shift-end", protocol.SeatIndex(seat), timeUs))
 		}
 	}
 }
@@ -295,43 +312,55 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 			disposition = "accepted"
 			car.LastInput = input.Sequence
 			switch input.Intent {
-			case 0:
-				if input.Control == 0 || car.HeldMask&(1<<(input.Control-1)) != 0 || car.Phase == 2 {
+			case protocol.InputIntentPress:
+				if input.Control == protocol.ControlNone || car.HeldMask&(1<<(input.Control-1)) != 0 || car.Phase == protocol.MovementPhaseReturn {
 					disposition = "ignored"
 				} else {
-					car.HeldMask |= 1 << (input.Control - 1)
+					car.HeldMask |= protocol.HeldControlsLeft << (input.Control - 1)
 					car.Controls = input.Control
 					car.Effective = input.Control
-					car.Flags = 0
-					if input.Control == 3 {
-						car.Flags = 1
+					car.Flags = protocol.CarFlagsNone
+					if car.HeldMask&protocol.HeldControlsNOS != 0 {
+						car.Flags = protocol.CarFlagsNOSActive
 					}
 					expiry, _ := CanonicalTime(e.connections[q.seat].ControlFreshnessExpiry)
 					car.FreshnessUs = timeUs + expiry
-					if e.context.Mode == 2 {
+					if e.context.Mode == protocol.ModeRoadRage {
 						e.order++
 						e.state.LatestPress = &Press{q.seat, input.Control, input.Sequence, timeUs, e.order}
-						e.state.Contact.LatestSeat = q.seat
+						e.state.Contact.LatestSeat = protocol.LatestSeatCode(q.seat)
 						e.state.Contact.LatestControl = input.Control
 						e.state.Contact.LatestSequence = input.Sequence
 						e.state.Contact.LatestTimeUs = timeUs
 						e.state.Contact.LatestOrder = e.order
 					}
 				}
-			case 1:
-				if input.Control == 0 {
+			case protocol.InputIntentRelease:
+				if input.Control == protocol.ControlNone {
 					clear(car)
 				} else {
-					car.HeldMask &^= 1 << (input.Control - 1)
+					car.HeldMask &^= protocol.HeldControlsLeft << (input.Control - 1)
+					car.Flags = protocol.CarFlagsNone
+					if car.HeldMask&protocol.HeldControlsNOS != 0 {
+						car.Flags = protocol.CarFlagsNOSActive
+					}
 					if car.Controls == input.Control {
-						car.Controls = 0
-						car.Effective = 0
-						car.Flags = 0
-						car.FreshnessUs = 0
+						car.Controls = protocol.ControlNone
+						if car.HeldMask&protocol.HeldControlsNOS != 0 {
+							car.Controls = protocol.ControlNOS
+						} else if car.HeldMask&protocol.HeldControlsRight != 0 {
+							car.Controls = protocol.ControlRight
+						} else if car.HeldMask&protocol.HeldControlsLeft != 0 {
+							car.Controls = protocol.ControlLeft
+						}
+						car.Effective = car.Controls
+						if car.Controls == protocol.ControlNone {
+							car.FreshnessUs = 0
+						}
 					}
 				}
-			case 2:
-				if car.Effective == 0 || input.Control != car.Controls || input.HeldMask != car.HeldMask {
+			case protocol.InputIntentRefresh:
+				if car.Effective == protocol.ControlNone || input.Control != car.Controls || input.HeldMask != car.HeldMask {
 					disposition = "ignored"
 				} else {
 					expiry, _ := CanonicalTime(e.connections[q.seat].ControlFreshnessExpiry)
@@ -397,7 +426,7 @@ func (e *Engine) move(start, end float64) {
 			pause := endUs - startUs
 			car.MovementStartUs += pause
 			car.MovementEndUs += pause
-		} else if car.Phase != 0 {
+		} else if car.Phase != protocol.MovementPhaseSteady {
 			fraction := math.Max(0, math.Min(1, (float64(end*1e6)-float64(car.MovementStartUs))/float64(car.MovementEndUs-car.MovementStartUs)))
 			car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
 		}
@@ -504,7 +533,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 		e.apply(applicationUs, &events)
 		for time < end {
 			for seat := range e.state.Cars {
-				e.shift(&e.state.Cars[seat], uint8(seat), uint64(math.Floor(time*1e6)), &events)
+				e.shift(&e.state.Cars[seat], protocol.SeatIndex(seat), uint64(math.Floor(time*1e6)), &events)
 			}
 			if stopping && !sampledStop && time >= seconds {
 				stopPositions = e.state.Cars
@@ -512,13 +541,13 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 			}
 			next := end
 			for _, car := range e.state.Cars {
-				if car.Effective != 0 && float64(car.FreshnessUs)/1e6 > time {
+				if car.Effective != protocol.ControlNone && float64(car.FreshnessUs)/1e6 > time {
 					next = math.Min(next, float64(car.FreshnessUs)/1e6)
 				}
-				if car.Phase != 0 && float64(car.MovementEndUs)/1e6 > time {
+				if car.Phase != protocol.MovementPhaseSteady && float64(car.MovementEndUs)/1e6 > time {
 					next = math.Min(next, float64(car.MovementEndUs)/1e6)
 				}
-				if car.Phase == 0 && (car.Effective == 1 || car.Effective == 2) && float64(car.NextShiftUs)/1e6 > time {
+				if car.Phase == protocol.MovementPhaseSteady && steering(&car) != 0 && float64(car.NextShiftUs)/1e6 > time {
 					next = math.Min(next, float64(car.NextShiftUs)/1e6)
 				}
 			}
@@ -536,7 +565,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				contacts = filtered
 			}
 			finishes := []crossing{}
-			if e.context.Mode == 1 {
+			if e.context.Mode == protocol.ModeDragRace {
 				finishes = e.crossings(time, next)
 				if stopping {
 					filtered := finishes[:0]
@@ -550,7 +579,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 			}
 			if e.group == nil {
 				first := uint64(math.MaxUint64)
-				if e.context.Mode == 2 && !math.IsInf(collision, 1) {
+				if e.context.Mode == protocol.ModeRoadRage && !math.IsInf(collision, 1) {
 					first, _ = CanonicalTime(collision)
 				}
 				if len(contacts) > 0 {
@@ -561,7 +590,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				}
 				deadlineUs, _ := CanonicalTime(g.TimeLimit)
 				nextUs, _ := CanonicalTime(next)
-				if e.context.Mode == 2 && nextUs >= deadlineUs && (!stopping || deadlineUs <= stopUs) {
+				if e.context.Mode == protocol.ModeRoadRage && nextUs >= deadlineUs && (!stopping || deadlineUs <= stopUs) {
 					first = min(first, deadlineUs)
 				}
 				if first != math.MaxUint64 {
@@ -601,7 +630,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 						car := &group.sample[seat]
 						car.Progress += forwardDistance(g, sampleStart, elapsed) * multipliers[seat]
 						car.NormalSpeed = math.Min(g.MaxRoadSpeed, g.StartingRoadSpeed+float64(g.SpeedGrowth*group.sampleTime))
-						if car.Phase != 0 && !blocked[seat] {
+						if car.Phase != protocol.MovementPhaseSteady && !blocked[seat] {
 							fraction := math.Max(0, math.Min(1, (group.sampleTime*1e6-float64(car.MovementStartUs))/float64(car.MovementEndUs-car.MovementStartUs)))
 							car.Lateral = car.MovementOrigin + float64((car.MovementTarget-car.MovementOrigin)*fraction)
 						}
@@ -614,7 +643,7 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 						group.contacts = append(group.contacts, contact)
 					}
 				}
-				if e.context.Mode == 1 {
+				if e.context.Mode == protocol.ModeDragRace {
 					for _, finish := range e.crossings(time, next) {
 						if finish.timeUs == group.timeUs {
 							group.finishMask |= 1 << finish.seat
@@ -661,31 +690,31 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 					}
 				}
 				deadlineUs, _ := CanonicalTime(g.TimeLimit)
-				deadline := e.context.Mode == 2 && group.timeUs == deadlineUs
+				deadline := e.context.Mode == protocol.ModeRoadRage && group.timeUs == deadlineUs
 				if deadMask != 0 || group.finishMask != 0 || deadline {
-					result, reason := uint8(2), uint8(0)
+					result, reason := protocol.OutcomeResultTie, protocol.OutcomeReasonFinish
 					if deadMask != 0 {
-						reason = 1
-						if deadMask == 1 {
-							result = 1
+						reason = protocol.OutcomeReasonHP
+						if deadMask == seatMaskPlayer1 {
+							result = protocol.OutcomeResultPlayer2Win
 						}
-						if deadMask == 2 {
-							result = 0
+						if deadMask == seatMaskPlayer2 {
+							result = protocol.OutcomeResultPlayer1Win
 						}
 					} else if deadline {
-						reason = 2
+						reason = protocol.OutcomeReasonDeadline
 						if e.state.Cars[0].Hp > e.state.Cars[1].Hp {
-							result = 0
+							result = protocol.OutcomeResultPlayer1Win
 						}
 						if e.state.Cars[1].Hp > e.state.Cars[0].Hp {
-							result = 1
+							result = protocol.OutcomeResultPlayer2Win
 						}
 					} else {
-						if group.finishMask == 1 {
-							result = 0
+						if group.finishMask == seatMaskPlayer1 {
+							result = protocol.OutcomeResultPlayer1Win
 						}
-						if group.finishMask == 2 {
-							result = 1
+						if group.finishMask == seatMaskPlayer2 {
+							result = protocol.OutcomeResultPlayer2Win
 						}
 						for seat := range e.state.Cars {
 							if group.finishMask&(1<<seat) != 0 {
@@ -711,8 +740,8 @@ func (e *Engine) advance(seconds float64, stopping bool) ([]Observation, error) 
 				e.committed = nil
 				for seat, reset := range e.resets {
 					if reset != nil {
-						e.resetControls(uint8(seat), reset.generation, reset.sequence)
-						events = append(events, e.event("release", uint8(seat), group.timeUs+1))
+						e.resetControls(protocol.SeatIndex(seat), reset.generation, reset.sequence)
+						events = append(events, e.event("release", protocol.SeatIndex(seat), group.timeUs+1))
 						e.resets[seat] = nil
 					}
 				}
@@ -793,7 +822,7 @@ func (e *Engine) ResetSeat(identity protocol.Identity, generation, sequence uint
 	}
 	e.resetControls(seat, generation, sequence)
 }
-func (e *Engine) resetControls(seat uint8, generation, sequence uint32) {
+func (e *Engine) resetControls(seat protocol.SeatIndex, generation, sequence uint32) {
 	car := &e.state.Cars[seat]
 	clear(car)
 	car.InputGeneration = generation
@@ -849,7 +878,7 @@ func restorePosition(car *protocol.Car, sample protocol.Car) {
 	car.Progress, car.NormalSpeed = sample.Progress, sample.NormalSpeed
 	if car.Phase == sample.Phase && car.MovementStartUs == sample.MovementStartUs {
 		car.Lateral = sample.Lateral
-	} else if car.Phase == 0 {
+	} else if car.Phase == protocol.MovementPhaseSteady {
 		car.Lateral = car.MovementTarget
 	} else {
 		car.Lateral = car.MovementOrigin

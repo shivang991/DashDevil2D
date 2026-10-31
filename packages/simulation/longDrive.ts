@@ -1,3 +1,4 @@
+import { CounterMax } from "@dashdevil/contracts/protocol";
 import { firstContact, type Bounds } from "./geometry";
 import { appendSlice, createTrack, draw, retireSlices } from "./track";
 import {
@@ -34,7 +35,7 @@ export interface LongDrive {
   eventId: number;
   countdownDisplay?: number;
 }
-const freshSeed = () => Math.floor(Math.random() * 0xffffffff) + 1;
+const freshSeed = () => Math.floor(Math.random() * CounterMax) + 1;
 const seedSources = new WeakMap<object, () => number>();
 export function createLongDrive(
   source: number | (() => number) | undefined = undefined,
@@ -424,7 +425,9 @@ function tick(
   }
   state.carWorldX = (state.visualLane - 1) * gameConfig.laneSpacing;
   state.carWorldDistance = state.roadOffset + state.carOffset;
-  const behind = state.roadOffset - gameConfig.carHeight / 2;
+  // Keep missed sprites through the bottom margin until fully outside the view.
+  // The renderer scales this fixed margin with the road on tall screens.
+  const behind = state.roadOffset - gameConfig.carHeight / 2 - gameConfig.carBottomMargin;
   retireSlices(state.track, behind, gameConfig);
   const retain = (object: (typeof objects)[number]) =>
     object.distance! + object.height / 2 >= behind;

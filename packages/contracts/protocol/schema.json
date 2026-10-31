@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "byteOrder": "big-endian",
   "timestampMax": 9007199254740991,
   "projection": "signed-int64; floor(position*1024+0.5); exact-JS-integer subset",
@@ -20,7 +20,7 @@
       {
         "name": "seat",
         "type": "u8",
-        "max": 1
+        "enum": "seatIndex"
       }
     ],
     "Round": [
@@ -77,44 +77,44 @@
       {
         "name": "lane",
         "type": "u8",
-        "max": 2,
-        "bits": 2
+        "bits": 2,
+        "enum": "lane"
       },
       {
         "name": "departure",
         "type": "u8",
-        "max": 2,
-        "bits": 2
+        "bits": 2,
+        "enum": "lane"
       },
       {
         "name": "target",
         "type": "u8",
-        "max": 2,
-        "bits": 2
+        "bits": 2,
+        "enum": "lane"
       },
       {
         "name": "phase",
         "type": "u8",
-        "max": 2,
-        "bits": 2
+        "bits": 2,
+        "enum": "movementPhase"
       },
       {
         "name": "controls",
         "type": "u8",
-        "max": 3,
-        "bits": 2
+        "bits": 2,
+        "enum": "control"
       },
       {
         "name": "effective",
         "type": "u8",
-        "max": 3,
-        "bits": 2
+        "bits": 2,
+        "enum": "control"
       },
       {
         "name": "flags",
         "type": "u8",
-        "mask": 15,
-        "bits": 4
+        "bits": 4,
+        "flags": "carFlags"
       },
       {
         "name": "movementOrigin",
@@ -161,7 +161,7 @@
       {
         "name": "heldMask",
         "type": "u8",
-        "mask": 7
+        "flags": "heldControls"
       },
       {
         "name": "inputGeneration",
@@ -176,22 +176,22 @@
       {
         "name": "flags",
         "type": "u8",
-        "mask": 7
+        "flags": "contactFlags"
       },
       {
         "name": "blockedSeat",
         "type": "u8",
-        "max": 2
+        "enum": "seatOrNone"
       },
       {
         "name": "latestSeat",
         "type": "u8",
-        "max": 2
+        "enum": "latestSeatCode"
       },
       {
         "name": "latestControl",
         "type": "u8",
-        "max": 3
+        "enum": "control"
       },
       {
         "name": "latestSequence",
@@ -218,14 +218,20 @@
       {
         "name": "lane",
         "type": "u8",
-        "max": 2,
-        "bits": 2
+        "bits": 2,
+        "enum": "lane"
       },
       {
         "name": "flags",
         "type": "u8",
-        "mask": 31,
-        "bits": 5
+        "bits": 5,
+        "flags": "objectFlags",
+        "subfields": {
+          "kind": {
+            "enum": "objectKind",
+            "mask": "kindMask"
+          }
+        }
       },
       {
         "name": "distance",
@@ -499,6 +505,10 @@
       {
         "name": "shakeIntensity",
         "type": "f64"
+      },
+      {
+        "name": "roundOverDelay",
+        "type": "f64"
       }
     ],
     "Room": [
@@ -619,7 +629,7 @@
       {
         "name": "mode",
         "type": "u8",
-        "max": 2
+        "enum": "mode"
       },
       {
         "name": "startUs",
@@ -726,7 +736,7 @@
       {
         "name": "flags",
         "type": "u8",
-        "mask": 7
+        "flags": "seatFlags"
       },
       {
         "name": "reservationUs",
@@ -737,7 +747,7 @@
       {
         "name": "operation",
         "type": "u8",
-        "max": 2
+        "enum": "admissionOperation"
       },
       {
         "name": "version",
@@ -797,7 +807,7 @@
       {
         "name": "code",
         "type": "u8",
-        "max": 15
+        "enum": "protocolErrorCode"
       },
       {
         "name": "expectedVersion",
@@ -835,17 +845,17 @@
       {
         "name": "mode",
         "type": "u8",
-        "max": 2
+        "enum": "mode"
       },
       {
         "name": "phase",
         "type": "u8",
-        "max": 3
+        "enum": "roomPhase"
       },
       {
         "name": "host",
         "type": "u8",
-        "max": 1
+        "enum": "seatIndex"
       },
       {
         "name": "seats",
@@ -886,17 +896,17 @@
       {
         "name": "command",
         "type": "u8",
-        "max": 5
+        "enum": "roomCommandCode"
       },
       {
         "name": "mode",
         "type": "u8",
-        "max": 2
+        "enum": "mode"
       },
       {
         "name": "ready",
         "type": "u8",
-        "max": 1
+        "enum": "wireBoolean"
       }
     ],
     "Handshake": [
@@ -989,7 +999,7 @@
       {
         "name": "reason",
         "type": "u8",
-        "max": 4
+        "enum": "recoveryReason"
       },
       {
         "name": "epoch",
@@ -1050,12 +1060,12 @@
       {
         "name": "result",
         "type": "u8",
-        "max": 3
+        "enum": "outcomeResult"
       },
       {
         "name": "reason",
         "type": "u8",
-        "max": 7
+        "enum": "outcomeReason"
       },
       {
         "name": "cars",
@@ -1084,17 +1094,17 @@
       {
         "name": "intent",
         "type": "u8",
-        "max": 2
+        "enum": "inputIntent"
       },
       {
         "name": "control",
         "type": "u8",
-        "max": 3
+        "enum": "control"
       },
       {
         "name": "heldMask",
         "type": "u8",
-        "mask": 7
+        "flags": "heldControls"
       }
     ],
     "Disposition": [
@@ -1121,7 +1131,7 @@
       {
         "name": "seat",
         "type": "u8",
-        "max": 1
+        "enum": "seatIndex"
       },
       {
         "name": "sequence",
@@ -1134,17 +1144,17 @@
       {
         "name": "disposition",
         "type": "u8",
-        "max": 2
+        "enum": "dispositionCode"
       },
       {
         "name": "intent",
         "type": "u8",
-        "max": 2
+        "enum": "inputIntent"
       },
       {
         "name": "control",
         "type": "u8",
-        "max": 3
+        "enum": "control"
       },
       {
         "name": "car",
@@ -1183,7 +1193,7 @@
       {
         "name": "kind",
         "type": "u8",
-        "max": 8
+        "enum": "eventKind"
       },
       {
         "name": "causeInput",
@@ -1200,7 +1210,7 @@
       {
         "name": "seatMask",
         "type": "u8",
-        "mask": 3
+        "flags": "seatMask"
       },
       {
         "name": "cars",
@@ -1405,7 +1415,7 @@
       {
         "name": "accepted",
         "type": "u8",
-        "max": 1
+        "enum": "wireBoolean"
       },
       {
         "name": "detail",
@@ -1523,62 +1533,214 @@
     }
   },
   "enums": {
-    "mode": ["long-drive", "drag-race", "road-rage"],
-    "seat": ["player1", "player2"],
-    "seatOrNone": ["none", "player1", "player2"],
-    "lane": ["left", "middle", "right"],
-    "phase": ["steady", "shift", "return"],
-    "control": ["none", "left", "right", "NOS"],
-    "inputIntent": ["press", "release", "refresh"],
-    "disposition": ["accepted", "ignored", "rejected"],
-    "admissionOperation": ["create", "join", "resume"],
-    "roomPhase": ["lobby", "countdown", "active", "ended"],
-    "roomCommand": ["select-mode", "ready", "start", "leave", "focus"],
-    "outcomeResult": ["player1-win", "player2-win", "tie", "abandoned"],
-    "outcomeReason": [
-      "finish",
-      "HP",
-      "deadline",
-      "explicit-leave",
-      "grace-expiry",
-      "both-disconnected",
-      "server-lag",
-      "maintenance"
-    ],
-    "eventKind": [
-      "pickup",
-      "obstacle",
-      "HP-score-protection",
-      "contact",
-      "return",
-      "blocking",
-      "freshness-expiry",
-      "control-release",
-      "round-event"
-    ]
+    "mode": {
+      "longDrive": 0,
+      "dragRace": 1,
+      "roadRage": 2
+    },
+    "seatIndex": {
+      "player1": 0,
+      "player2": 1
+    },
+    "seatOrNone": {
+      "none": 0,
+      "player1": 1,
+      "player2": 2
+    },
+    "lane": {
+      "left": 0,
+      "middle": 1,
+      "right": 2
+    },
+    "control": {
+      "none": 0,
+      "left": 1,
+      "right": 2,
+      "NOS": 3
+    },
+    "inputIntent": {
+      "press": 0,
+      "release": 1,
+      "refresh": 2
+    },
+    "dispositionCode": {
+      "accepted": 0,
+      "ignored": 1,
+      "rejected": 2
+    },
+    "admissionOperation": {
+      "create": 0,
+      "join": 1,
+      "resume": 2
+    },
+    "roomPhase": {
+      "lobby": 0,
+      "countdown": 1,
+      "active": 2,
+      "ended": 3
+    },
+    "roomCommandCode": {
+      "selectMode": 0,
+      "ready": 1,
+      "start": 2,
+      "leave": 3,
+      "focus": 4,
+      "returnToLobby": 5
+    },
+    "outcomeResult": {
+      "player1Win": 0,
+      "player2Win": 1,
+      "tie": 2,
+      "abandoned": 3
+    },
+    "outcomeReason": {
+      "finish": 0,
+      "HP": 1,
+      "deadline": 2,
+      "explicitLeave": 3,
+      "graceExpiry": 4,
+      "bothDisconnected": 5,
+      "serverLag": 6,
+      "maintenance": 7
+    },
+    "eventKind": {
+      "pickup": 0,
+      "obstacle": 1,
+      "HPScoreProtection": 2,
+      "contact": 3,
+      "return": 4,
+      "blocking": 5,
+      "freshnessExpiry": 6,
+      "controlRelease": 7,
+      "roundEvent": 8
+    },
+    "movementPhase": {
+      "steady": 0,
+      "shift": 1,
+      "return": 2
+    },
+    "wireBoolean": {
+      "false": 0,
+      "true": 1
+    },
+    "objectKind": {
+      "empty": 0,
+      "coin": 1,
+      "obstacle": 2,
+      "heart": 3
+    },
+    "protocolErrorCode": {
+      "reserved0": 0,
+      "incompatibleHandshake": 1,
+      "admissionRejected": 2,
+      "malformedOrProcessingFailure": 3,
+      "capacityUnavailable": 4,
+      "roomNotFound": 5,
+      "roomUnavailable": 6,
+      "roomExpired": 7,
+      "maintenance": 8,
+      "reserved9": 9,
+      "reserved10": 10,
+      "reserved11": 11,
+      "reserved12": 12,
+      "reserved13": 13,
+      "reserved14": 14,
+      "reserved15": 15
+    },
+    "recoveryReason": {
+      "resynchronize": 0,
+      "reserved1": 1,
+      "reserved2": 2,
+      "reserved3": 3,
+      "reserved4": 4
+    },
+    "latestSeatCode": {
+      "player1": 0,
+      "player2": 1,
+      "reserved": 2
+    }
   },
   "flags": {
-    "Car": {
-      "0": "NOS active",
-      "1": "fresh steering required",
-      "2": "fresh NOS required",
-      "3": "forward blocked"
+    "heldControls": {
+      "bits": {
+        "left": 1,
+        "right": 2,
+        "NOS": 4
+      },
+      "masks": {
+        "none": 0,
+        "all": 7
+      }
     },
-    "Contact": {
-      "0": "episode active",
-      "1": "episode damage decided",
-      "2": "tailgating"
+    "carFlags": {
+      "bits": {
+        "NOSActive": 1,
+        "freshSteeringRequired": 2,
+        "freshNOSRequired": 4,
+        "forwardBlocked": 8
+      },
+      "masks": {
+        "none": 0,
+        "all": 15
+      }
     },
-    "ObjectState": {
-      "0..1": "kind: 1 coin, 2 obstacle, 3 heart",
-      "2": "shared pickup consumed",
-      "3": "obstacle spent player1",
-      "4": "obstacle spent player2"
+    "contactFlags": {
+      "bits": {
+        "episodeActive": 1,
+        "damageDecided": 2,
+        "tailgating": 4
+      },
+      "masks": {
+        "none": 0,
+        "episodeDamageDecided": 3,
+        "all": 7
+      }
     },
-    "Seat": {
-      "0": "connected",
-      "1": "ready",
-      "2": "reserved"
+    "seatFlags": {
+      "bits": {
+        "connected": 1,
+        "ready": 2,
+        "reserved": 4,
+        "returned": 8
+      },
+      "masks": {
+        "none": 0,
+        "connectedReady": 3,
+        "all": 15
+      }
+    },
+    "objectFlags": {
+      "bits": {
+        "sharedConsumed": 4,
+        "spentPlayer1": 8,
+        "spentPlayer2": 16
+      },
+      "masks": {
+        "none": 0,
+        "kindMask": 3,
+        "spentMask": 24,
+        "consumptionMask": 28,
+        "all": 31
+      }
+    },
+    "seatMask": {
+      "bits": {
+        "player1": 1,
+        "player2": 2
+      },
+      "masks": {
+        "none": 0,
+        "all": 3
+      }
     }
+  },
+  "constants": {
+    "verificationDatagramBytes": 10,
+    "credentialBytes": 32,
+    "roomCodeLength": 4,
+    "defaultFrameBytes": 65536,
+    "recordLimitBytes": 1048576,
+    "counterMax": 4294967295,
+    "projectionScale": 1024
   }
 }

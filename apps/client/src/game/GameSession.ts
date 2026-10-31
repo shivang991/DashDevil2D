@@ -3,7 +3,7 @@ import { type GameState } from "@dashdevil/simulation/state";
 import { renderingConfig, type ConfigurationOverrides } from "@dashdevil/simulation/config";
 import { GameAudio } from "../lib/gameAudio";
 import { KeyboardInput } from "./KeyboardInput";
-import { renderLongDrive } from "../lib/gameRenderer";
+import { LongDriveDrawing } from "../lib/gameRenderer";
 
 export interface FrameClock {
   now(): number;
@@ -37,6 +37,7 @@ export interface UISnapshot {
 }
 export class GameSession {
   private readonly game;
+  private drawing: LongDriveDrawing;
   private readonly clock;
   private readonly audio = new GameAudio();
   private readonly listeners = new Set<() => void>();
@@ -45,6 +46,7 @@ export class GameSession {
   private lastTime = 0;
   private disposed = false;
   private readonly input: KeyboardInput;
+  private readonly resizeObserver?: ResizeObserver;
   private focused = true;
 
   private readonly options: SessionOptions;
@@ -52,6 +54,7 @@ export class GameSession {
     this.options = Object.freeze({ ...options });
     this.clock = options.clock ?? browserClock;
     this.game = createLongDrive(options.seed ?? options.random, this.configurationOverrides());
+    this.drawing = new LongDriveDrawing(renderingConfig(this.game.configuration));
     this.game.state.countdownTimer = options.countdown;
     options.canvas.tabIndex = 0;
     this.input = new KeyboardInput(
@@ -65,6 +68,10 @@ export class GameSession {
       (command) => this.command(command),
     );
     this.resize();
+    if (typeof ResizeObserver !== "undefined") {
+      this.resizeObserver = new ResizeObserver(this.resize);
+      this.resizeObserver.observe(options.canvas);
+    }
     this.snapshot = this.uiSnapshot();
     window.addEventListener("resize", this.resize);
     window.addEventListener("blur", this.blur);
@@ -110,6 +117,7 @@ export class GameSession {
       (command === "restart" && state.status === "gameover" && state.gameOverAnimDone)
     ) {
       resetLongDrive(this.game, this.configurationOverrides());
+      this.drawing = new LongDriveDrawing(renderingConfig(this.game.configuration));
       this.lastTime = Math.max(this.lastTime, this.clock.now());
       this.resize();
       this.input.clear();
@@ -122,6 +130,7 @@ export class GameSession {
     this.disposed = true;
     if (this.frame !== undefined) this.clock.cancel(this.frame);
     this.frame = undefined;
+    this.resizeObserver?.disconnect();
     window.removeEventListener("resize", this.resize);
     window.removeEventListener("blur", this.blur);
     window.removeEventListener("focus", this.focusReturned);
@@ -164,16 +173,17 @@ export class GameSession {
     if (this.disposed) return;
     const canvas = this.options.canvas;
     const ctx = canvas.getContext("2d");
-    if (ctx)
-      renderLongDrive(
-        ctx,
-        canvas.width,
-        canvas.height,
-        this.getPresentation(),
-        renderingConfig(this.game.configuration),
-      );
+    if (ctx) this.drawing.draw(ctx, canvas.width, canvas.height, this.getPresentation());
     this.frame = this.clock.request(this.tick);
   };
+  control(control: 1 | 2 | 3, down: boolean): void {
+    if (down) this.focus();
+    this.input.setControl(
+      `touch:${control}`,
+      control === 1 ? "left" : control === 2 ? "right" : "accelerate",
+      down,
+    );
+  }
   focus(): void {
     if (!this.disposed) this.options.canvas.focus({ preventScroll: true });
   }
