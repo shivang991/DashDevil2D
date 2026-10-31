@@ -72,6 +72,7 @@ type Server struct {
 	errors            chan error
 }
 type room struct {
+	racers          [2]p.RacerIdentity
 	engine          *simulation.Engine
 	history         []raceRecord
 	outcome         *p.Outcome
@@ -252,6 +253,7 @@ func (s *Server) Start() error {
 		}
 	}()
 	s.avatarCleanupDone = make(chan struct{})
+	s.cleanupAvatarsLocked()
 	go s.avatarCleanupLoop()
 	go s.sweep()
 	return nil

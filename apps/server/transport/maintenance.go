@@ -95,6 +95,7 @@ func (s *Server) advanceMaintenanceLocked(now time.Time) ([]*room, []*pair) {
 		}
 	}
 	s.rooms = map[string]*room{}
+	s.cleanupAvatarsLocked()
 	s.credentials = map[string]*seat{}
 	s.tickets = map[string]ticket{}
 	s.drainComplete = true

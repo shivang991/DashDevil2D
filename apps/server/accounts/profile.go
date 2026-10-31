@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"golang.org/x/image/draw"
 	_ "golang.org/x/image/webp"
 )
 
@@ -19,17 +20,31 @@ var ErrUsernameConflict = errors.New("Username already taken")
 // Decode before storing, then re-encode to strip metadata and trailing payloads.
 // A pixel bound keeps a small compressed upload from exhausting server memory.
 func ValidateAvatar(data []byte) ([]byte, error) {
-	invalid := errors.New("Choose a valid JPEG, PNG, or WebP up to 2 MB and 2048 × 2048 pixels")
+	invalid := errors.New("Choose a valid JPEG, PNG, or WebP up to 2 MB and 16 megapixels")
 	if len(data) == 0 || len(data) > MaxAvatarBytes {
 		return nil, invalid
 	}
 	config, format, err := image.DecodeConfig(bytes.NewReader(data))
-	if err != nil || (format != "jpeg" && format != "png" && format != "webp") || config.Width < 1 || config.Height < 1 || config.Width > 2048 || config.Height > 2048 {
+	if err != nil || (format != "jpeg" && format != "png" && format != "webp") || config.Width < 1 || config.Height < 1 || int64(config.Width)*int64(config.Height) > 16*1024*1024 {
 		return nil, invalid
 	}
 	img, _, err := image.Decode(bytes.NewReader(data))
 	if err != nil {
 		return nil, invalid
+	}
+	// Avatars need bounded storage and response sizes even for large source photos.
+	if config.Width > 512 || config.Height > 512 {
+		width, height := config.Width, config.Height
+		if width >= height {
+			height = max(1, height*512/width)
+			width = 512
+		} else {
+			width = max(1, width*512/height)
+			height = 512
+		}
+		scaled := image.NewRGBA(image.Rect(0, 0, width, height))
+		draw.CatmullRom.Scale(scaled, scaled.Bounds(), img, img.Bounds(), draw.Src, nil)
+		img = scaled
 	}
 	var out bytes.Buffer
 	if err := png.Encode(&out, img); err != nil {

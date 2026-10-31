@@ -198,6 +198,7 @@ export function ProfileDialog({
                     setError("");
                     setNotice("");
                     if (
+                      file.size === 0 ||
                       file.size > 2 * 1024 * 1024 ||
                       !["image/jpeg", "image/png", "image/webp"].includes(file.type)
                     ) {
@@ -224,9 +225,7 @@ export function ProfileDialog({
                   }}
                 />
               </label>
-              <p className="text-xs text-neutral-400">
-                JPEG, PNG, WebP · up to 2 MB · max 2048 × 2048
-              </p>
+              <p className="text-xs text-neutral-400">JPEG, PNG, WebP · up to 2 MB</p>
               {(saved.avatar || avatar) && (
                 <button
                   type="button"

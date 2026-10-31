@@ -1,6 +1,6 @@
 import { Crown } from "lucide-react";
 import type { Outcome } from "@dashdevil/contracts/protocol";
-import type { Seat } from "@dashdevil/contracts/protocol";
+import type { RacerIdentity } from "@dashdevil/contracts/protocol";
 import { Avatar } from "./Avatar";
 
 export function RoundResult({
@@ -10,7 +10,7 @@ export function RoundResult({
 }: {
   outcome: Outcome;
   local: number;
-  identities?: Seat[];
+  identities?: RacerIdentity[];
 }) {
   const neutral = outcome.result >= 2;
   const result =

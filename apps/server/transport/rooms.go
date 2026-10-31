@@ -52,6 +52,8 @@ func (s *Server) cancelCountdownLocked(r *room) {
 		return
 	}
 	r.phase = 0
+	s.refreshRoomIdentityLocked(r)
+	s.cleanupAvatarsLocked()
 	r.startUs = 0
 	r.zero = nil
 	r.revision++
@@ -214,6 +216,8 @@ func (s *Server) removeSeatLocked(r *room, index uint8) {
 	s.cancelCountdownLocked(r)
 	if r.phase == 3 && r.seats[1-index] != nil && r.seats[1-index].returned {
 		r.phase = 0
+		s.refreshRoomIdentityLocked(r)
+		s.cleanupAvatarsLocked()
 	}
 	for _, other := range r.seats {
 		if other != nil {

@@ -123,7 +123,7 @@ func (s *Server) broadcast(r *room) {
 		if participant == nil || participant.pair == nil {
 			continue
 		}
-		state := p.RoomState{Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: uint64(max(r.idle.Sub(s.start).Microseconds(), 0))}
+		state := p.RoomState{Racers: r.racers, Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: uint64(max(r.idle.Sub(s.start).Microseconds(), 0))}
 		warningUs := uint64(roomDuration(r, "idleWarning").Microseconds())
 		if state.IdleExpiryUs >= warningUs {
 			state.IdleWarningUs = state.IdleExpiryUs - warningUs
@@ -411,6 +411,9 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		}
 		resetIdle = true
 		s.refreshRoomIdentityLocked(r)
+		for i, seat := range r.seats {
+			r.racers[i] = p.RacerIdentity{Name: seat.name, Avatar: seat.avatar}
+		}
 		s.cleanupAvatarsLocked()
 		r.roundID++
 		r.phase = 1

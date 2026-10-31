@@ -75,12 +75,7 @@ func Open(path string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
-	store := &Store{db: db}
-	if err := store.CleanupAvatars(nil); err != nil {
-		db.Close()
-		return nil, err
-	}
-	return store, nil
+	return &Store{db: db}, nil
 }
 func (s *Store) Close() error { return s.db.Close() }
 func Validate(username, password string) error {

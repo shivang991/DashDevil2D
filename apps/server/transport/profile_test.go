@@ -182,14 +182,7 @@ func TestProfileActiveRaceIdentitySurvivesRenameAndRemoval(t *testing.T) {
 	if state.Seats[0].Name != "Future_Driver" || state.Seats[0].Avatar != value["avatar"] {
 		t.Fatalf("future identity stale: %+v", state.Seats[0])
 	}
-	response, err = f.client.Get(f.server.URL() + "/api/account/avatars/" + originalAvatar)
-	if err != nil {
-		t.Fatal(err)
-	}
-	response.Body.Close()
-	if response.StatusCode != 404 {
-		t.Fatal("completed snapshot not cleaned up")
-	}
+	waitAvatarDeleted(t, f.server, f.client, originalAvatar)
 }
 
 func TestProfileSurvivesRestartWithPasswordAndAvatar(t *testing.T) {
@@ -286,7 +279,9 @@ func TestProfileAcceptsDecodedImagesAtUploadLimitAndStripsPayloads(t *testing.T)
 		t.Fatal(err)
 	}
 	previous := ""
-	for _, content := range [][]byte{padded, jpg.Bytes(), webp} {
+	var wide bytes.Buffer
+	png.Encode(&wide, image.NewRGBA(image.Rect(0, 0, 3000, 1000)))
+	for _, content := range [][]byte{padded, jpg.Bytes(), webp, wide.Bytes()} {
 		status, value, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Case_Admin", base64.StdEncoding.EncodeToString(content)), origin)
 		if status != 200 {
 			t.Fatalf("valid image: %d %v", status, value)
@@ -298,7 +293,7 @@ func TestProfileAcceptsDecodedImagesAtUploadLimitAndStripsPayloads(t *testing.T)
 		}
 		data, _ := io.ReadAll(response.Body)
 		response.Body.Close()
-		if len(data) > 1024 {
+		if len(content) == len(padded) && len(data) > 1024 {
 			t.Fatal("stored trailing payload")
 		}
 		if _, err := png.Decode(bytes.NewReader(data)); err != nil {
@@ -317,11 +312,66 @@ func TestProfileAcceptsDecodedImagesAtUploadLimitAndStripsPayloads(t *testing.T)
 		previous = id
 	}
 	var huge bytes.Buffer
-	png.Encode(&huge, image.NewRGBA(image.Rect(0, 0, 2049, 1)))
+	png.Encode(&huge, image.NewRGBA(image.Rect(0, 0, 4097, 4096)))
 	for _, content := range [][]byte{huge.Bytes(), pngData[:len(pngData)/2], []byte(`<svg xmlns="http://www.w3.org/2000/svg"></svg>`)} {
 		status, _, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Case_Admin", base64.StdEncoding.EncodeToString(content)), origin)
 		if status != 400 {
 			t.Fatalf("invalid content accepted: %d", status)
 		}
+	}
+}
+
+func TestProfileResultRetainsAvatarAfterParticipantLeaves(t *testing.T) {
+	var startingAvatar string
+	f := activeLifecycle(t, `{"gameplay":{"finishDistance":440,"tickRate":1,"initialClearDistance":0,"reservedHearts":0,"obstacleWeight":0,"emptyWeight":1},"operational":{"simulationLagThreshold":10}}`, func(s *transport.Server, c *http.Client) {
+		status, value, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Fixture_Driver", avatarPNG(t)), origin)
+		if status != 200 {
+			t.Fatalf("initial avatar: %d %v", status, value)
+		}
+		startingAvatar = value["avatar"].(string)
+	})
+	status, _, _ := accountRequest(t, f.server, f.client, "POST", "/profile", profileBody("Future_Driver", ""), origin)
+	if status != 200 {
+		t.Fatal(status)
+	}
+	f.advance(2 * time.Second)
+	if outcome := receiveOutcome(t, f.outcomes[0]); outcome.Result != 2 {
+		t.Fatalf("expected finish tie: %+v", outcome)
+	}
+	state := roomState(t, f.sockets[0], func(r p.RoomState) bool { return r.Phase == 3 })
+	roomSend(t, f.sockets[0], f.admissions[0], 3, state, 3, 1, 0)
+	state = roomState(t, f.sockets[1], func(r p.RoomState) bool { return r.Seats[0].Session == 0 })
+	if state.Racers[0].Name != "Fixture_Driver" || state.Racers[0].Avatar != startingAvatar {
+		t.Fatalf("departed result identity lost: %+v", state.Racers[0])
+	}
+	response, err := f.client.Get(f.server.URL() + "/api/account/avatars/" + startingAvatar)
+	if err != nil {
+		t.Fatal(err)
+	}
+	response.Body.Close()
+	if response.StatusCode != 200 {
+		t.Fatal("result avatar deleted while opponent viewing")
+	}
+	roomSend(t, f.sockets[1], f.admissions[1], 2, state, 5, 1, 0)
+	roomState(t, f.sockets[1], func(r p.RoomState) bool { return r.Phase == 0 })
+	waitAvatarDeleted(t, f.server, f.client, startingAvatar)
+}
+
+func waitAvatarDeleted(t *testing.T, s *transport.Server, c *http.Client, id string) {
+	t.Helper()
+	deadline := time.Now().Add(time.Second)
+	for {
+		response, err := c.Get(s.URL() + "/api/account/avatars/" + id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		response.Body.Close()
+		if response.StatusCode == 404 {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("avatar still served: %d", response.StatusCode)
+		}
+		time.Sleep(5 * time.Millisecond)
 	}
 }

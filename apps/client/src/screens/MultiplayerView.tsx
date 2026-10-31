@@ -449,7 +449,7 @@ export function MultiplayerView({
         returnFocus={main}
       >
         {state?.outcome && (
-          <RoundResult outcome={state.outcome} local={local} identities={state.room?.seats} />
+          <RoundResult outcome={state.outcome} local={local} identities={state.room?.racers} />
         )}
         <Button
           className="round-result-return"

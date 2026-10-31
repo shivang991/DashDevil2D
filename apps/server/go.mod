@@ -9,6 +9,7 @@ require (
 	github.com/quic-go/quic-go v0.62.0
 	github.com/quic-go/webtransport-go v0.13.0
 	golang.org/x/crypto v0.54.0
+	golang.org/x/image v0.43.0
 	modernc.org/sqlite v1.61.0
 )
 
@@ -29,7 +30,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.52.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/image v0.43.0 // indirect
 	golang.org/x/net v0.56.0 // indirect
 	golang.org/x/sys v0.49.0 // indirect
 	golang.org/x/text v0.40.0 // indirect

@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/shivang991/DashDevil2D/apps/server/accounts"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
 const sessionCookie = "__Host-dashdevil-session"
@@ -59,7 +60,7 @@ func (s *Server) accountRoutes() {
 		c.Cookie(&fiber.Cookie{Name: sessionCookie, Value: "", Path: "/", Secure: true, HTTPOnly: true, SameSite: "Strict", MaxAge: -1, Expires: time.Unix(1, 0)})
 		return c.JSON(fiber.Map{"ok": true})
 	})
-	s.app.Post("/api/account/password", s.changeTemporaryPassword)
+	s.app.Post("/api/account/password", s.changePassword)
 }
 func accountError(c *fiber.Ctx, status int, message string) error {
 	return c.Status(status).JSON(fiber.Map{"error": message})
@@ -144,7 +145,7 @@ func (s *Server) login(c *fiber.Ctx) error {
 	// Logging in again creates an independent session; it never takes over other devices.
 	return setSession(c, session, token)
 }
-func (s *Server) changeTemporaryPassword(c *fiber.Ctx) error {
+func (s *Server) changePassword(c *fiber.Ctx) error {
 	if !s.accountMutation(c) {
 		return accountError(c, 403, "Request rejected")
 	}
@@ -362,6 +363,9 @@ func (s *Server) updateProfile(c *fiber.Ctx) error {
 	return c.JSON(next)
 }
 func (s *Server) refreshRoomIdentityLocked(r *room) {
+	if r.phase == 0 {
+		r.racers = [2]p.RacerIdentity{}
+	}
 	for _, seat := range r.seats {
 		if seat != nil && seat.accountSession != "" {
 			seat.name, seat.avatar = seat.savedName, seat.savedAvatar
@@ -398,6 +402,13 @@ func (s *Server) cleanupAvatars() {
 	s.mu.Lock()
 	var retained []string
 	for _, r := range s.rooms {
+		if r.phase != 0 {
+			for _, racer := range r.racers {
+				if racer.Avatar != "" {
+					retained = append(retained, racer.Avatar)
+				}
+			}
+		}
 		for _, seat := range r.seats {
 			if seat != nil && seat.avatar != "" {
 				retained = append(retained, seat.avatar)

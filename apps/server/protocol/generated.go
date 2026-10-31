@@ -26,7 +26,7 @@ var layouts = map[string][]field{
 	"Admission":          {{Name: "Version", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Credential", Type: "bytes", Array: 0, Fixed: false, Max: 32, Mask: 0, Projection: false, Bits: 0}, {Name: "RoomTicket", Type: "bytes", Array: 0, Fixed: false, Max: 256, Mask: 0, Projection: false, Bits: 0}, {Name: "GameplayTicket", Type: "bytes", Array: 0, Fixed: false, Max: 256, Mask: 0, Projection: false, Bits: 0}, {Name: "ExpiresUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Origin", Type: "string", Array: 0, Fixed: false, Max: 512, Mask: 0, Projection: false, Bits: 0}},
 	"ProtocolError":      {{Name: "Code", Type: "u8", Array: 0, Fixed: false, Max: 15, Mask: 0, Projection: false, Bits: 0}, {Name: "ExpectedVersion", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Detail", Type: "string", Array: 0, Fixed: false, Max: 512, Mask: 0, Projection: false, Bits: 0}},
 	"RoomInitialization": {{Name: "Version", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
-	"RoomState":          {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Mode", Type: "u8", Array: 0, Fixed: false, Max: 2, Mask: 0, Projection: false, Bits: 0}, {Name: "Phase", Type: "u8", Array: 0, Fixed: false, Max: 3, Mask: 0, Projection: false, Bits: 0}, {Name: "Host", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}, {Name: "Seats", Type: "Seat", Array: 2, Fixed: true, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "RoundId", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "StartUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "IdleWarningUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "IdleExpiryUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
+	"RoomState":          {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Mode", Type: "u8", Array: 0, Fixed: false, Max: 2, Mask: 0, Projection: false, Bits: 0}, {Name: "Phase", Type: "u8", Array: 0, Fixed: false, Max: 3, Mask: 0, Projection: false, Bits: 0}, {Name: "Host", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}, {Name: "Seats", Type: "Seat", Array: 2, Fixed: true, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "RoundId", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "StartUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "IdleWarningUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "IdleExpiryUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Racers", Type: "RacerIdentity", Array: 2, Fixed: true, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"RoomCommand":        {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Sequence", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Command", Type: "u8", Array: 0, Fixed: false, Max: 5, Mask: 0, Projection: false, Bits: 0}, {Name: "Mode", Type: "u8", Array: 0, Fixed: false, Max: 2, Mask: 0, Projection: false, Bits: 0}, {Name: "Ready", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}},
 	"Handshake":          {{Name: "Version", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "DatagramBytes", Type: "u16", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"Initialization":     {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Context", Type: "Context", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
@@ -46,6 +46,7 @@ var layouts = map[string][]field{
 	"Coverage":           {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Authority", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Tick", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "TimeUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Progress", Type: "Progress", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Generator", Type: "Generator", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Windows", Type: "Window", Array: 2, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
 	"RoomReply":          {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Sequence", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Revision", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Accepted", Type: "u8", Array: 0, Fixed: false, Max: 1, Mask: 0, Projection: false, Bits: 0}, {Name: "Detail", Type: "string", Array: 0, Fixed: false, Max: 512, Mask: 0, Projection: false, Bits: 0}},
 	"RoomPulse":          {{Name: "Identity", Type: "Identity", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Sequence", Type: "u32", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "Round", Type: "Round", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}, {Name: "ServerUs", Type: "us", Array: 0, Fixed: false, Max: 0, Mask: 0, Projection: false, Bits: 0}},
+	"RacerIdentity":      {{Name: "Name", Type: "string", Array: 0, Fixed: false, Max: 128, Mask: 0, Projection: false, Bits: 0}, {Name: "Avatar", Type: "string", Array: 0, Fixed: false, Max: 43, Mask: 0, Projection: false, Bits: 0}},
 }
 
 type Identity struct {
@@ -483,16 +484,17 @@ func DecodeRoomInitialization(bytes []byte, limit int) (RoomInitialization, erro
 }
 
 type RoomState struct {
-	Identity      Identity `json:"identity"`
-	Revision      uint32   `json:"revision"`
-	Mode          uint8    `json:"mode"`
-	Phase         uint8    `json:"phase"`
-	Host          uint8    `json:"host"`
-	Seats         [2]Seat  `json:"seats"`
-	RoundId       uint32   `json:"roundId"`
-	StartUs       uint64   `json:"startUs"`
-	IdleWarningUs uint64   `json:"idleWarningUs"`
-	IdleExpiryUs  uint64   `json:"idleExpiryUs"`
+	Identity      Identity         `json:"identity"`
+	Revision      uint32           `json:"revision"`
+	Mode          uint8            `json:"mode"`
+	Phase         uint8            `json:"phase"`
+	Host          uint8            `json:"host"`
+	Seats         [2]Seat          `json:"seats"`
+	RoundId       uint32           `json:"roundId"`
+	StartUs       uint64           `json:"startUs"`
+	IdleWarningUs uint64           `json:"idleWarningUs"`
+	IdleExpiryUs  uint64           `json:"idleExpiryUs"`
+	Racers        [2]RacerIdentity `json:"racers"`
 }
 
 func EncodeRoomState(value RoomState, limit int) ([]byte, error) {
@@ -853,6 +855,20 @@ func EncodeRoomPulse(value RoomPulse, limit int) ([]byte, error) {
 func DecodeRoomPulse(bytes []byte, limit int) (RoomPulse, error) {
 	var value RoomPulse
 	err := decodeRecord("RoomPulse", bytes, &value, limit)
+	return value, err
+}
+
+type RacerIdentity struct {
+	Name   string `json:"name"`
+	Avatar string `json:"avatar"`
+}
+
+func EncodeRacerIdentity(value RacerIdentity, limit int) ([]byte, error) {
+	return encodeRecord("RacerIdentity", value, limit, false)
+}
+func DecodeRacerIdentity(bytes []byte, limit int) (RacerIdentity, error) {
+	var value RacerIdentity
+	err := decodeRecord("RacerIdentity", bytes, &value, limit)
 	return value, err
 }
 func ProjectBaseline(value Baseline) ([]byte, error) {

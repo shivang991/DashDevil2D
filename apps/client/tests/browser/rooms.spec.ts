@@ -163,10 +163,7 @@ test("storage denial retains the account name across entry, admission and return
   });
   await page.goto("/");
   await loginTestAccount(page);
-  const name = await page
-    .locator("p")
-    .filter({ hasText: /^Test_Driver$/ })
-    .innerText();
+  const name = await page.getByText("Test_Driver", { exact: true }).innerText();
   await page.getByRole("button", { name: /Road Rage/ }).click();
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
   await expect(page.getByText(`${name} (You)`, { exact: true })).toBeVisible();

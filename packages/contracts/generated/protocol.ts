@@ -875,6 +875,12 @@ export const layouts = {
     {
       "name": "idleExpiryUs",
       "type": "us"
+    },
+    {
+      "name": "racers",
+      "type": "RacerIdentity",
+      "array": 2,
+      "fixed": true
     }
   ],
   "RoomCommand": [
@@ -1437,6 +1443,18 @@ export const layouts = {
       "name": "serverUs",
       "type": "us"
     }
+  ],
+  "RacerIdentity": [
+    {
+      "name": "name",
+      "type": "string",
+      "max": 128
+    },
+    {
+      "name": "avatar",
+      "type": "string",
+      "max": 43
+    }
   ]
 } as const;
 export interface Identity {
@@ -1718,6 +1736,7 @@ export interface RoomState {
   startUs: number;
   idleWarningUs: number;
   idleExpiryUs: number;
+  racers: RacerIdentity[];
 }
 export function encodeRoomState(value: RoomState, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'RoomState', value, limit); }
 export function decodeRoomState(bytes: Uint8Array, limit = 1048576): RoomState { return decodeRecord(layouts, 'RoomState', bytes, limit) as RoomState; }
@@ -1921,6 +1940,12 @@ export interface RoomPulse {
 }
 export function encodeRoomPulse(value: RoomPulse, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'RoomPulse', value, limit); }
 export function decodeRoomPulse(bytes: Uint8Array, limit = 1048576): RoomPulse { return decodeRecord(layouts, 'RoomPulse', bytes, limit) as RoomPulse; }
+export interface RacerIdentity {
+  name: string;
+  avatar: string;
+}
+export function encodeRacerIdentity(value: RacerIdentity, limit = 1048576): Uint8Array { return encodeRecord(layouts, 'RacerIdentity', value, limit); }
+export function decodeRacerIdentity(bytes: Uint8Array, limit = 1048576): RacerIdentity { return decodeRecord(layouts, 'RacerIdentity', bytes, limit) as RacerIdentity; }
 export const messageTypes = {
   "AdmissionRequest": {
     "id": 1,
