@@ -270,6 +270,11 @@ func (pair *pair) connectIfReady() {
 		return
 	}
 	participant := pair.seat
+	if !participant.accountLive(s.nowTime()) {
+		s.mu.Unlock()
+		pair.close("Session expired or revoked")
+		return
+	}
 	if participant.pair != pair || participant.room.seats[participant.index] != participant || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !s.nowTime().Before(participant.deadline)) {
 		s.mu.Unlock()
 		pair.close("recovery deadline")
@@ -287,7 +292,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	s.mu.Lock()
 	participant := pair.seat
 	r := participant.room
-	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence || !participant.leaving.IsZero() {
+	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence || !participant.leaving.IsZero() || !participant.accountLive(s.nowTime()) {
 		s.mu.Unlock()
 		return fmt.Errorf("stale room command")
 	}

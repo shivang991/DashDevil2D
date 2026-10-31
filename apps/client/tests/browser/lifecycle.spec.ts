@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 const read = async (page: Page) =>
   JSON.parse((await page.getByTestId("room-evidence").textContent())!);
@@ -41,6 +42,7 @@ test("default course: native menu controls, recovered authority, shared results 
     });
     for (const page of pages) {
       await page.goto("/");
+      await loginTestAccount(page);
       await page.getByRole("button", { name: /Drag Race/ }).click();
     }
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
@@ -262,6 +264,7 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     });
     for (const page of pages) {
       await page.goto("/");
+      await loginTestAccount(page);
       await page.getByRole("button", { name: /Drag Race/ }).click();
     }
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

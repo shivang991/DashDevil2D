@@ -86,3 +86,7 @@ pnpm test:maintenance
 Maintenance coverage is required in CI alongside existing preservation/transport suites. [Validation history](VALIDATION.md) distinguishes local fixtures from actual public ACME, VPC/firewall, supported-browser, reference-hardware/network, capacity and human acceptance. The operating model also requires wider observability and capacity evidence; this deployment update does not claim full production acceptance.
 
 Governing [operating model](https://github.com/shivang991/DashDevil2D/issues/18#issuecomment-6147409056), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139) and [stage sequence](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).
+
+## Persistent accounts
+
+The server's `accounts` volume stores SQLite accounts and 30-day sessions at `/var/lib/dashdevil/accounts.sqlite`. Bootstrap the one admin with the separate `dashdevil-setup` command over stdin after deployment; see [account setup and authentication](../apps/server/accounts/README.md). No credentials belong in `.env`, frontend assets or logs. Preserve the account volume when upgrading. Public `/api/account` requests are proxied to Go; the loopback readiness/drain operator listener stays separate.

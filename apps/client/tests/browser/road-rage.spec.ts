@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 const read = async (page: Page) =>
   JSON.parse((await page.getByTestId("room-evidence").textContent())!);
@@ -19,6 +20,7 @@ test(
     try {
       for (const page of pages) {
         await page.goto("/");
+        await loginTestAccount(page);
         await page.getByRole("button", { name: /Road Rage/ }).click();
       }
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

@@ -113,7 +113,7 @@ func (pair *pair) roomBaseline() (p.Baseline, error) {
 func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 	s := pair.server
 	r := pair.seat.room
-	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.leaving.IsZero() {
+	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.leaving.IsZero() || !pair.seat.accountLive(s.nowTime()) {
 		return p.Baseline{}, errors.New("superseded room seat")
 	}
 	if r.zero == nil || r.zero.Context.Mode != r.mode {

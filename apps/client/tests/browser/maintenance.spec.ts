@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 const read = async (page: Page) =>
   JSON.parse((await page.getByTestId("room-evidence").textContent())!);
@@ -18,6 +19,7 @@ test("planned maintenance keeps active play and final results, then abandons unf
   const createRound = async (pair: Page[]) => {
     for (const page of pair) {
       await page.goto("/");
+      await loginTestAccount(page);
       await page.getByRole("button", { name: /Drag Race/ }).click();
     }
     await pair[0].getByRole("button", { name: "Create Room", exact: true }).click();

@@ -21,6 +21,7 @@
     "check:generated": "pnpm --filter @dashdevil/contracts check:generated",
     "dev:transport": "node apps/client/scripts/transport.mjs",
     "test:transport": "node apps/client/scripts/transport.mjs --test",
+    "test:accounts": "node apps/client/scripts/transport.mjs --test --accounts",
     "test:rooms": "node apps/client/scripts/transport.mjs --test --rooms",
     "test:groups": "node apps/client/scripts/transport.mjs --test --groups",
     "test:finality": "node apps/client/scripts/transport.mjs --test --finality",

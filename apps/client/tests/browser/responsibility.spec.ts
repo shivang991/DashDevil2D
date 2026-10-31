@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 import fixtures from "../../../../packages/contracts/race/responsibility.json" with { type: "json" };
 import type { Multiplayer } from "@dashdevil/simulation/multiplayer";
@@ -131,6 +132,7 @@ for (const scenario of ["protected-victim-0", "protected-victim-1", "reversal"])
       for (const page of pages) {
         page.on("pageerror", (error) => errors.push(error.message));
         await page.goto("/");
+        await loginTestAccount(page);
         await page.getByRole("button", { name: /Road Rage/ }).click();
       }
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

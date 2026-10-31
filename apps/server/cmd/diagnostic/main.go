@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"flag"
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	"github.com/shivang991/DashDevil2D/apps/server/operations"
 	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"log/slog"
@@ -16,6 +17,7 @@ func main() {
 	var c transport.Config
 	var roundConfig, roadRageConfig string
 	var operatorAddress string
+	var database string
 	var drainTimeout, stopGrace time.Duration
 	var checkReady, requestDrain, checkPublic, checkConfig bool
 	flag.IntVar(&c.RoomLimit, "room-limit", 50, "maximum existing rooms, including reservations (1-10000)")
@@ -36,6 +38,7 @@ func main() {
 	flag.BoolVar(&checkPublic, "check-public", false, "verify public client, admission and HTTP/3 UDP and exit")
 	flag.DurationVar(&stopGrace, "stop-grace-period", 200*time.Second, "supervisor stop grace; must exceed drain timeout by at least 15 seconds")
 	flag.BoolVar(&checkConfig, "check-config", false, "validate maintenance durations without starting listeners")
+	flag.StringVar(&database, "database", ".local/accounts.sqlite", "persistent SQLite accounts and sessions")
 	flag.Parse()
 	if drainTimeout < time.Millisecond || drainTimeout%time.Microsecond != 0 {
 		slog.Error("drain timeout must be at least 1ms with whole microsecond precision")
@@ -89,6 +92,15 @@ func main() {
 		}
 	}
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stdout, nil)))
+	if !c.Diagnostic {
+		store, err := accounts.Open(database)
+		if err != nil {
+			slog.Error("account database unavailable")
+			os.Exit(1)
+		}
+		defer store.Close()
+		c.Accounts = store
+	}
 	server, err := transport.New(c)
 	if err != nil {
 		slog.Error("configuration", "error", err)

@@ -242,7 +242,7 @@ func (pair *pair) submitRace(input p.Input) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	r := pair.seat.room
-	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.connected || !pair.seat.leaving.IsZero() || r.phase != 2 || r.engine == nil || r.outcome != nil || !pair.seat.focused {
+	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.connected || !pair.seat.leaving.IsZero() || !pair.seat.accountLive(s.nowTime()) || r.phase != 2 || r.engine == nil || r.outcome != nil || !pair.seat.focused {
 		return nil
 	}
 	if input.Round.RoundId != r.roundID || input.Round.InputGeneration != pair.seat.inputGeneration {

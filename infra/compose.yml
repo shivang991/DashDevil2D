@@ -17,6 +17,8 @@ services:
       - 0.0.0.0:8443
       - --origin
       - https://${PUBLIC_HOST:?Set PUBLIC_HOST to your DNS hostname}
+      - --database
+      - /var/lib/dashdevil/accounts.sqlite
       - --admin-address
       - 127.0.0.1:8082
       - --drain-timeout
@@ -29,6 +31,7 @@ services:
       - /run/tls/live/dashdevil/privkey.pem
     volumes:
       - letsencrypt:/run/tls:ro
+      - accounts:/var/lib/dashdevil
     # TCP 8443 stays private. QUIC/HTTP3 reaches the Go listener directly.
     ports:
       - "443:8443/udp"
@@ -76,6 +79,7 @@ services:
     networks: [app]
 
 volumes:
+  accounts:
   letsencrypt:
   acme-webroot:
 

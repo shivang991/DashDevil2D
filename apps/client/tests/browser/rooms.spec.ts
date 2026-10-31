@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect } from "@playwright/test";
 
 test("two React participants adopt host mode, ready and share a physics-free countdown before playable Road Rage", async ({
@@ -11,9 +12,9 @@ test("two React participants adopt host mode, ready and share a physics-free cou
   const pages = await Promise.all(contexts.map((context) => context.newPage()));
   try {
     for (const page of pages) {
-      await page.addInitScript(() => localStorage.setItem("dashdevil-local-name", "Same Driver"));
       await page.goto("/");
-      await expect(page.getByText("Same Driver", { exact: true })).toBeVisible();
+      await loginTestAccount(page);
+      await expect(page.getByText("Test_Driver", { exact: true })).toBeVisible();
     }
     await pages[0].getByRole("button", { name: /Road Rage/ }).click();
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
@@ -28,7 +29,7 @@ test("two React participants adopt host mode, ready and share a physics-free cou
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
     await expect(pages[1].getByTestId("selected-mode")).toHaveText("Road Rage");
     for (const page of pages)
-      await expect(page.getByText("Same Driver (You)", { exact: true })).toBeVisible();
+      await expect(page.getByText("Test_Driver (You)", { exact: true })).toBeVisible();
     await expect(pages[1].getByRole("button", { name: "Road Rage", exact: true })).toBeDisabled();
     await info.attach("lobby.png", { body: await pages[0].screenshot(), contentType: "image/png" });
     await pages[0].getByRole("button", { name: "Ready", exact: true }).click();
@@ -139,6 +140,7 @@ test("four-digit entry retains leading zeros and shows admission errors beside t
     }
   });
   await page.goto("/");
+  await loginTestAccount(page);
   await page.getByRole("button", { name: /Drag Race/ }).click();
   await page.getByRole("button", { name: "Join Room", exact: true }).click();
   await page.getByLabel("Room code").fill("0042");
@@ -149,7 +151,7 @@ test("four-digit entry retains leading zeros and shows admission errors beside t
   expect(submitted).toBe("0042");
 });
 
-test("storage denial retains one local name across entry, admission and return", async ({
+test("storage denial retains the account name across entry, admission and return", async ({
   page,
 }) => {
   await page.addInitScript(() => {
@@ -160,9 +162,10 @@ test("storage denial retains one local name across entry, admission and return",
     });
   });
   await page.goto("/");
+  await loginTestAccount(page);
   const name = await page
     .locator("p")
-    .filter({ hasText: /^Driver / })
+    .filter({ hasText: /^Test_Driver$/ })
     .innerText();
   await page.getByRole("button", { name: /Road Rage/ }).click();
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
@@ -186,6 +189,7 @@ test("host mode changes clear readiness and a reloaded tab recovers its authenti
   try {
     for (const page of pages) {
       await page.goto("/");
+      await loginTestAccount(page);
       await page.getByRole("button", { name: /Drag Race/ }).click();
     }
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
@@ -261,6 +265,7 @@ test("readiness stays pending until its own command reply despite a room-state b
     });
   });
   await page.goto("/");
+  await loginTestAccount(page);
   await page.getByRole("button", { name: /Drag Race/ }).click();
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
   await expect(page.getByTestId("connection-state")).toHaveText("Connected");

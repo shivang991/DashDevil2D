@@ -10,6 +10,7 @@ import (
 
 	"errors"
 	"fmt"
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
 	"github.com/shivang991/DashDevil2D/apps/server/simulation"
 	"log/slog"
@@ -35,7 +36,8 @@ const frameLimit = 65536
 // Config uses one hostname/port for TCP HTTPS and UDP HTTP/3. Local tests may
 // request port zero; the UDP listener then binds the allocated TCP port.
 type Config struct {
-	RoomLimit                                                                    int // zero selects the default 50-room admission limit
+	Accounts                                                                     *accounts.Store // required for product admission; diagnostic is stationary only
+	RoomLimit                                                                    int             // zero selects the default 50-room admission limit
 	Address, Origin, Certificate, Key, QUICCertificate, QUICKey, StaticDirectory string
 	Logger                                                                       *slog.Logger
 	Now                                                                          func() time.Time       // authoritative clock; nil uses time.Now
@@ -45,24 +47,25 @@ type Config struct {
 	RoadRageOverrides                                                            []byte
 }
 type Server struct {
-	draining      bool
-	drainComplete bool
-	drainDeadline time.Time
-	drainClosing  time.Time
-	config        Config
-	mu            sync.Mutex // serializes room, admission and pair ownership; never hold across I/O
-	rooms         map[string]*room
-	credentials   map[string]*seat
-	tickets       map[string]ticket
-	nextID        uint32
-	start         time.Time
-	app           *fiber.App
-	webtransport  *wt.Server
-	tcp           net.Listener
-	udp           net.PacketConn
-	stop          chan struct{}
-	closeOnce     sync.Once
-	errors        chan error
+	accountAdmission accountAdmission
+	draining         bool
+	drainComplete    bool
+	drainDeadline    time.Time
+	drainClosing     time.Time
+	config           Config
+	mu               sync.Mutex // serializes room, admission and pair ownership; never hold across I/O
+	rooms            map[string]*room
+	credentials      map[string]*seat
+	tickets          map[string]ticket
+	nextID           uint32
+	start            time.Time
+	app              *fiber.App
+	webtransport     *wt.Server
+	tcp              net.Listener
+	udp              net.PacketConn
+	stop             chan struct{}
+	closeOnce        sync.Once
+	errors           chan error
 }
 type room struct {
 	engine          *simulation.Engine
@@ -87,6 +90,9 @@ type room struct {
 	idle     time.Time
 }
 type seat struct {
+	accountSession   string
+	accountID        int64
+	accountExpires   time.Time
 	room             *room
 	index            uint8
 	session          uint32
@@ -150,7 +156,7 @@ func New(config Config) (*Server, error) {
 	if config.Now == nil {
 		config.Now = time.Now
 	}
-	return &Server{config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
+	return &Server{accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
 }
 func (s *Server) nowUs() uint64 { return uint64(max(0, s.config.Now().Sub(s.start).Microseconds())) }
 
@@ -188,6 +194,7 @@ func (s *Server) Start() error {
 			return s.failure(c, 403, 2, "Admission rejected")
 		}
 		if from == s.config.Origin {
+			c.Set("Access-Control-Allow-Credentials", "true")
 			c.Set("Access-Control-Allow-Origin", s.config.Origin)
 			c.Set("Vary", "Origin")
 			c.Set("Access-Control-Allow-Headers", "Content-Type")
@@ -199,6 +206,7 @@ func (s *Server) Start() error {
 		}
 		return c.Next()
 	})
+	s.accountRoutes()
 	s.app.Post("/admission", s.admission)
 	s.app.Get("/room", func(c *fiber.Ctx) error {
 		if c.Get("Origin") != s.config.Origin || !websocket.IsWebSocketUpgrade(c) {
@@ -312,6 +320,19 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		return s.failure(c, 503, 2, "Unable to connect")
 	}
 	s.mu.Lock()
+	var account accounts.Session
+	if !s.config.Diagnostic {
+		account, err = s.account(c)
+		if err != nil {
+			s.mu.Unlock()
+			return s.failure(c, 401, 2, "Session expired. Please log in again")
+		}
+		if account.MustChangePassword {
+			s.mu.Unlock()
+			return s.failure(c, 403, 2, "Change your temporary password before multiplayer")
+		}
+		request.Name = account.Username
+	}
 	now := s.nowTime()
 	changedRooms := s.expireLocked(now)
 	defer func() {
@@ -424,6 +445,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		}
 		s.nextID++
 		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(roomDuration(r, "reconnectGrace"))}
+		participant.accountSession, participant.accountID, participant.accountExpires = account.ID, account.User.ID, account.Expires
 		if r.phase == 3 {
 			r.phase = 0
 		}
@@ -441,7 +463,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			return s.failure(c, 403, 2, "Admission rejected")
 		}
 		participant = s.credentials[token(request.Credential)]
-		if participant == nil || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !now.Before(participant.deadline)) {
+		if participant == nil || (!s.config.Diagnostic && participant.accountSession != account.ID) || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !now.Before(participant.deadline)) {
 			s.mu.Unlock()
 			return s.failure(c, 410, 7, "Room expired")
 		}
@@ -505,11 +527,20 @@ func (s *Server) consume(key, channel, origin string) (*pair, error) {
 	if !ok || t.channel != channel || t.origin != origin || !s.nowTime().Before(t.expires) || t.seat.generation != t.generation || t.seat.pair == nil || t.seat.room.seats[t.seat.index] != t.seat || !t.seat.leaving.IsZero() || (!t.seat.deadline.IsZero() && !s.nowTime().Before(t.seat.deadline)) {
 		return nil, errors.New("admission rejected")
 	}
+	if !s.config.Diagnostic {
+		if s.config.Accounts == nil {
+			return nil, errors.New("admission rejected")
+		}
+		account, err := s.config.Accounts.Session(t.seat.accountSession, s.config.Now())
+		if err != nil || account.MustChangePassword {
+			return nil, errors.New("admission rejected")
+		}
+	}
 	delete(s.tickets, key)
 	return t.seat.pair, nil
 }
 func (s *Server) expireLocked(now time.Time) []*room {
-	var changed []*room
+	changed := s.expireAccountSeatsLocked(now)
 	for code, r := range s.rooms {
 		modified := false
 		s.resolveDeparturesLocked(r, now)
@@ -566,7 +597,8 @@ func (s *Server) sweep() {
 		case <-ticker.C:
 			s.mu.Lock()
 			now := s.nowTime()
-			changed := s.advanceCountdownsLocked()
+			changed := s.expireAccountSeatsLocked(now)
+			changed = append(changed, s.advanceCountdownsLocked()...)
 			changed = append(changed, s.advanceRacesLocked()...)
 			changed = append(changed, s.expireLocked(now)...)
 			maintenanceChanged, closingPairs := s.advanceMaintenanceLocked(now)

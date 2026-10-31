@@ -1,15 +1,19 @@
 import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
-import {
-  PairedConnection,
-  type ConnectionOptions,
-  type PairedState,
-} from "@/transport/PairedConnection";
+import { PairedConnection, type PairedState } from "@/transport/PairedConnection";
 import { MultiplayerView } from "./MultiplayerView";
 import { RaceView } from "@/components/RaceView";
-import { localName } from "@/transport/localName";
+import { connectionOptions } from "@/transport/account";
 
-export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () => void }) {
+export function MultiplayerScreen({
+  mode,
+  onBack,
+  playerName,
+}: {
+  mode: 1 | 2;
+  onBack: () => void;
+  playerName: string;
+}) {
   const connection = useRef<PairedConnection | undefined>(undefined);
   const [client, setClient] = useState<PairedConnection>();
   const [state, setState] = useState<PairedState>();
@@ -20,12 +24,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
     const focus = () => connection.current?.focus(document.hasFocus(), document.hidden);
     const load = async () => {
       try {
-        const options: ConnectionOptions = import.meta.env.DEV
-          ? await fetch("/__transport-config").then((response) => {
-              if (!response.ok) throw new Error("Start pnpm dev:transport for secure multiplayer");
-              return response.json() as Promise<ConnectionOptions>;
-            })
-          : { server: location.origin };
+        const options = await connectionOptions();
         if (disposed) return;
         const client = new PairedConnection(options, (next) => {
           setState(next);
@@ -87,7 +86,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: 1 | 2; onBack: () =>
     <MultiplayerView
       mode={mode}
       onBack={onBack}
-      playerName={localName()}
+      playerName={playerName}
       state={state}
       error={error}
       clock={clock}
