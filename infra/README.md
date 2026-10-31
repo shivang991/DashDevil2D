@@ -89,4 +89,4 @@ Governing [operating model](https://github.com/shivang991/DashDevil2D/issues/18#
 
 ## Persistent accounts
 
-The server's `accounts` volume stores SQLite accounts and 30-day sessions at `/var/lib/dashdevil/accounts.sqlite`. Bootstrap the one admin with the separate `dashdevil-setup` command over stdin after deployment; see [account setup and authentication](../apps/server/accounts/README.md). No credentials belong in `.env`, frontend assets or logs. Preserve the account volume when upgrading. Public `/api/account` requests are proxied to Go; the loopback readiness/drain operator listener stays separate.
+The server's `accounts` volume stores SQLite accounts and 30-day sessions at `/var/lib/dashdevil/accounts.sqlite`. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` in `infra/.env` before deployment; server startup creates the admin once; see [account setup and authentication](../apps/server/accounts/README.md). Keep `infra/.env` private; never include credentials in frontend assets or logs. Preserve the account volume when upgrading. Public `/api/account` requests are proxied to Go; the loopback readiness/drain operator listener stays separate.

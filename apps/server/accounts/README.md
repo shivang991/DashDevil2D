@@ -8,22 +8,18 @@ The `__Host-dashdevil-session` cookie is Secure, HttpOnly, SameSite=Strict, Path
 
 ## Operator setup
 
-No public registration exists. The configured admin manages users from Admin in the authenticated game menu. Bootstrap the single admin once, supplying the password on stdin from a protected file or password manager. Do not put it in command arguments, client configuration or logs. From the repository root:
+No public registration exists. Set credentials in `infra/.env` before deploying:
 
-```sh
-cd apps/server
-go run ./cmd/setup --database ../../.local/transport/accounts.sqlite --username Site_Admin < /secure/admin-password
+```dotenv
+ADMIN_USERNAME=Site_Admin
+ADMIN_PASSWORD='your-strong-password'
 ```
 
-This database path matches `pnpm dev:transport`. Direct server launches accept `--database`; their default is `.local/accounts.sqlite` relative to the process working directory. `pnpm dev` alone retains guest Long Drive; use the HTTPS transport harness for local login/multiplayer. Add `--temporary-password` to setup to require replacement of the admin's initial password on first login. Setup rejects duplicate usernames and any second admin, even under a different name.
+Compose passes these to the server. First startup creates the single admin in the mounted database; subsequent starts preserve existing credentials, including password changes made in the app. Changing these variables does not reset an existing admin. Username: 3–24 ASCII letters, digits or underscores. Password: 12–1024 characters. Keep `infra/.env` private and untracked.
 
-On Docker, after starting the deployment:
+For Docker secrets, leave `ADMIN_PASSWORD` empty, mount a Compose secret on the server and set `ADMIN_PASSWORD_FILE=/run/secrets/admin_password`. The path is inside the container; setting the variable alone does not mount the file. Never set both password sources.
 
-```sh
-docker compose --env-file infra/.env -f infra/compose.yml exec -T server \
-  dashdevil-setup --database /var/lib/dashdevil/accounts.sqlite \
-  --username Site_Admin < /secure/admin-password
-```
+Local development accepts the same environment variables with `pnpm dev:transport`, using `.local/transport/accounts.sqlite`. Direct server launches use their `--database` path. `pnpm dev` alone retains guest Long Drive. Set `ADMIN_TEMPORARY_PASSWORD=true` to require first-login replacement. With no credentials configured, startup preserves the existing behavior without creating an admin.
 
 The `accounts` volume retains the database across server/container replacement. Preserve that volume during deployments and back up the database consistently with its WAL (or stop the server before copying the volume). Nginx forwards `/api/account`, including cookies and JSON requests, to the private TLS server. The private readiness/drain listener has no account-administration routes.
 
@@ -42,7 +38,7 @@ Logout clears tab reconnect state. Other tabs sharing the same cookie refresh th
 
 ## Verification
 
-`go test ./transport -run 'TestAccount|TestGuests|TestCredentialRules|TestTemporaryPassword|TestLogout|TestSessionExpiry|TestSessionRevocation'` exercises real HTTPS, SQLite reopen, rules, first-login replacement, session expiry, cross-site rejection, throttling, identity binding and seat/ticket revocation. `pnpm test:accounts` bootstraps a temporary admin through the actual setup command, replaces its password in Chrome, reloads its durable login, plays Drag Race with an independent session, and verifies cross-tab logout/forfeit while the other session remains usable. `accounts-guest.spec.ts` covers guest gating, login Back and playable Long Drive. Existing multiplayer browser suites now obtain real independent logins through the same UI.
+`go test ./transport -run 'TestAccount|TestGuests|TestCredentialRules|TestTemporaryPassword|TestLogout|TestSessionExpiry|TestSessionRevocation'` exercises real HTTPS, SQLite reopen, rules, first-login replacement, session expiry, cross-site rejection, throttling, identity binding and seat/ticket revocation. `pnpm test:accounts` bootstraps a temporary admin through server startup environment, replaces its password in Chrome, reloads its durable login, plays Drag Race with an independent session, and verifies cross-tab logout/forfeit while the other session remains usable. `accounts-guest.spec.ts` covers guest gating, login Back and playable Long Drive. Existing multiplayer browser suites now obtain real independent logins through the same UI.
 
 ## Player profiles
 

@@ -12,6 +12,10 @@ services:
     build:
       context: ..
       dockerfile: infra/server/Dockerfile
+    environment:
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      ADMIN_PASSWORD_FILE: ${ADMIN_PASSWORD_FILE:-}
     command:
       - --address
       - 0.0.0.0:8443

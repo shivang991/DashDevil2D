@@ -99,6 +99,10 @@ func main() {
 			os.Exit(1)
 		}
 		defer store.Close()
+		if err := store.BootstrapEnvironment(); err != nil {
+			slog.Error("admin bootstrap failed", "error", err)
+			os.Exit(1)
+		}
 		c.Accounts = store
 	}
 	server, err := transport.New(c)

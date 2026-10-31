@@ -75,27 +75,6 @@ run("go", ["build", "-o", path.join(directory, "diagnostic-server"), "./cmd/diag
 const database = path.join(directory, "accounts.sqlite");
 // Test credentials stay in the test-process environment, never the browser config.
 const testPassword = test && !diagnostic ? randomBytes(24).toString("base64url") : "";
-if (testPassword) {
-  const setup = spawnSync(
-    "go",
-    [
-      "run",
-      "./cmd/setup",
-      "--database",
-      database,
-      "--username",
-      "Test_Driver",
-      ...(accounts ? ["--temporary-password"] : []),
-    ],
-    {
-      cwd: serverDirectory,
-      env: process.env,
-      input: testPassword + "\n",
-      stdio: ["pipe", "inherit", "inherit"],
-    },
-  );
-  if (setup.status !== 0) throw new Error("Test account bootstrap failed");
-}
 
 const children = [];
 let stopping = false;
@@ -310,7 +289,11 @@ const server = spawn(
     "--quic-key",
     path.join(directory, "webtransport-key.pem"),
   ],
-  { cwd: root, stdio: ["ignore", serverLog, serverLog] },
+  {
+    cwd: root,
+    env: { ...process.env, ...(testPassword ? { ADMIN_USERNAME: "Test_Driver", ADMIN_PASSWORD: testPassword, ADMIN_PASSWORD_FILE: "", ADMIN_TEMPORARY_PASSWORD: accounts ? "true" : "false" } : {}) },
+    stdio: ["ignore", serverLog, serverLog],
+  },
 );
 children.push(server);
 const env = {
