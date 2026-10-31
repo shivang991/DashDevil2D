@@ -48,6 +48,7 @@ type Config struct {
 }
 type Server struct {
 	accountAdmission accountAdmission
+	authMu           sync.Mutex // serializes durable auth with admission/revocation; never held by gameplay ticks
 	draining         bool
 	drainComplete    bool
 	drainDeadline    time.Time
@@ -319,19 +320,23 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	if err != nil {
 		return s.failure(c, 503, 2, "Unable to connect")
 	}
-	s.mu.Lock()
 	var account accounts.Session
 	if !s.config.Diagnostic {
+		s.authMu.Lock()
+		defer s.authMu.Unlock()
 		account, err = s.account(c)
 		if err != nil {
-			s.mu.Unlock()
 			return s.failure(c, 401, 2, "Session expired. Please log in again")
 		}
 		if account.MustChangePassword {
-			s.mu.Unlock()
 			return s.failure(c, 403, 2, "Change your temporary password before multiplayer")
 		}
 		request.Name = account.Username
+	}
+	s.mu.Lock()
+	if !s.config.Diagnostic && !s.config.Now().Before(account.Expires) {
+		s.mu.Unlock()
+		return s.failure(c, 401, 2, "Session expired. Please log in again")
 	}
 	now := s.nowTime()
 	changedRooms := s.expireLocked(now)
@@ -521,10 +526,13 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	return c.Status(201).Send(wire)
 }
 func (s *Server) consume(key, channel, origin string) (*pair, error) {
+	s.authMu.Lock()
+	defer s.authMu.Unlock()
+	// Snapshot immutable ownership, then release gameplay ownership for SQLite I/O.
 	s.mu.Lock()
-	defer s.mu.Unlock()
 	t, ok := s.tickets[key]
-	if !ok || t.channel != channel || t.origin != origin || !s.nowTime().Before(t.expires) || t.seat.generation != t.generation || t.seat.pair == nil || t.seat.room.seats[t.seat.index] != t.seat || !t.seat.leaving.IsZero() || (!t.seat.deadline.IsZero() && !s.nowTime().Before(t.seat.deadline)) {
+	s.mu.Unlock()
+	if !ok {
 		return nil, errors.New("admission rejected")
 	}
 	if !s.config.Diagnostic {
@@ -535,6 +543,13 @@ func (s *Server) consume(key, channel, origin string) (*pair, error) {
 		if err != nil || account.MustChangePassword {
 			return nil, errors.New("admission rejected")
 		}
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	// Sweeps may expire/remove the ticket while the database is being read.
+	t, ok = s.tickets[key]
+	if !ok || t.channel != channel || t.origin != origin || !s.nowTime().Before(t.expires) || !t.seat.accountLive(s.nowTime()) || t.seat.generation != t.generation || t.seat.pair == nil || t.seat.room.seats[t.seat.index] != t.seat || !t.seat.leaving.IsZero() || (!t.seat.deadline.IsZero() && !s.nowTime().Before(t.seat.deadline)) {
+		return nil, errors.New("admission rejected")
 	}
 	delete(s.tickets, key)
 	return t.seat.pair, nil

@@ -1,8 +1,10 @@
 package transport_test
 
 import (
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	ws "github.com/fasthttp/websocket"
 	"net/http"
 	"net/http/cookiejar"
@@ -342,5 +344,73 @@ func TestSessionRevocationClosesAllActiveTransportsAndRemovesRoom(t *testing.T) 
 		case <-time.After(time.Second):
 			t.Fatal("revoked gameplay still connected")
 		}
+	}
+}
+
+func TestBlockedAccountWriteDoesNotBlockAnotherSessionsRoom(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "accounts.sqlite")
+	store, err := accounts.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { store.Close() })
+	if err = store.Bootstrap("Busy_Admin", "busy database password"); err != nil {
+		t.Fatal(err)
+	}
+	s, c, roots := configuredServer(t, transport.Config{Accounts: store})
+	c.Jar, _ = cookiejar.New(nil)
+	loginAccount(t, s, c, "Busy_Admin", "busy database password")
+	other := independentClient(c)
+	loginAccount(t, s, other, "Busy_Admin", "busy database password")
+	_, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion}, origin)
+	a := value.(p.Admission)
+	socket, _ := initializedPair(t, s, roots, a, true)
+	// An external SQLite writer is a system-boundary fault, not a mocked collaborator.
+	writer, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer writer.Close()
+	if _, err = writer.Exec("BEGIN IMMEDIATE"); err != nil {
+		t.Fatal(err)
+	}
+	defer writer.Exec("ROLLBACK")
+	finished := make(chan error, 1)
+	go func() {
+		request, err := http.NewRequest("POST", s.URL()+"/api/account/logout", strings.NewReader(`{}`))
+		if err == nil {
+			request.Header.Set("Origin", origin)
+			request.Header.Set("Content-Type", "application/json")
+			response, failure := other.Do(request)
+			err = failure
+			if response != nil {
+				response.Body.Close()
+				if response.StatusCode != 200 {
+					err = fmt.Errorf("logout: %d", response.StatusCode)
+				}
+			}
+		}
+		finished <- err
+	}()
+	// Let the actual HTTPS request reach the deliberately blocked database writer.
+	select {
+	case err := <-finished:
+		t.Fatalf("logout did not wait for SQLite: %v", err)
+	case <-time.After(100 * time.Millisecond):
+	}
+	roomSend(t, socket, a, 1, p.RoomState{}, 4, 1, 1)
+	if reply := roomReply(t, socket, 1); reply.Accepted != 1 {
+		t.Fatalf("independent room stalled: %v", reply)
+	}
+	if _, err = writer.Exec("ROLLBACK"); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case err := <-finished:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("logout did not complete after writer released")
 	}
 }

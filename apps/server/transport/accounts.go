@@ -35,18 +35,8 @@ func (s *Server) accountRoutes() {
 		if !s.accountMutation(c) {
 			return accountError(c, 403, "Request rejected")
 		}
-		s.mu.Lock()
 		id := accounts.TokenID(c.Cookies(sessionCookie))
-		if s.config.Accounts == nil {
-			s.mu.Unlock()
-			return accountError(c, 503, "Accounts unavailable")
-		}
-		err := s.config.Accounts.Revoke(id)
-		changed := s.revokeSeatsLocked(func(seat *seat) bool { return seat.accountSession == id }, s.nowTime())
-		s.mu.Unlock()
-		for _, r := range changed {
-			s.broadcast(r)
-		}
+		err := s.RevokeSession(id)
 		if err != nil {
 			return accountError(c, 503, "Unable to log out. Try again")
 		}
@@ -142,6 +132,8 @@ func (s *Server) changeTemporaryPassword(c *fiber.Ctx) error {
 	if !s.accountMutation(c) {
 		return accountError(c, 403, "Request rejected")
 	}
+	s.authMu.Lock()
+	defer s.authMu.Unlock()
 	session, err := s.account(c)
 	if err != nil {
 		return accountError(c, 401, accounts.ErrSession.Error())
@@ -175,32 +167,38 @@ func (s *Server) changeTemporaryPassword(c *fiber.Ctx) error {
 // internal session ID, never a client-supplied seat identity. Callers must use
 // this server seam so revoking login also removes every seat and unused ticket.
 func (s *Server) RevokeSession(id string) error {
-	s.mu.Lock()
+	s.authMu.Lock()
+	defer s.authMu.Unlock()
 	if s.config.Accounts == nil {
-		s.mu.Unlock()
 		return accounts.ErrSession
 	}
-	err := s.config.Accounts.Revoke(id)
+	if err := s.config.Accounts.Revoke(id); err != nil {
+		return err
+	}
+	s.mu.Lock()
 	changed := s.revokeSeatsLocked(func(seat *seat) bool { return seat.accountSession == id }, s.nowTime())
 	s.mu.Unlock()
 	for _, r := range changed {
 		s.broadcast(r)
 	}
-	return err
+	return nil
 }
 func (s *Server) RevokeAccountSessions(accountID int64) error {
-	s.mu.Lock()
+	s.authMu.Lock()
+	defer s.authMu.Unlock()
 	if s.config.Accounts == nil {
-		s.mu.Unlock()
 		return accounts.ErrSession
 	}
-	err := s.config.Accounts.RevokeAccount(accountID)
+	if err := s.config.Accounts.RevokeAccount(accountID); err != nil {
+		return err
+	}
+	s.mu.Lock()
 	changed := s.revokeSeatsLocked(func(seat *seat) bool { return seat.accountID == accountID }, s.nowTime())
 	s.mu.Unlock()
 	for _, r := range changed {
 		s.broadcast(r)
 	}
-	return err
+	return nil
 }
 func (s *Server) revokeSeatsLocked(matches func(*seat) bool, at time.Time) []*room {
 	var changed []*room
