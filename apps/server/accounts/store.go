@@ -69,6 +69,9 @@ func Open(path string) (*Store, error) {
  id TEXT PRIMARY KEY, account_id INTEGER NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
  expires INTEGER NOT NULL);
  CREATE INDEX IF NOT EXISTS account_sessions ON sessions(account_id);
+ CREATE TABLE IF NOT EXISTS account_activity(account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE,
+ created_at INTEGER, last_seen_at INTEGER);
+ INSERT OR IGNORE INTO account_activity(account_id) SELECT id FROM accounts;
  CREATE TABLE IF NOT EXISTS avatars(id TEXT PRIMARY KEY, content BLOB NOT NULL);
  CREATE TABLE IF NOT EXISTS profiles(account_id INTEGER PRIMARY KEY REFERENCES accounts(id) ON DELETE CASCADE, avatar TEXT NOT NULL REFERENCES avatars(id));`)
 	if err != nil {
@@ -116,7 +119,7 @@ func (s *Store) BootstrapTemporaryPassword(username, password string) error {
 	return s.create(username, password, true, true)
 }
 
-// CreateTemporary is an operator-side seam for later account administration.
+// CreateTemporary creates a credential that must be replaced at first login.
 // No public registration endpoint is provided.
 func (s *Store) CreateTemporary(username, password string) error {
 	return s.create(username, password, false, true)
@@ -129,11 +132,23 @@ func (s *Store) create(username, password string, admin, temporary bool) error {
 	if err != nil {
 		return err
 	}
-	_, err = s.db.Exec(`INSERT INTO accounts(username,password_hash,admin,must_change) VALUES(?,?,?,?)`, username, hash, admin, temporary)
+	tx, err := s.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	result, err := tx.Exec(`INSERT INTO accounts(username,password_hash,admin,must_change) VALUES(?,?,?,?)`, username, hash, admin, temporary)
 	if err != nil {
 		return errors.New("Account already exists or admin already configured")
 	}
-	return nil
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+	if _, err = tx.Exec(`INSERT INTO account_activity(account_id,created_at) VALUES(?,?)`, id, time.Now().UTC().Unix()); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 func TokenID(token string) string {
 	sum := sha256.Sum256([]byte(token))
@@ -169,7 +184,8 @@ func (s *Store) Login(username, password string, now time.Time) (Session, string
 	if err != nil || n != 1 {
 		return Session{}, "", ErrCredentials
 	}
-	return session, token, nil
+	session, err = s.Session(session.ID, now)
+	return session, token, err
 }
 func (s *Store) Authenticate(token string, now time.Time) (Session, error) {
 	if len(token) != 43 {
@@ -186,6 +202,10 @@ func (s *Store) Session(id string, now time.Time) (Session, error) {
 	}
 	result.ID = id
 	result.Expires = time.Unix(expires, 0)
+	// Observed authenticated requests, never a claim of current online presence.
+	if _, err = s.db.Exec(`UPDATE account_activity SET last_seen_at=MAX(COALESCE(last_seen_at,0),?) WHERE account_id=?`, now.Unix(), result.User.ID); err != nil {
+		return Session{}, err
+	}
 	return result, nil
 }
 func (s *Store) Revoke(id string) error {

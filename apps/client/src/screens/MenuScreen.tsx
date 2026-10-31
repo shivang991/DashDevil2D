@@ -6,6 +6,7 @@ import { ProfileDialog } from "./ProfileDialog";
 interface MenuScreenProps {
   playerName?: string;
   account?: Account;
+  onAdmin?: () => void;
   onLogin?: () => void;
   onLogout?: () => Promise<void>;
   onAccountSaved?: (account: Account) => void;
@@ -19,6 +20,7 @@ export function MenuScreen({
   playerName,
   account,
   onLogin,
+  onAdmin,
   onLogout,
   onAccountSaved,
 }: MenuScreenProps) {
@@ -37,6 +39,14 @@ export function MenuScreen({
         </div>
         {authenticated && account && onLogout && (
           <div className="flex gap-3">
+            {account.admin && onAdmin && (
+              <button
+                className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white"
+                onClick={onAdmin}
+              >
+                Admin
+              </button>
+            )}
             <ProfileDialog account={account} onLogout={onLogout} onSaved={onAccountSaved} />
             <button
               disabled

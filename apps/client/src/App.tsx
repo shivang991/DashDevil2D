@@ -3,11 +3,12 @@ import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
 import { GameWorld } from "@/components/GameWorld";
 import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
+import { AdminScreen } from "@/screens/AdminScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { accountAPI, AccountError, clearReconnectState, type Account } from "@/transport/account";
 
-type Screen = "menu" | "game" | "multiplayer" | "login";
+type Screen = "menu" | "game" | "multiplayer" | "login" | "admin";
 
 function App() {
   const hasStarted = useRef(false);
@@ -91,10 +92,20 @@ function App() {
             channel.current?.postMessage("changed");
           }}
         />
-      ) : screen === "menu" ? (
+      ) : screen === "admin" && account?.admin ? (
+        <AdminScreen
+          onBack={() => setScreen("menu")}
+          onAccountSaved={(next) => {
+            authEpoch.current++;
+            setAccount(next);
+            channel.current?.postMessage("changed");
+          }}
+        />
+      ) : screen === "menu" || screen === "admin" ? (
         <MenuScreen
           account={account}
           onLogin={() => setScreen("login")}
+          onAdmin={() => setScreen("admin")}
           onLogout={logout}
           onAccountSaved={(next) => {
             authEpoch.current++;

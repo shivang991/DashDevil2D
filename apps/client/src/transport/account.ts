@@ -56,3 +56,19 @@ export function clearReconnectState() {
     /* storage optional */
   }
 }
+
+export interface ManagedUser extends Omit<Account, "expires"> {
+  createdAt: string | null;
+  lastSeenAt: string | null;
+}
+export const adminAPI = {
+  users: () => request<{ users: ManagedUser[] }>("/admin/users"),
+  create: (username: string) =>
+    request<{ user: Omit<Account, "expires">; temporaryPassword: string }>("/admin/users", {
+      username,
+    }),
+  update: (id: number, username: string, avatar?: string) =>
+    request<Account>(`/admin/users/${id}/profile`, { username, avatar }),
+  reset: (id: number) => request<{ temporaryPassword: string }>(`/admin/users/${id}/reset`, {}),
+  delete: (id: number) => request<{ ok: boolean }>(`/admin/users/${id}/delete`, { confirm: true }),
+};

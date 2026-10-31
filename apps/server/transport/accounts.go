@@ -26,6 +26,7 @@ type accountAdmission struct {
 }
 
 func (s *Server) accountRoutes() {
+	s.adminRoutes()
 	s.app.Get("/api/account", func(c *fiber.Ctx) error {
 		user, err := s.account(c)
 		if err != nil {
@@ -339,12 +340,16 @@ func (s *Server) updateProfile(c *fiber.Ctx) error {
 		}
 		return accountError(c, status, err.Error())
 	}
+	s.publishProfile(next.User)
+	return c.JSON(next)
+}
+func (s *Server) publishProfile(next accounts.User) {
 	s.mu.Lock()
 	var changed []*room
 	for _, r := range s.rooms {
 		modified := false
 		for _, seat := range r.seats {
-			if seat != nil && seat.accountID == next.User.ID {
+			if seat != nil && seat.accountID == next.ID {
 				seat.savedName, seat.savedAvatar = next.Username, next.Avatar
 				modified = true
 			}
@@ -360,7 +365,6 @@ func (s *Server) updateProfile(c *fiber.Ctx) error {
 	for _, r := range changed {
 		s.broadcast(r)
 	}
-	return c.JSON(next)
 }
 func (s *Server) refreshRoomIdentityLocked(r *room) {
 	if r.phase == 0 {

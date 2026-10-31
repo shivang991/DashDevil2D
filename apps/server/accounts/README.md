@@ -8,7 +8,7 @@ The `__Host-dashdevil-session` cookie is Secure, HttpOnly, SameSite=Strict, Path
 
 ## Operator setup
 
-No public registration or operator account-management HTTP endpoint exists. Bootstrap the single admin once, supplying the password on stdin from a protected file or password manager. Do not put it in command arguments, client configuration or logs. From the repository root:
+No public registration exists. The configured admin manages users from Admin in the authenticated game menu. Bootstrap the single admin once, supplying the password on stdin from a protected file or password manager. Do not put it in command arguments, client configuration or logs. From the repository root:
 
 ```sh
 cd apps/server
@@ -34,9 +34,9 @@ The `accounts` volume retains the database across server/container replacement. 
 - `POST /api/account/password`: `{password}`; only temporary-password sessions may use this first-login flow. Atomically replaces the password, revokes existing account sessions and returns a new normal session.
 - `POST /api/account/logout`: revokes only the current session and removes its multiplayer access.
 
-Temporary accounts can retrieve their login state, replace their password or log out; multiplayer is denied until replacement. `Store.CreateTemporary` is a server-side seam for later operator administration, not public registration. Normal profile/password editing is described below; operator account-management UI remains a later ticket.
+Temporary accounts can retrieve their login state, replace their password or log out; multiplayer is denied until replacement. `Store.CreateTemporary` creates a first-login credential, not public registration. Normal profile/password editing is described below.
 
-Every product seat records its owning account/session. Names come from the account; client names are ignored. Admission/recovery requires a live non-temporary session, and recovery must match the original session. One-use room/gameplay tickets also validate that session when consumed. Expiry revokes active seats at the session deadline. `Server.RevokeSession` and `Server.RevokeAccountSessions` combine durable revocation with removal of all corresponding reconnect credentials, tickets and seats, using existing forfeit/abandonment rules. Future reset/deletion handlers must use these server seams, rather than only deleting a database session or closing a socket. A separate authentication mutex orders admission, ticket consumption and revocation; SQLite I/O never holds gameplay ownership, so a blocked database writer cannot stall unrelated rooms. Ticket consumption revalidates its in-memory ownership and expiry after the database lookup. Multiple devices, sessions and independent seats per account are allowed.
+Every product seat records its owning account/session. Names come from the account; client names are ignored. Admission/recovery requires a live non-temporary session, and recovery must match the original session. One-use room/gameplay tickets also validate that session when consumed. Expiry revokes active seats at the session deadline. `Server.RevokeSession` and `Server.RevokeAccountSessions` combine durable revocation with removal of all corresponding reconnect credentials, tickets and seats, using existing forfeit/abandonment rules. Admin reset/deletion holds the same authentication lock, atomically changes durable credentials and revokes account seats through the shared lifecycle path. A separate authentication mutex orders admission, ticket consumption and revocation; SQLite I/O never holds gameplay ownership, so a blocked database writer cannot stall unrelated rooms. Ticket consumption revalidates its in-memory ownership and expiry after the database lookup. Multiple devices, sessions and independent seats per account are allowed.
 
 Logout clears tab reconnect state. Other tabs sharing the same cookie refresh through a BroadcastChannel; rejected sessions also refresh after transport failure, on window focus and periodically. Independent browser/device sessions remain valid. The explicit `--diagnostic` mode retains its stationary transport fixture, without product gameplay or account administration.
 
@@ -55,3 +55,17 @@ Uploads accept decoded JPEG, PNG and WebP, at most 2 MiB and 16 megapixels. The 
 The menu profile supports explicit Save, discard on close, avatar preview/replace/remove and current-password changes. Active rounds retain their starting username/avatar through their result; returning to the lobby and starting new rounds refresh saved account identity. Protocol 4 adds immutable avatar IDs to room seats; deploy client and server together. Proxy/server accept 3 MiB JSON bodies to accommodate a base64-encoded 2 MiB upload; binary admission still enforces its own frame limit.
 
 `go test ./transport -run TestProfile` covers authorized updates, concurrent case-insensitive conflicts, rename login, persistence/restart, upload decoding/size/cleanup, frozen race identities and cross-device session/gameplay revocation. `pnpm test:accounts` covers Save/discard, focus return, retained validation/server errors, avatar upload/remove, password verification, other-device logout and renamed login in Chrome.
+
+## Admin users panel
+
+Only the configured admin with a normal session can reach the users panel. Every `/api/account/admin` endpoint independently requires that authorization through shared middleware; writes additionally require the configured Origin and JSON. The private readiness/drain listener stays separate.
+
+- `GET /api/account/admin/users`: `{users}` with username, avatar, creation and last-observed authenticated activity timestamps. Migrated accounts have unknown creation times; an unobserved last-seen time is null. Activity is observed at successful login, authenticated HTTP requests and ticket consumption, not exact live presence.
+- `POST /api/account/admin/users`: `{username}` creates a non-admin with a cryptographically generated temporary password.
+- `POST /api/account/admin/users/:id/profile`: `{username,avatar?}` uses the same validation, atomic save, lobby refresh and frozen race/result snapshots as player edits, including for accounts still using temporary passwords.
+- `POST /api/account/admin/users/:id/reset`: generates a temporary password and atomically revokes all sessions before removing seats, tickets and reconnect access. A fresh password change is required.
+- `POST /api/account/admin/users/:id/delete`: requires `{confirm:true}` and permanently deletes a non-admin account and its sessions/profile. SQL and HTTP both protect the configured admin. Existing explicit-departure forfeit/abandonment semantics apply. Unreferenced avatars are removed; immutable avatars still referenced by active/result snapshots retain the existing snapshot lifetime.
+
+Create/reset return `temporaryPassword` only in that successful response. Only its Argon2id hash is persisted. The panel keeps the response in memory for copying and manual sharing, with dismissal; reload/navigation cannot reveal it. There is no password retrieval, email, role editing, history or real chat.
+
+`node apps/client/scripts/transport.mjs --test --admin` exercises the admin UI in Chrome against real HTTPS/SQLite. `go test ./transport -run 'TestAdmin|TestEveryAdmin'` covers authorization, first login, profiles, metadata/restart, concurrent sessions/rooms, active forfeits, cleanup and rejected stale/authenticated recovery.

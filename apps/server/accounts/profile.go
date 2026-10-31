@@ -56,58 +56,72 @@ func ValidateAvatar(data []byte) ([]byte, error) {
 // UpdateProfile saves username and optional avatar replacement/removal together.
 // SQLite's NOCASE unique index arbitrates concurrent renames across processes.
 func (s *Store) UpdateProfile(id, username string, avatar *[]byte, now time.Time) (Session, error) {
-	if !usernamePattern.MatchString(username) {
-		return Session{}, errors.New("Username must contain 3–24 letters, digits, or underscores")
-	}
 	session, err := s.Session(id, now)
 	if err != nil {
 		return Session{}, err
 	}
+	if err = s.updateProfile(session.User.ID, id, false, username, avatar, now); err != nil {
+		return Session{}, err
+	}
+	return s.Session(id, now)
+}
+
+func (s *Store) UpdateManagedProfile(actor string, accountID int64, username string, avatar *[]byte, now time.Time) (User, error) {
+	if err := s.updateProfile(accountID, actor, true, username, avatar, now); err != nil {
+		return User{}, err
+	}
+	return s.User(accountID)
+}
+func (s *Store) updateProfile(accountID int64, actor string, admin bool, username string, avatar *[]byte, now time.Time) error {
+	if !usernamePattern.MatchString(username) {
+		return errors.New("Username must contain 3–24 letters, digits, or underscores")
+	}
+	var err error
 	var content []byte
 	avatarID := ""
 	if avatar != nil && len(*avatar) > 0 {
 		content, err = ValidateAvatar(*avatar)
 		if err != nil {
-			return Session{}, err
+			return err
 		}
 		avatarID, err = newToken()
 		if err != nil {
-			return Session{}, err
+			return err
 		}
 	}
 	tx, err := s.db.Begin()
 	if err != nil {
-		return Session{}, err
+		return err
 	}
 	defer tx.Rollback()
-	result, err := tx.Exec(`UPDATE accounts SET username=? WHERE id=? AND must_change=0 AND EXISTS(SELECT 1 FROM sessions WHERE id=? AND expires>?)`, username, session.User.ID, id, now.Unix())
+	result, err := tx.Exec(`UPDATE accounts SET username=? WHERE id=? AND EXISTS(SELECT 1 FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=? AND s.expires>? AND a.must_change=0 AND ((?=1 AND a.admin=1) OR (?=0 AND a.id=?)))`, username, accountID, actor, now.Unix(), admin, admin, accountID)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
-			return Session{}, ErrUsernameConflict
+			return ErrUsernameConflict
 		}
-		return Session{}, err
+		return err
 	}
 	n, _ := result.RowsAffected()
 	if n != 1 {
-		return Session{}, ErrSession
+		return ErrSession
 	}
 	if avatar != nil {
-		if _, err = tx.Exec(`DELETE FROM profiles WHERE account_id=?`, session.User.ID); err != nil {
-			return Session{}, err
+		if _, err = tx.Exec(`DELETE FROM profiles WHERE account_id=?`, accountID); err != nil {
+			return err
 		}
 		if avatarID != "" {
 			if _, err = tx.Exec(`INSERT INTO avatars(id,content) VALUES(?,?)`, avatarID, content); err != nil {
-				return Session{}, err
+				return err
 			}
-			if _, err = tx.Exec(`INSERT INTO profiles(account_id,avatar) VALUES(?,?)`, session.User.ID, avatarID); err != nil {
-				return Session{}, err
+			if _, err = tx.Exec(`INSERT INTO profiles(account_id,avatar) VALUES(?,?)`, accountID, avatarID); err != nil {
+				return err
 			}
 		}
 	}
 	if err := tx.Commit(); err != nil {
-		return Session{}, err
+		return err
 	}
-	return s.Session(id, now)
+	return nil
 }
 func (s *Store) Avatar(id string) ([]byte, error) {
 	var data []byte

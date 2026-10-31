@@ -6,6 +6,7 @@ import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const test = process.argv.includes("--test");
+const admin = process.argv.includes("--admin");
 const accounts = process.argv.includes("--accounts");
 const dense = process.argv.includes("--dense");
 const failures = process.argv.includes("--failures");
@@ -22,6 +23,7 @@ const objects = hearts || process.argv.includes("--objects");
 const contacts = process.argv.includes("--contacts");
 const race = groups || finality || contacts || process.argv.includes("--race");
 const rooms =
+  admin ||
   accounts ||
   dense ||
   failures ||
@@ -332,6 +334,7 @@ const env = {
   DASHDEVIL_HEART_TESTS: hearts ? "1" : "",
   DASHDEVIL_RACE_TESTS: race ? "1" : "",
   DASHDEVIL_ROOM_TESTS: rooms ? "1" : "",
+  DASHDEVIL_ADMIN_TESTS: admin ? "1" : "",
   DASHDEVIL_ACCOUNT_TESTS: accounts ? "1" : "",
   DASHDEVIL_TEST_ACCOUNT_PASSWORD: testPassword,
   DASHDEVIL_TRANSPORT_CONFIG: configPath,
