@@ -122,7 +122,7 @@ func (s *Server) broadcast(r *room) {
 		if participant == nil || participant.pair == nil {
 			continue
 		}
-		state := p.RoomState{Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: uint64(max(r.idle.Sub(s.start).Microseconds(), 0))}
+		state := p.RoomState{Racers: r.racers, Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: uint64(max(r.idle.Sub(s.start).Microseconds(), 0))}
 		warningUs := uint64(roomDuration(r, "idleWarning").Microseconds())
 		if state.IdleExpiryUs >= warningUs {
 			state.IdleWarningUs = state.IdleExpiryUs - warningUs
@@ -145,7 +145,7 @@ func (s *Server) broadcast(r *room) {
 			if !seat.deadline.IsZero() {
 				reservation = uint64(max(seat.deadline.Sub(s.start).Microseconds(), 0))
 			}
-			state.Seats[i] = p.Seat{Session: seat.session, Name: seat.name, Flags: flags, ReservationUs: reservation}
+			state.Seats[i] = p.Seat{Session: seat.session, Name: seat.name, Avatar: seat.avatar, Flags: flags, ReservationUs: reservation}
 		}
 		messages = append(messages, struct {
 			pair  *pair
@@ -269,6 +269,11 @@ func (pair *pair) connectIfReady() {
 		return
 	}
 	participant := pair.seat
+	if !participant.accountLive(s.nowTime()) {
+		s.mu.Unlock()
+		pair.close("Session expired or revoked")
+		return
+	}
 	if participant.pair != pair || participant.room.seats[participant.index] != participant || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !s.nowTime().Before(participant.deadline)) {
 		s.mu.Unlock()
 		pair.close("recovery deadline")
@@ -286,7 +291,7 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 	s.mu.Lock()
 	participant := pair.seat
 	r := participant.room
-	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence || !participant.leaving.IsZero() {
+	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence || !participant.leaving.IsZero() || !participant.accountLive(s.nowTime()) {
 		s.mu.Unlock()
 		return fmt.Errorf("stale room command")
 	}
@@ -404,6 +409,11 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 			seat.returned = false
 		}
 		resetIdle = true
+		s.refreshRoomIdentityLocked(r)
+		for i, seat := range r.seats {
+			r.racers[i] = p.RacerIdentity{Name: seat.name, Avatar: seat.avatar}
+		}
+		s.cleanupAvatarsLocked()
 		r.roundID++
 		r.phase = p.RoomPhaseCountdown
 		r.startUs = s.nowUs() + uint64(r.settings.Value("gameplay", "countdownDuration")*1e6)
@@ -428,6 +438,8 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		if r.seats[1-participant.index] == nil || r.seats[1-participant.index].returned {
 			// Keep the outcome for reserved seats recovering in the lobby.
 			r.phase = p.RoomPhaseLobby
+			s.refreshRoomIdentityLocked(r)
+			s.cleanupAvatarsLocked()
 			for _, other := range r.seats {
 				if other != nil {
 					other.ready = false

@@ -27,7 +27,18 @@ test("menu fixtures avoid generating or storing a player identity", () => {
   const multiplayer = vi.fn();
   act(() =>
     root.render(
-      <MenuScreen playerName="Fixture driver" onStartGame={vi.fn()} onMultiplayer={multiplayer} />,
+      <MenuScreen
+        account={{
+          id: 1,
+          username: "Fixture driver",
+          admin: false,
+          mustChangePassword: false,
+          expires: "2026-12-01T00:00:00Z",
+        }}
+        playerName="Fixture driver"
+        onStartGame={vi.fn()}
+        onMultiplayer={multiplayer}
+      />,
     ),
   );
   expect(host.textContent).toContain("Fixture driver");

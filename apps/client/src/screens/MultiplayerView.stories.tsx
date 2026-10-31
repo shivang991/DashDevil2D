@@ -79,6 +79,7 @@ export const WaitingForPlayer: Story = {
           {
             session: 0,
             name: "",
+            avatar: "",
             flags: SeatFlagsNone,
             reservationUs: 0,
           },

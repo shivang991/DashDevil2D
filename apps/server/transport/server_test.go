@@ -15,10 +15,12 @@ import (
 	"fmt"
 	ws "github.com/fasthttp/websocket"
 	wt "github.com/quic-go/webtransport-go"
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	"io"
 	"math/big"
 	"net"
 	"net/http"
+	"net/http/cookiejar"
 	"os"
 	"path/filepath"
 	"strings"
@@ -67,6 +69,18 @@ func serverMode(t *testing.T, diagnostic bool) (*transport.Server, *http.Client,
 }
 func configuredServer(t *testing.T, config transport.Config) (*transport.Server, *http.Client, *x509.CertPool) {
 	t.Helper()
+	fixtureAccount := !config.Diagnostic && config.Accounts == nil
+	if fixtureAccount {
+		store, err := accounts.Open(filepath.Join(t.TempDir(), "accounts.sqlite"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Cleanup(func() { store.Close() })
+		if err = store.Bootstrap("Fixture_Driver", "test fixture password"); err != nil {
+			t.Fatal(err)
+		}
+		config.Accounts = store
+	}
 	cert, key, roots := localCertificate(t)
 	config.Address, config.Origin, config.Certificate, config.Key = "127.0.0.1:0", origin, cert, key
 	s, err := transport.New(config)
@@ -77,7 +91,15 @@ func configuredServer(t *testing.T, config transport.Config) (*transport.Server,
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { s.Close() })
-	return s, &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{RootCAs: roots}}, Timeout: 3 * time.Second}, roots
+	client := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{RootCAs: roots}}, Timeout: 3 * time.Second}
+	if fixtureAccount {
+		client.Jar, _ = cookiejar.New(nil)
+		status, _, _ := accountRequest(t, s, client, "POST", "/login", `{"username":"Fixture_Driver","password":"test fixture password"}`, origin)
+		if status != 200 {
+			t.Fatalf("fixture login: %d", status)
+		}
+	}
+	return s, client, roots
 }
 func admit(t *testing.T, s *transport.Server, c *http.Client, request p.AdmissionRequest, from string) (int, any) {
 	t.Helper()

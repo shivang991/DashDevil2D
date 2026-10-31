@@ -1,11 +1,13 @@
 import fs from "node:fs";
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const test = process.argv.includes("--test");
+const admin = process.argv.includes("--admin");
+const accounts = process.argv.includes("--accounts");
 const dense = process.argv.includes("--dense");
 const failures = process.argv.includes("--failures");
 const responsibility = process.argv.includes("--responsibility");
@@ -21,6 +23,8 @@ const objects = hearts || process.argv.includes("--objects");
 const contacts = process.argv.includes("--contacts");
 const race = groups || finality || contacts || process.argv.includes("--race");
 const rooms =
+  admin ||
+  accounts ||
   dense ||
   failures ||
   responsibility ||
@@ -68,6 +72,10 @@ if (!test) {
   );
 }
 run("go", ["build", "-o", path.join(directory, "diagnostic-server"), "./cmd/diagnostic"]);
+const database = path.join(directory, "accounts.sqlite");
+// Test credentials stay in the test-process environment, never the browser config.
+const testPassword = test && !diagnostic ? randomBytes(24).toString("base64url") : "";
+
 const children = [];
 let stopping = false;
 function stop() {
@@ -270,6 +278,8 @@ const server = spawn(
           ),
         ]
       : []),
+    "--database",
+    database,
     "--cert",
     httpsCert,
     "--key",
@@ -279,7 +289,11 @@ const server = spawn(
     "--quic-key",
     path.join(directory, "webtransport-key.pem"),
   ],
-  { cwd: root, stdio: ["ignore", serverLog, serverLog] },
+  {
+    cwd: root,
+    env: { ...process.env, ...(testPassword ? { ADMIN_USERNAME: "Test_Driver", ADMIN_PASSWORD: testPassword, ADMIN_PASSWORD_FILE: "", ADMIN_TEMPORARY_PASSWORD: accounts ? "true" : "false" } : {}) },
+    stdio: ["ignore", serverLog, serverLog],
+  },
 );
 children.push(server);
 const env = {
@@ -303,6 +317,9 @@ const env = {
   DASHDEVIL_HEART_TESTS: hearts ? "1" : "",
   DASHDEVIL_RACE_TESTS: race ? "1" : "",
   DASHDEVIL_ROOM_TESTS: rooms ? "1" : "",
+  DASHDEVIL_ADMIN_TESTS: admin ? "1" : "",
+  DASHDEVIL_ACCOUNT_TESTS: accounts ? "1" : "",
+  DASHDEVIL_TEST_ACCOUNT_PASSWORD: testPassword,
   DASHDEVIL_TRANSPORT_CONFIG: configPath,
   DASHDEVIL_HTTPS_CERT: httpsCert,
   DASHDEVIL_HTTPS_KEY: httpsKey,

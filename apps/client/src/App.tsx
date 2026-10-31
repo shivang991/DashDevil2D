@@ -3,11 +3,14 @@ import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
 import { GameWorld } from "@/components/GameWorld";
 import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
+import { AdminScreen } from "@/screens/AdminScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
+import { LoginScreen } from "@/screens/LoginScreen";
+import { accountAPI, AccountError, clearReconnectState, type Account } from "@/transport/account";
 import { ModeDragRace } from "@dashdevil/contracts/protocol";
 import type { MultiplayerMode } from "@/transport/PairedConnection";
 
-type Screen = "menu" | "game" | "multiplayer";
+type Screen = "menu" | "game" | "multiplayer" | "login" | "admin";
 
 function App() {
   const hasStarted = useRef(false);
@@ -15,6 +18,54 @@ function App() {
   const [countdown, setCountdown] = useState<5 | 3>(5);
   const [screen, setScreen] = useState<Screen>("menu");
   const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
+  const [account, setAccount] = useState<Account>();
+  const channel = useRef<BroadcastChannel | undefined>(undefined);
+  const authEpoch = useRef(0);
+  useEffect(() => {
+    let disposed = false;
+    const refresh = async () => {
+      const epoch = ++authEpoch.current;
+      try {
+        const next = await accountAPI.current();
+        if (!disposed && epoch === authEpoch.current) setAccount(next);
+      } catch (error) {
+        if (
+          !disposed &&
+          epoch === authEpoch.current &&
+          error instanceof AccountError &&
+          error.status === 401
+        ) {
+          setAccount(undefined);
+          clearReconnectState();
+          setScreen((current) => (current === "multiplayer" ? "menu" : current));
+        }
+      }
+    };
+    void refresh();
+    const onRefresh = () => void refresh();
+    window.addEventListener("focus", onRefresh);
+    window.addEventListener("dashdevil-session-expired", onRefresh);
+    const interval = setInterval(onRefresh, 60000);
+    if (typeof BroadcastChannel === "function") {
+      channel.current = new BroadcastChannel("dashdevil-account");
+      channel.current.onmessage = onRefresh;
+    }
+    return () => {
+      disposed = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", onRefresh);
+      window.removeEventListener("dashdevil-session-expired", onRefresh);
+      channel.current?.close();
+    };
+  }, []);
+  async function logout() {
+    await accountAPI.logout();
+    authEpoch.current++;
+    clearReconnectState();
+    setAccount(undefined);
+    setScreen("menu");
+    channel.current?.postMessage("changed");
+  }
 
   useEffect(() => {
     window.addEventListener("pointerdown", gameAudio.unlock);
@@ -29,9 +80,42 @@ function App() {
 
   return (
     <>
-      {screen === "menu" ? (
+      {account?.mustChangePassword || screen === "login" ? (
+        <LoginScreen
+          key={account?.mustChangePassword ? account.id : "login"}
+          account={account}
+          onBack={() => setScreen("menu")}
+          onLogout={logout}
+          onAuthenticated={(next) => {
+            authEpoch.current++;
+            clearReconnectState();
+            setAccount(next);
+            setScreen("menu");
+            channel.current?.postMessage("changed");
+          }}
+        />
+      ) : screen === "admin" && account?.admin ? (
+        <AdminScreen
+          onBack={() => setScreen("menu")}
+          onAccountSaved={(next) => {
+            authEpoch.current++;
+            setAccount(next);
+            channel.current?.postMessage("changed");
+          }}
+        />
+      ) : screen === "menu" || screen === "admin" ? (
         <MenuScreen
+          account={account}
+          onLogin={() => setScreen("login")}
+          onAdmin={() => setScreen("admin")}
+          onLogout={logout}
+          onAccountSaved={(next) => {
+            authEpoch.current++;
+            setAccount(next);
+            channel.current?.postMessage("changed");
+          }}
           onMultiplayer={(mode) => {
+            if (!account || account.mustChangePassword) return;
             setMode(mode);
             setScreen("multiplayer");
           }}
@@ -44,6 +128,7 @@ function App() {
         />
       ) : screen === "multiplayer" ? (
         <MultiplayerScreen
+          playerName={account?.username ?? "Guest"}
           mode={mode}
           onBack={() => {
             setSoundEnabled(gameAudio.enabled);

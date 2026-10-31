@@ -41,9 +41,13 @@ export const room: RoomState = {
   startUs: 3_000_000,
   idleWarningUs: 0,
   idleExpiryUs: 0,
+  racers: [
+    { name: "Driver 01", avatar: "" },
+    { name: "Driver 02", avatar: "" },
+  ],
   seats: [
-    { session: 1, name: "Driver 01", flags: SeatFlagsConnectedReady, reservationUs: 0 },
-    { session: 2, name: "Driver 02", flags: SeatFlagsConnectedReady, reservationUs: 0 },
+    { session: 1, name: "Driver 01", avatar: "", flags: SeatFlagsConnectedReady, reservationUs: 0 },
+    { session: 2, name: "Driver 02", avatar: "", flags: SeatFlagsConnectedReady, reservationUs: 0 },
   ],
 };
 export const disconnected: PairedState = {

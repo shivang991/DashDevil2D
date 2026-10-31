@@ -206,9 +206,10 @@ export class PairedConnection {
     const detail = error instanceof Error ? error.message : String(error);
     this.state.errors.push(detail);
     if (this.state.errors.length > 32) this.state.errors.shift();
-    const ended = /(?:room|seat|credential) expired|rejected|superseded|replaced|version/i.test(
-      detail,
-    );
+    const ended =
+      /(?:room|seat|credential|session) expired|revoked|rejected|superseded|replaced|version/i.test(
+        detail,
+      );
     this.teardown();
     if (ended) {
       try {
@@ -220,6 +221,8 @@ export class PairedConnection {
       this.state.room = undefined;
       this.state.identity = undefined;
     }
+    if (/session expired|revoked/i.test(detail))
+      window.dispatchEvent(new Event("dashdevil-session-expired"));
     this.state.status = detail.includes("version")
       ? "Version mismatch—reload"
       : `Unable to connect: ${detail}`;
@@ -303,13 +306,15 @@ export class PairedConnection {
         `${this.options.server}/admission${operation === AdmissionOperationCreate && !this.options.diagnostic ? `?mode=${mode}` : ""}`,
         {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/octet-stream" },
           signal: AbortSignal.timeout(5000),
           body: encodeMessage("AdmissionRequest", {
             operation,
             version: protocolVersion,
             code,
-            name: operation === AdmissionOperationResume ? "" : localName(),
+            name:
+              operation === AdmissionOperationResume || !this.options.diagnostic ? "" : localName(),
             credential:
               operation === AdmissionOperationResume ? this.credential() : new Uint8Array(),
           }) as Uint8Array<ArrayBuffer>,
