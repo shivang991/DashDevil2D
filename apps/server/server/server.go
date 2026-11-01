@@ -211,11 +211,10 @@ func reject(status int, code p.ProtocolErrorCode, detail string) (multiplayer.Ad
 	return multiplayer.AdmissionResult{}, &multiplayer.AdmissionError{Status: status, Code: code, Detail: detail}
 }
 
-// Hold auth ordering through durable lookup, room admission and invitation acceptance.
+// Transport holds the shared auth mutex through this callback and ticket publication.
+// Keep durable lookup, room admission and invitation acceptance in that same turn.
 // Durable I/O never holds the multiplayer state mutex.
 func (s *Server) admit(request p.AdmissionRequest, mode, cookie, challengeID string) (multiplayer.AdmissionResult, error) {
-	s.authMu.Lock()
-	defer s.authMu.Unlock()
 	var account accounts.Session
 	var chatID int64
 	var challenge accounts.ChatChallenge

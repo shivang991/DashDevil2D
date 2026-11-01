@@ -230,6 +230,9 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	if err != nil {
 		return s.failure(c, 503, 2, "Unable to connect")
 	}
+	// One auth turn includes room admission and publication of both tickets.
+	s.config.Auth.Lock()
+	defer s.config.Auth.Unlock()
 	result, err := s.config.Admit(request, c.Query("mode"), c.Cookies("__Host-dashdevil-session"), c.Query("challenge"))
 	if err != nil {
 		var rejection *multiplayer.AdmissionError
@@ -277,7 +280,7 @@ func (s *Server) consume(key, channel, origin string) (*pair, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	c := s.pairs[t.handle]
-	if _, ok := s.tickets[key]; !ok || c == nil {
+	if _, ok := s.tickets[key]; !ok || c == nil || !s.config.Now().Before(t.expires) {
 		return nil, errors.New("admission rejected")
 	}
 	delete(s.tickets, key)
