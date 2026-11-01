@@ -3,6 +3,7 @@ import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
 import type { MultiplayerMode } from "@/game/multiplayer/PairedConnection";
 import { MenuItem } from "@/components/MenuItem";
 import type { Account } from "@/transport/account";
+import { RaceHistoryDialog } from "./RaceHistoryDialog";
 import { ProfileDialog } from "./ProfileDialog";
 
 interface MenuScreenProps {
@@ -39,19 +40,26 @@ export function MenuScreen({
           {account && <Avatar username={account.username} avatar={account.avatar} />}
           <span>{account?.username ?? playerName ?? "Guest"}</span>
         </div>
-        {authenticated && account && onLogout && (
-          <div className="flex gap-3">
-            {account.admin && onAdmin && (
-              <button
-                className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white"
-                onClick={onAdmin}
-              >
-                Admin
-              </button>
-            )}
-            <ProfileDialog account={account} onLogout={onLogout} onSaved={onAccountSaved} />
-          </div>
-        )}
+        <div className="flex flex-wrap gap-3">
+          {authenticated && account && onLogout && (
+            <>
+              {account.admin && onAdmin && (
+                <button
+                  className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white"
+                  onClick={onAdmin}
+                >
+                  Admin
+                </button>
+              )}
+              <ProfileDialog account={account} onLogout={onLogout} onSaved={onAccountSaved} />
+            </>
+          )}
+          <RaceHistoryDialog
+            key={account?.id ?? "guest"}
+            authenticated={authenticated}
+            onLogin={onLogin}
+          />
+        </div>
         {/* Menu items */}
         <div className="flex flex-col gap-3">
           <MenuItem title="Long Drive" subtitle="Single player runner" onClick={onStartGame} />

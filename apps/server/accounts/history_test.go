@@ -1,6 +1,8 @@
 package accounts
 
 import (
+	"fmt"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"path/filepath"
 	"testing"
 	"time"
@@ -152,5 +154,65 @@ func TestRaceHistoryAccountDeletionPreservesAnonymousResults(t *testing.T) {
 	s.db.QueryRow(`SELECT COUNT(*) FROM drag_race_result`).Scan(&results)
 	if anonymous != 2 || results != 2 {
 		t.Fatalf("deletion removed results or kept identity: %d %d", anonymous, results)
+	}
+}
+
+func TestPersonalRaceHistory(t *testing.T) {
+	s, err := Open(filepath.Join(t.TempDir(), "history.sqlite"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer s.Close()
+	// Direct fixture identities avoid password hashing in read-model tests.
+	_, err = s.db.Exec(`INSERT INTO accounts(id,username,password_hash) VALUES(1,'Driver',''),(2,'Opponent',''),(3,'Other','')`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := 0; i < 23; i++ {
+		id := fmt.Sprintf("race-%02d", i)
+		if err = s.StartRace(id, "drag-race", time.Unix(int64(i), 0), [2]int64{1, 2}); err != nil {
+			t.Fatal(err)
+		}
+		if err = s.FinishRace(id, RaceFinal{Outcome: p.OutcomeResult(i % 3)}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	s.StartRace("active", "road-rage", time.Unix(100, 0), [2]int64{1, 2})
+	s.StartRace("abandoned", "road-rage", time.Unix(101, 0), [2]int64{1, 2})
+	s.FinishRace("abandoned", RaceFinal{Outcome: 3})
+	first, err := s.RaceHistory(1, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first.Races) != 20 || !first.HasNext || first.Races[0].ID != "race-22" || first.Races[0].Result != "loss" || first.Races[0].Opponent != "Opponent" {
+		t.Fatalf("first page: %+v", first)
+	}
+	last, err := s.RaceHistory(1, 1)
+	if err != nil || len(last.Races) != 3 || last.HasNext {
+		t.Fatalf("last page: %+v %v", last, err)
+	}
+	other, err := s.RaceHistory(3, 0)
+	if err != nil || len(other.Races) != 0 {
+		t.Fatalf("privacy: %+v %v", other, err)
+	}
+	opponent, err := s.RaceHistory(2, 0)
+	if err != nil || opponent.Races[0].Result != "win" {
+		t.Fatalf("seat result: %+v %v", opponent, err)
+	}
+	s.db.Exec(`UPDATE accounts SET username='Renamed' WHERE id=2`)
+	renamed, _ := s.RaceHistory(1, 0)
+	if renamed.Races[0].Opponent != "Renamed" {
+		t.Fatal("name not current")
+	}
+	s.db.Exec(`DELETE FROM accounts WHERE id=2`)
+	anonymous, _ := s.RaceHistory(1, 0)
+	if anonymous.Races[0].Opponent != "Anonymous" {
+		t.Fatal("deleted opponent not anonymous")
+	}
+	s.StartRace("self", "road-rage", time.Unix(200, 0), [2]int64{1, 1})
+	s.FinishRace("self", RaceFinal{Outcome: 0})
+	self, _ := s.RaceHistory(1, 0)
+	if self.Races[0].Result != "win" || self.Races[1].Result != "loss" || self.Races[0].Seat == self.Races[1].Seat {
+		t.Fatal("self-race lost seat identity")
 	}
 }

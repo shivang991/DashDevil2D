@@ -106,3 +106,55 @@ func (s *Store) RecoverRaces(at time.Time) error {
 	_, err := s.db.Exec(`UPDATE race_history SET ended_at=MAX(started_at,?),outcome=?,end_reason='server_restart' WHERE ended_at IS NULL`, at.UnixMicro(), p.OutcomeResultAbandoned)
 	return err
 }
+
+// RaceHistoryEntry represents one participating seat, including self-races.
+type RaceHistoryEntry struct {
+	ID        string    `json:"id"`
+	Seat      int       `json:"seat"`
+	Mode      string    `json:"mode"`
+	StartedAt time.Time `json:"startedAt"`
+	Result    string    `json:"result"`
+	Opponent  string    `json:"opponent"`
+}
+type RaceHistoryPage struct {
+	Races   []RaceHistoryEntry `json:"races"`
+	HasNext bool               `json:"hasNext"`
+}
+
+func (s *Store) RaceHistory(accountID int64, page int) (RaceHistoryPage, error) {
+	result := RaceHistoryPage{Races: []RaceHistoryEntry{}}
+	rows, err := s.db.Query(`SELECT h.id,me.seat,h.mode,h.started_at,h.outcome,COALESCE(a.username,'Anonymous')
+ FROM race_participant me JOIN race_history h ON h.id=me.race_id
+ JOIN race_participant opponent ON opponent.race_id=h.id AND opponent.seat<>me.seat
+ LEFT JOIN accounts a ON a.id=opponent.account_id
+ WHERE me.account_id=? AND h.ended_at IS NOT NULL AND h.outcome IN (0,1,2)
+ ORDER BY h.started_at DESC,h.id DESC,me.seat ASC LIMIT 21 OFFSET ?`, accountID, page*20)
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var entry RaceHistoryEntry
+		var started int64
+		var outcome int
+		if err := rows.Scan(&entry.ID, &entry.Seat, &entry.Mode, &started, &outcome, &entry.Opponent); err != nil {
+			return result, err
+		}
+		entry.StartedAt = time.UnixMicro(started).UTC()
+		entry.Result = "loss"
+		if outcome == 2 {
+			entry.Result = "tie"
+		} else if outcome == entry.Seat {
+			entry.Result = "win"
+		}
+		result.Races = append(result.Races, entry)
+	}
+	if err := rows.Err(); err != nil {
+		return result, err
+	}
+	if len(result.Races) > 20 {
+		result.HasNext = true
+		result.Races = result.Races[:20]
+	}
+	return result, nil
+}
