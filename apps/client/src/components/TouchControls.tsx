@@ -58,7 +58,10 @@ export function TouchControls({
   };
   if (!touch) return null;
   return (
-    <div className="touch-controls" aria-label="Driving controls">
+    <div
+      className="flex shrink-0 gap-2.5 pt-1 pr-[max(12px,env(safe-area-inset-right))] pb-[max(10px,env(safe-area-inset-bottom))] pl-[max(12px,env(safe-area-inset-left))] touch-none select-none [@media(max-height:450px)]:pb-[max(4px,env(safe-area-inset-bottom))]"
+      aria-label="Driving controls"
+    >
       {([1, 2, 3] as const).map((control) => {
         const Icon = control === 1 ? ArrowLeft : control === 2 ? ArrowRight : Zap;
         return (
@@ -68,7 +71,7 @@ export function TouchControls({
             disabled={disabled}
             aria-label={control === 1 ? "Steer left" : control === 2 ? "Steer right" : "Accelerate"}
             aria-pressed={held.includes(control)}
-            className={control === 3 ? "touch-pedal" : ""}
+            className={`grid h-14 place-items-center rounded-[12px] border border-neutral-600 bg-neutral-900 text-neutral-50 touch-none [-webkit-touch-callout:none] aria-pressed:bg-neutral-200 aria-pressed:text-neutral-900 aria-pressed:border-white disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white [@media(max-height:450px)]:h-11 ${control === 3 ? "ml-auto w-[76px]" : "w-[60px]"}`}
             onContextMenu={(event) => event.preventDefault()}
             onPointerDown={(event) => {
               if (event.button !== 0 || disabled) return;

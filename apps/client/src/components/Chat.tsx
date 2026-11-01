@@ -11,7 +11,13 @@ import { useLocation } from "react-router";
 import { Avatar } from "./Avatar";
 import type { Account } from "@/transport/account";
 import { chatAPI, type ChatPerson, type ChatSnapshot, type ChatMessage } from "@/transport/chat";
-import "./chat.css";
+
+const chatBadge =
+  "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[12px] bg-[#2563eb] px-[5px] font-chat text-[12px] text-white";
+const chatError =
+  "p-3 font-chat text-[14px] text-[#fca5a5] [&_button]:p-1 [&_button]:text-neutral-50 [&_button]:underline";
+const chatField =
+  "w-full rounded-[8px] border border-neutral-600 bg-neutral-950 p-2.5 font-chat text-[16px]";
 
 const Visibility = createContext<
   | {
@@ -71,7 +77,11 @@ export function ChatShell({ account, children }: { account?: Account; children: 
 }
 export function Presence({ value }: { value: ChatPerson["presence"] }) {
   return (
-    <span className={`chat-presence ${value === "Offline" ? "chat-offline" : ""}`}>{value}</span>
+    <span
+      className={`block font-chat text-[12px] ${value === "Offline" ? "text-neutral-400" : "text-[#60a5fa]"}`}
+    >
+      {value}
+    </span>
   );
 }
 function preference(id: number) {
@@ -320,18 +330,18 @@ function ChatPanel({
   const row = (person: ChatPerson) => (
     <button
       key={person.id}
-      className="chat-person"
+      className="flex w-full items-center gap-3 border-b border-neutral-800 px-1 py-2.5 text-left [&_strong]:text-[12px] [&_strong]:wrap-anywhere [&_small]:font-chat [&_small]:text-neutral-400"
       aria-label={`Open conversation with ${person.username}`}
       onClick={() => open(person)}
     >
       <Avatar username={person.username} avatar={person.avatar} />
-      <span className="chat-person-copy">
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
         <strong>{person.username}</strong>
         <Presence value={person.presence} />
         {person.rounds > 0 && <small>{person.rounds} shared rounds</small>}
       </span>
       {person.unread > 0 && (
-        <span className="chat-badge">
+        <span className={chatBadge}>
           {person.unread}
           <span className="sr-only"> unread</span>
         </span>
@@ -342,14 +352,14 @@ function ChatPanel({
   if (!expanded)
     return (
       <button
-        className="chat-launch"
+        className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 bottom-[72px] flex items-center gap-2.5 rounded-[10px] px-[18px] py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#60a5fa] [@media(max-width:600px)]:right-3"
         aria-label="Open chat"
         aria-expanded={false}
         onClick={() => toggle(true)}
       >
         Chat{" "}
         {snapshot && snapshot.unread > 0 && (
-          <span className="chat-badge">
+          <span className={chatBadge}>
             {snapshot.unread}
             <span className="sr-only"> unread</span>
           </span>
@@ -358,7 +368,7 @@ function ChatPanel({
     );
   return (
     <aside
-      className="chat-panel"
+      className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-4 bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [&_button]:cursor-pointer [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 [&_button:enabled:hover]:bg-neutral-800 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:-outline-offset-2 [&_button:focus-visible]:outline-[#60a5fa] [&_input:focus-visible]:outline-2 [&_input:focus-visible]:-outline-offset-2 [&_input:focus-visible]:outline-[#60a5fa] [&_textarea:focus-visible]:outline-2 [&_textarea:focus-visible]:-outline-offset-2 [&_textarea:focus-visible]:outline-[#60a5fa] [@media(max-width:600px)]:inset-0 [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
       aria-label="Chat"
       onKeyDown={(event) => {
         event.stopPropagation();
@@ -366,20 +376,20 @@ function ChatPanel({
       }}
       onKeyUp={(event) => event.stopPropagation()}
     >
-      <header className="chat-header">
+      <header className="flex items-center justify-between border-b border-neutral-700 px-4 py-3 [&_h2]:text-[18px] [&_button]:min-h-10 [&_button]:min-w-10 [&_button]:text-[28px]">
         <h2>Chat</h2>
         <button onClick={() => toggle(false)} aria-label="Close chat">
           ×
         </button>
       </header>
       {error && (
-        <div role="alert" className="chat-error">
+        <div role="alert" className={chatError}>
           {error} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
         </div>
       )}
       {selected ? (
         <>
-          <div className="chat-thread-head">
+          <div className="flex items-center gap-2.5 border-b border-neutral-700 p-2 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:text-[28px] [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&_strong]:text-[12px] [&_strong]:wrap-anywhere">
             <button onClick={() => setPeer(undefined)} aria-label="Back to conversations">
               ‹
             </button>
@@ -389,7 +399,10 @@ function ChatPanel({
               <Presence value={selected.presence} />
             </div>
           </div>
-          <nav className="chat-rail" aria-label="Switch conversation">
+          <nav
+            className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-neutral-700 p-2 [&_button]:relative [&_button]:min-w-11 [&_button]:shrink-0 [&_button]:rounded-full [&_button]:border-2 [&_button]:border-transparent [&_button[aria-pressed=true]]:border-[#60a5fa]"
+            aria-label="Switch conversation"
+          >
             <button
               onClick={() => {
                 setPeer(undefined);
@@ -412,16 +425,23 @@ function ChatPanel({
                   onClick={() => open(person)}
                 >
                   <Avatar username={person.username} avatar={person.avatar} />
-                  {person.unread > 0 && <span className="chat-badge">{person.unread}</span>}
+                  {person.unread > 0 && (
+                    <span className={`${chatBadge} absolute right-0 bottom-0`}>
+                      {person.unread}
+                    </span>
+                  )}
                 </button>
               ))}
           </nav>
-          <div className="chat-messages" aria-label="Messages">
+          <div
+            className="min-h-0 flex-1 overflow-auto p-4 font-chat [&>p]:py-3 [&>p]:font-chat [&>p]:leading-normal [&>p]:text-neutral-400"
+            aria-label="Messages"
+          >
             {!activeMessages.length && !historyError && <p>No messages yet.</p>}
             {activeMessages.map((message) => (
               <div
                 key={message.id}
-                className={`chat-message ${message.sender === snapshot?.self ? "chat-mine" : ""}`}
+                className={`mb-3 w-fit max-w-[90%] rounded-[10px] px-3 py-2.5 wrap-anywhere [&_p]:text-[15px] [&_p]:leading-[1.45] [&_p]:whitespace-pre-wrap [&_time]:mt-1.5 [&_time]:block [&_time]:text-[10px] [&_time]:text-neutral-400 ${message.sender === snapshot?.self ? "ml-auto mr-0 border border-[#3b82f6] bg-[#172235]" : "ml-0 mr-auto bg-neutral-800"}`}
               >
                 <p>{message.text}</p>
                 <time dateTime={new Date(message.createdAt).toISOString()}>
@@ -432,12 +452,12 @@ function ChatPanel({
             <div ref={bottom} />
           </div>
           {historyError && (
-            <div className="chat-error" role="alert">
+            <div className={chatError} role="alert">
               {historyError} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
             </div>
           )}
           {sendError && (
-            <div className="chat-error" role="alert">
+            <div className={chatError} role="alert">
               {sendError}{" "}
               <button disabled={sending} onClick={() => void send()}>
                 Retry send
@@ -445,18 +465,17 @@ function ChatPanel({
             </div>
           )}
           {selected.deleted ? (
-            <p className="chat-error">
-              This account was deleted. Shared messages remain available.
-            </p>
+            <p className={chatError}>This account was deleted. Shared messages remain available.</p>
           ) : (
             <form
-              className="chat-compose"
+              className="border-t border-neutral-700 p-3 [&>div]:mt-2 [&>div]:flex [&>div]:items-center [&>div]:justify-between [&_small]:font-chat [&_small]:text-neutral-400 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-[18px] [&_button]:py-2"
               onSubmit={(event) => {
                 event.preventDefault();
                 void send();
               }}
             >
               <textarea
+                className={`${chatField} min-h-[76px] max-h-[180px] resize-y`}
                 aria-label="Message"
                 placeholder="Write a message"
                 value={draft}
@@ -480,9 +499,10 @@ function ChatPanel({
         </>
       ) : (
         <>
-          <div className="chat-search">
+          <div className="p-4 [&_label]:mb-2 [&_label]:block">
             <label htmlFor="chat-search">Search accounts</label>
             <input
+              className={chatField}
               id="chat-search"
               value={query}
               placeholder="Find a driver"
@@ -493,7 +513,7 @@ function ChatPanel({
               }}
             />
           </div>
-          <div className="chat-list">
+          <div className="overflow-y-auto px-4 pb-4 [&_section]:mb-6 [&_h3]:mb-2 [&_h3]:text-[12px] [&_h3]:text-neutral-400 [&_p]:py-3 [&_p]:font-chat [&_p]:leading-normal [&_p]:text-neutral-400">
             {query.trim() ? (
               <>
                 <p role="status">
