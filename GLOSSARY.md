@@ -59,8 +59,17 @@ The room's gathering state in which players choose a mode and mark readiness for
 **Ready**:
 A player's explicit agreement to play the room's selected mode. A mode change clears both players' readiness.
 
+**Account**:
+A persistent username/password identity. Usernames preserve capitalization and are unique case-insensitively. An account may have any number of simultaneous sessions and multiplayer seats.
+
+**Account session**:
+A server-validated login with a 30-day lifetime. Each multiplayer seat belongs to exactly one account session. Revoking a session removes all its seats, tickets and reconnect credentials while other sessions remain usable.
+
+**Temporary password**:
+An operator-provided initial credential that must be replaced before normal account features or multiplayer become available.
+
 **Local name**:
-A player's immutable display name, retained across visits when local storage is available. Different players may share the same name.
+A generated display name retained only by the stationary transport diagnostic. Product multiplayer displays the authenticated account username.
 
 **Reconnect grace**:
 The limited period during which a disconnected participant can reclaim their reserved room seat in any room phase. An active round continues during this period.

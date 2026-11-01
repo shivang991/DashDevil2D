@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect } from "@playwright/test";
 
 for (const delivery of ["clean", "delayed", "recovering", "unordered"])
@@ -138,6 +139,7 @@ for (const delivery of ["clean", "delayed", "recovering", "unordered"])
             { recovering, unordered },
           );
         await page.goto("/");
+        await loginTestAccount(page);
         await page.getByRole("button", { name: /Drag Race/ }).click();
       }
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

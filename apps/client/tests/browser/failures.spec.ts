@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 
 const read = async (page: Page) =>
@@ -45,6 +46,7 @@ for (const mode of ["Drag Race", "Road Rage"])
       });
       for (const page of pages) {
         await page.goto("/");
+        await loginTestAccount(page);
         await page.getByRole("button", { name: new RegExp(mode) }).click();
       }
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

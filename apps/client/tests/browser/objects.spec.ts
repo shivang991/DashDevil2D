@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 import type { PairedState } from "../../src/transport/PairedConnection";
 const read = async (page: Page) =>
@@ -18,6 +19,7 @@ test(
     try {
       for (const page of pages) {
         await page.goto("/");
+        await loginTestAccount(page);
         await page.getByRole("button", { name: /Drag Race/ }).click();
       }
       await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

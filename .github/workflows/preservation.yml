@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version-file: '.node-version'
+          node-version-file: ".node-version"
       - uses: actions/setup-go@v5
         with:
           go-version-file: .go-version
@@ -22,6 +22,7 @@ jobs:
       - run: pnpm --filter @dashdevil/client exec playwright install --with-deps chrome ffmpeg
       - run: pnpm test:browser
       - run: pnpm test:transport
+      - run: pnpm test:accounts
       - run: pnpm test:rooms
       - run: pnpm test:groups
       - run: pnpm test:finality

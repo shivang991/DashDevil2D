@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 const evidence = async (page: Page) =>
   JSON.parse((await page.getByTestId("room-evidence").textContent())!);
@@ -17,6 +18,7 @@ test("idle warning, explicit expiry failure, fresh room, reserved host and expir
   try {
     for (const page of pages) {
       await page.goto("/");
+      await loginTestAccount(page);
       await page.getByRole("button", { name: /Drag Race/ }).click();
     }
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();
@@ -90,6 +92,7 @@ test("countdown and gameplay outlive idle expiry; leaving a disconnected opponen
   try {
     for (const page of pages) {
       await page.goto("/");
+      await loginTestAccount(page);
       await page.getByRole("button", { name: /Drag Race/ }).click();
     }
     await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

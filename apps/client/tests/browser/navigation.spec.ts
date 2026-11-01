@@ -3,6 +3,18 @@ import { expect, test } from "@playwright/test";
 const origin = "http://127.0.0.1:4173";
 
 test("multiplayer deep links, mode history, refresh and unknown URLs", async ({ page }) => {
+  await page.route("**/__transport-config", (route) => route.fulfill({ json: { server: origin } }));
+  await page.route("**/api/account", (route) =>
+    route.fulfill({
+      json: {
+        id: 1,
+        username: "Driver",
+        admin: false,
+        mustChangePassword: false,
+        expires: "2099-01-01",
+      },
+    }),
+  );
   await page.goto(`${origin}/multiplayer/road-rage`);
   await expect(page.getByTestId("selected-mode")).toHaveText("Road Rage");
   await page.getByRole("button", { name: "Drag Race", exact: true }).click();
@@ -55,4 +67,14 @@ test("browser Back restores the saved sound setting on menu", async ({ page }) =
   await expect(page.getByRole("button", { name: "Enable sound", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Enable sound", exact: true }).click();
   await expect(page.getByRole("button", { name: "Mute sound", exact: true })).toBeVisible();
+});
+
+test("unauthenticated multiplayer deep link returns to locked menu", async ({ page }) => {
+  await page.route("**/__transport-config", (route) => route.fulfill({ json: { server: origin } }));
+  await page.route("**/api/account", (route) =>
+    route.fulfill({ status: 401, json: { error: "Session expired" } }),
+  );
+  await page.goto(`${origin}/multiplayer/road-rage`);
+  await expect(page).toHaveURL(`${origin}/`);
+  await expect(page.getByRole("button", { name: /Drag Race/ })).toBeDisabled();
 });

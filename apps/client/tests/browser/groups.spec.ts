@@ -1,3 +1,4 @@
+import { loginTestAccount } from "./account-helpers";
 import fs from "node:fs";
 import { test, expect } from "@playwright/test";
 
@@ -33,6 +34,7 @@ for (const action of ["recover", "leave"])
       try {
         for (const page of pages) {
           await page.goto("/");
+          await loginTestAccount(page);
           await page.getByRole("button", { name: /Drag Race/ }).click();
         }
         await pages[0].getByRole("button", { name: "Create Room", exact: true }).click();

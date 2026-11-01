@@ -4,7 +4,18 @@ import { MenuScreen } from "./MenuScreen";
 const meta = {
   title: "Screens/Menu",
   component: MenuScreen,
-  args: { playerName: "Driver 01", onStartGame: fn(), onMultiplayer: fn() },
+  args: {
+    account: {
+      id: 1,
+      username: "Driver_01",
+      admin: false,
+      mustChangePassword: false,
+      expires: "2026-12-01T00:00:00Z",
+    },
+    playerName: "Driver 01",
+    onStartGame: fn(),
+    onMultiplayer: fn(),
+  },
 } satisfies Meta<typeof MenuScreen>;
 export default meta;
 type Story = StoryObj<typeof meta>;

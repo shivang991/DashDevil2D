@@ -254,8 +254,9 @@ describe("handwritten reliable record semantics", () => {
   it("rejects incompatible handshakes and missing required datagram capacity", () => {
     const value = hydrate(
       "Handshake",
-      fixtures.records.find((r) => r.name === "Handshake protocol 3")!.value,
+      fixtures.records.find((r) => r.name === "Handshake protocol 4")!.value,
     ) as Messages["Handshake"];
+    expect(() => validateMessage("Handshake", value, baseline.context)).not.toThrow();
     expect(() =>
       validateMessage("Handshake", { ...value, version: 1 }, baseline.context),
     ).toThrow();
@@ -278,7 +279,7 @@ describe("handwritten reliable record semantics", () => {
         hydrate(
           type,
           fixtures.records.find(
-            (r) => r.name === (type === "Admission" ? "Admission protocol 3" : type),
+            (r) => r.name === (type === "Admission" ? "Admission protocol 4" : type),
           )!.value,
         ) as Messages[typeof type],
         baseline.context,

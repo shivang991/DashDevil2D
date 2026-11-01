@@ -213,7 +213,9 @@ export class PairedConnection {
     const recoveryExpired = recoverable && performance.now() >= this.recoverUntil;
     const ended =
       recoveryExpired ||
-      /(?:room|seat|credential) expired|rejected|superseded|replaced|version/i.test(detail);
+      /(?:room|seat|credential|session) expired|revoked|rejected|superseded|replaced|version/i.test(
+        detail,
+      );
     this.teardown();
     if (ended) {
       this.recoverUntil = 0;
@@ -226,6 +228,8 @@ export class PairedConnection {
       this.state.room = undefined;
       this.state.identity = undefined;
     }
+    if (/session expired|revoked/i.test(detail))
+      window.dispatchEvent(new Event("dashdevil-session-expired"));
     this.state.status = detail.includes("version")
       ? "Version mismatch—reload"
       : `Unable to connect: ${recoveryExpired ? "Room recovery expired. Create or join a room to try again." : detail}`;
@@ -305,13 +309,15 @@ export class PairedConnection {
         `${this.options.server}/admission${operation === AdmissionOperationCreate && !this.options.diagnostic ? `?mode=${mode}` : ""}`,
         {
           method: "POST",
+          credentials: "include",
           headers: { "Content-Type": "application/octet-stream" },
           signal: AbortSignal.timeout(5000),
           body: encodeMessage("AdmissionRequest", {
             operation,
             version: protocolVersion,
             code,
-            name: operation === AdmissionOperationResume ? "" : localName(),
+            name:
+              operation === AdmissionOperationResume || !this.options.diagnostic ? "" : localName(),
             credential:
               operation === AdmissionOperationResume ? this.credential() : new Uint8Array(),
           }) as Uint8Array<ArrayBuffer>,

@@ -52,6 +52,8 @@ func (s *Server) cancelCountdownLocked(r *room) {
 		return
 	}
 	r.phase = p.RoomPhaseLobby
+	s.refreshRoomIdentityLocked(r)
+	s.cleanupAvatarsLocked()
 	r.startUs = 0
 	r.zero = nil
 	r.revision++
@@ -113,7 +115,7 @@ func (pair *pair) roomBaseline() (p.Baseline, error) {
 func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 	s := pair.server
 	r := pair.seat.room
-	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.leaving.IsZero() {
+	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.leaving.IsZero() || !pair.seat.accountLive(s.nowTime()) {
 		return p.Baseline{}, errors.New("superseded room seat")
 	}
 	if r.zero == nil || r.zero.Context.Mode != r.mode {
@@ -210,9 +212,12 @@ func (s *Server) removeSeatLocked(r *room, index p.SeatIndex) {
 		}
 	}
 	r.seats[index] = nil
+	s.cleanupAvatarsLocked()
 	s.cancelCountdownLocked(r)
 	if r.phase == p.RoomPhaseEnded && r.seats[1-index] != nil && r.seats[1-index].returned {
 		r.phase = p.RoomPhaseLobby
+		s.refreshRoomIdentityLocked(r)
+		s.cleanupAvatarsLocked()
 	}
 	for _, other := range r.seats {
 		if other != nil {
