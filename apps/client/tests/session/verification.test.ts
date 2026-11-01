@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, test } from "vitest";
-import { RaceVerification } from "../../src/game/RaceVerification";
+import { RaceVerification } from "../../src/game/multiplayer/RaceVerification";
 
 test("datagram before barrier waits; loss, reordering and wrong epochs do not regress progress", () => {
   const verification = new RaceVerification(2, 60, 2);

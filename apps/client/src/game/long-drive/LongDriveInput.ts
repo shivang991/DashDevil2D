@@ -1,4 +1,4 @@
-import type { LongDriveInput } from "@dashdevil/simulation/longDrive";
+import type { LongDriveInput as DrivingState } from "@dashdevil/simulation/longDrive";
 
 export interface InputAvailability {
   status: "countdown" | "playing" | "gameover";
@@ -16,7 +16,7 @@ const movements = new Map<string, "left" | "right" | "accelerate">([
 ] as const);
 const interactive =
   'button,input,textarea,select,a[href],[contenteditable]:not([contenteditable="false"]),[role="button"]';
-export class KeyboardInput {
+export class LongDriveInput {
   private active = new Map<string, "left" | "right" | "accelerate">();
   private disposed = false;
   private readonly surface: HTMLElement;
@@ -36,7 +36,7 @@ export class KeyboardInput {
     document.addEventListener("visibilitychange", this.visibility);
     document.addEventListener("focusin", this.focusIn);
   }
-  read(): LongDriveInput {
+  read(): DrivingState {
     if (this.disposed || !this.eligibleMovement()) return {};
     const held = [...this.active.values()];
     const steering = held.filter((value) => value !== "accelerate").at(-1);

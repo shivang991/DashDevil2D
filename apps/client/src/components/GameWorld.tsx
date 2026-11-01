@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { ConfigurationOverrides } from "@dashdevil/simulation/config";
 import { GameWorldView } from "./GameWorldView";
-import { GameSession, type UISnapshot } from "../game/GameSession";
+import { LongDriveSession, type UISnapshot } from "../game/long-drive/LongDriveSession";
 
 interface GameWorldProps {
   countdown: 5 | 3;
@@ -13,7 +13,7 @@ interface GameWorldProps {
 
 export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const sessionRef = useRef<GameSession | null>(null);
+  const sessionRef = useRef<LongDriveSession | null>(null);
   const [ui, setUi] = useState<UISnapshot>({
     health: 2,
     maxHealth: 2,
@@ -27,7 +27,13 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const session = new GameSession({ mode: "long-drive", canvas, countdown, configuration, seed });
+    const session = new LongDriveSession({
+      mode: "long-drive",
+      canvas,
+      countdown,
+      configuration,
+      seed,
+    });
     sessionRef.current = session;
     setUi(session.getSnapshot());
     const unsubscribe = session.subscribe(() => setUi(session.getSnapshot()));

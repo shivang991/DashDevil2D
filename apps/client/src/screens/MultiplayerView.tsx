@@ -23,7 +23,11 @@ import {
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
 import defaults from "@dashdevil/contracts/configuration";
-import type { MultiplayerMode, PairedConnection, PairedState } from "@/transport/PairedConnection";
+import type {
+  MultiplayerMode,
+  PairedConnection,
+  PairedState,
+} from "@/game/multiplayer/PairedConnection";
 import { ChatVisibility } from "@/components/Chat";
 import { Avatar } from "@/components/Avatar";
 import { RoundResult } from "@/components/RoundResult";

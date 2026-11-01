@@ -1,9 +1,9 @@
 import { advanceLongDrive, createLongDrive, resetLongDrive } from "@dashdevil/simulation/longDrive";
 import { type GameState } from "@dashdevil/simulation/state";
 import { renderingConfig, type ConfigurationOverrides } from "@dashdevil/simulation/config";
-import { GameAudio } from "../lib/gameAudio";
-import { KeyboardInput } from "./KeyboardInput";
-import { LongDriveDrawing } from "../lib/gameRenderer";
+import { GameAudio } from "../../lib/gameAudio";
+import { LongDriveInput } from "./LongDriveInput";
+import { LongDriveDrawing } from "./LongDriveDrawing";
 
 export interface FrameClock {
   now(): number;
@@ -35,7 +35,7 @@ export interface UISnapshot {
   readonly countdown: number;
   readonly accelerating: boolean;
 }
-export class GameSession {
+export class LongDriveSession {
   private readonly game;
   private drawing: LongDriveDrawing;
   private readonly clock;
@@ -45,7 +45,7 @@ export class GameSession {
   private frame?: number;
   private lastTime = 0;
   private disposed = false;
-  private readonly input: KeyboardInput;
+  private readonly input: LongDriveInput;
   private readonly resizeObserver?: ResizeObserver;
   private focused = true;
 
@@ -57,7 +57,7 @@ export class GameSession {
     this.drawing = new LongDriveDrawing(renderingConfig(this.game.configuration));
     this.game.state.countdownTimer = options.countdown;
     options.canvas.tabIndex = 0;
-    this.input = new KeyboardInput(
+    this.input = new LongDriveInput(
       options.canvas,
       () => ({
         status: this.game.state.status,

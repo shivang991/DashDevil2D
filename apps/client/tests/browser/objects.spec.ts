@@ -1,6 +1,6 @@
 import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
-import type { PairedState } from "../../src/transport/PairedConnection";
+import type { PairedState } from "../../src/game/multiplayer/PairedConnection";
 const read = async (page: Page) =>
   JSON.parse((await page.getByTestId("room-evidence").textContent())!) as PairedState;
 const hearts = Boolean(process.env.DASHDEVIL_HEART_TESTS);

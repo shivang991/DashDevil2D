@@ -2,7 +2,7 @@ import { loginTestAccount } from "./account-helpers";
 import { test, expect, type Page } from "@playwright/test";
 import fixtures from "../../../../packages/contracts/race/responsibility.json" with { type: "json" };
 import type { Multiplayer } from "@dashdevil/simulation/multiplayer";
-import type { PairedState } from "../../src/transport/PairedConnection";
+import type { PairedState } from "../../src/game/multiplayer/PairedConnection";
 const read = async (page: Page) =>
   JSON.parse((await page.getByTestId("room-evidence").textContent())!) as PairedState;
 test("actual browser executes every shared responsibility timeline", async ({ page }, info) => {

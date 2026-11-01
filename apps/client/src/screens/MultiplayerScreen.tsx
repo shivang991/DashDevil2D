@@ -9,7 +9,7 @@ import {
   PairedConnection,
   type PairedState,
   type MultiplayerMode,
-} from "@/transport/PairedConnection";
+} from "@/game/multiplayer/PairedConnection";
 import { MultiplayerView } from "./MultiplayerView";
 import { RaceView } from "@/components/RaceView";
 import { connectionOptions } from "@/transport/account";

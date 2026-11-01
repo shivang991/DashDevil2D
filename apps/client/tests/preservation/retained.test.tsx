@@ -6,7 +6,7 @@ import {
   type LongDrive,
 } from "@dashdevil/simulation/longDrive";
 import { type GameState } from "@dashdevil/simulation/state";
-import { KeyboardInput } from "../../src/game/KeyboardInput";
+import { LongDriveInput } from "../../src/game/long-drive/LongDriveInput";
 
 // Approved simulation/input seams (#17): retained contract cases use controlled
 // platform clock/randomness and initial headless objects; app sessions expose no
@@ -18,7 +18,7 @@ interface FixtureContext {
 }
 let context: FixtureContext;
 let game: LongDrive;
-let input: KeyboardInput;
+let input: LongDriveInput;
 let now = 0;
 let lastTime = 0;
 let nextFrame: FrameRequestCallback;
@@ -87,7 +87,7 @@ beforeEach(() => {
   surface.tabIndex = 0;
   document.body.append(surface);
   surface.focus();
-  input = new KeyboardInput(
+  input = new LongDriveInput(
     surface,
     () => ({
       status: game.state.status,

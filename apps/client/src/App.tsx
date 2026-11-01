@@ -12,7 +12,7 @@ import { GameWorld } from "@/components/GameWorld";
 import { NavigationConfirmation } from "@/screens/NavigationConfirmation";
 import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
 import { multiplayerPath } from "@/lib/uiUtils";
-import type { MultiplayerMode } from "@/transport/PairedConnection";
+import type { MultiplayerMode } from "@/game/multiplayer/PairedConnection";
 
 function SoloRoute(props: { countdown: 5 | 3; onBack: () => void }) {
   const blocker = useBlocker(

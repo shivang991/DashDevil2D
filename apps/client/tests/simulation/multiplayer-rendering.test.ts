@@ -3,11 +3,14 @@ import { createRoot } from "react-dom/client";
 import { expect, test, vi } from "vitest";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
-import { RaceSession } from "../../src/game/RaceSession";
-import { countdownReveal, MultiplayerRaceDrawing } from "../../src/game/MultiplayerRaceDrawing";
-import { RaceAudio } from "../../src/game/RaceAudio";
+import { RaceSession } from "../../src/game/multiplayer/RaceSession";
+import {
+  countdownReveal,
+  MultiplayerRaceDrawing,
+} from "../../src/game/multiplayer/MultiplayerRaceDrawing";
+import { RaceAudio } from "../../src/game/multiplayer/RaceAudio";
 import { RaceView } from "../../src/components/RaceView";
-import type { PairedState } from "../../src/transport/PairedConnection";
+import type { PairedState } from "../../src/game/multiplayer/PairedConnection";
 
 function fixture(mode: "drag-race" | "road-rage" = "drag-race") {
   const context = configurationContext(captureConfiguration(mode), 1, 1000000);

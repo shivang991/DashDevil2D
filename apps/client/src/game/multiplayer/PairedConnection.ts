@@ -48,8 +48,11 @@ import {
   WireBooleanTrue,
 } from "@dashdevil/contracts/protocol";
 
-import { localName } from "./localName";
-import { AuthoritativeRoundState, type AuthorityEffect } from "@/game/AuthoritativeRoundState";
+import { localName } from "../../transport/localName";
+import {
+  AuthoritativeRoundState,
+  type AuthorityEffect,
+} from "@/game/multiplayer/AuthoritativeRoundState";
 
 import { FrameReader } from "@dashdevil/contracts/wire";
 

@@ -1,13 +1,16 @@
 import { expect, test, vi } from "vitest";
 import { advanceLongDrive, createLongDrive } from "@dashdevil/simulation/longDrive";
 import { captureConfiguration, renderingConfig } from "@dashdevil/simulation/config";
-import { LongDriveDrawing } from "../../src/lib/gameRenderer";
+import { LongDriveDrawing } from "../../src/game/long-drive/LongDriveDrawing";
 import { Multiplayer } from "@dashdevil/simulation/multiplayer";
-import { multiplayerRoadScale } from "../../src/lib/roadProjection";
-import { drawCar, drawObstacle } from "../../src/lib/renderUtils";
+import { MultiplayerRaceDrawing } from "../../src/game/multiplayer/MultiplayerRaceDrawing";
+import { configurationContext } from "@dashdevil/contracts/validation";
+import { drawCar, drawObstacle, drawSprite } from "../../src/lib/renderUtils";
 
 vi.mock("../../src/lib/renderUtils", () => ({
   drawRoad: vi.fn(),
+  drawRoadScenery: vi.fn(),
+  drawSprite: vi.fn(() => true),
   drawCar: vi.fn(),
   drawCoin: vi.fn(),
   drawHeart: vi.fn(),
@@ -51,28 +54,63 @@ for (const mode of ["drag-race", "road-rage"] as const) {
         seat,
       }));
       const game = new Multiplayer(configuration, 1, ids);
-      const scale = multiplayerRoadScale(
-        320 / (g.laneSpacing * 3.5),
-        height,
-        g.maxRoadSpeed * g.accelSpeedMultiplier + g.carHeight / 2,
-      );
+      const context = configurationContext(configuration, 1, 0);
+      const ctx = new Proxy(
+        {},
+        { get: () => vi.fn(), set: () => true },
+      ) as CanvasRenderingContext2D;
+      const draw = (state: ReturnType<typeof game.snapshot>) => {
+        vi.mocked(drawSprite).mockClear();
+        new MultiplayerRaceDrawing(context, 0).draw(
+          ctx,
+          320,
+          height,
+          {
+            cars: state.cars,
+            renderedCars: state.cars.map((car) => ({ ...car, tilt: 0 })),
+            objects: state.objects,
+          },
+          0,
+        );
+        return vi.mocked(drawSprite).mock.calls;
+      };
       let previous = new Set(game.snapshot().objects.map((object) => object.id));
+      const awaitingEntry = new Set<number>();
       let checked = 0;
       for (let tick = 1; tick <= 180; tick++) {
         game.advanceTo(tick / g.tickRate);
         const state = game.snapshot();
         for (const object of state.objects) {
-          if (previous.has(object.id)) continue;
-          const kind = object.flags & 3;
-          const size = kind === 2 ? g.obstacleH : kind === 1 ? g.coinSize : g.heartSize;
-          const bottom =
-            height * 0.76 - (object.distance - state.cars[0].progress) * scale + (size * scale) / 2;
-          expect(bottom).toBeLessThanOrEqual(0);
+          if (!previous.has(object.id)) awaitingEntry.add(object.id);
+          if (!awaitingEntry.has(object.id)) continue;
+          const calls = draw({ ...state, objects: [object] });
+          const sprite = calls.find((call) => ["barrier", "coin", "heart"].includes(call[1]));
+          // Follow each generated object until its first actual drawing output.
+          if (!sprite) continue;
+          expect(sprite[3] + sprite[5]).toBeLessThanOrEqual(0.000001);
+          awaitingEntry.delete(object.id);
           checked++;
         }
         previous = new Set(state.objects.map((object) => object.id));
       }
       expect(checked).toBeGreaterThan(0);
+      const state = game.snapshot();
+      for (const ahead of [true, false]) {
+        const separation = (g.carHeight + g.obstacleH) / 2;
+        state.objects = [
+          {
+            id: 999,
+            lane: 1,
+            flags: 2,
+            distance: state.cars[0].progress + (ahead ? separation : -separation),
+          },
+        ];
+        const calls = draw(state);
+        const obstacle = calls.find((call) => call[1] === "barrier")!;
+        const car = calls.find((call) => call[1] === "car")!;
+        if (ahead) expect(obstacle[3] + obstacle[5]).toBeCloseTo(car[3], 8);
+        else expect(obstacle[3]).toBeCloseTo(car[3] + car[5], 8);
+      }
     });
   }
 }

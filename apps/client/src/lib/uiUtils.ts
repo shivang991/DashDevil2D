@@ -1,5 +1,5 @@
 import { ModeRoadRage } from "@dashdevil/contracts/protocol";
-import type { MultiplayerMode } from "@/transport/PairedConnection";
+import type { MultiplayerMode } from "@/game/multiplayer/PairedConnection";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

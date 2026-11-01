@@ -1,5 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { GameSession, type FrameClock } from "../../src/game/GameSession";
+import { LongDriveSession, type FrameClock } from "../../src/game/long-drive/LongDriveSession";
 
 function clock() {
   let now = 0;
@@ -52,14 +52,14 @@ test("independent sessions keep countdown, pause and reset state separate", () =
   const canvasA = document.createElement("canvas");
   const canvasB = document.createElement("canvas");
   document.body.append(canvasA, canvasB);
-  const a = new GameSession({
+  const a = new LongDriveSession({
     mode: "long-drive",
     canvas: canvasA,
     clock: time.boundary,
     countdown: 5,
     random: () => 0.5,
   });
-  const b = new GameSession({
+  const b = new LongDriveSession({
     mode: "long-drive",
     canvas: canvasB,
     clock: time.boundary,
@@ -95,7 +95,7 @@ test("keyboard discards countdown keys, suppresses repeats and requires fresh in
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -149,7 +149,7 @@ test("blur and visibility freeze active effects/countdown and returning never re
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -197,7 +197,7 @@ test("interactive controls retain native keys and clear movement without restori
   const canvas = document.createElement("canvas");
   const button = document.createElement("button");
   document.body.append(canvas, button);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -230,7 +230,7 @@ test("small UI subscriptions are stable across unchanged world frames and stale 
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -265,7 +265,7 @@ test("session preserves full active elapsed time across sparse frames and guards
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -288,7 +288,7 @@ test("disposing synchronously from a UI subscription cannot schedule another fra
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -309,7 +309,7 @@ for (const fps of [30, 60, 120]) {
     const time = clock();
     const canvas = document.createElement("canvas");
     document.body.append(canvas);
-    const session = new GameSession({
+    const session = new LongDriveSession({
       mode: "long-drive",
       canvas,
       clock: time.boundary,
@@ -342,7 +342,7 @@ test("resuming after a paused interval without RAF does not catch up unseen game
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -366,7 +366,7 @@ test("fresh nonrepeat press after an undelivered away keyup recovers controls", 
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -397,7 +397,7 @@ test("explicit reset discards pre-reset wall time before its fresh countdown", (
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -428,7 +428,7 @@ test("accepted restart discards the completed-gameover RAF gap before its fresh 
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
   Object.defineProperties(canvas, { clientWidth: { value: 606 }, clientHeight: { value: 806 } });
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -460,7 +460,7 @@ test("unavailable pause and restart commands cannot rebase or delay a running co
   const time = clock();
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -483,7 +483,7 @@ test("accepted restart survives an earlier zero-elapsed RAF boundary", () => {
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
   Object.defineProperties(canvas, { clientWidth: { value: 606 }, clientHeight: { value: 806 } });
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -507,7 +507,7 @@ test("session validates developer settings before start/reset and HUD reflects i
   const canvas = document.createElement("canvas");
   document.body.append(canvas);
   let hp = 4;
-  const session = new GameSession({
+  const session = new LongDriveSession({
     mode: "long-drive",
     canvas,
     clock: time.boundary,
@@ -531,7 +531,7 @@ test("session validates developer settings before start/reset and HUD reflects i
   session.dispose();
   expect(
     () =>
-      new GameSession({
+      new LongDriveSession({
         mode: "long-drive",
         canvas,
         countdown: 5,

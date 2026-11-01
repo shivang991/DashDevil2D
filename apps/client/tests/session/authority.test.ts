@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, test } from "vitest";
-import { AuthoritativeRoundState } from "../../src/game/AuthoritativeRoundState";
+import { AuthoritativeRoundState } from "../../src/game/multiplayer/AuthoritativeRoundState";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
 import {

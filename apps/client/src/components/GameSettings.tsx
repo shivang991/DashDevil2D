@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Settings } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
-import type { UISnapshot } from "@/game/GameSession";
+import type { UISnapshot } from "@/game/long-drive/LongDriveSession";
 
 export function GameSettings({
   ui,

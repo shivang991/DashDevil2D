@@ -1,5 +1,5 @@
 import type { GameState } from "@dashdevil/simulation/state";
-import { type GameConfig } from "@/lib/constants";
+import { type GameConfig } from "@dashdevil/simulation/config";
 
 // Relative weights: these total 100, so they also read as percentages.
 // Change these values to tune the mix; selection normalizes by their total.

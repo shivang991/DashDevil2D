@@ -22,7 +22,7 @@ test("capture result keeps earlier runs and identifies the actual tested source 
     repositoryRoot,
     fixtureVersion: 1,
     fixtures: ["apps/client/tests/browser/baseline.spec.ts"],
-    configuration: ["apps/client/src/lib/constants.ts", "apps/client/playwright.config.ts"],
+    configuration: ["packages/simulation/config.ts", "apps/client/playwright.config.ts"],
   };
   const first = createCaptureRun(options);
   fs.writeFileSync(
@@ -51,9 +51,9 @@ test("capture result keeps earlier runs and identifies the actual tested source 
       )
       .digest("hex"),
   );
-  expect(manifest.provenance.configuration["apps/client/src/lib/constants.ts"]).toEqual({
+  expect(manifest.provenance.configuration["packages/simulation/config.ts"]).toEqual({
     sha256: createHash("sha256")
-      .update(fs.readFileSync(path.join(repositoryRoot, "apps/client/src/lib/constants.ts")))
+      .update(fs.readFileSync(path.join(repositoryRoot, "packages/simulation/config.ts")))
       .digest("hex"),
   });
   expect(manifest.artifacts["screen.bin"]).toEqual({

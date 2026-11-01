@@ -1,35 +1,13 @@
-import {
-  CarFlagsNOSActive,
-  ControlLeft,
-  ControlNOS,
-  ControlRight,
-  ModeRoadRage,
-  SeatFlagsConnected,
-} from "@dashdevil/contracts/protocol";
-import { RaceAudio } from "@/game/RaceAudio";
+import { CarFlagsNOSActive, ModeRoadRage, SeatFlagsConnected } from "@dashdevil/contracts/protocol";
+import { RaceAudio } from "@/game/multiplayer/RaceAudio";
 import { Settings } from "lucide-react";
 import { TouchControls } from "./TouchControls";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { MultiplayerDrivingInput, type DrivingControl } from "@/game/MultiplayerDrivingInput";
-import { countdownReveal, MultiplayerRaceDrawing } from "@/game/MultiplayerRaceDrawing";
+import { MultiplayerDrivingInput } from "@/game/multiplayer/MultiplayerDrivingInput";
+import { countdownReveal, MultiplayerRaceDrawing } from "@/game/multiplayer/MultiplayerRaceDrawing";
 import { gameAudio } from "@/lib/gameAudio";
-import type { PairedConnection, PairedState } from "@/transport/PairedConnection";
+import type { PairedConnection, PairedState } from "@/game/multiplayer/PairedConnection";
 
-const controls: Record<string, DrivingControl> = {
-  ArrowLeft: ControlLeft,
-  a: ControlLeft,
-  A: ControlLeft,
-  ArrowRight: ControlRight,
-  d: ControlRight,
-  D: ControlRight,
-  ArrowUp: ControlNOS,
-  w: ControlNOS,
-  W: ControlNOS,
-};
-const controlFor = (key: string) => controls[key];
-const interactive = (target: EventTarget | null) =>
-  target instanceof Element &&
-  Boolean(target.closest('button,input,select,textarea,a,[contenteditable="true"]'));
 const button = "rounded-lg border border-neutral-600 px-4 py-2 hover:bg-neutral-800";
 type Frame = NonNullable<ReturnType<PairedConnection["frame"]>>;
 
@@ -81,17 +59,14 @@ export function RaceView({
     };
   }, [state.roundId]);
   const canvas = useRef<HTMLCanvasElement>(null);
-  const { pressed, driving } = useMemo(() => {
-    const pressed = new Set<string>();
-    const driving = new MultiplayerDrivingInput(
-      {
+  const driving = useMemo(
+    () =>
+      new MultiplayerDrivingInput({
         input: (intent, control) => connection.input(intent, control),
         releaseControls: () => connection.releaseControls(),
-      },
-      () => pressed.clear(),
-    );
-    return { pressed, driving };
-  }, [connection]);
+      }),
+    [connection],
+  );
   const [muted, setMuted] = useState(!audio.enabled);
   const [menu, setMenu] = useState(false);
   const [frame, setFrame] = useState<Frame>();
@@ -99,52 +74,14 @@ export function RaceView({
   const context = state.context!;
   useEffect(() => {
     canvas.current?.focus();
-    return () => driving.reset();
-  }, [driving]);
-  useEffect(() => {
-    const release = () => driving.reset();
-    const down = (event: KeyboardEvent) => {
-      if (event.repeat || pressed.has(event.code)) return;
-      pressed.add(event.code);
-      if (suspended || state.outcome) return;
-      if (
-        (event.key === "Escape" && (menu || !interactive(event.target))) ||
-        (event.code === "Space" && !interactive(event.target))
-      ) {
-        event.preventDefault();
-        driving.reset();
-        setMenu((value) => !value);
-        return;
-      }
-      if (event.key.toLowerCase() === "m" && !interactive(event.target)) {
+    return driving.attach(canvas.current!, {
+      menu: () => setMenu((value) => !value),
+      mute: () => {
         audio.setEnabled(!audio.enabled);
         setMuted(!audio.enabled);
-        return;
-      }
-      const control = controlFor(event.key);
-      if (control && !interactive(event.target) && document.hasFocus() && !document.hidden) {
-        if (driving.press(`key:${event.code}`, control)) event.preventDefault();
-      }
-    };
-    const up = (event: KeyboardEvent) => {
-      pressed.delete(event.code);
-      if (suspended) return;
-      const control = controlFor(event.key);
-      if (control && driving.release(`key:${event.code}`)) {
-        if (!interactive(event.target)) event.preventDefault();
-      }
-    };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
-    window.addEventListener("blur", release);
-    document.addEventListener("visibilitychange", release);
-    return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
-      window.removeEventListener("blur", release);
-      document.removeEventListener("visibilitychange", release);
-    };
-  }, [driving, pressed, menu, suspended, state.outcome, audio]);
+      },
+    });
+  }, [driving, audio]);
   useLayoutEffect(() => {
     driving.update({
       menu,
@@ -335,7 +272,6 @@ export function RaceView({
             role="img"
             aria-label="Multiplayer race"
             className="block h-full w-full rounded-xl border border-neutral-600 focus:outline-2 focus:outline-red-400"
-            onBlur={() => driving.reset()}
           />
         </div>
       </div>
