@@ -126,11 +126,18 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 	}
 	pair.roomSocket = ws
 	pair.mu.Unlock()
-	defer pair.close("room channel lost")
+	writerDone := make(chan struct{})
+	// Fiber returns its socket wrapper to a pool as soon as this handler exits.
+	// Close both channels, then join the writer before allowing that reuse.
+	defer func() {
+		pair.close("room channel lost")
+		<-writerDone
+	}()
 	ws.SetReadLimit(int64(pair.connectionLimits().ReliableFrameBytes))
 	roomTokens := pair.connectionLimits().InputBurst
 	lastRoomMessage := time.Now()
 	go func() {
+		defer close(writerDone)
 		for {
 			select {
 			case <-pair.done:
