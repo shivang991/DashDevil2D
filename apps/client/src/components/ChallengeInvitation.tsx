@@ -35,7 +35,7 @@ export function ChallengeInvitation({
             ? "Join the lobby, then choose readiness"
             : "Waiting for acceptance";
   return (
-    <div className="chat-challenge">
+    <div className="[&_strong]:block [&_small]:block [&_small]:font-chat [&_small]:leading-[1.45] [&_small]:text-neutral-400 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
       <strong>Room challenge</strong>
       <p role="status">{note}</p>
       {status === "Pending" && (

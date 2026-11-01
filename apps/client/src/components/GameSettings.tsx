@@ -1,3 +1,4 @@
+import { settingsPanel } from "@/components/ui/styles";
 import { useState } from "react";
 import { Settings } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
@@ -22,7 +23,7 @@ export function GameSettings({
   };
   return (
     <div
-      className="game-settings"
+      className="absolute top-[max(4px,env(safe-area-inset-top))] right-1 z-30"
       onKeyDown={(event) => {
         if (event.key === "Escape") {
           event.stopPropagation();
@@ -31,7 +32,7 @@ export function GameSettings({
       }}
     >
       <button
-        className="settings-trigger"
+        className="grid size-11 place-items-center rounded-[10px] text-neutral-300 hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
         aria-label="Settings"
         aria-expanded={open}
         onClick={() => {
@@ -45,7 +46,7 @@ export function GameSettings({
         <Settings size={22} aria-hidden="true" />
       </button>
       {open && (
-        <div className="settings-panel" role="dialog" aria-label="Game settings">
+        <div className={settingsPanel} role="dialog" aria-label="Game settings">
           {ui.status === "playing" && (
             <button
               onClick={() => {

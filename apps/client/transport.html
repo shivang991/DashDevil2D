@@ -1,54 +1,69 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="bg-[#101720] scheme-dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="referrer" content="no-referrer" />
     <title>DashDevil transport diagnostic</title>
   </head>
-  <body>
-    <main>
-      <h1>Transport diagnostic</h1>
-      <p>
+  <body
+    class="m-2 w-auto overflow-x-visible bg-[#101720] text-[#f2f5f8] [font-family:system-ui,sans-serif] leading-[normal] [&_:focus-visible]:outline-[3px] [&_:focus-visible]:outline-offset-[3px] [&_:focus-visible]:outline-[#8fd3ff]"
+  >
+    <main
+      class="mx-auto my-12 max-w-4xl p-4 [box-sizing:content-box] [&_button]:box-content [&_button]:rounded-[0.35rem] [&_button]:border [&_button]:border-[#70879c] [&_button]:bg-[#172739] [&_button]:p-[0.7rem] [&_button]:cursor-pointer [&_button:hover]:bg-[#26435e]"
+    >
+      <h1 class="my-[0.67em] [font-family:inherit] text-[2em] font-bold">Transport diagnostic</h1>
+      <p class="my-4 leading-[1.6]">
         Connect two browser tabs to test secure admission, reliable streams, verification datagrams
         and seat recovery. The cars are a stationary fixture; this page does not run a multiplayer
         game.
       </p>
-      <p><a href="/">Play Long Drive</a></p>
-      <div class="actions">
+      <p class="my-4 leading-[1.6]">
+        <a class="text-[#8fd3ff] underline" href="/">Play Long Drive</a>
+      </p>
+      <div class="my-6 flex flex-wrap items-center gap-3">
         <button id="create">Create diagnostic room</button
         ><label
-          >Room code <input id="code" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" /></label
+          >Room code
+          <input
+            class="box-content w-20 rounded-[0.35rem] border border-[#70879c] bg-[#172739] p-[0.7rem]"
+            id="code"
+            maxlength="4"
+            pattern="[0-9]{4}"
+            inputmode="numeric" /></label
         ><button id="join">Join diagnostic room</button><button id="recover">Recover pair</button
         ><button id="leave">Leave room</button>
       </div>
-      <p role="status" data-testid="status">Disconnected</p>
-      <dl>
+      <p class="my-4 leading-[1.6]" role="status" data-testid="status">Disconnected</p>
+      <dl class="my-4 grid grid-cols-[12rem_1fr] gap-[0.6rem]">
         <dt>Room code</dt>
-        <dd data-testid="room-code">—</dd>
+        <dd class="m-0 tabular-nums" data-testid="room-code">—</dd>
         <dt>Seat session</dt>
-        <dd data-testid="seat-session">—</dd>
+        <dd class="m-0 tabular-nums" data-testid="seat-session">—</dd>
         <dt>Pair generation</dt>
-        <dd data-testid="pair-generation">—</dd>
+        <dd class="m-0 tabular-nums" data-testid="pair-generation">—</dd>
         <dt>Connected seats</dt>
-        <dd data-testid="connected-seats">0</dd>
+        <dd class="m-0 tabular-nums" data-testid="connected-seats">0</dd>
         <dt>Verified datagrams</dt>
-        <dd data-testid="verified">0</dd>
+        <dd class="m-0 tabular-nums" data-testid="verified">0</dd>
         <dt>Authority barriers</dt>
-        <dd data-testid="barriers">0</dd>
+        <dd class="m-0 tabular-nums" data-testid="barriers">0</dd>
         <dt>Clock samples</dt>
-        <dd data-testid="clock-samples">0</dd>
+        <dd class="m-0 tabular-nums" data-testid="clock-samples">0</dd>
         <dt>Fixture positions</dt>
-        <dd data-testid="positions">—</dd>
+        <dd class="m-0 tabular-nums" data-testid="positions">—</dd>
       </dl>
-      <div class="actions">
+      <div class="my-6 flex flex-wrap items-center gap-3">
         <button id="drop-room">Drop room channel</button
         ><button id="drop-gameplay">Drop gameplay channel</button
         ><button id="baseline">Request fresh baseline</button
         ><button id="replace">Replace connected pair</button>
       </div>
-      <h2>Connection evidence</h2>
-      <pre id="evidence"></pre>
+      <h2 class="my-[0.83em] [font-family:inherit] text-[1.5em] font-bold">Connection evidence</h2>
+      <pre
+        class="my-[1em] bg-[#172739] p-4 [font-family:monospace] text-[13px] whitespace-pre-wrap wrap-anywhere"
+        id="evidence"
+      ></pre>
     </main>
     <script type="module" src="/src/transport/diagnostic.ts"></script>
   </body>

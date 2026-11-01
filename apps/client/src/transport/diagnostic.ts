@@ -4,7 +4,7 @@ import {
   AdmissionOperationResume,
 } from "@dashdevil/contracts/protocol";
 import { PairedConnection, type ConnectionOptions } from "../game/multiplayer/PairedConnection";
-import "./diagnostic.css";
+import "../index.css";
 
 const config: ConnectionOptions = import.meta.env.DEV
   ? await fetch("/__transport-config").then((response) => {

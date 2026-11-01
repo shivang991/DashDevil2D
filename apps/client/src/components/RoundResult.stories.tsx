@@ -8,7 +8,6 @@ import {
 } from "@dashdevil/contracts/protocol";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { RoundResult } from "./RoundResult";
-import "@/screens/multiplayer.css";
 import { outcome } from "@/stories/fixtures";
 const meta = {
   title: "Game/Round result",

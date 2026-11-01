@@ -1,3 +1,4 @@
+import { multiplayerTextButton } from "@/components/ui/styles";
 import { useRef } from "react";
 import type { Blocker } from "react-router";
 import { MultiplayerDialog } from "./MultiplayerDialog";
@@ -31,7 +32,7 @@ export function NavigationConfirmation({
         Cancel
       </Button>
       <button
-        className="multiplayer-text-button"
+        className={multiplayerTextButton}
         onClick={() => {
           if (blocker.state !== "blocked") return;
           onLeave?.();

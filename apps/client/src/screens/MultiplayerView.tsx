@@ -1,3 +1,4 @@
+import { multiplayerNote, multiplayerTextButton } from "@/components/ui/styles";
 import {
   AdmissionOperationCreate,
   AdmissionOperationJoin,
@@ -34,7 +35,6 @@ import { RoundResult } from "@/components/RoundResult";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/loader";
 import { MultiplayerDialog } from "./MultiplayerDialog";
-import "./multiplayer.css";
 
 const modeName = (mode: Mode) => (mode === ModeRoadRage ? "Road Rage" : "Drag Race");
 
@@ -163,7 +163,11 @@ export function MultiplayerView({
       : "") ||
     state?.notice;
   const errorMessage = roomError && (
-    <div id="room-error" className="multiplayer-error" role="alert">
+    <div
+      id="room-error"
+      className="text-center text-[12px] leading-[1.7] text-[#f87171] wrap-anywhere [&_p+p]:mt-2"
+      role="alert"
+    >
       <p>{roomError}</p>
       {roomError.startsWith("Countdown cancelled") && (
         <p>A player left, lost connection, or hid the game.</p>
@@ -224,7 +228,11 @@ export function MultiplayerView({
     <main
       ref={main}
       tabIndex={-1}
-      className={race ? "multiplayer-match bg-neutral-950 text-white" : "multiplayer-screen"}
+      className={
+        race
+          ? "flex h-dvh items-center justify-center overflow-hidden px-3 py-[clamp(8px,2vh,24px)] bg-neutral-950 text-white"
+          : "grid min-h-dvh place-items-center bg-neutral-950 px-5 py-8 text-neutral-50 [@media(max-width:520px)]:px-4 [@media(max-width:520px)]:py-6 [&_button:enabled]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-[5px] [&_button:focus-visible]:outline-neutral-50"
+      }
       onKeyDown={(event) => {
         if (event.key !== "Escape" || event.repeat || event.defaultPrevented) return;
         if (showJoin || confirmLeave) return;
@@ -247,27 +255,37 @@ export function MultiplayerView({
         }
         roomID={inRoom ? room?.identity.roomId : undefined}
       />
-      <section className={race ? "multiplayer-match-panel" : "multiplayer-panel"}>
+      <section
+        className={
+          race
+            ? "flex h-[min(100%,calc(min(560px,100vw_-_48px)*15/14_+_150px))] min-h-0 w-full max-w-[608px] flex-col gap-2 rounded-[24px] border border-neutral-700 p-[clamp(10px,2vw,22px)] has-[.multiplayer-debug]:h-[min(100%,calc(min(560px,100vw_-_48px)*15/14_+_270px))]"
+            : "flex w-[min(100%,640px)] flex-col gap-6"
+        }
+      >
         {!race && (
           <>
             <h1 className="sr-only">Multiplayer</h1>
-            <header className="multiplayer-header">
+            <header className="flex items-center gap-5 [@media(max-width:520px)]:gap-1">
               <button
                 ref={backButton}
                 type="button"
-                className="multiplayer-back"
+                className="grid h-14 flex-[0_0_44px] place-items-center rounded-[12px] text-neutral-400 enabled:hover:bg-neutral-800 enabled:hover:text-neutral-50 [@media(max-width:520px)]:basis-9 [&_svg]:size-8 [&_svg]:stroke-[1.5]"
                 aria-label={inRoom ? "Leave" : "Back"}
                 disabled={!inRoom && pending}
                 onClick={inRoom ? requestLeave : onBack}
               >
                 <ChevronLeft aria-hidden="true" />
               </button>
-              <div className="multiplayer-modes" role="group" aria-label="Multiplayer mode">
+              <div
+                className="grid min-w-0 flex-1 grid-cols-2 items-center gap-2"
+                role="group"
+                aria-label="Multiplayer mode"
+              >
                 {([2, 1] as const).map((value) => (
                   <button
                     key={value}
                     type="button"
-                    className="multiplayer-mode"
+                    className="relative min-h-[154px] scale-[0.86] rounded-[20px] border border-neutral-700 bg-neutral-900 px-3 py-5 font-heading text-[clamp(23px,4vw,32px)] leading-[1.2] font-light text-neutral-50 opacity-75 aria-pressed:scale-100 aria-pressed:border-neutral-400 aria-pressed:opacity-100 [@media(max-width:520px)]:min-h-[120px] [@media(max-width:520px)]:rounded-[16px] [@media(max-width:520px)]:px-2 [@media(max-width:520px)]:py-4 [@media(max-width:520px)]:text-[23px] [&_svg]:absolute [&_svg]:bottom-3 [&_svg]:left-[calc(50%_-_6px)] [&_svg]:size-3 [&_svg]:text-neutral-400"
                     aria-pressed={shownMode === value}
                     disabled={
                       inRoom ? !host || !eligible || room!.phase !== RoomPhaseLobby : pending
@@ -298,11 +316,12 @@ export function MultiplayerView({
           </>
         )}
         {!inRoom ? (
-          <div className="multiplayer-entry">
-            <p className="multiplayer-player-name">{playerName}</p>
-            <div className="multiplayer-actions">
+          <div className="flex flex-col gap-7">
+            <p className="text-center text-[12px] text-neutral-400 wrap-anywhere">{playerName}</p>
+            <div className="flex flex-col gap-4">
               <Button
-                className="multiplayer-action"
+                variant="multiplayer"
+                size="multiplayer"
                 disabled={!state || pending}
                 onClick={() => void actions?.connect(AdmissionOperationCreate, "", selectedMode)}
               >
@@ -317,7 +336,8 @@ export function MultiplayerView({
               </Button>
               <Button
                 ref={joinButton}
-                className="multiplayer-action"
+                variant="multiplayer"
+                size="multiplayer"
                 disabled={!state || pending}
                 onClick={() => setJoinOpen(true)}
               >
@@ -325,7 +345,7 @@ export function MultiplayerView({
               </Button>
             </div>
             {pending && !showJoin && (
-              <p className="multiplayer-note" role="status">
+              <p className={multiplayerNote} role="status">
                 {state?.pending}…
               </p>
             )}
@@ -334,37 +354,43 @@ export function MultiplayerView({
           <>
             {!race && (
               <>
-                <p className="multiplayer-mode-hint">
+                <p className="-mt-1.5 text-center text-[10px] leading-[1.8] text-neutral-400">
                   {host
                     ? "Changing mode resets both players’ readiness."
                     : "The host chooses the mode."}
                 </p>
-                <div className="multiplayer-room">
-                  <ul className="multiplayer-players" aria-label="Players">
+                <div className="flex items-center justify-between gap-6 pt-[30px] pb-3 [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:items-stretch [@media(max-width:520px)]:gap-7 [@media(max-width:520px)]:pt-3">
+                  <ul className="flex min-w-0 flex-1 items-center gap-[18px]" aria-label="Players">
                     {[room!.host, 1 - room!.host].map((index, position) => {
                       const seat = room!.seats[index];
                       return (
-                        <li key={index} className="multiplayer-player">
+                        <li key={index} className="flex min-w-0 flex-1 items-center gap-[18px]">
                           {position === 1 && (
-                            <span className="multiplayer-versus" aria-hidden="true">
+                            <span
+                              className="font-heading text-[20px] text-neutral-400"
+                              aria-hidden="true"
+                            >
                               vs
                             </span>
                           )}
                           {seat.session > 0 && <Avatar username={seat.name} avatar={seat.avatar} />}
-                          <div className="multiplayer-player-info">
-                            <span className="multiplayer-player-label">
+                          <div className="flex min-w-0 flex-col gap-2">
+                            <span className="flex min-w-0 items-center gap-1.5 text-[14px] leading-[1.7] [@media(max-width:520px)]:text-[12px]">
                               {seat.session > 0 && Boolean(seat.flags & SeatFlagsReady) && (
-                                <Check className="multiplayer-ready-check" aria-label="Ready" />
+                                <Check className="size-4 shrink-0" aria-label="Ready" />
                               )}
                               <span
-                                className="multiplayer-name"
+                                className="min-w-0 wrap-anywhere"
                                 title={seat.name || "Waiting for player"}
                               >
                                 {seat.session ? (
                                   <>
                                     {seat.name}
                                     {index === local && (
-                                      <span className="multiplayer-you"> (You)</span>
+                                      <span className="text-[10px] whitespace-nowrap text-neutral-400">
+                                        {" "}
+                                        (You)
+                                      </span>
                                     )}
                                   </>
                                 ) : (
@@ -372,7 +398,7 @@ export function MultiplayerView({
                                 )}
                               </span>
                             </span>
-                            <span className="multiplayer-seat-status">
+                            <span className="text-[10px] leading-[1.6] text-neutral-400">
                               {!seat.session
                                 ? "Waiting for player"
                                 : !(seat.flags & SeatFlagsConnected)
@@ -386,8 +412,8 @@ export function MultiplayerView({
                       );
                     })}
                   </ul>
-                  <div className="multiplayer-code-wrap">
-                    <div className="multiplayer-code">
+                  <div className="relative shrink-0 [@media(max-width:520px)]:self-center">
+                    <div className="flex items-center rounded-[12px] border border-neutral-700 pl-4 [&>span]:font-heading [&>span]:text-[32px] [&>span]:tracking-[2px] [&>span]:select-all [&_button]:grid [&_button]:min-h-12 [&_button]:w-11 [&_button]:place-items-center [&_button]:rounded-[10px] [&_button:hover]:bg-neutral-800 [&_button:hover]:text-neutral-50 [&_svg]:size-4">
                       <span data-testid="room-code" aria-label="Room code">
                         {state?.code}
                       </span>
@@ -403,7 +429,10 @@ export function MultiplayerView({
                         )}
                       </button>
                     </div>
-                    <span className="multiplayer-copy-feedback" role="status">
+                    <span
+                      className="absolute top-[calc(100%_+_8px)] right-0 min-w-full max-w-[200px] text-center text-[10px] text-neutral-400"
+                      role="status"
+                    >
                       {copy}
                     </span>
                   </div>
@@ -411,7 +440,7 @@ export function MultiplayerView({
                 <p
                   data-testid="connection-state"
                   role="status"
-                  className={connected ? "sr-only" : "multiplayer-note"}
+                  className={connected ? "sr-only" : multiplayerNote}
                 >
                   {state?.status}
                 </p>
@@ -426,16 +455,19 @@ export function MultiplayerView({
                   onLeave: requestLeave,
                 })
               ) : (
-                <div className="multiplayer-countdown-pending" role="status">
+                <div className="grid flex-1 place-content-center gap-3 text-center" role="status">
                   {countdown && connected && (
-                    <p className="multiplayer-countdown" data-testid="countdown">
+                    <p
+                      className="py-4 text-center font-heading text-[144px] leading-none font-light"
+                      data-testid="countdown"
+                    >
                       {remaining}
                     </p>
                   )}
                   <p data-testid="connection-state">
                     {!connected ? state?.status : countdown ? "Preparing round…" : "Synchronizing…"}
                   </p>
-                  <button className="multiplayer-text-button" onClick={requestLeave}>
+                  <button className={multiplayerTextButton} onClick={requestLeave}>
                     Leave
                   </button>
                 </div>
@@ -443,13 +475,19 @@ export function MultiplayerView({
             ) : active ? (
               <p>{installed ? "Players synchronized." : "Synchronizing…"}</p>
             ) : waitingForOther ? (
-              <p className="multiplayer-note" role="status">
+              <p className={multiplayerNote} role="status">
                 Waiting for other player to return…
               </p>
             ) : (
-              <div className="multiplayer-ready-actions">
+              <div className="mt-7 flex flex-col gap-3.5 [@media(max-width:520px)]:mt-3">
                 <Button
-                  className={`multiplayer-action ${host && canStart ? "multiplayer-start" : ""}`}
+                  variant="multiplayer"
+                  size="multiplayer"
+                  className={
+                    host && canStart
+                      ? "border-neutral-50 animate-[multiplayer-start-pulse_2.4s_ease-in-out_infinite] motion-reduce:animate-none"
+                      : undefined
+                  }
                   disabled={!eligible || !focused || (ready && (!host || !canStart))}
                   onClick={
                     host && canStart
@@ -473,14 +511,14 @@ export function MultiplayerView({
                 </Button>
                 {ready && (
                   <button
-                    className="multiplayer-text-button"
+                    className={multiplayerTextButton}
                     disabled={!eligible}
                     onClick={toggleReady}
                   >
                     Cancel ready
                   </button>
                 )}
-                <p className="multiplayer-note">
+                <p className={multiplayerNote}>
                   {!focused
                     ? "Return to the game to ready up."
                     : !host && ready
@@ -496,7 +534,7 @@ export function MultiplayerView({
               </div>
             )}
             {import.meta.env.VITE_MULTIPLAYER_DEBUG === "true" && (
-              <div className="multiplayer-debug">
+              <div className="multiplayer-debug max-h-[min(120px,20dvh)] shrink-0 overflow-auto border-t border-dashed border-neutral-600 pt-2">
                 {(countdown || active) && (
                   <p className="text-sm text-neutral-400">
                     Round time: <span data-testid="round-time">{state?.timeUs ?? 0}</span>
@@ -534,7 +572,7 @@ export function MultiplayerView({
           </>
         )}
         {!race && inRoom && state?.pending && (
-          <p className="multiplayer-note" role="status">
+          <p className={multiplayerNote} role="status">
             {state.pending}…
           </p>
         )}
@@ -545,14 +583,14 @@ export function MultiplayerView({
         title="Round Over"
         modal={false}
         description="The multiplayer round has ended."
-        className="round-result-dialog"
+        variant="result"
         returnFocus={main}
       >
         {state?.outcome && (
           <RoundResult outcome={state.outcome} local={local} identities={state.room?.racers} />
         )}
         <Button
-          className="round-result-return"
+          className="mt-[58px] min-h-[58px] w-full rounded-[10px] border border-[#b9554e] bg-[#913a34] text-[16px] leading-[calc(20/14)] text-[#fff8f4] enabled:hover:bg-[#a7443c] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#fff8f4]"
           disabled={!eligible || room?.phase !== RoomPhaseEnded}
           onClick={() =>
             actions?.command(
@@ -579,7 +617,7 @@ export function MultiplayerView({
         returnFocus={joinButton}
       >
         {pending ? (
-          <div className="multiplayer-joining" role="status">
+          <div className="grid min-h-[152px] place-items-center" role="status">
             <Loader />
             <span className="sr-only">Joining room…</span>
           </div>
@@ -587,14 +625,14 @@ export function MultiplayerView({
           <>
             <button
               type="button"
-              className="multiplayer-dialog-close"
+              className="absolute top-2 right-2 grid size-11 place-items-center rounded-[12px] text-neutral-400 hover:bg-neutral-800 hover:text-neutral-50 [&_svg]:size-[18px]"
               aria-label="Close join dialog"
               onClick={() => setJoinOpen(false)}
             >
               <X aria-hidden="true" />
             </button>
             <form
-              className="multiplayer-join-form"
+              className="flex flex-col gap-4 [&_label]:text-[11px] [&_label]:text-neutral-400"
               onSubmit={(event) => {
                 event.preventDefault();
                 if (/^\d{4}$/.test(code) && !pending && state)
@@ -604,7 +642,7 @@ export function MultiplayerView({
               <label htmlFor="room-code">Room code</label>
               <input
                 id="room-code"
-                className="multiplayer-code-input"
+                className="min-h-[70px] w-full rounded-[10px] border border-neutral-600 bg-neutral-900 p-3 text-center text-[24px] tracking-[8px] text-neutral-50 placeholder:text-[16px] placeholder:tracking-normal placeholder:text-neutral-400 aria-invalid:border-[#f87171] focus-visible:outline-2 focus-visible:outline-offset-[5px] focus-visible:outline-neutral-50"
                 type="text"
                 inputMode="numeric"
                 pattern="[0-9]{4}"
@@ -618,7 +656,11 @@ export function MultiplayerView({
                 aria-describedby={roomError ? "room-error" : undefined}
               />
               {errorMessage}
-              <Button className="multiplayer-action" disabled={!state || !/^\d{4}$/.test(code)}>
+              <Button
+                variant="multiplayer"
+                size="multiplayer"
+                disabled={!state || !/^\d{4}$/.test(code)}
+              >
                 Join Room
               </Button>
             </form>
@@ -633,7 +675,7 @@ export function MultiplayerView({
         initialFocus={cancelLeave}
         returnFocus={main}
       >
-        <p className="multiplayer-leave-description">
+        <p className="text-center text-[12px] leading-[1.8] text-neutral-300">
           {countdown
             ? "Leaving cancels the countdown for both players."
             : !race
@@ -643,16 +685,17 @@ export function MultiplayerView({
                 : "Leaving abandons this round while the opponent is disconnected."}
         </p>
         {!race && host && Boolean(room?.seats[1 - local].session) && (
-          <p className="multiplayer-note">{room!.seats[1 - local].name} becomes the host.</p>
+          <p className={multiplayerNote}>{room!.seats[1 - local].name} becomes the host.</p>
         )}
         <Button
           ref={cancelLeave}
-          className="multiplayer-action"
+          variant="multiplayer"
+          size="multiplayer"
           onClick={() => setConfirmLeave(false)}
         >
           Cancel
         </Button>
-        <button className="multiplayer-text-button" onClick={leave}>
+        <button className={multiplayerTextButton} onClick={leave}>
           Confirm leave
         </button>
       </MultiplayerDialog>

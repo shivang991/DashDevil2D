@@ -1,3 +1,4 @@
+import { cn } from "@/lib/uiUtils";
 import { useEffect, useState } from "react";
 import { connectionOptions } from "@/transport/account";
 
@@ -5,10 +6,14 @@ export function Avatar({
   username,
   avatar,
   preview,
+  className,
+  imageClassName,
 }: {
   username: string;
   avatar?: string;
   preview?: string;
+  className?: string;
+  imageClassName?: string;
 }) {
   const [server, setServer] = useState(import.meta.env.DEV ? "" : location.origin);
   const [failed, setFailed] = useState("");
@@ -37,12 +42,15 @@ export function Avatar({
       .toUpperCase() || "?";
   return (
     <span
-      className="inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-600 bg-neutral-800 text-white"
+      className={cn(
+        "inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-600 bg-neutral-800 text-white",
+        className,
+      )}
       aria-label={`${username} avatar`}
     >
       {source && source !== failed ? (
         <img
-          className="h-full w-full object-cover"
+          className={cn("h-full w-full object-cover", imageClassName)}
           src={source}
           alt=""
           onError={() => setFailed(source)}

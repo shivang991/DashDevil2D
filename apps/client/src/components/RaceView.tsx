@@ -1,3 +1,4 @@
+import { settingsPanel, multiplayerTextButton } from "@/components/ui/styles";
 import { CarFlagsNOSActive, ModeRoadRage, SeatFlagsConnected } from "@dashdevil/contracts/protocol";
 import { RaceAudio } from "@/game/multiplayer/RaceAudio";
 import { Settings } from "lucide-react";
@@ -144,10 +145,10 @@ export function RaceView({
     ),
   );
   return (
-    <div className="race-view">
+    <div className="race-view relative flex min-h-0 flex-1 flex-col gap-3 [@media(max-height:450px)]:gap-1 [&_canvas]:touch-none">
       <header className="shrink-0 space-y-2 pr-12">
         <button
-          className="settings-trigger absolute top-0 right-0"
+          className="grid size-11 place-items-center rounded-[10px] text-neutral-300 hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white absolute top-0 right-0"
           aria-label="Settings"
           aria-expanded={menu}
           disabled={countdown !== undefined}
@@ -210,8 +211,8 @@ export function RaceView({
       <span className="sr-only" data-testid={`hp-${1 - local}`}>
         HP {frame?.cars[1 - local].hp ?? context.gameplay.maxHealth}
       </span>
-      <div className="race-stage">
-        <div className="race-canvas-wrap">
+      <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">
+        <div className="relative aspect-[14/15] max-h-[600px] w-[min(100cqw,calc(100cqh*14/15),560px)]">
           <span
             hidden
             data-testid="nos-status"
@@ -250,16 +251,19 @@ export function RaceView({
           </div>
           {countdown !== undefined && (
             <div
-              className="race-countdown pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-start text-center"
+              className="pt-[6%] [text-shadow:0_2px_12px_#000,0_0_32px_#000] pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-start text-center"
               role="status"
               aria-live="polite"
               aria-atomic="true"
             >
-              <p className="multiplayer-countdown" data-testid="countdown">
+              <p
+                className="pt-0 pb-2 text-center font-heading text-[clamp(48px,18cqw,104px)] leading-none font-light"
+                data-testid="countdown"
+              >
                 {countdown}
               </p>
               <p className="text-sm text-white">Get ready!</p>
-              <button className="multiplayer-text-button pointer-events-auto" onClick={onLeave}>
+              <button className={`${multiplayerTextButton} pointer-events-auto`} onClick={onLeave}>
                 Leave
               </button>
             </div>
@@ -284,7 +288,7 @@ export function RaceView({
         }}
       />
       {menu && !outcome && (
-        <div role="dialog" aria-label="Race menu" className="settings-panel race-settings-panel">
+        <div role="dialog" aria-label="Race menu" className={settingsPanel}>
           <p>The round continues.</p>
           <button autoFocus className={button} onClick={() => setMenu(false)}>
             Resume

@@ -26,14 +26,14 @@ export function GameWorldView({
   return (
     <div className="flex items-center justify-center w-full h-dvh bg-neutral-950 overflow-hidden">
       <ChatVisibility visible={ui.gameOverAnimDone} playing={!ui.gameOverAnimDone} />
-      <div className="relative flex flex-col w-full max-w-160 h-dvh overflow-hidden game-shell">
+      <div className="relative flex flex-col w-full max-w-160 h-dvh overflow-hidden game-shell pt-[env(safe-area-inset-top)] [&_canvas]:touch-none">
         <GameSettings ui={ui} onCommand={onCommand} onFocus={onFocus} onBack={onBack} />
         {/* ── Top HUD bar ── */}
         <div className="flex items-center justify-between pl-4 pr-14 sm:pl-6 py-2 sm:py-3 shrink-0">
           {/* Left side */}
           <div className="flex flex-col gap-1">
             <h1 className="text-white text-base sm:text-xl tracking-wide">Branding</h1>
-            <p className="keyboard-hint text-neutral-400 text-xs sm:text-sm">
+            <p className="keyboard-hint [@media(any-pointer:coarse)]:hidden text-neutral-400 text-xs sm:text-sm">
               {ui.accelerating ? "Accelerating!" : "Hold [Up/W] to accelerate"} Hit [Space] to pause
             </p>
           </div>
