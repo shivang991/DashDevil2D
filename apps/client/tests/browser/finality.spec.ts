@@ -114,7 +114,6 @@ for (const delayed of [0, 1])
       });
       await pages[delayed].evaluate(() => sessionStorage.setItem("finalityReload", "1"));
       await pages[delayed].reload();
-      await pages[delayed].getByRole("button", { name: /Drag Race/ }).click();
       // Terminal acceptance is immediate; the results dialog deliberately waits.
       await expect
         .poll(async () => {

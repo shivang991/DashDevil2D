@@ -90,3 +90,11 @@ Governing [operating model](https://github.com/shivang991/DashDevil2D/issues/18#
 ## Persistent accounts
 
 The server's `accounts` volume stores SQLite accounts and 30-day sessions at `/var/lib/dashdevil/accounts.sqlite`. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` in `infra/.env` before deployment; server startup creates the admin once; see [account setup and authentication](../apps/server/accounts/README.md). Keep `infra/.env` private; never include credentials in frontend assets or logs. Preserve the account volume when upgrading. Public `/api/account` requests are proxied to Go; the loopback readiness/drain operator listener stays separate.
+
+## Browser routes
+
+Menu (`/`), Long Drive (`/long-drive`), Drag Race (`/multiplayer/drag-race`), and Road Rage (`/multiplayer/road-rage`) support direct entry and reload. The client nginx falls back to `index.html` for application paths; missing files with extensions stay 404. The edge proxy continues handling `/admission`, `/room`, and `/gameplay` before forwarding client routes.
+
+Long Drive reload starts a fresh run. Multiplayer reload attempts same-tab seat recovery; a shared mode URL never joins a room without credentials. Recovered room mode replaces the requested mode URL. In-app navigation and browser Back/Forward ask before ending a run or explicitly leaving a room; refresh keeps reconnect credentials.
+
+Run `pnpm --filter @dashdevil/client exec playwright test navigation.spec.ts` for development routing, or build then prefix that command with `DASHDEVIL_PREVIEW_TESTS=1` for production assets. Run `pnpm test:rooms` for authenticated recovery and leave coverage.

@@ -1,23 +1,71 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
-import { GameWorld } from "@/components/GameWorld";
 import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
 import { AdminScreen } from "@/screens/AdminScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
 import { LoginScreen } from "@/screens/LoginScreen";
 import { accountAPI, AccountError, clearReconnectState, type Account } from "@/transport/account";
-import { ModeDragRace } from "@dashdevil/contracts/protocol";
+import { Navigate, useBlocker, useLocation, useNavigate } from "react-router";
+import { GameWorld } from "@/components/GameWorld";
+import { NavigationConfirmation } from "@/screens/NavigationConfirmation";
+import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
+import { multiplayerPath } from "@/lib/uiUtils";
 import type { MultiplayerMode } from "@/transport/PairedConnection";
 
-type Screen = "menu" | "game" | "multiplayer" | "login" | "admin";
+function SoloRoute(props: { countdown: 5 | 3; onBack: () => void }) {
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => currentLocation.pathname !== nextLocation.pathname,
+  );
+  return (
+    <>
+      <GameWorld {...props} />
+      <NavigationConfirmation blocker={blocker} />
+    </>
+  );
+}
+
+function MenuSoundButton() {
+  const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
+  return (
+    <button
+      type="button"
+      aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+      aria-pressed={soundEnabled}
+      onClick={() => {
+        const enabled = !soundEnabled;
+        gameAudio.setEnabled(enabled);
+        setSoundEnabled(enabled);
+      }}
+      className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-950/90 px-3 py-2 text-xs text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-white"
+    >
+      {soundEnabled ? (
+        <Volume2 size={18} aria-hidden="true" />
+      ) : (
+        <VolumeX size={18} aria-hidden="true" />
+      )}
+      Sound {soundEnabled ? "on" : "off"}
+    </button>
+  );
+}
 
 function App() {
   const hasStarted = useRef(false);
-  const [mode, setMode] = useState<MultiplayerMode>(ModeDragRace);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const screen =
+    pathname === "/"
+      ? "menu"
+      : pathname === "/long-drive"
+        ? "game"
+        : pathname === "/login"
+          ? "login"
+          : pathname === "/admin"
+            ? "admin"
+            : "multiplayer";
+  const mode = pathname === "/multiplayer/road-rage" ? ModeRoadRage : ModeDragRace;
   const [countdown, setCountdown] = useState<5 | 3>(5);
-  const [screen, setScreen] = useState<Screen>("menu");
-  const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
+  const [authLoaded, setAuthLoaded] = useState(false);
   const [account, setAccount] = useState<Account>();
   const channel = useRef<BroadcastChannel | undefined>(undefined);
   const authEpoch = useRef(0);
@@ -37,8 +85,9 @@ function App() {
         ) {
           setAccount(undefined);
           clearReconnectState();
-          setScreen((current) => (current === "multiplayer" ? "menu" : current));
         }
+      } finally {
+        if (!disposed && epoch === authEpoch.current) setAuthLoaded(true);
       }
     };
     void refresh();
@@ -63,7 +112,7 @@ function App() {
     authEpoch.current++;
     clearReconnectState();
     setAccount(undefined);
-    setScreen("menu");
+    void navigate("/", { flushSync: true });
     channel.current?.postMessage("changed");
   }
 
@@ -78,25 +127,53 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (authLoaded && !account && screen === "multiplayer")
+      void navigate("/", { replace: true, flushSync: true });
+  }, [authLoaded, account, screen, navigate]);
+
+  if (
+    ![
+      "/",
+      "/login",
+      "/admin",
+      "/long-drive",
+      "/multiplayer/drag-race",
+      "/multiplayer/road-rage",
+    ].includes(pathname)
+  )
+    return <Navigate to="/" replace />;
+
+  const back = () => {
+    void navigate("/", { flushSync: true });
+  };
+  const selectMode = (mode: MultiplayerMode) => {
+    void navigate(multiplayerPath(mode), { flushSync: true });
+  };
+
+  if (screen === "multiplayer" && !authLoaded) return null;
+
   return (
     <>
-      {account?.mustChangePassword || screen === "login" ? (
+      {account?.mustChangePassword ||
+      screen === "login" ||
+      (screen === "multiplayer" && !account) ? (
         <LoginScreen
           key={account?.mustChangePassword ? account.id : "login"}
           account={account}
-          onBack={() => setScreen("menu")}
+          onBack={() => void navigate("/", { flushSync: true })}
           onLogout={logout}
           onAuthenticated={(next) => {
             authEpoch.current++;
             clearReconnectState();
             setAccount(next);
-            setScreen("menu");
+            void navigate("/", { flushSync: true });
             channel.current?.postMessage("changed");
           }}
         />
       ) : screen === "admin" && account?.admin ? (
         <AdminScreen
-          onBack={() => setScreen("menu")}
+          onBack={() => void navigate("/", { flushSync: true })}
           onAccountSaved={(next) => {
             authEpoch.current++;
             setAccount(next);
@@ -106,8 +183,8 @@ function App() {
       ) : screen === "menu" || screen === "admin" ? (
         <MenuScreen
           account={account}
-          onLogin={() => setScreen("login")}
-          onAdmin={() => setScreen("admin")}
+          onLogin={() => void navigate("/login", { flushSync: true })}
+          onAdmin={() => void navigate("/admin", { flushSync: true })}
           onLogout={logout}
           onAccountSaved={(next) => {
             authEpoch.current++;
@@ -116,54 +193,21 @@ function App() {
           }}
           onMultiplayer={(mode) => {
             if (!account || account.mustChangePassword) return;
-            setMode(mode);
-            setScreen("multiplayer");
+            selectMode(mode);
           }}
           onStartGame={() => {
             gameAudio.unlock();
             setCountdown(hasStarted.current ? 3 : 5);
             hasStarted.current = true;
-            setScreen("game");
+            void navigate("/long-drive", { flushSync: true });
           }}
         />
       ) : screen === "multiplayer" ? (
-        <MultiplayerScreen
-          playerName={account?.username ?? "Guest"}
-          mode={mode}
-          onBack={() => {
-            setSoundEnabled(gameAudio.enabled);
-            setScreen("menu");
-          }}
-        />
+        <MultiplayerScreen playerName={account?.username ?? "Guest"} mode={mode} onBack={back} />
       ) : (
-        <GameWorld
-          countdown={countdown}
-          onBack={() => {
-            setSoundEnabled(gameAudio.enabled);
-            setScreen("menu");
-          }}
-        />
+        <SoloRoute countdown={countdown} onBack={back} />
       )}
-      {screen === "menu" && (
-        <button
-          type="button"
-          aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
-          aria-pressed={soundEnabled}
-          onClick={() => {
-            const enabled = !soundEnabled;
-            gameAudio.setEnabled(enabled);
-            setSoundEnabled(enabled);
-          }}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-950/90 px-3 py-2 text-xs text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-white"
-        >
-          {soundEnabled ? (
-            <Volume2 size={18} aria-hidden="true" />
-          ) : (
-            <VolumeX size={18} aria-hidden="true" />
-          )}
-          Sound {soundEnabled ? "on" : "off"}
-        </button>
-      )}
+      {screen === "menu" && <MenuSoundButton />}
     </>
   );
 }

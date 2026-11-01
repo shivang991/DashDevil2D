@@ -320,7 +320,6 @@ test("suspension restores a fresh generation; forfeit survives reload and replac
     expect(outcome.result).toBe(0);
     expect(outcome.reason).toBe(3);
     await pages[0].reload();
-    await pages[0].getByRole("button", { name: /Drag Race/ }).click();
     await expect(pages[0].getByText("You Won", { exact: true })).toBeVisible();
     const recoveredOutcome = JSON.parse(
       (await pages[0].getByTestId("outcome-evidence").textContent())!,

@@ -36,6 +36,8 @@ const modeName = (mode: Mode) => (mode === ModeRoadRage ? "Road Rage" : "Drag Ra
 interface MultiplayerViewProps {
   mode: MultiplayerMode;
   onBack: () => void;
+  onModeChange?: (mode: MultiplayerMode) => void;
+  navigationBlocked?: boolean;
   playerName: string;
   state?: PairedState;
   error?: string;
@@ -53,6 +55,8 @@ interface MultiplayerViewProps {
 export function MultiplayerView({
   mode,
   onBack,
+  onModeChange,
+  navigationBlocked = false,
   playerName,
   state,
   error = "",
@@ -62,6 +66,11 @@ export function MultiplayerView({
   renderRace,
 }: MultiplayerViewProps) {
   const [selectedMode, setSelectedMode] = useState(mode);
+  const [previousMode, setPreviousMode] = useState(mode);
+  if (previousMode !== mode) {
+    setPreviousMode(mode);
+    setSelectedMode(mode);
+  }
   const [code, setCode] = useState("");
   const [copy, setCopy] = useState("");
   const [joinOpen, setJoinOpen] = useState(state?.pending === "Joining room");
@@ -258,7 +267,10 @@ export function MultiplayerView({
                           WireBooleanFalse,
                           "Changing mode",
                         );
-                      else setSelectedMode(value);
+                      else {
+                        setSelectedMode(value);
+                        onModeChange?.(value);
+                      }
                     }}
                   >
                     <span data-testid={shownMode === value ? "selected-mode" : undefined}>
@@ -394,7 +406,8 @@ export function MultiplayerView({
             {race ? (
               renderRace && (!countdown || previewReady) ? (
                 renderRace({
-                  suspended: countdown || confirmLeave || state?.status !== "Connected",
+                  suspended:
+                    countdown || confirmLeave || navigationBlocked || state?.status !== "Connected",
                   countdown: countdown ? remaining : undefined,
                   onLeave: requestLeave,
                 })

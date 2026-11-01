@@ -46,14 +46,7 @@ export function GameWorld({ onBack, countdown, configuration, seed }: GameWorldP
       onFocus={() => sessionRef.current?.focus()}
       onControl={(control, down) => sessionRef.current?.control(control, down)}
       onCommand={(command) => sessionRef.current?.command(command)}
-      onBack={
-        onBack
-          ? () => {
-              sessionRef.current?.command("reset");
-              onBack();
-            }
-          : undefined
-      }
+      onBack={onBack}
     />
   );
 }

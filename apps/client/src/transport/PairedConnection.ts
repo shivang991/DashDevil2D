@@ -206,12 +206,19 @@ export class PairedConnection {
     const detail = error instanceof Error ? error.message : String(error);
     this.state.errors.push(detail);
     if (this.state.errors.length > 32) this.state.errors.shift();
+    const recoverable = !this.options.diagnostic && this.hasCredential;
+    if (recoverable && !this.recoverUntil)
+      this.recoverUntil =
+        performance.now() + (this.state.context?.room.reconnectGrace ?? 15) * 1000;
+    const recoveryExpired = recoverable && performance.now() >= this.recoverUntil;
     const ended =
+      recoveryExpired ||
       /(?:room|seat|credential|session) expired|revoked|rejected|superseded|replaced|version/i.test(
         detail,
       );
     this.teardown();
     if (ended) {
+      this.recoverUntil = 0;
       try {
         sessionStorage.removeItem(this.storageKey());
       } catch {
@@ -225,16 +232,11 @@ export class PairedConnection {
       window.dispatchEvent(new Event("dashdevil-session-expired"));
     this.state.status = detail.includes("version")
       ? "Version mismatch—reload"
-      : `Unable to connect: ${detail}`;
+      : `Unable to connect: ${recoveryExpired ? "Room recovery expired. Create or join a room to try again." : detail}`;
     this.state.pending = undefined;
     this.publish();
-    if (!this.options.diagnostic && this.admission && this.credential().length && !ended) {
-      if (!this.recoverUntil)
-        this.recoverUntil =
-          performance.now() + (this.state.context?.room.reconnectGrace ?? 15) * 1000;
-      if (performance.now() < this.recoverUntil)
-        this.recoveryTimer = setTimeout(() => void this.connect(AdmissionOperationResume), 500);
-    }
+    if (recoverable && !ended)
+      this.recoveryTimer = setTimeout(() => void this.connect(AdmissionOperationResume), 500);
   }
   private teardown() {
     this.generation++;
@@ -271,6 +273,7 @@ export class PairedConnection {
   ): Promise<void> {
     this.teardown();
     this.terminal = false;
+    if (operation !== AdmissionOperationResume) this.recoverUntil = 0;
     const generation = this.generation;
     // Keep the last view visible and frozen while an authenticated seat recovers.
     // Input remains barred until the new pair has installed current authority.

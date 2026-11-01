@@ -123,7 +123,6 @@ test("countdown and gameplay outlive idle expiry; leaving a disconnected opponen
     await expect(pages[0].getByRole("button", { name: "Create Room", exact: true })).toBeVisible();
     await contexts[1].unroute("**/admission*");
     await pages[1].reload();
-    await pages[1].getByRole("button", { name: /Drag Race/ }).click();
     await expect(pages[1].getByRole("heading", { name: "Round Over" })).toBeVisible();
     const outcome = JSON.parse((await pages[1].getByTestId("outcome-evidence").textContent())!);
     expect(outcome.result).toBe(3);

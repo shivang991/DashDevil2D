@@ -61,7 +61,6 @@ for (const action of ["recover", "leave"])
           .toBe(true);
         if (action === "recover") {
           await pages[recovering].reload();
-          await pages[recovering].getByRole("button", { name: /Drag Race/ }).click();
           await expect
             .poll(
               () =>

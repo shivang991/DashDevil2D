@@ -208,7 +208,6 @@ test("host mode changes clear readiness and a reloaded tab recovers its authenti
       (await pages[1].getByTestId("room-evidence").textContent())!,
     ).identity;
     await pages[1].reload();
-    await pages[1].getByRole("button", { name: /Drag Race/ }).click();
     await expect(pages[1].getByTestId("connection-state")).toHaveText("Connected");
     await expect(pages[1].getByTestId("room-code")).toHaveText(code);
     const recovered = JSON.parse(
@@ -225,7 +224,7 @@ test("host mode changes clear readiness and a reloaded tab recovers its authenti
     await expect(pages[0].getByRole("button", { name: "Cancel", exact: true })).toBeFocused();
     await pages[0].getByRole("button", { name: "Cancel", exact: true }).press("Escape");
     await expect(pages[0].getByRole("dialog", { name: "Leave room?" })).toHaveCount(0);
-    await expect(pages[0].getByRole("dialog", { name: "Starting" })).toBeVisible();
+    await expect(pages[0].getByTestId("countdown")).toBeVisible();
     await pages[0].getByRole("button", { name: "Leave", exact: true }).click();
     await pages[0].getByRole("button", { name: "Confirm leave", exact: true }).click();
     await expect(
@@ -272,4 +271,77 @@ test("readiness stays pending until its own command reply despite a room-state b
   await expect(page.getByRole("button", { name: "Cancel ready", exact: true })).toBeDisabled();
   waitingReply!();
   await expect(page.getByRole("button", { name: "Cancel ready", exact: true })).toBeEnabled();
+});
+
+test("room recovery corrects URL; Back cancel retains seat and confirm explicitly leaves", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("button", { name: /Road Rage/ }).click();
+  await page.getByRole("button", { name: "Create Room", exact: true }).click();
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+  const code = await page.getByTestId("room-code").innerText();
+  await page.goto("/multiplayer/drag-race");
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+  await expect(page).toHaveURL(/\/multiplayer\/road-rage$/);
+  await expect(page.getByTestId("room-code")).toHaveText(code);
+  // The corrected URL replaces the wrong entry; Back returns to the prior mode route.
+  await page.goBack();
+  await expect(page).toHaveURL(/\/multiplayer\/road-rage$/);
+  await page.goBack();
+  await expect(page.getByRole("dialog", { name: "Leave room?" })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(page.getByTestId("room-code")).toHaveText(code);
+  await page.goBack();
+  await page.getByRole("button", { name: "Confirm leave", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await page.goForward();
+  await expect(page.getByRole("button", { name: "Create Room", exact: true })).toBeEnabled();
+  await expect(page.getByTestId("room-code")).toHaveCount(0);
+});
+
+test("expired saved seat explains failure and permits creating a fresh room", async ({ page }) => {
+  await page.goto("/multiplayer/road-rage");
+  await page.getByRole("button", { name: "Create Room", exact: true }).click();
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+  const credentials = await page.evaluate(() =>
+    Object.entries(sessionStorage).filter(([key]) => key.startsWith("dashdevil-seat:")),
+  );
+  await page.getByRole("button", { name: "Leave", exact: true }).click();
+  await page.getByRole("button", { name: "Confirm leave", exact: true }).click();
+  await page.evaluate((entries) => {
+    for (const [key, value] of entries) sessionStorage.setItem(key, value);
+  }, credentials);
+  await page.reload();
+  await expect(page.getByRole("alert")).toContainText(/expired|rejected/i);
+  await expect(page.getByTestId("selected-mode")).toHaveText("Road Rage");
+  expect(
+    await page.evaluate(() =>
+      Object.keys(sessionStorage).some((key) => key.startsWith("dashdevil-seat:")),
+    ),
+  ).toBe(false);
+  await page.getByRole("button", { name: "Create Room", exact: true }).click();
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+});
+
+test("unreachable recovery expires credentials and returns to the requested start screen", async ({
+  page,
+}) => {
+  test.setTimeout(25000);
+  await page.goto("/multiplayer/road-rage");
+  await page.getByRole("button", { name: "Create Room", exact: true }).click();
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+  await page.route("**/admission", (route) => route.abort("failed"));
+  await page.reload();
+  await expect(page.getByRole("alert")).toContainText("Room recovery expired", { timeout: 20000 });
+  await expect(page.getByTestId("selected-mode")).toHaveText("Road Rage");
+  await expect(page.getByRole("button", { name: "Create Room", exact: true })).toBeEnabled();
+  expect(
+    await page.evaluate(() =>
+      Object.keys(sessionStorage).some((key) => key.startsWith("dashdevil-seat:")),
+    ),
+  ).toBe(false);
+  await page.unroute("**/admission");
+  await page.getByRole("button", { name: "Create Room", exact: true }).click();
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
 });
