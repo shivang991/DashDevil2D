@@ -1,11 +1,12 @@
-package transport
+package multiplayer
 
 import (
 	"fmt"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/simulation"
 	"math"
 	"time"
+
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	"github.com/shivang991/DashDevil2D/apps/server/simulation"
 )
 
 type raceRecord struct {
@@ -239,29 +240,29 @@ func (s *Server) recordRaceLocked(r *room, event simulation.Observation) {
 		b.Progress.Authority--
 	}
 }
-func (pair *pair) submitRace(input p.Input) error {
-	s := pair.server
+func (connection *connection) submitRace(input p.Input) error {
+	s := connection.server
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	r := pair.seat.room
-	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.connected || !pair.seat.leaving.IsZero() || !pair.seat.accountLive(s.nowTime()) || r.phase != p.RoomPhaseActive || r.engine == nil || r.outcome != nil || !pair.seat.focused {
+	r := connection.seat.room
+	if connection.seat.connection != connection || r.seats[connection.identity.Seat] != connection.seat || !connection.seat.connected || !connection.seat.leaving.IsZero() || !connection.seat.accountLive(s.nowTime()) || r.phase != p.RoomPhaseActive || r.engine == nil || r.outcome != nil || !connection.seat.focused {
 		return nil
 	}
-	if input.Round.RoundId != r.roundID || input.Round.InputGeneration != pair.seat.inputGeneration {
+	if input.Round.RoundId != r.roundID || input.Round.InputGeneration != connection.seat.inputGeneration {
 		return nil
 	}
-	if !r.primed[pair.identity.Seat] {
-		r.engine.ResetSeat(pair.identity, pair.seat.inputGeneration, input.Sequence-1, pair.connectionLimits())
-		r.primed[pair.identity.Seat] = true
+	if !r.primed[connection.identity.Seat] {
+		r.engine.ResetSeat(connection.identity, connection.seat.inputGeneration, input.Sequence-1, connection.connectionLimits())
+		r.primed[connection.identity.Seat] = true
 	}
-	if r.inputs[pair.identity.Seat] == nil {
-		r.inputs[pair.identity.Seat] = map[uint32]p.Input{}
+	if r.inputs[connection.identity.Seat] == nil {
+		r.inputs[connection.identity.Seat] = map[uint32]p.Input{}
 	}
-	if len(r.inputs[pair.identity.Seat]) >= 120 {
+	if len(r.inputs[connection.identity.Seat]) >= 120 {
 		return fmt.Errorf("input disposition backlog")
 	}
-	r.inputs[pair.identity.Seat][input.Sequence] = input
-	_, err := r.engine.Submit(pair.identity, input)
+	r.inputs[connection.identity.Seat][input.Sequence] = input
+	_, err := r.engine.Submit(connection.identity, input)
 	return err
 }
 

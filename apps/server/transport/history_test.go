@@ -12,7 +12,7 @@ import (
 
 	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 type historyFixture struct {
@@ -43,7 +43,7 @@ func historyLobby(t *testing.T, mode p.Mode, overrides string) *historyFixture {
 	}
 	t.Cleanup(func() { db.Close() })
 	now, advance := lifecycleClock()
-	config := transport.Config{Accounts: store, Now: now}
+	config := appserver.Config{Accounts: store, Now: now}
 	if mode == p.ModeDragRace {
 		config.DragRaceOverrides = []byte(overrides)
 	} else {
@@ -231,7 +231,7 @@ func TestRaceHistoryTransportAbandonmentAndRestart(t *testing.T) {
 			waitHistoryCount(t, f.db, `SELECT COUNT(*) FROM race_history`, 1)
 			if restart {
 				f.server.Close()
-				s, _, _ := configuredServer(t, transport.Config{Accounts: f.store})
+				s, _, _ := configuredServer(t, appserver.Config{Accounts: f.store})
 				defer s.Close()
 				waitHistoryCount(t, f.db, `SELECT COUNT(*) FROM race_history WHERE outcome=3 AND end_reason='server_restart' AND duration_us IS NULL`, 1)
 				waitHistoryCount(t, f.db, `SELECT COUNT(*) FROM road_rage_result`, 0)
@@ -299,7 +299,7 @@ func TestRaceHistoryBlockedDatabaseDoesNotHoldGameplayOwnership(t *testing.T) {
 		t.Fatal(outcome)
 	}
 	time.Sleep(50 * time.Millisecond) // persistence is now waiting on the real writer
-	status := make(chan transport.MaintenanceStatus, 1)
+	status := make(chan appserver.MaintenanceStatus, 1)
 	go func() { status <- f.server.Maintenance() }()
 	select {
 	case <-status:

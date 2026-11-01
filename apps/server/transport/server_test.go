@@ -13,9 +13,6 @@ import (
 	"encoding/binary"
 	"encoding/pem"
 	"fmt"
-	ws "github.com/fasthttp/websocket"
-	wt "github.com/quic-go/webtransport-go"
-	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	"io"
 	"math/big"
 	"net"
@@ -27,8 +24,11 @@ import (
 	"testing"
 	"time"
 
+	ws "github.com/fasthttp/websocket"
+	wt "github.com/quic-go/webtransport-go"
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 const origin = "https://localhost:4173"
@@ -61,13 +61,13 @@ func localCertificate(t *testing.T) (string, string, *x509.CertPool) {
 	roots.AppendCertsFromPEM(cert)
 	return certPath, keyPath, roots
 }
-func server(t *testing.T) (*transport.Server, *http.Client, *x509.CertPool) {
+func server(t *testing.T) (*appserver.Server, *http.Client, *x509.CertPool) {
 	return serverMode(t, true)
 }
-func serverMode(t *testing.T, diagnostic bool) (*transport.Server, *http.Client, *x509.CertPool) {
-	return configuredServer(t, transport.Config{Diagnostic: diagnostic})
+func serverMode(t *testing.T, diagnostic bool) (*appserver.Server, *http.Client, *x509.CertPool) {
+	return configuredServer(t, appserver.Config{Diagnostic: diagnostic})
 }
-func configuredServer(t *testing.T, config transport.Config) (*transport.Server, *http.Client, *x509.CertPool) {
+func configuredServer(t *testing.T, config appserver.Config) (*appserver.Server, *http.Client, *x509.CertPool) {
 	t.Helper()
 	fixtureAccount := !config.Diagnostic && config.Accounts == nil
 	if fixtureAccount {
@@ -83,7 +83,7 @@ func configuredServer(t *testing.T, config transport.Config) (*transport.Server,
 	}
 	cert, key, roots := localCertificate(t)
 	config.Address, config.Origin, config.Certificate, config.Key = "127.0.0.1:0", origin, cert, key
-	s, err := transport.New(config)
+	s, err := appserver.New(config)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -101,12 +101,12 @@ func configuredServer(t *testing.T, config transport.Config) (*transport.Server,
 	}
 	return s, client, roots
 }
-func admit(t *testing.T, s *transport.Server, c *http.Client, request p.AdmissionRequest, from string) (int, any) {
+func admit(t *testing.T, s *appserver.Server, c *http.Client, request p.AdmissionRequest, from string) (int, any) {
 	t.Helper()
 	status, value, _ := admitWithCode(t, s, c, request, from)
 	return status, value
 }
-func admitWithCode(t *testing.T, s *transport.Server, c *http.Client, request p.AdmissionRequest, from string, modes ...uint8) (int, any, string) {
+func admitWithCode(t *testing.T, s *appserver.Server, c *http.Client, request p.AdmissionRequest, from string, modes ...uint8) (int, any, string) {
 	t.Helper()
 	wire, err := p.EncodeMessage(request, 65536)
 	if err != nil {
@@ -337,13 +337,13 @@ func TestRealQUICInitializesThreeStreamsAndVerifiesDiagnosticState(t *testing.T)
 }
 
 // initializedPair exercises only public TLS endpoints, never server internals.
-func initializedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, acknowledge bool) (*ws.Conn, *wt.Session) {
+func initializedPair(t *testing.T, s *appserver.Server, roots *x509.CertPool, a p.Admission, acknowledge bool) (*ws.Conn, *wt.Session) {
 	return observedPair(t, s, roots, a, acknowledge, nil)
 }
-func observedPair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, acknowledge bool, observe func(any)) (*ws.Conn, *wt.Session) {
+func observedPair(t *testing.T, s *appserver.Server, roots *x509.CertPool, a p.Admission, acknowledge bool, observe func(any)) (*ws.Conn, *wt.Session) {
 	return pairAtReady(t, s, roots, a, acknowledge, observe, nil, true)
 }
-func pairAtReady(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, acknowledge bool, observe func(any), beforeReady func(), wantConnected bool) (*ws.Conn, *wt.Session) {
+func pairAtReady(t *testing.T, s *appserver.Server, roots *x509.CertPool, a p.Admission, acknowledge bool, observe func(any), beforeReady func(), wantConnected bool) (*ws.Conn, *wt.Session) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()

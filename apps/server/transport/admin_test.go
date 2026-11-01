@@ -2,13 +2,14 @@ package transport_test
 
 import (
 	"fmt"
-	"github.com/shivang991/DashDevil2D/apps/server/accounts"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"net/http"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 func TestAdminCreatesTemporaryUserAndListsObservedMetadata(t *testing.T) {
@@ -252,7 +253,7 @@ func TestAdminMetadataAndProfileSurviveRestart(t *testing.T) {
 	if err = store.Bootstrap("Restart_Admin", "test fixture password"); err != nil {
 		t.Fatal(err)
 	}
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c = independentClient(c)
 	loginAccount(t, s, c, "Restart_Admin", "test fixture password")
 	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Restart_Driver"}`, origin)
@@ -272,7 +273,7 @@ func TestAdminMetadataAndProfileSurviveRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer store.Close()
-	s, client, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, client, _ := configuredServer(t, appserver.Config{Accounts: store})
 	client.Jar = c.Jar
 	status, after, _ := accountRequest(t, s, client, "GET", "/admin/users", "", origin)
 	if status != 200 {
@@ -299,7 +300,7 @@ func TestAdminResetAndDeletionForfeitActiveOpponent(t *testing.T) {
 				t.Fatal(err)
 			}
 			now, advance := lifecycleClock()
-			s, c, roots := configuredServer(t, transport.Config{Accounts: store, Now: now, DragRaceOverrides: []byte(`{"operational":{"simulationLagThreshold":10},"gameplay":{"obstacleWeight":0,"emptyWeight":1}}`)})
+			s, c, roots := configuredServer(t, appserver.Config{Accounts: store, Now: now, DragRaceOverrides: []byte(`{"operational":{"simulationLagThreshold":10},"gameplay":{"obstacleWeight":0,"emptyWeight":1}}`)})
 			c = independentClient(c)
 			loginAccount(t, s, c, "Race_Admin", "test fixture password")
 			_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Race_Driver"}`, origin)

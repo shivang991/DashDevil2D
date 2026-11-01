@@ -1,3 +1,40 @@
+# Server module ownership
+
+`cmd/diagnostic` constructs `server`, the process owner. `server` wires `transport`,
+`accounthttp`, `multiplayer` and `accounts`, starts/stops their listeners and workers,
+and combines listener, drain and history health for private operator readiness.
+The loopback operator listener closes with the process; no operator routes are public.
+
+- `transport`: HTTPS/WebSocket/WebTransport, wire/origin validation, single-use
+  channel tickets, paired teardown and shared queue/in-flight budgets.
+- `multiplayer`: one serialized owner for rooms, seats, admission, reconnect,
+  countdown, simulation, authority, outcomes and draining. `Handle` binds a seat
+  to one connection generation; baselines, authority and presence are copies.
+  `Advance` uses the injected clock, also used by the periodic worker.
+- `accounthttp`: account/admin/chat routes, request validation, cookies and HTTP
+  responses. Its multiplayer interface exposes room-derived values and identity
+  publication/revocation; conversation and suggestion rules stay in `accounts`.
+- `accounts`: durable accounts, sessions, profiles, conversations, messages,
+  read positions, finished-round facts and race history.
+
+The process supplies one authentication mutex to admission, ticket consumption,
+HTTP auth/profile mutations and private history persistence. Durable auth changes
+complete before multiplayer revocation/publication, under that ordering lock.
+Gameplay never holds this lock. No SQLite or socket I/O holds the multiplayer mutex.
+The transport connection factory allocates delivery state only; `Delivery.Room`
+only enqueues copied snapshots. Paired closure reports disconnection via its handle,
+and replaced handles cannot affect current seats.
+
+History and finished-round retry workers are private to `multiplayer`. Work carries
+immutable values and room/round identities, survives room removal, and applies
+completion only to its original round. Profile cleanup is coordinated by `server`
+using copied live/captured avatar references under the authentication mutex.
+
+Existing real-transport regressions remain in `transport/*_test.go` and instantiate
+`server`. Ownership-specific regressions moved to `multiplayer` with their assertions
+preserved; interface regressions use a controlled clock. Browser evidence hashes
+all production Go files in the four extracted modules.
+
 # Native Go server mechanics and transport diagnostic
 
 `simulation` is a serialized headless round owner for common multiplayer movement, shifts, NOS, next-tick authenticated-intent admission, control freshness and lag abandonment. `configuration` captures canonical JSON settings with semantic/resource validation and private value-owned state. `track` shares xorshift32 and lane/type selection with TypeScript, supports Long Drive anchors and chronological multiplayer placement, and retains stable identities through extension/retirement.

@@ -4,8 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
-	"github.com/shivang991/DashDevil2D/apps/server/accounts"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -18,7 +16,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 func profileBody(username string, avatar any) string {
@@ -143,7 +143,7 @@ func TestProfilePasswordKeepsCurrentSessionAndRevokesOtherAccess(t *testing.T) {
 
 func TestProfileActiveRaceIdentitySurvivesRenameAndRemoval(t *testing.T) {
 	var originalAvatar string
-	f := activeLifecycle(t, `{"operational":{"simulationLagThreshold":10}}`, func(s *transport.Server, c *http.Client) {
+	f := activeLifecycle(t, `{"operational":{"simulationLagThreshold":10}}`, func(s *appserver.Server, c *http.Client) {
 		status, value, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Fixture_Driver", avatarPNG(t)), origin)
 		if status != 200 {
 			t.Fatalf("initial avatar: %d %v", status, value)
@@ -194,7 +194,7 @@ func TestProfileSurvivesRestartWithPasswordAndAvatar(t *testing.T) {
 	if err := store.Bootstrap("Original_Name", "original password"); err != nil {
 		t.Fatal(err)
 	}
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Original_Name", "original password")
 	status, value, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Durable_Name", avatarPNG(t)), origin)
@@ -213,7 +213,7 @@ func TestProfileSurvivesRestartWithPasswordAndAvatar(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { store.Close() })
-	s, reopened, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, reopened, _ := configuredServer(t, appserver.Config{Accounts: store})
 	reopened.Jar = c.Jar
 	status, value, _ = accountRequest(t, s, reopened, "GET", "", "", origin)
 	if status != 200 || value["username"] != "Durable_Name" || value["avatar"] != avatar {
@@ -323,7 +323,7 @@ func TestProfileAcceptsDecodedImagesAtUploadLimitAndStripsPayloads(t *testing.T)
 
 func TestProfileResultRetainsAvatarAfterParticipantLeaves(t *testing.T) {
 	var startingAvatar string
-	f := activeLifecycle(t, `{"gameplay":{"finishDistance":440,"tickRate":1,"initialClearDistance":0,"reservedHearts":0,"obstacleWeight":0,"emptyWeight":1},"operational":{"simulationLagThreshold":10}}`, func(s *transport.Server, c *http.Client) {
+	f := activeLifecycle(t, `{"gameplay":{"finishDistance":440,"tickRate":1,"initialClearDistance":0,"reservedHearts":0,"obstacleWeight":0,"emptyWeight":1},"operational":{"simulationLagThreshold":10}}`, func(s *appserver.Server, c *http.Client) {
 		status, value, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Fixture_Driver", avatarPNG(t)), origin)
 		if status != 200 {
 			t.Fatalf("initial avatar: %d %v", status, value)
@@ -357,7 +357,7 @@ func TestProfileResultRetainsAvatarAfterParticipantLeaves(t *testing.T) {
 	waitAvatarDeleted(t, f.server, f.client, startingAvatar)
 }
 
-func waitAvatarDeleted(t *testing.T, s *transport.Server, c *http.Client, id string) {
+func waitAvatarDeleted(t *testing.T, s *appserver.Server, c *http.Client, id string) {
 	t.Helper()
 	deadline := time.Now().Add(time.Second)
 	for {

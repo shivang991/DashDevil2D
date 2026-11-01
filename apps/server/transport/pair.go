@@ -2,19 +2,18 @@ package transport
 
 import (
 	"errors"
-	"fmt"
+	"sync"
+	"time"
 
 	"github.com/gofiber/contrib/websocket"
 	wt "github.com/quic-go/webtransport-go"
-	"github.com/shivang991/DashDevil2D/apps/server/configuration"
+	"github.com/shivang991/DashDevil2D/apps/server/multiplayer"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"sync"
-	"time"
 )
 
 type pair struct {
 	server             *Server
-	seat               *seat
+	handle             multiplayer.Handle
 	identity           p.Identity
 	mu                 sync.Mutex
 	roomSocket         *websocket.Conn
@@ -32,13 +31,16 @@ type pair struct {
 	closed             bool
 	once               sync.Once
 	done               chan struct{}
-	rounds             chan struct{}
+	rounds             <-chan struct{}
 }
 
-func newPair(s *Server, seat *seat) *pair {
-	return &pair{server: s, seat: seat, limits: seat.room.settings.Context(1).Connection, identity: p.Identity{RoomId: seat.room.id, SeatSession: seat.session, PairGeneration: seat.generation, Seat: seat.index}, done: make(chan struct{}), roomQueue: make(chan queued, 512), rounds: make(chan struct{}, 1), capacity: make(chan struct{})}
+func (s *Server) NewConnection(h multiplayer.Handle, id p.Identity, limits p.Connection) multiplayer.Delivery {
+	c := &pair{server: s, handle: h, identity: id, limits: limits, done: make(chan struct{}), roomQueue: make(chan queued, 512), rounds: h.Rounds(), capacity: make(chan struct{})}
+	s.mu.Lock()
+	s.pairs[h] = c
+	s.mu.Unlock()
+	return c
 }
-
 func (pair *pair) connectionLimits() p.Connection {
 	pair.mu.Lock()
 	defer pair.mu.Unlock()
@@ -52,26 +54,16 @@ func (pair *pair) close(reason string) {
 		close(pair.done)
 		pair.mu.Unlock()
 		s := pair.server
+		pair.handle.Disconnected()
 		s.mu.Lock()
-		if pair.seat.pair == pair && pair.seat.room.seats[pair.seat.index] == pair.seat {
-			s.resolveDeparturesLocked(pair.seat.room, s.nowTime())
-			if pair.seat.deadline.IsZero() {
-				pair.seat.deadline = s.nowTime().Add(roomDuration(pair.seat.room, "reconnectGrace"))
+		delete(s.pairs, pair.handle)
+		for key, t := range s.tickets {
+			if t.handle == pair.handle {
+				delete(s.tickets, key)
 			}
-			s.cancelCountdownLocked(pair.seat.room)
-			if pair.seat.room.phase == p.RoomPhaseActive && pair.seat.room.engine != nil && pair.seat.leaving.IsZero() {
-				pair.seat.room.engine.Disconnect(pair.identity)
-				pair.seat.room.primed[pair.identity.Seat] = false
-			}
-			pair.seat.connected = false
-			for _, other := range pair.seat.room.seats {
-				if other != nil {
-					other.ready = false
-				}
-			}
-			pair.seat.room.revision++
 		}
 		s.mu.Unlock()
+
 		if ws != nil {
 			_ = ws.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(4001, reason), time.Now().Add(500*time.Millisecond))
 			ws.Close()
@@ -80,7 +72,7 @@ func (pair *pair) close(reason string) {
 			game.CloseWithError(1, reason)
 		}
 		s.config.Logger.Info("pair_closed", "room", pair.identity.RoomId, "seat", pair.identity.Seat, "generation", pair.identity.PairGeneration, "reason", reason)
-		s.broadcast(pair.seat.room)
+
 	})
 }
 
@@ -112,62 +104,15 @@ func (pair *pair) enqueueRoom(value any) error {
 		return errors.New("room queue overflow")
 	}
 }
-func (s *Server) broadcast(r *room) {
-	s.mu.Lock()
-	// A claimed start becomes observable only after its durable barrier.
-	// In particular, clients must not treat a pending database write as Active.
-	if r.historyStarting {
-		s.mu.Unlock()
-		return
-	}
-	var messages []struct {
-		pair  *pair
-		state p.RoomState
-	}
-	for _, participant := range r.seats {
-		if participant == nil || participant.pair == nil {
-			continue
-		}
-		state := p.RoomState{Racers: r.racers, Identity: participant.pair.identity, Revision: r.revision, Mode: r.mode, Phase: r.phase, StartUs: r.startUs, Host: r.host, RoundId: r.roundID, IdleExpiryUs: uint64(max(r.idle.Sub(s.start).Microseconds(), 0))}
-		warningUs := uint64(roomDuration(r, "idleWarning").Microseconds())
-		if state.IdleExpiryUs >= warningUs {
-			state.IdleWarningUs = state.IdleExpiryUs - warningUs
-		}
-		for i, seat := range r.seats {
-			if seat == nil {
-				continue
-			}
-			flags := uint8(p.SeatFlagsReserved)
-			if seat.connected {
-				flags = p.SeatFlagsConnected
-			}
-			if seat.ready {
-				flags |= p.SeatFlagsReady
-			}
-			if seat.returned {
-				flags |= p.SeatFlagsReturned
-			}
-			reservation := uint64(0)
-			if !seat.deadline.IsZero() {
-				reservation = uint64(max(seat.deadline.Sub(s.start).Microseconds(), 0))
-			}
-			state.Seats[i] = p.Seat{Session: seat.session, Name: seat.name, Avatar: seat.avatar, Flags: flags, ReservationUs: reservation}
-		}
-		messages = append(messages, struct {
-			pair  *pair
-			state p.RoomState
-		}{participant.pair, state})
-	}
-	s.mu.Unlock()
-	for _, message := range messages {
-		message.pair.mu.Lock()
-		active := message.pair.roomInitialized && !message.pair.closed
-		message.pair.mu.Unlock()
-		if !active {
-			continue
-		}
-		if err := message.pair.enqueueRoom(message.state); err != nil {
-			go message.pair.close("room queue unavailable")
+
+func (pair *pair) Close(reason string) { pair.close(reason) }
+func (pair *pair) Room(state p.RoomState) {
+	pair.mu.Lock()
+	active := pair.roomInitialized && !pair.closed
+	pair.mu.Unlock()
+	if active {
+		if err := pair.enqueueRoom(state); err != nil {
+			go pair.close("room queue unavailable")
 		}
 	}
 }
@@ -206,9 +151,7 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 			}
 		}
 	}()
-	s.mu.Lock()
-	revision := pair.seat.room.revision
-	s.mu.Unlock()
+	revision := pair.handle.Revision()
 	if err := pair.enqueueRoom(p.RoomInitialization{Version: p.ProtocolVersion, Identity: pair.identity, Revision: revision}); err != nil {
 		return
 	}
@@ -244,13 +187,11 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 			}
 			pair.roomInitialized = true
 			pair.mu.Unlock()
-			s.broadcast(pair.seat.room)
+			pair.handle.Broadcast()
 			pair.connectIfReady()
 		case p.RoomCommand:
-			err = pair.roomCommand(value)
-			s.mu.Lock()
-			revision := pair.seat.room.revision
-			s.mu.Unlock()
+			err = pair.handle.Command(value)
+			revision := pair.handle.Revision()
 			reply := p.RoomReply{Identity: pair.identity, Sequence: value.Sequence, Revision: revision, Accepted: p.WireBooleanTrue}
 			if err != nil {
 				reply.Accepted = p.WireBooleanFalse
@@ -265,220 +206,14 @@ func (s *Server) roomSocket(ws *websocket.Conn) {
 	}
 }
 func (pair *pair) connectIfReady() {
-	s := pair.server
-	s.mu.Lock()
 	pair.mu.Lock()
 	ready := pair.roomInitialized && pair.initialized && !pair.closed
 	pair.mu.Unlock()
-	if !ready {
-		s.mu.Unlock()
-		return
+	if ready {
+		if err := pair.handle.Connected(); err != nil {
+			pair.close(err.Error())
+		}
 	}
-	participant := pair.seat
-	if !participant.accountLive(s.nowTime()) {
-		s.mu.Unlock()
-		pair.close("Session expired or revoked")
-		return
-	}
-	if participant.pair != pair || participant.room.seats[participant.index] != participant || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !s.nowTime().Before(participant.deadline)) {
-		s.mu.Unlock()
-		pair.close("recovery deadline")
-		return
-	}
-	s.resolveDeparturesLocked(participant.room, s.nowTime())
-	participant.connected = true
-	participant.deadline = time.Time{}
-	participant.room.revision++
-	s.mu.Unlock()
-	s.broadcast(participant.room)
-}
-func (pair *pair) roomCommand(command p.RoomCommand) error {
-	s := pair.server
-	s.mu.Lock()
-	participant := pair.seat
-	r := participant.room
-	if participant.pair != pair || r.seats[participant.index] != participant || command.Identity != pair.identity || command.Sequence <= pair.roomSequence || !participant.leaving.IsZero() || !participant.accountLive(s.nowTime()) {
-		s.mu.Unlock()
-		return fmt.Errorf("stale room command")
-	}
-	pair.roomSequence = command.Sequence
-	// Resolve the exact maintenance cutoff before any command can make a
-	// terminal result immutable between periodic sweeps.
-	if s.draining && !s.nowTime().Before(s.drainDeadline) {
-		changed := s.advanceRacesLocked()
-		defer func() {
-			for _, room := range changed {
-				s.broadcast(room)
-			}
-		}()
-	}
-	if command.Command == p.RoomCommandCodeLeave {
-		now := s.nowTime()
-		s.resolveDeparturesLocked(r, now)
-		if r.phase == p.RoomPhaseActive {
-			// Revoke input ownership immediately, but retain engine controls until
-			// StopAt integrates gameplay through this departure instant.
-			participant.leaving = now
-			participant.connected = false
-			s.resolveDeparturesLocked(r, now)
-			if r.seats[0] != nil && r.seats[1] != nil && !r.seats[0].leaving.IsZero() && !r.seats[1].leaving.IsZero() {
-				s.resolveDeparturesLocked(r, now.Add(time.Microsecond))
-			}
-		}
-		if r.phase != p.RoomPhaseActive {
-			s.removeSeatLocked(r, participant.index)
-			for i, other := range r.seats {
-				if other != nil && !other.leaving.IsZero() {
-					s.removeSeatLocked(r, p.SeatIndex(i))
-				}
-			}
-			if r.host == participant.index {
-				r.host = 1 - r.host
-			}
-			if r.seats[0] == nil && r.seats[1] == nil {
-				delete(s.rooms, r.code)
-			}
-		}
-		r.revision++
-		s.mu.Unlock()
-		go pair.close("explicit leave")
-		s.broadcast(r)
-		return nil
-	}
-	// Focus-loss and unready are safety actions: apply even against an older revision.
-	safety := command.Command == p.RoomCommandCodeFocus || command.Command == p.RoomCommandCodeReady && command.Ready == p.WireBooleanFalse
-	if !participant.connected || (!participant.deadline.IsZero() && !s.nowTime().Before(participant.deadline)) || ((r.phase == p.RoomPhaseLobby || r.phase == p.RoomPhaseEnded) && !s.nowTime().Before(r.idle)) || (!safety && command.Revision != r.revision) {
-		s.mu.Unlock()
-		return fmt.Errorf("Room changed; try again")
-	}
-	resetIdle := false
-	switch command.Command {
-	case p.RoomCommandCodeSelectMode:
-		if r.phase != p.RoomPhaseLobby || participant.index != r.host || (command.Mode != p.ModeDragRace && command.Mode != p.ModeRoadRage) {
-			s.mu.Unlock()
-			return fmt.Errorf("Only host may select a mode in the lobby")
-		}
-		if r.mode != command.Mode {
-			resetIdle = true
-			mode := "drag-race"
-			if command.Mode == p.ModeRoadRage {
-				mode = "road-rage"
-			}
-			definition := []byte(p.DefaultConfigurationJSON)
-			config, e := configuration.Capture(definition, mode, s.roundOverrides(command.Mode))
-			if e != nil {
-				s.mu.Unlock()
-				return e
-			}
-			r.settings = config
-			r.mode = command.Mode
-			for _, other := range r.seats {
-				if other != nil {
-					other.ready = false
-				}
-			}
-		}
-	case p.RoomCommandCodeReady:
-		if r.phase != p.RoomPhaseLobby || command.Ready == p.WireBooleanTrue && !participant.focused {
-			s.mu.Unlock()
-			return fmt.Errorf("Ready requires a focused, visible lobby")
-		}
-		resetIdle = participant.ready != (command.Ready == p.WireBooleanTrue)
-		participant.ready = command.Ready == p.WireBooleanTrue
-	case p.RoomCommandCodeStart:
-		if s.draining {
-			s.mu.Unlock()
-			return fmt.Errorf("%s", maintenanceMessage)
-		}
-		if r.historyFinishing || s.historyFailed {
-			s.mu.Unlock()
-			return fmt.Errorf("Previous result is still being saved; try again")
-		}
-		if r.phase != p.RoomPhaseLobby || participant.index != r.host {
-			s.mu.Unlock()
-			return fmt.Errorf("Only host may start from the lobby")
-		}
-		for _, other := range r.seats {
-			if other == nil || !other.connected || !other.ready || !other.focused {
-				s.mu.Unlock()
-				return fmt.Errorf("Two connected, focused, ready players required")
-			}
-		}
-		if r.roundID == p.CounterMax || r.seats[0].inputGeneration == p.CounterMax || r.seats[1].inputGeneration == p.CounterMax {
-			s.mu.Unlock()
-			return fmt.Errorf("Round counter exhausted")
-		}
-		seed, err := newTrackSeed()
-		if err != nil {
-			s.mu.Unlock()
-			return err
-		}
-		r.seed = seed
-		for _, seat := range r.seats {
-			seat.inputGeneration++
-			seat.returned = false
-		}
-		resetIdle = true
-		s.refreshRoomIdentityLocked(r)
-		for i, seat := range r.seats {
-			r.racers[i] = p.RacerIdentity{Name: seat.name, Avatar: seat.avatar}
-		}
-		s.cleanupAvatarsLocked()
-		r.roundID++
-		r.phase = p.RoomPhaseCountdown
-		r.startUs = s.nowUs() + uint64(r.settings.Value("gameplay", "countdownDuration")*1e6)
-		if e := s.prepareRoundLocked(r); e != nil {
-			s.cancelCountdownLocked(r)
-			s.mu.Unlock()
-			return e
-		}
-		for _, other := range r.seats {
-			other.installedRound = 0
-			select {
-			case other.pair.rounds <- struct{}{}:
-			default:
-			}
-		}
-	case p.RoomCommandCodeReturnToLobby:
-		if r.phase != p.RoomPhaseEnded {
-			s.mu.Unlock()
-			return fmt.Errorf("Return to Lobby requires a finalized round")
-		}
-		participant.returned = true
-		if r.seats[1-participant.index] == nil || r.seats[1-participant.index].returned {
-			// Keep the outcome for reserved seats recovering in the lobby.
-			r.phase = p.RoomPhaseLobby
-			s.refreshRoomIdentityLocked(r)
-			s.cleanupAvatarsLocked()
-			for _, other := range r.seats {
-				if other != nil {
-					other.ready = false
-				}
-			}
-		}
-	case p.RoomCommandCodeFocus:
-		participant.focused = command.Ready == p.WireBooleanTrue
-		if !participant.focused {
-			participant.ready = false
-			if r.phase == p.RoomPhaseActive && r.engine != nil {
-				r.engine.Disconnect(pair.identity)
-				r.primed[participant.index] = false
-			}
-			if command.Mode == p.Mode(p.WireBooleanFalse) {
-				s.cancelCountdownLocked(r)
-			}
-		}
-	default:
-		s.mu.Unlock()
-		return fmt.Errorf("Unknown room command")
-	}
-	r.revision++
-	if resetIdle {
-		r.idle = s.nowTime().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
-	}
-	s.mu.Unlock()
-	s.broadcast(r)
-	return nil
 }
 
 // Budget is shared across room, control and authority queues, including writes

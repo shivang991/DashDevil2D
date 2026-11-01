@@ -1,10 +1,11 @@
-package transport
+package multiplayer
 
 import (
 	"errors"
+	"time"
+
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"github.com/shivang991/DashDevil2D/apps/server/simulation"
-	"time"
 )
 
 // Called only under the room owner mutex. Countdown never calls AdvanceTo.
@@ -13,7 +14,7 @@ func (s *Server) prepareRoundLocked(r *room) error {
 	for i, seat := range r.seats {
 		ids[i] = p.Identity{RoomId: r.id, SeatSession: 1, PairGeneration: 1, Seat: p.SeatIndex(i)}
 		if seat != nil {
-			ids[i] = seat.pair.identity
+			ids[i] = seat.connection.identity
 		}
 	}
 	engine, err := simulation.New(r.settings, r.seed, ids, r.roundID)
@@ -22,7 +23,7 @@ func (s *Server) prepareRoundLocked(r *room) error {
 	}
 	for i, seat := range r.seats {
 		if seat != nil {
-			engine.ResetSeat(ids[i], seat.inputGeneration, 0, seat.pair.connectionLimits())
+			engine.ResetSeat(ids[i], seat.inputGeneration, 0, seat.connection.connectionLimits())
 		}
 	}
 	r.engine = engine
@@ -87,36 +88,36 @@ func (s *Server) advanceCountdownsLocked() []*room {
 	}
 	return changed
 }
-func (pair *pair) roomBaseline() (p.Baseline, error) {
-	s := pair.server
+func (connection *connection) roomBaseline() (p.Baseline, error) {
+	s := connection.server
 	deadline := time.NewTimer(time.Second)
 	defer deadline.Stop()
 	waiting := false
 	for {
 		s.mu.Lock()
-		r := pair.seat.room
+		r := connection.seat.room
 		if r.engine == nil || !r.engine.PendingGroup() {
 			defer s.mu.Unlock()
-			return pair.roomBaselineLocked()
+			return connection.roomBaselineLocked()
 		}
 		if !waiting {
-			s.config.Logger.Info("baseline_waiting_group", "room", r.id, "seat", pair.identity.Seat)
+			s.config.Logger.Info("baseline_waiting_group", "room", r.id, "seat", connection.identity.Seat)
 			waiting = true
 		}
 		s.mu.Unlock()
 		select {
-		case <-pair.done:
-			return p.Baseline{}, errors.New("pair closed while waiting for committed baseline")
+		case <-connection.done:
+			return p.Baseline{}, errors.New("connection closed while waiting for committed baseline")
 		case <-deadline.C:
 			return p.Baseline{}, errors.New("committed baseline capture timed out")
 		case <-time.After(time.Millisecond):
 		}
 	}
 }
-func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
-	s := pair.server
-	r := pair.seat.room
-	if pair.seat.pair != pair || r.seats[pair.identity.Seat] != pair.seat || !pair.seat.leaving.IsZero() || !pair.seat.accountLive(s.nowTime()) {
+func (connection *connection) roomBaselineLocked() (p.Baseline, error) {
+	s := connection.server
+	r := connection.seat.room
+	if connection.seat.connection != connection || r.seats[connection.identity.Seat] != connection.seat || !connection.seat.leaving.IsZero() || !connection.seat.accountLive(s.nowTime()) {
 		return p.Baseline{}, errors.New("superseded room seat")
 	}
 	if r.zero == nil || r.zero.Context.Mode != r.mode {
@@ -125,7 +126,7 @@ func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 		}
 	}
 	b := cloneBaseline(*r.zero)
-	b.Context.Connection = pair.connectionLimits()
+	b.Context.Connection = connection.connectionLimits()
 	if r.engine != nil {
 		state, err := r.engine.Coverage()
 		if err != nil {
@@ -133,13 +134,13 @@ func (pair *pair) roomBaselineLocked() (p.Baseline, error) {
 		}
 		b.Generator, b.Windows = raceCoverage(b, state)
 	}
-	b.Identity = pair.identity
+	b.Identity = connection.identity
 	for i, seat := range r.seats {
 		if seat != nil {
 			b.Cars[i].InputGeneration = seat.inputGeneration
 		}
 	}
-	b.Round.InputGeneration = b.Cars[pair.identity.Seat].InputGeneration
+	b.Round.InputGeneration = b.Cars[connection.identity.Seat].InputGeneration
 	return b, p.ValidateBaseline(b, b.Context)
 }
 
@@ -207,11 +208,6 @@ func (s *Server) removeSeatLocked(r *room, index p.SeatIndex) {
 		return
 	}
 	delete(s.credentials, token(participant.credential))
-	for key, t := range s.tickets {
-		if t.seat == participant {
-			delete(s.tickets, key)
-		}
-	}
 	r.seats[index] = nil
 	r.invitationEpoch++
 	s.cleanupAvatarsLocked()

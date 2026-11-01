@@ -1,3 +1,9 @@
+The process composition root is now [`server`](../server/server.go); multiplayer
+ownership lives in [`multiplayer`](../multiplayer/service.go), and account/admin/chat
+HTTP translation in [`accounthttp`](../accounthttp/routes.go). This directory retains
+network mechanics and the existing real-transport regression suite. See
+[module ownership and synchronization](../README.md) before changing a boundary.
+
 # Current deployment and retained transport history
 
 For the current playable Drag Race deployment, use [infra/README.md](../../../infra/README.md) and `infra/up.sh`. Product rooms are the default. Protocol 4 carries profile avatars and immutable round identities, plus the per-round result delay, and rejects stale protocol-1/2/3 tabs. `--admin-address 127.0.0.1:8082` enables a private loopback-only readiness/drain listener; SIGTERM drains with `--drain-timeout 3m` before shutdown. `--check-ready`, `--request-drain` and `--check-public --origin https://YOUR_HOST` are operator commands. No operator route is mounted on the public listeners. `pnpm test:maintenance` covers continued play, exact deadline abandonment and result finality over real browser transports. The Stage 4 descriptions below are historical, not current deployment instructions.

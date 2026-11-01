@@ -1,18 +1,19 @@
-package transport
+package accounthttp
 
 import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
-	"github.com/gofiber/fiber/v2"
-	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	"strconv"
+
+	fiber "github.com/gofiber/fiber/v2"
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 )
 
 func (s *Server) adminRoutes() {
 	s.app.Use("/api/account/admin", func(c *fiber.Ctx) error {
-		s.authMu.Lock()
-		defer s.authMu.Unlock()
+		s.config.Auth.Lock()
+		defer s.config.Auth.Unlock()
 		session, err := s.account(c)
 		if err != nil {
 			return accountError(c, 401, "Please log in again")
@@ -83,7 +84,8 @@ func (s *Server) adminRoutes() {
 			}
 			return accountError(c, status, err.Error())
 		}
-		s.publishProfile(user)
+		s.multiplayer.PublishProfile(user)
+		s.config.CleanupAvatars()
 		return c.JSON(user)
 	})
 	s.app.Post("/api/account/admin/users/:id/reset", func(c *fiber.Ctx) error {
@@ -104,7 +106,7 @@ func (s *Server) adminRoutes() {
 		if err != nil {
 			return accountError(c, 503, "Unable to reset password")
 		}
-		s.revokeManagedSeats(id, false)
+		s.multiplayer.RevokeManagedSeats(id, false)
 		return c.JSON(fiber.Map{"temporaryPassword": password})
 	})
 	s.app.Post("/api/account/admin/users/:id/delete", func(c *fiber.Ctx) error {
@@ -128,29 +130,8 @@ func (s *Server) adminRoutes() {
 		if err = s.config.Accounts.DeleteManaged(id); err != nil {
 			return accountError(c, 503, "Unable to delete user")
 		}
-		s.revokeManagedSeats(id, true)
-		s.cleanupAvatars()
+		s.multiplayer.RevokeManagedSeats(id, true)
+		s.config.CleanupAvatars()
 		return c.JSON(fiber.Map{"ok": true})
 	})
-}
-
-// Caller holds authMu, ordering durable mutations with admission and ticket use.
-func (s *Server) revokeManagedSeats(id int64, deleted bool) {
-	s.mu.Lock()
-	if deleted {
-		// Scrub queued starts and revoke seats in the same ownership turn:
-		// countdown activation cannot enqueue deleted identity between them.
-		for i := range s.historyWrites {
-			for seat, accountID := range s.historyWrites[i].accounts {
-				if accountID == id {
-					s.historyWrites[i].accounts[seat] = 0
-				}
-			}
-		}
-	}
-	changed := s.revokeSeatsLocked(func(seat *seat) bool { return seat.accountID == id }, s.nowTime())
-	s.mu.Unlock()
-	for _, r := range changed {
-		s.broadcast(r)
-	}
 }

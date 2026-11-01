@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"github.com/quic-go/quic-go/http3"
+	"github.com/shivang991/DashDevil2D/apps/server/multiplayer"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 )
 
 func operatorURL(address, path string) (string, error) {
@@ -75,7 +75,7 @@ func Drain(ctx context.Context, address string) error {
 			if err != nil {
 				return err
 			}
-			var status transport.MaintenanceStatus
+			var status multiplayer.MaintenanceStatus
 			err = json.NewDecoder(io.LimitReader(response.Body, 4096)).Decode(&status)
 			response.Body.Close()
 			if err != nil {

@@ -1,4 +1,4 @@
-package transport
+package multiplayer
 
 import (
 	"testing"
@@ -7,16 +7,16 @@ import (
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
-func finalizedRoomForReturn() (*Server, *room, [2]*pair) {
+func finalizedRoomForReturn() (*Server, *room, [2]*connection) {
 	now := time.Now()
 	s := &Server{config: Config{Now: func() time.Time { return now }}, start: now}
 	r := &room{phase: 3, revision: 1, roundID: 1, idle: now.Add(time.Minute)}
-	var pairs [2]*pair
+	var pairs [2]*connection
 	for i := range pairs {
 		participant := &seat{room: r, index: p.SeatIndex(i), connected: true}
 		identity := p.Identity{RoomId: 1, SeatSession: uint32(i + 1), PairGeneration: 1, Seat: p.SeatIndex(i)}
-		pairs[i] = &pair{server: s, seat: participant, identity: identity}
-		participant.pair = pairs[i]
+		pairs[i] = &connection{server: s, seat: participant, identity: identity}
+		participant.connection = pairs[i]
 		r.seats[i] = participant
 	}
 	return s, r, pairs

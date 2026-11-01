@@ -120,9 +120,13 @@ function retainEvidence(code) {
       "apps/client/tests/browser/road-rage.spec.ts",
       "infra/lifecycle-boundaries.json",
       "apps/client/tests/browser/boundaries.spec.ts",
-      "apps/server/transport/rooms.go",
-      "apps/server/transport/pair.go",
-      "apps/server/transport/server.go",
+      ...["multiplayer", "accounthttp", "server", "transport"].flatMap((directory) =>
+        fs
+          .readdirSync(path.join(serverDirectory, directory))
+          .sort()
+          .filter((name) => name.endsWith(".go") && !name.endsWith("_test.go"))
+          .map((name) => `apps/server/${directory}/${name}`),
+      ),
       "apps/client/tests/browser/groups.spec.ts",
       "infra/finality-track.json",
       "apps/client/tests/browser/finality.spec.ts",

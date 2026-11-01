@@ -3,9 +3,10 @@ package transport
 import (
 	"context"
 	"errors"
+	"time"
+
 	wt "github.com/quic-go/webtransport-go"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"time"
 )
 
 // The room owns simulation; each pair delivers its ordered authority independently.
@@ -31,7 +32,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 	if err = cw.send(p.Handshake{Version: p.ProtocolVersion, Identity: pair.identity, DatagramBytes: p.VerificationDatagramBytes}); err != nil {
 		return err
 	}
-	baseline, err := pair.roomBaseline()
+	baseline, err := pair.handle.Baseline()
 	if err != nil {
 		return err
 	}
@@ -98,7 +99,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 		case <-session.Context().Done():
 			return session.Context().Err()
 		case <-pair.rounds:
-			baseline, err = pair.roomBaseline()
+			baseline, err = pair.handle.Baseline()
 			if err != nil {
 				return err
 			}
@@ -149,7 +150,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				}
 				inputSequence = value.Sequence
 				// Countdown/lobby keys never mutate the round-zero state.
-				if err = pair.submitRace(value); err != nil {
+				if err = pair.handle.Input(value); err != nil {
 					return err
 				}
 			case p.Ready:
@@ -169,12 +170,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				wasInitialized := pair.initialized
 				pair.initialized = true
 				pair.mu.Unlock()
-				s := pair.server
-				s.mu.Lock()
-				if pair.seat.pair == pair {
-					pair.seat.installedRound = baseline.Round.RoundId
-				}
-				s.mu.Unlock()
+				pair.handle.Installed(baseline.Round.RoundId)
 				if !wasInitialized {
 					pair.connectIfReady()
 				}
@@ -210,7 +206,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 					return errors.New("invalid recovery")
 				}
 				lastRecovery = time.Now()
-				baseline, err = pair.roomBaseline()
+				baseline, err = pair.handle.Baseline()
 				if err != nil {
 					return err
 				}
@@ -240,40 +236,12 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				return errors.New("unexpected room gameplay message")
 			}
 		case now := <-timer.C:
-			s := pair.server
-			s.mu.Lock()
-			r := pair.seat.room
-			var outcome *p.Outcome
-			if r.outcome != nil && r.outcomeSessions[pair.identity.Seat] == pair.identity.SeatSession {
-				copy := *r.outcome
-				copy.Identity = pair.identity
-				outcome = &copy
+			view, readErr := pair.handle.Authority(cursor, installed, baseline)
+			if readErr != nil {
+				return readErr
 			}
-			active := r.phase == p.RoomPhaseActive
-			var records []raceRecord
-			current := baseline
-			if r.zero != nil {
-				current = cloneBaseline(*r.zero)
-				current.Context.Connection = baseline.Context.Connection
-			}
-			if active && installed {
-				if len(r.history) > 0 && cursor+1 < r.history[0].authority {
-					s.mu.Unlock()
-					return errors.New("authority history unavailable")
-				}
-				for _, item := range r.history {
-					if item.authority > cursor {
-						records = append(records, item)
-					}
-				}
-				state, coverageErr := r.engine.Coverage()
-				if coverageErr != nil {
-					s.mu.Unlock()
-					return coverageErr
-				}
-				current.Generator, current.Windows = raceCoverage(current, state)
-			}
-			s.mu.Unlock()
+			outcome, active, records, current := view.Outcome, view.Active, view.Records, view.Baseline
+
 			if outcome != nil && !outcomeSent {
 				if err = cw.send(*outcome); err != nil {
 					return err
@@ -293,7 +261,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				return errors.New("room application progress timed out")
 			}
 			for _, item := range records {
-				switch value := item.value.(type) {
+				switch value := item.Value.(type) {
 				case p.Disposition:
 					value.Identity = pair.identity
 					value.Round = baseline.Round
@@ -306,7 +274,7 @@ func (pair *pair) runRoomGameplay(session *wt.Session) error {
 				if err != nil {
 					return err
 				}
-				cursor = item.authority
+				cursor = item.Authority
 			}
 			if len(outstanding) > 0 && now.Sub(outstanding[0].at) >= time.Duration(baseline.Context.Connection.EssentialProgressDeadline*float64(time.Second)) {
 				return errors.New("authority application progress timed out")

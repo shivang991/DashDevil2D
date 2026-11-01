@@ -3,9 +3,6 @@ package transport_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/shivang991/DashDevil2D/apps/server/accounts"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"io"
 	"net/http"
 	"net/http/cookiejar"
@@ -13,6 +10,10 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 func TestChallengeDeliveredOfflineAndRequiresExplicitAcceptance(t *testing.T) {
@@ -66,7 +67,7 @@ func TestChallengeDeliveredOfflineAndRequiresExplicitAcceptance(t *testing.T) {
 
 }
 
-func acceptChallenge(t *testing.T, s *transport.Server, c *http.Client, id int64) (int, any) {
+func acceptChallenge(t *testing.T, s *appserver.Server, c *http.Client, id int64) (int, any) {
 	t.Helper()
 	wire, err := p.EncodeMessage(p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationJoin}, 65536)
 	if err != nil {
@@ -105,7 +106,7 @@ func TestChallengeAdmissionEligibility(t *testing.T) {
 			if err = store.Bootstrap("Challenge_Admin", "original password"); err != nil {
 				t.Fatal(err)
 			}
-			s, host, roots := configuredServer(t, transport.Config{Accounts: store, Now: now})
+			s, host, roots := configuredServer(t, appserver.Config{Accounts: store, Now: now})
 			host.Jar, _ = cookiejar.New(nil)
 			loginAccount(t, s, host, "Challenge_Admin", "original password")
 			_, created, _ := accountRequest(t, s, host, "POST", "/admin/users", `{"username":"Challenge_Guest"}`, origin)

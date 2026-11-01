@@ -1,16 +1,17 @@
-package transport
+package multiplayer
 
 import (
+	"testing"
+	"time"
+
 	"github.com/shivang991/DashDevil2D/apps/server/configuration"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"github.com/shivang991/DashDevil2D/apps/server/simulation"
-	"testing"
-	"time"
 )
 
 // With no periodic sweep running, the room command must enforce the cutoff.
 func TestLeaveAfterMaintenanceCutoffCannotAwardForfeit(t *testing.T) {
-	s, err := New(Config{Origin: "https://example.com"})
+	s, err := New(Config{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,14 +27,14 @@ func TestLeaveAfterMaintenanceCutoffCannotAwardForfeit(t *testing.T) {
 	r := &room{id: 1, code: "test", mode: 1, phase: 2, roundID: 1, settings: cfg, engine: engine, zero: &p.Baseline{}}
 	for i := range r.seats {
 		participant := &seat{room: r, index: p.SeatIndex(i), session: ids[i].SeatSession, generation: 1, connected: true}
-		participant.pair = newPair(s, participant)
+		participant.connection = newConnection(s, participant)
 		r.seats[i] = participant
 	}
 	s.rooms[r.code] = r
 	s.start = time.Now().Add(-100 * time.Millisecond)
 	s.draining = true
 	s.drainDeadline = s.start.Add(50 * time.Millisecond)
-	host := r.seats[0].pair
+	host := r.seats[0].connection
 	if err := host.roomCommand(p.RoomCommand{Identity: host.identity, Sequence: 1, Command: 3}); err != nil {
 		t.Fatal(err)
 	}
@@ -43,7 +44,7 @@ func TestLeaveAfterMaintenanceCutoffCannotAwardForfeit(t *testing.T) {
 }
 
 func TestGraceExpiryCannotOvertakePendingFinish(t *testing.T) {
-	s, err := New(Config{Origin: "https://example.com"})
+	s, err := New(Config{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +68,7 @@ func TestGraceExpiryCannotOvertakePendingFinish(t *testing.T) {
 	s.start = time.Now().Add(-1200 * time.Millisecond)
 	for i := range r.seats {
 		participant := &seat{room: r, index: p.SeatIndex(i), session: ids[i].SeatSession, generation: 1, connected: i == 0}
-		participant.pair = newPair(s, participant)
+		participant.connection = newConnection(s, participant)
 		r.seats[i] = participant
 	}
 	r.seats[1].deadline = s.start.Add(1100 * time.Millisecond)
