@@ -134,7 +134,7 @@ export function ProfileDialog({
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </label>
-              <p className="text-xs text-neutral-400">12–1024 characters; spaces allowed.</p>
+              <p className="text-xs text-neutral-400">6–1024 characters; spaces allowed.</p>
               <label className="text-sm">
                 Confirm new password
                 <input
