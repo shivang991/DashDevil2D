@@ -43,6 +43,7 @@ type ChatMessage struct {
 	CreatedAt int64  `json:"createdAt"`
 }
 type ChatSnapshot struct {
+	Selected      *ChatPerson  `json:"selected"`
 	Self          int64        `json:"self"`
 	Pinned        *ChatPerson  `json:"pinned"`
 	Acquaintances []ChatPerson `json:"acquaintances"`
@@ -252,6 +253,6 @@ func (s *Store) RecordChatRound(r SharedRound) error {
 	if r.A == r.B || r.A == 0 || r.B == 0 {
 		return nil
 	}
-	_, err := s.db.Exec(`INSERT OR IGNORE INTO chat_rounds(round_key,a,b,finished) SELECT ?,a.id,b.id,? FROM chat_people a,chat_people b WHERE a.account_id=? AND b.account_id=?`, r.Key, r.Finished, r.A, r.B)
+	_, err := s.db.Exec(`INSERT OR IGNORE INTO chat_rounds(round_key,a,b,finished) SELECT ?,a.id,b.id,? FROM chat_people a,chat_people b WHERE a.id=? AND b.id=?`, r.Key, r.Finished, r.A, r.B)
 	return err
 }

@@ -58,6 +58,7 @@ func (s *Server) chatRoutes() {
 		var request struct {
 			Activity, Client string
 			RoomID           uint32
+			PeerID           int64
 		}
 		if json.Unmarshal(c.Body(), &request) != nil || len(request.Client) > 100 {
 			return accountError(c, 400, "Invalid presence")
@@ -83,6 +84,12 @@ func (s *Server) chatRoutes() {
 		result, err := s.config.Accounts.ChatLists(c.Locals("chatSelf").(int64), pinnedID, people)
 		if err != nil {
 			return accountError(c, 503, "Chat unavailable. Retry")
+		}
+		for _, person := range people {
+			if person.ID == request.PeerID {
+				result.Selected = &person
+				break
+			}
 		}
 		return c.JSON(result)
 	})
@@ -162,7 +169,7 @@ func (s *Server) recordChatRoundLocked(r *room) {
 	if s.config.Accounts == nil || r.outcome.Result == p.OutcomeResultAbandoned || r.seats[0] == nil || r.seats[1] == nil {
 		return
 	}
-	s.chatRounds = append(s.chatRounds, accounts.SharedRound{Key: fmt.Sprintf("%s:%d:%d", s.chatRun, r.id, r.roundID), A: r.seats[0].accountID, B: r.seats[1].accountID, Finished: s.config.Now().UnixMilli()})
+	s.chatRounds = append(s.chatRounds, accounts.SharedRound{Key: fmt.Sprintf("%s:%d:%d", s.chatRun, r.id, r.roundID), A: r.seats[0].accountChatID, B: r.seats[1].accountChatID, Finished: s.config.Now().UnixMilli()})
 }
 func (s *Server) flushChatRounds() {
 	s.mu.Lock()

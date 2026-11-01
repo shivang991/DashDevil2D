@@ -102,6 +102,7 @@ function ChatPanel({
   const [draft, setDraft] = useState("");
   const [error, setError] = useState("");
   const [historyError, setHistoryError] = useState("");
+  const [sendError, setSendError] = useState("");
   const [sending, setSending] = useState(false);
   const [revision, setRevision] = useState(0);
   const [focused, setFocused] = useState(() => document.hasFocus() && !document.hidden);
@@ -133,6 +134,7 @@ function ChatPanel({
           client,
           playing ? "Playing" : focused ? "Active" : "Offline",
           roomID,
+          peer?.id,
         );
         if (!disposed) {
           setSnapshot(result);
@@ -151,29 +153,38 @@ function ChatPanel({
       disposed = true;
       clearInterval(timer);
     };
-  }, [client, playing, focused, revision, roomID]);
+  }, [client, playing, focused, revision, roomID, peer?.id]);
   useEffect(() => {
     if (!query.trim()) return;
     let disposed = false;
+    let busy = false;
+    const searchAccounts = async () => {
+      if (busy) return;
+      busy = true;
+      try {
+        const result = await chatAPI.search(query);
+        if (!disposed) {
+          setSearch({ ...result, query });
+          setSearchState("");
+        }
+      } catch {
+        if (!disposed) setSearchState("Search failed. Change your search or retry.");
+      } finally {
+        busy = false;
+      }
+    };
     const timer = setTimeout(() => {
       setSearchState("Searching…");
-      void chatAPI
-        .search(query)
-        .then((result) => {
-          if (!disposed) {
-            setSearch({ ...result, query });
-            setSearchState("");
-          }
-        })
-        .catch(() => {
-          if (!disposed) setSearchState("Search failed. Change your search or retry.");
-        });
+      void searchAccounts();
     }, 300);
+    const interval = setInterval(() => void searchAccounts(), 2000);
     return () => {
       disposed = true;
       clearTimeout(timer);
+      clearInterval(interval);
     };
   }, [query, revision]);
+
   useEffect(() => {
     if (!peer) return;
     let disposed = false;
@@ -274,6 +285,7 @@ function ChatPanel({
     setQuery("");
     setDraft("");
     setHistoryError("");
+    setSendError("");
   }
   async function send() {
     if (!peer || sending || !draft.trim() || peer.deleted) return;
@@ -282,14 +294,14 @@ function ChatPanel({
     if (!pending.current || pending.current.peer !== target || pending.current.text !== text)
       pending.current = { peer: target, text, key: crypto.randomUUID() };
     setSending(true);
-    setHistoryError("");
+    setSendError("");
     try {
       await chatAPI.send(target, text, pending.current.key);
       pending.current = undefined;
       if (current.current.peer === target) setDraft("");
       setRevision((n) => n + 1);
     } catch (failure) {
-      setHistoryError(failure instanceof Error ? failure.message : "Send failed. Retry");
+      setSendError(failure instanceof Error ? failure.message : "Send failed. Retry");
     } finally {
       setSending(false);
     }
@@ -300,7 +312,10 @@ function ChatPanel({
     ...(snapshot?.suggested ?? []),
   ];
   const selected = peer
-    ? (people.find((p) => p.id === peer.id) ?? search?.users.find((p) => p.id === peer.id) ?? peer)
+    ? ((snapshot?.selected?.id === peer.id ? snapshot.selected : undefined) ??
+      people.find((p) => p.id === peer.id) ??
+      search?.users.find((p) => p.id === peer.id) ??
+      peer)
     : undefined;
   const row = (person: ChatPerson) => (
     <button
@@ -419,6 +434,14 @@ function ChatPanel({
           {historyError && (
             <div className="chat-error" role="alert">
               {historyError} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
+            </div>
+          )}
+          {sendError && (
+            <div className="chat-error" role="alert">
+              {sendError}{" "}
+              <button disabled={sending} onClick={() => void send()}>
+                Retry send
+              </button>
             </div>
           )}
           {selected.deleted ? (

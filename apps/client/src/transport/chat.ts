@@ -18,6 +18,7 @@ export interface ChatMessage {
   createdAt: number;
 }
 export interface ChatSnapshot {
+  selected: ChatPerson | null;
   self: number;
   pinned: ChatPerson | null;
   acquaintances: ChatPerson[];
@@ -44,8 +45,8 @@ async function request<T>(path: string, body?: object): Promise<T> {
   return result as T;
 }
 export const chatAPI = {
-  sync: (client: string, activity: string, roomID?: number) =>
-    request<ChatSnapshot>("/sync", { client, activity, roomID }),
+  sync: (client: string, activity: string, roomID?: number, peerID?: number) =>
+    request<ChatSnapshot>("/sync", { client, activity, roomID, peerID }),
   search: (query: string) =>
     request<{ users: ChatPerson[]; total: number }>(`/search?q=${encodeURIComponent(query)}`),
   thread: (peer: number, after = 0) =>

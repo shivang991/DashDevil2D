@@ -100,6 +100,7 @@ type room struct {
 type seat struct {
 	accountSession   string
 	accountID        int64
+	accountChatID    int64
 	accountExpires   time.Time
 	room             *room
 	index            p.SeatIndex
@@ -345,6 +346,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 	}
 	var account accounts.Session
+	var accountChatID int64
 	if !s.config.Diagnostic {
 		s.authMu.Lock()
 		defer s.authMu.Unlock()
@@ -354,6 +356,10 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		}
 		if account.MustChangePassword {
 			return s.failure(c, 403, 2, "Change your temporary password before multiplayer")
+		}
+		accountChatID, err = s.config.Accounts.ChatID(account.User.ID)
+		if err != nil {
+			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 		}
 		request.Name = account.Username
 	}
@@ -475,6 +481,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		s.nextID++
 		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(roomDuration(r, "reconnectGrace"))}
 		participant.accountSession, participant.accountID, participant.accountExpires = account.ID, account.User.ID, account.Expires
+		participant.accountChatID = accountChatID
 		participant.avatar = account.Avatar
 		participant.savedName, participant.savedAvatar = request.Name, account.Avatar
 		if r.phase == p.RoomPhaseEnded {

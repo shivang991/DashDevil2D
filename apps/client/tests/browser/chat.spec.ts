@@ -35,6 +35,25 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await page.getByLabel("Search accounts").fill("chat_oppo");
     await page.getByRole("button", { name: /Open conversation with Chat_Opponent/ }).click();
     await expect(page.getByText("No messages yet.")).toBeVisible();
+    // Empty conversations still refresh identity; no exchanged message is required.
+    for (const username of ["Chat_Renamed", "Chat_Opponent"]) {
+      await page.evaluate(
+        async ({ id, username }) => {
+          const { server } = await (await fetch("/__transport-config")).json();
+          await fetch(`${server}/api/account/admin/users/${id}/profile`, {
+            method: "POST",
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username }),
+          });
+        },
+        { id: created.user.id, username },
+      );
+      await expect(
+        page.getByRole("complementary", { name: "Chat" }).getByText(username, { exact: true }),
+      ).toBeVisible();
+    }
+
     await expect(peer.getByRole("button", { name: /Open chat/ })).not.toContainText("1");
     await page.getByLabel("Message", { exact: true }).fill("Hello from the menu");
     await page.getByLabel("Message", { exact: true }).press("Enter");
@@ -112,6 +131,34 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await panel.getByLabel("Message", { exact: true }).fill("Chat works on results");
     await panel.getByLabel("Message", { exact: true }).press("Enter");
     await expect(panel.getByText("Chat works on results", { exact: true })).toBeVisible();
+
+    await page.evaluate(async () => {
+      const { server } = await (await fetch("/__transport-config")).json();
+      const options = {
+        method: "POST",
+        credentials: "include" as const,
+        headers: { "Content-Type": "application/json" },
+      };
+      const state = await (
+        await fetch(`${server}/api/account/chat/sync`, {
+          ...options,
+          body: JSON.stringify({ activity: "Active", client: "rate-test" }),
+        })
+      ).json();
+      for (let i = 0; i < 28; i++)
+        await fetch(`${server}/api/account/chat/thread/${state.acquaintances[0].id}`, {
+          ...options,
+          body: JSON.stringify({ text: "Rate budget", key: `budget-${i}` }),
+        });
+    });
+    await panel.getByLabel("Message", { exact: true }).fill("Over budget");
+    await panel.getByLabel("Message", { exact: true }).press("Enter");
+    await expect(panel.getByRole("alert")).toContainText("Too many messages");
+    await page.waitForResponse(
+      (response) =>
+        response.url().includes("/chat/thread/") && response.request().method() === "GET",
+    );
+    await expect(panel.getByRole("alert")).toContainText("Too many messages");
     await page.getByRole("button", { name: "Close chat" }).click();
     await page.getByRole("button", { name: "Return to Lobby" }).click();
     await page.getByRole("button", { name: "Leave", exact: true }).click();
