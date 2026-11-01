@@ -114,6 +114,12 @@ func (pair *pair) enqueueRoom(value any) error {
 }
 func (s *Server) broadcast(r *room) {
 	s.mu.Lock()
+	// A claimed start becomes observable only after its durable barrier.
+	// In particular, clients must not treat a pending database write as Active.
+	if r.historyStarting {
+		s.mu.Unlock()
+		return
+	}
 	var messages []struct {
 		pair  *pair
 		state p.RoomState
@@ -383,6 +389,10 @@ func (pair *pair) roomCommand(command p.RoomCommand) error {
 		if s.draining {
 			s.mu.Unlock()
 			return fmt.Errorf("%s", maintenanceMessage)
+		}
+		if r.historyFinishing || s.historyFailed {
+			s.mu.Unlock()
+			return fmt.Errorf("Previous result is still being saved; try again")
 		}
 		if r.phase != p.RoomPhaseLobby || participant.index != r.host {
 			s.mu.Unlock()

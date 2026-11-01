@@ -65,3 +65,38 @@ Only the configured admin with a normal session can reach the users panel. Every
 Create/reset return `temporaryPassword` only in that successful response. Only its Argon2id hash is persisted. The panel keeps the response in memory for copying and manual sharing, with dismissal; reload/navigation cannot reveal it. There is no password retrieval, email, role editing, history or real chat.
 
 `node apps/client/scripts/transport.mjs --test --admin` exercises the admin UI in Chrome against real HTTPS/SQLite. `go test ./transport -run 'TestAdmin|TestEveryAdmin'` covers authorization, first login, profiles, metadata/restart, concurrent sessions/rooms, active forfeits, cleanup and rejected stale/authenticated recovery.
+
+## Multiplayer race history
+
+The same SQLite volume retains thin Drag Race and Road Rage history indefinitely;
+no history UI or HTTP endpoint is added. `race_history` has one cryptographically
+namespaced round ID, mode, UTC microsecond start/end timestamps, gameplay duration,
+authoritative outcome and end reason. `race_participant` identifies each of the two
+seats independently, including two seats owned by one account. `drag_race_result`
+and `road_rage_result` contain only final HP, score and road progress for each seat.
+No names, avatars, input logs, replays or derived statistics are stored. Deleting
+an account sets its participant references to NULL while preserving shared results.
+
+Only a successfully installed countdown crossing its gameplay start creates a
+record. Cancelled countdowns and Long Drive are excluded; each rematch gets a new
+ID. A persistence worker commits the start before simulation advancement, outside
+the gameplay mutex. Active publication and recovery admission wait for that start
+barrier, so recovery cannot overtake a pending departure. Final results and the terminal outcome commit in one
+transaction; duplicate writes preserve the first outcome. Failed writes remain
+queued, log `race_history_retry`, disable readiness and prevent new round starts
+until retry succeeds. A room cannot rematch while its preceding result is pending.
+Shutdown waits for gameplay ownership to stop, then attempts to flush pending writes.
+If storage remains unavailable, `race_history_shutdown_pending` reports that fact.
+
+Before serving on startup, unfinished durable starts are marked abandoned with
+`server_restart`. Recovery time is stored as the end timestamp; duration and final
+car statistics remain unknown (NULL duration, no result rows). Other end reasons
+are the authoritative protocol OutcomeReason codes, stored as decimal text. A
+crash or unrecoverable storage outage can therefore recover an unfinished round
+as abandoned, without claiming an uncommitted final result. Continue running one
+room-owner process per database.
+
+`go test ./accounts ./transport -run TestRaceHistory` covers both modes, rematches,
+same-account seats, exact authoritative finals, duplicate writes, atomic rollback,
+retry, cancellation, forfeits, abandonment, restart recovery, deletion and a blocked
+SQLite writer without blocking gameplay ownership.

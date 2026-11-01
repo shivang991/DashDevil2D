@@ -48,6 +48,12 @@ type Config struct {
 	RoadRageOverrides                                                            []byte
 }
 type Server struct {
+	sweepDone         chan struct{}
+	historyPrefix     string
+	historySequence   uint64
+	historyWrites     []historyWrite
+	historyFailed     bool
+	historyDone       chan struct{}
 	accountAdmission  accountAdmission
 	avatarCleanup     chan struct{}
 	avatarCleanupDone chan struct{}
@@ -72,19 +78,21 @@ type Server struct {
 	errors            chan error
 }
 type room struct {
-	racers          [2]p.RacerIdentity
-	engine          *simulation.Engine
-	history         []raceRecord
-	outcome         *p.Outcome
-	outcomeSessions [2]uint32
-	primed          [2]bool
-	inputs          [2]map[uint32]p.Input
-	phase           p.RoomPhase
-	roundID         uint32
-	startUs         uint64
-	seed            uint32
-	zero            *p.Baseline
-	settings        configuration.Configuration
+	historyID                         string
+	historyStarting, historyFinishing bool
+	racers                            [2]p.RacerIdentity
+	engine                            *simulation.Engine
+	history                           []raceRecord
+	outcome                           *p.Outcome
+	outcomeSessions                   [2]uint32
+	primed                            [2]bool
+	inputs                            [2]map[uint32]p.Input
+	phase                             p.RoomPhase
+	roundID                           uint32
+	startUs                           uint64
+	seed                              uint32
+	zero                              *p.Baseline
+	settings                          configuration.Configuration
 
 	id       uint32
 	code     string
@@ -164,7 +172,11 @@ func New(config Config) (*Server, error) {
 	if config.Now == nil {
 		config.Now = time.Now
 	}
-	return &Server{avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
+	prefix, err := randomBytes()
+	if err != nil {
+		return nil, err
+	}
+	return &Server{historyPrefix: token(prefix), avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
 }
 func (s *Server) nowUs() uint64 { return uint64(max(0, s.config.Now().Sub(s.start).Microseconds())) }
 
@@ -173,6 +185,11 @@ func (s *Server) nowTime() time.Time   { return s.start.Add(time.Duration(s.nowU
 func (s *Server) URL() string          { return "https://" + s.tcp.Addr().String() }
 func (s *Server) Errors() <-chan error { return s.errors }
 func (s *Server) Start() error {
+	if s.config.Accounts != nil && !s.config.Diagnostic {
+		if err := s.config.Accounts.RecoverRaces(s.config.Now()); err != nil {
+			return err
+		}
+	}
 	cert, err := tls.LoadX509KeyPair(s.config.Certificate, s.config.Key)
 	if err != nil {
 		return err
@@ -255,6 +272,9 @@ func (s *Server) Start() error {
 	s.avatarCleanupDone = make(chan struct{})
 	s.cleanupAvatarsLocked()
 	go s.avatarCleanupLoop()
+	s.sweepDone = make(chan struct{})
+	s.historyDone = make(chan struct{})
+	go s.historyLoop()
 	go s.sweep()
 	return nil
 }
@@ -285,6 +305,15 @@ func (s *Server) Close() {
 		}
 		if s.tcp != nil {
 			s.tcp.Close()
+		}
+		if s.historyDone != nil {
+			<-s.historyDone
+		}
+		if s.sweepDone != nil {
+			<-s.sweepDone
+		}
+		if !s.flushHistory() {
+			s.config.Logger.Error("race_history_shutdown_pending")
 		}
 		if s.avatarCleanupDone != nil {
 			<-s.avatarCleanupDone
@@ -490,6 +519,12 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			s.mu.Unlock()
 			return s.failure(c, 410, p.ProtocolErrorCodeRoomExpired, "Room expired")
 		}
+		// Reconnection cannot overtake a departure while the durable start
+		// barrier is pending and lifecycle resolution is suspended.
+		if participant.room.historyStarting {
+			s.mu.Unlock()
+			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Round is starting. Try again")
+		}
 	default:
 		s.mu.Unlock()
 		return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid admission")
@@ -576,6 +611,9 @@ func (s *Server) expireLocked(now time.Time) []*room {
 	changed := s.expireAccountSeatsLocked(now)
 	for code, r := range s.rooms {
 		modified := false
+		if r.historyStarting {
+			continue
+		}
 		s.resolveDeparturesLocked(r, now)
 		idleExpired := (r.phase == p.RoomPhaseLobby || r.phase == p.RoomPhaseEnded) && !now.Before(r.idle)
 		for i, participant := range r.seats {
@@ -621,6 +659,7 @@ func (s *Server) expireLocked(now time.Time) []*room {
 	return changed
 }
 func (s *Server) sweep() {
+	defer close(s.sweepDone)
 	ticker := time.NewTicker(5 * time.Millisecond)
 	defer ticker.Stop()
 	for {
