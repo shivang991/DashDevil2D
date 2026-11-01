@@ -83,7 +83,7 @@ export default defineConfig({
     video: { mode: "on", size: { width: 1280, height: 900 } },
   },
   webServer: {
-    command: "node node_modules/vite/bin/vite.js --host 127.0.0.1 --port 4173",
+    command: `node node_modules/vite/bin/vite.js ${process.env.DASHDEVIL_PREVIEW_TESTS ? "preview" : ""} --host 127.0.0.1 --port 4173 --strictPort`,
     url: "http://127.0.0.1:4173",
     reuseExistingServer: false,
   },

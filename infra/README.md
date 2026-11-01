@@ -86,3 +86,11 @@ pnpm test:maintenance
 Maintenance coverage is required in CI alongside existing preservation/transport suites. [Validation history](VALIDATION.md) distinguishes local fixtures from actual public ACME, VPC/firewall, supported-browser, reference-hardware/network, capacity and human acceptance. The operating model also requires wider observability and capacity evidence; this deployment update does not claim full production acceptance.
 
 Governing [operating model](https://github.com/shivang991/DashDevil2D/issues/18#issuecomment-6147409056), [verification](https://github.com/shivang991/DashDevil2D/issues/17#issuecomment-6147257139) and [stage sequence](https://github.com/shivang991/DashDevil2D/issues/20#issuecomment-6147982401).
+
+## Browser routes
+
+Menu (`/`), Long Drive (`/long-drive`), Drag Race (`/multiplayer/drag-race`), and Road Rage (`/multiplayer/road-rage`) support direct entry and reload. The client nginx falls back to `index.html` for application paths; missing files with extensions stay 404. The edge proxy continues handling `/admission`, `/room`, and `/gameplay` before forwarding client routes.
+
+Long Drive reload starts a fresh run. Multiplayer reload attempts same-tab seat recovery; a shared mode URL never joins a room without credentials. Recovered room mode replaces the requested mode URL. In-app navigation and browser Back/Forward ask before ending a run or explicitly leaving a room; refresh keeps reconnect credentials.
+
+Run `pnpm --filter @dashdevil/client exec playwright test navigation.spec.ts` for development routing, or build then prefix that command with `DASHDEVIL_PREVIEW_TESTS=1` for production assets. Run `pnpm test:rooms` for authenticated recovery and leave coverage.
