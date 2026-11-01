@@ -273,6 +273,7 @@ export class PairedConnection {
     operation: AdmissionOperation,
     code = "",
     mode: typeof ModeDragRace | typeof ModeRoadRage = ModeDragRace,
+    challenge?: number,
   ): Promise<void> {
     this.teardown();
     this.terminal = false;
@@ -309,7 +310,7 @@ export class PairedConnection {
     this.publish();
     try {
       const response = await fetch(
-        `${this.options.server}/admission${operation === AdmissionOperationCreate && !this.options.diagnostic ? `?mode=${mode}` : ""}`,
+        `${this.options.server}/admission${operation === AdmissionOperationCreate && !this.options.diagnostic ? `?mode=${mode}` : operation === AdmissionOperationJoin && challenge ? `?challenge=${challenge}` : ""}`,
         {
           method: "POST",
           credentials: "include",

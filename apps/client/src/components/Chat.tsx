@@ -7,10 +7,17 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { Avatar } from "./Avatar";
 import type { Account } from "@/transport/account";
-import { chatAPI, type ChatPerson, type ChatSnapshot, type ChatMessage } from "@/transport/chat";
+import {
+  chatAPI,
+  type ChatPerson,
+  type ChatSnapshot,
+  type ChatMessage,
+  type ChatChallenge,
+} from "@/transport/chat";
+import { ChallengeInvitation } from "./ChallengeInvitation";
 
 const chatBadge =
   "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[12px] bg-[#2563eb] px-[5px] font-chat text-[12px] text-white";
@@ -19,44 +26,36 @@ const chatError =
 const chatField =
   "w-full rounded-[8px] border border-neutral-600 bg-neutral-950 p-2.5 font-chat text-[16px]";
 
+interface ChatBoundary {
+  path: string;
+  visible: boolean;
+  playing: boolean;
+  roomID?: number;
+  pending?: boolean;
+  admissionFailure?: string;
+}
 const Visibility = createContext<
-  | {
-      path: string;
-      report: (value: {
-        path: string;
-        visible: boolean;
-        playing: boolean;
-        roomID?: number;
-      }) => void;
-    }
-  | undefined
+  { path: string; report: (value: ChatBoundary) => void } | undefined
 >(undefined);
 /** Report the actual rendered result boundary, including the frozen final scene. */
 export function ChatVisibility({
   visible,
   playing,
   roomID,
-}: {
-  visible: boolean;
-  playing: boolean;
-  roomID?: number;
-}) {
+  pending,
+  admissionFailure,
+}: Omit<ChatBoundary, "path">) {
   const context = useContext(Visibility);
   const report = context?.report;
   const pathname = context?.path ?? "";
   useLayoutEffect(() => {
-    report?.({ path: pathname, visible, playing, roomID });
-  }, [report, pathname, visible, playing, roomID]);
+    report?.({ path: pathname, visible, playing, roomID, pending, admissionFailure });
+  }, [report, pathname, visible, playing, roomID, pending, admissionFailure]);
   return null;
 }
 export function ChatShell({ account, children }: { account?: Account; children: ReactNode }) {
   const { pathname } = useLocation();
-  const [boundary, setBoundary] = useState<{
-    path: string;
-    visible: boolean;
-    playing: boolean;
-    roomID?: number;
-  }>();
+  const [boundary, setBoundary] = useState<ChatBoundary>();
   const game = pathname === "/long-drive" || pathname.startsWith("/multiplayer/");
   const visible = game ? boundary?.path === pathname && boundary.visible : pathname != "/login";
   const playing = game && (boundary?.path !== pathname || boundary.playing);
@@ -69,6 +68,8 @@ export function ChatShell({ account, children }: { account?: Account; children: 
           account={account}
           visible={Boolean(visible)}
           playing={playing}
+          pending={boundary?.path === pathname && boundary.pending}
+          admissionFailure={boundary?.path === pathname ? boundary.admissionFailure : undefined}
           roomID={boundary?.path === pathname ? boundary.roomID : undefined}
         />
       )}
@@ -96,12 +97,21 @@ function ChatPanel({
   visible,
   playing,
   roomID,
+  pending: admissionPending,
+  admissionFailure,
 }: {
+  pending?: boolean;
+  admissionFailure?: string;
   account: Account;
   visible: boolean;
   playing: boolean;
   roomID?: number;
 }) {
+  const navigate = useNavigate();
+  const [challenges, setChallenges] = useState<ChatChallenge[]>([]);
+  const [challengeBusy, setChallengeBusy] = useState(false);
+  const [createOffer, setCreateOffer] = useState(false);
+  const inviteKey = useRef<string | undefined>(undefined);
   const [expanded, setExpanded] = useState(() => preference(account.id));
   const [snapshot, setSnapshot] = useState<ChatSnapshot>();
   const [peer, setPeer] = useState<ChatPerson>();
@@ -200,7 +210,9 @@ function ChatPanel({
     let disposed = false;
     let busy = false;
     let after = 0;
+    const watch = new Set<number>();
     setMessages([]);
+    setChallenges([]);
     setHistoryError("");
     const load = async () => {
       if (busy) return;
@@ -208,9 +220,18 @@ function ChatPanel({
       try {
         let batch: ChatMessage[];
         do {
-          const result = await chatAPI.thread(peer.id, after);
+          const result = await chatAPI.thread(peer.id, after, [...watch]);
           if (disposed) return;
           batch = result.messages;
+          for (const invitation of result.challenges) {
+            if (invitation.status === "Pending") watch.add(invitation.id);
+            else watch.delete(invitation.id);
+          }
+          setChallenges((previous) => [
+            ...new Map(
+              [...previous, ...result.challenges].map((invitation) => [invitation.id, invitation]),
+            ).values(),
+          ]);
           if (batch.length) {
             after = batch[batch.length - 1].id;
             setMessages((previous) => [...previous, ...batch]);
@@ -236,6 +257,7 @@ function ChatPanel({
   const activeMessages = messages.filter(
     (message) => message.sender === peer?.id || message.recipient === peer?.id,
   );
+  const invitationsByID = new Map(challenges.map((invitation) => [invitation.id, invitation]));
   const last = activeMessages.at(-1)?.id ?? 0;
   useEffect(() => {
     const now = current.current;
@@ -292,6 +314,8 @@ function ChatPanel({
   }
   function open(person: ChatPerson) {
     setPeer(person);
+    setCreateOffer(false);
+    inviteKey.current = undefined;
     setQuery("");
     setDraft("");
     setHistoryError("");
@@ -314,6 +338,27 @@ function ChatPanel({
       setSendError(failure instanceof Error ? failure.message : "Send failed. Retry");
     } finally {
       setSending(false);
+    }
+  }
+  async function challenge() {
+    if (!peer || challengeBusy || playing) return;
+    setChallengeBusy(true);
+    setSendError("");
+    inviteKey.current ??= crypto.randomUUID();
+    try {
+      await chatAPI.invite(peer.id, roomID ?? 0, inviteKey.current);
+      inviteKey.current = undefined;
+      setRevision((n) => n + 1);
+    } catch (failure) {
+      if (
+        !roomID &&
+        failure instanceof Error &&
+        failure.message === "Choose an open lobby with a free seat, or create a room"
+      )
+        setCreateOffer(true);
+      else setSendError(failure instanceof Error ? failure.message : "Challenge failed. Retry");
+    } finally {
+      setChallengeBusy(false);
     }
   }
   const people = [
@@ -399,6 +444,34 @@ function ChatPanel({
               <Presence value={selected.presence} />
             </div>
           </div>
+          {!selected.deleted && (
+            <div className="border-b border-neutral-700 px-4 py-2 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
+              <button
+                disabled={playing || challengeBusy || admissionPending}
+                onClick={() => void challenge()}
+              >
+                {challengeBusy ? "Inviting…" : "Challenge"}
+              </button>
+              {createOffer && (
+                <div>
+                  <p>
+                    Create a room to invite {selected.username}. You’ll choose the mode and
+                    readiness in the lobby.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setCreateOffer(false);
+                      void navigate("/multiplayer/drag-race", {
+                        state: { challengePeer: selected.id },
+                      });
+                    }}
+                  >
+                    Create room &amp; invite
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           <nav
             className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-neutral-700 p-2 [&_button]:relative [&_button]:min-w-11 [&_button]:shrink-0 [&_button]:rounded-full [&_button]:border-2 [&_button]:border-transparent [&_button[aria-pressed=true]]:border-[#60a5fa]"
             aria-label="Switch conversation"
@@ -443,7 +516,24 @@ function ChatPanel({
                 key={message.id}
                 className={`mb-3 w-fit max-w-[90%] rounded-[10px] px-3 py-2.5 wrap-anywhere [&_p]:text-[15px] [&_p]:leading-[1.45] [&_p]:whitespace-pre-wrap [&_time]:mt-1.5 [&_time]:block [&_time]:text-[10px] [&_time]:text-neutral-400 ${message.sender === snapshot?.self ? "ml-auto mr-0 border border-[#3b82f6] bg-[#172235]" : "ml-0 mr-auto bg-neutral-800"}`}
               >
-                <p>{message.text}</p>
+                {invitationsByID.get(message.id) ? (
+                  <ChallengeInvitation
+                    key={`${message.id}:${admissionFailure ?? ""}`}
+                    pending={admissionPending}
+                    invitation={invitationsByID.get(message.id)!}
+                    incoming={message.recipient === snapshot?.self}
+                    playing={playing}
+                    inRoom={Boolean(roomID)}
+                    onAccept={() => {
+                      if (!playing && !roomID)
+                        void navigate("/multiplayer/drag-race", {
+                          state: { challenge: message.id },
+                        });
+                    }}
+                  />
+                ) : (
+                  <p>{message.text}</p>
+                )}
                 <time dateTime={new Date(message.createdAt).toISOString()}>
                   {new Date(message.createdAt).toLocaleString()}
                 </time>

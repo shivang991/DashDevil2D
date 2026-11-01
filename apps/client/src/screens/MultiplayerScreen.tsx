@@ -1,6 +1,11 @@
-import { AdmissionOperationResume, RoomPhaseCountdown } from "@dashdevil/contracts/protocol";
+import {
+  AdmissionOperationCreate,
+  AdmissionOperationJoin,
+  AdmissionOperationResume,
+  RoomPhaseCountdown,
+} from "@dashdevil/contracts/protocol";
 
-import { useBlocker, useNavigate } from "react-router";
+import { useBlocker, useNavigate, useLocation } from "react-router";
 import { NavigationConfirmation } from "./NavigationConfirmation";
 import { multiplayerPath } from "@/lib/uiUtils";
 import { GameAudio } from "@/lib/gameAudio";
@@ -12,6 +17,7 @@ import {
 } from "@/game/multiplayer/PairedConnection";
 import { MultiplayerView } from "./MultiplayerView";
 import { RaceView } from "@/components/RaceView";
+import { chatAPI } from "@/transport/chat";
 import { connectionOptions } from "@/transport/account";
 
 export function MultiplayerScreen({
@@ -23,6 +29,15 @@ export function MultiplayerScreen({
   onBack: () => void;
   playerName: string;
 }) {
+  const location = useLocation();
+  const intent = location.state as { challenge?: number; challengePeer?: number } | null;
+  const invitationIntent = {
+    challenge: intent?.challenge,
+    peer: intent?.challengePeer,
+    key: `challenge:${location.key}`,
+  };
+  const inviteStarted = useRef<string | undefined>(undefined);
+  const admissionStarted = useRef<string | undefined>(undefined);
   const connection = useRef<PairedConnection | undefined>(undefined);
   const [client, setClient] = useState<PairedConnection>();
   const [state, setState] = useState<PairedState>();
@@ -57,7 +72,6 @@ export function MultiplayerScreen({
         setClient(client);
         setState({ ...client.state });
         focus();
-        if (client.hasCredential) await client.connect(AdmissionOperationResume);
       } catch (failure) {
         if (!disposed) setError(String(failure instanceof Error ? failure.message : failure));
       }
@@ -77,6 +91,37 @@ export function MultiplayerScreen({
       document.removeEventListener("visibilitychange", focus);
     };
   }, []);
+
+  useEffect(() => {
+    if (!client || admissionStarted.current === invitationIntent.key) return;
+    admissionStarted.current = invitationIntent.key;
+    if (invitationIntent.challenge)
+      void client.connect(AdmissionOperationJoin, "", mode, invitationIntent.challenge);
+    else if (invitationIntent.peer && !client.state.room)
+      void client.connect(AdmissionOperationCreate, "", mode);
+    else if (client.hasCredential && !client.state.room)
+      void client.connect(AdmissionOperationResume);
+  }, [client, invitationIntent.challenge, invitationIntent.peer, invitationIntent.key, mode]);
+
+  useEffect(() => {
+    if (
+      !invitationIntent.peer ||
+      inviteStarted.current === invitationIntent.key ||
+      state?.status !== "Connected" ||
+      !state.identity
+    )
+      return;
+    inviteStarted.current = invitationIntent.key;
+    void chatAPI
+      .invite(invitationIntent.peer, state.identity.roomId, invitationIntent.key)
+      .catch((failure) => {
+        setError(
+          failure instanceof Error
+            ? failure.message
+            : "Challenge failed. Retry from the conversation",
+        );
+      });
+  }, [invitationIntent.peer, invitationIntent.key, state]);
 
   // Countdown cues precede RaceView playback at the synchronized race start.
   const countdownPlayer = useRef<GameAudio | undefined>(undefined);

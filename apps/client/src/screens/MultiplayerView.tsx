@@ -249,6 +249,10 @@ export function MultiplayerView({
       <ChatVisibility
         visible={!race || Boolean(resultKey && readyResult === resultKey)}
         playing={Boolean(countdown || active)}
+        pending={pending}
+        admissionFailure={
+          !pending && roomError ? `${state?.errors.length ?? 0}:${roomError}` : undefined
+        }
         roomID={inRoom ? room?.identity.roomId : undefined}
       />
       <section

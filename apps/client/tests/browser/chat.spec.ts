@@ -77,15 +77,28 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await page.getByRole("button", { name: "Close chat" }).click();
     await page.setViewportSize({ width: 1280, height: 900 });
     await peer.getByRole("button", { name: "Close chat" }).click();
-    await page.getByRole("button", { name: /Drag Race/ }).click();
-    await page.getByRole("button", { name: "Create Room", exact: true }).click();
-    const code = await page.getByTestId("room-code").innerText();
-    await peer.getByRole("button", { name: /Drag Race/ }).click();
-    await peer.getByRole("button", { name: "Join Room", exact: true }).click();
-    await peer.getByLabel("Room code").fill(code);
-    await peer.getByLabel("Room code").press("Enter");
-    await expect(peer.getByTestId("connection-state")).toHaveText("Connected");
     await page.getByRole("button", { name: /Open chat/ }).click();
+    await page.getByRole("button", { name: /Open conversation with Chat_Opponent/ }).click();
+    await page.getByRole("button", { name: "Challenge", exact: true }).click();
+    await page.evaluate(async () => {
+      const { server } = await (await fetch("/__transport-config")).json();
+      sessionStorage.setItem(
+        `dashdevil-seat:${server}`,
+        btoa(String.fromCharCode(...new Uint8Array(32).fill(1))),
+      );
+    });
+    await page.getByRole("button", { name: "Create room & invite" }).click();
+    await expect(page.getByTestId("room-code")).toBeVisible();
+    await expect(page.getByText("Waiting for acceptance", { exact: true })).toBeVisible();
+    await peer.getByRole("button", { name: /Drag Race/ }).click();
+    await peer.getByRole("button", { name: /Open chat/ }).click();
+    await expect(peer.getByRole("button", { name: "Accept challenge" })).toBeEnabled();
+    await expect(peer.getByTestId("room-code")).toHaveCount(0);
+    await peer.getByRole("button", { name: "Accept challenge" }).click();
+    await expect(peer.getByTestId("connection-state")).toHaveText("Connected");
+    await page.getByRole("button", { name: "Close chat" }).click();
+    await page.getByRole("button", { name: /Open chat/ }).click();
+    await page.getByRole("button", { name: "Back to conversations" }).click();
     await expect(panel.getByRole("heading", { name: "Lobby opponent" })).toBeVisible();
     await info.attach("chat-desktop", { body: await page.screenshot(), contentType: "image/png" });
     await page.screenshot({ path: "/private/tmp/issue67-chat-desktop.png" });
