@@ -71,7 +71,7 @@ func (s *Server) advanceMaintenanceLocked(now time.Time) ([]*room, []*pair) {
 		if r.phase != p.RoomPhaseActive {
 			continue
 		}
-		if now.Before(s.drainDeadline) {
+		if r.historyStarting || now.Before(s.drainDeadline) {
 			active = true
 			continue
 		}
@@ -113,5 +113,5 @@ func (s *Server) Ready() bool {
 		return false
 	default:
 	}
-	return s.tcp != nil && s.udp != nil && !s.draining
+	return s.tcp != nil && s.udp != nil && !s.draining && !s.historyFailed
 }

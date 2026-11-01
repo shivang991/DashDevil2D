@@ -78,6 +78,7 @@ func (s *Server) advanceCountdownsLocked() []*room {
 		}
 		if valid {
 			r.phase = p.RoomPhaseActive
+			s.startHistoryLocked(r)
 			r.revision++
 		} else {
 			s.cancelCountdownLocked(r)
@@ -170,7 +171,7 @@ func earliestDeparture(r *room) time.Time {
 	return earliest
 }
 func (s *Server) resolveDeparturesLocked(r *room, now time.Time) bool {
-	if r.phase != p.RoomPhaseActive {
+	if r.phase != p.RoomPhaseActive || r.historyStarting {
 		return false
 	}
 	at := earliestDeparture(r)

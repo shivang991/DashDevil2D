@@ -35,6 +35,7 @@ func (s *Server) finalizeRaceLocked(r *room, result p.OutcomeResult, reason p.Ou
 		}
 	}
 	r.idle = s.nowTime().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
+	s.finishHistoryLocked(r, outcome)
 	r.outcome = &outcome
 	r.phase = p.RoomPhaseEnded
 	r.revision++
@@ -44,7 +45,7 @@ func (s *Server) finalizeRaceLocked(r *room, result p.OutcomeResult, reason p.Ou
 // A lifecycle terminal instant cannot overtake gameplay in an unfinished group.
 // StopAt resolves the exact partial interval without advancing past the cutoff.
 func (s *Server) finalizeLifecycleLocked(r *room, result p.OutcomeResult, reason p.OutcomeReason, cutoffUs uint64) {
-	if r.phase != p.RoomPhaseActive || r.outcome != nil {
+	if r.phase != p.RoomPhaseActive || r.outcome != nil || r.historyStarting {
 		return
 	}
 	if r.engine != nil {
@@ -92,7 +93,7 @@ func (s *Server) finalizeLifecycleLocked(r *room, result p.OutcomeResult, reason
 func (s *Server) advanceRacesLocked() []*room {
 	var changed []*room
 	for _, r := range s.rooms {
-		if r.phase != p.RoomPhaseActive || r.engine == nil {
+		if r.phase != p.RoomPhaseActive || r.engine == nil || r.historyStarting {
 			continue
 		}
 		targetUs := s.nowUs()
