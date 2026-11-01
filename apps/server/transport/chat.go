@@ -35,6 +35,7 @@ func (s *Server) chatRoutes() {
 		c.Locals("chatSelf", self)
 		return c.Next()
 	})
+	s.challengeRoutes()
 	s.app.Get("/api/account/chat/search", func(c *fiber.Ctx) error {
 		_, rooms := s.chatRoomState(c.Locals("chatSession").(accounts.Session).ID, 0)
 		people, err := s.config.Accounts.ChatPeople(s.config.Now(), rooms)
@@ -102,11 +103,38 @@ func (s *Server) chatRoutes() {
 		if err != nil || after < 0 {
 			return accountError(c, 400, "Invalid history position")
 		}
+		watch := []int64{}
+		if raw := c.Query("watch"); raw != "" {
+			ids := strings.Split(raw, ",")
+			if len(ids) > 300 {
+				return accountError(c, 400, "Too many invitation updates")
+			}
+			for _, rawID := range ids {
+				id, err := strconv.ParseInt(rawID, 10, 64)
+				if err != nil || id <= 0 {
+					return accountError(c, 400, "Invalid invitation update")
+				}
+				watch = append(watch, id)
+			}
+		}
 		messages, err := s.config.Accounts.ChatThread(c.Locals("chatSelf").(int64), peer, after)
 		if err != nil {
 			return accountError(c, 503, "History unavailable. Retry")
 		}
-		return c.JSON(fiber.Map{"messages": messages})
+		through := after
+		if len(messages) > 0 {
+			through = messages[len(messages)-1].ID
+		}
+		challenges, err := s.config.Accounts.ChatChallenges(c.Locals("chatSelf").(int64), peer, after, through, watch)
+		if err != nil {
+			return accountError(c, 503, "Invitations unavailable. Retry")
+		}
+		s.mu.Lock()
+		for i := range challenges {
+			challenges[i].Status, _ = s.challengeStatusLocked(challenges[i])
+		}
+		s.mu.Unlock()
+		return c.JSON(fiber.Map{"messages": messages, "challenges": challenges})
 	})
 	s.app.Post("/api/account/chat/thread/:peer", func(c *fiber.Ctx) error {
 		peer, err := strconv.ParseInt(c.Params("peer"), 10, 64)

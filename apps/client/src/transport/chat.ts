@@ -9,6 +9,11 @@ export interface ChatPerson {
   lastMessage: number;
   rounds: number;
 }
+export interface ChatChallenge {
+  id: number;
+  expiresAt: number;
+  status: "Pending" | "Accepted" | "Expired" | "Unavailable";
+}
 export interface ChatMessage {
   id: number;
   sender: number;
@@ -49,10 +54,14 @@ export const chatAPI = {
     request<ChatSnapshot>("/sync", { client, activity, roomID, peerID }),
   search: (query: string) =>
     request<{ users: ChatPerson[]; total: number }>(`/search?q=${encodeURIComponent(query)}`),
-  thread: (peer: number, after = 0) =>
-    request<{ messages: ChatMessage[] }>(`/thread/${peer}?after=${after}`),
+  thread: (peer: number, after = 0, watch: number[] = []) =>
+    request<{ messages: ChatMessage[]; challenges: ChatChallenge[] }>(
+      `/thread/${peer}?after=${after}&watch=${watch.join(",")}`,
+    ),
   send: (peer: number, text: string, key: string) =>
     request<ChatMessage>(`/thread/${peer}`, { text, key }),
+  invite: (peer: number, roomID: number, key: string) =>
+    request<ChatMessage>(`/thread/${peer}/challenge`, { roomID, key }),
   read: (peer: number, through: number) =>
     request<{ ok: boolean }>(`/thread/${peer}/read`, { through }),
 };

@@ -257,3 +257,27 @@
     bottom: 72px;
   }
 }
+.chat-challenge-control {
+  padding: 8px 16px;
+  border-bottom: 1px solid #404040;
+}
+.chat-challenge-control p,
+.chat-challenge p,
+.chat-challenge small {
+  font-family: Arial, sans-serif;
+  line-height: 1.45;
+}
+.chat-challenge-control button,
+.chat-challenge button {
+  border: 1px solid #60a5fa;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin: 6px 0;
+}
+.chat-challenge strong,
+.chat-challenge small {
+  display: block;
+}
+.chat-challenge small {
+  color: #a3a3a3;
+}
