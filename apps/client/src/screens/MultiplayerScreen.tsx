@@ -1,5 +1,8 @@
 import { AdmissionOperationResume, RoomPhaseCountdown } from "@dashdevil/contracts/protocol";
 
+import { useBlocker, useNavigate } from "react-router";
+import { NavigationConfirmation } from "./NavigationConfirmation";
+import { ModeRoadRage } from "@dashdevil/contracts/protocol";
 import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -18,6 +21,23 @@ export function MultiplayerScreen({ mode, onBack }: { mode: MultiplayerMode; onB
   const [state, setState] = useState<PairedState>();
   const [error, setError] = useState("");
   const [clock, setClock] = useState(0);
+  const navigate = useNavigate();
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation, historyAction }) =>
+      historyAction !== "REPLACE" &&
+      currentLocation.pathname !== nextLocation.pathname &&
+      Boolean(connection.current?.state.room || connection.current?.state.pending),
+  );
+  useEffect(() => {
+    if (blocker.state === "blocked") connection.current?.releaseControls();
+  }, [blocker.state]);
+  const modePath = (value: MultiplayerMode) =>
+    value === ModeRoadRage ? "/multiplayer/road-rage" : "/multiplayer/drag-race";
+  useEffect(() => {
+    if (state?.room && state.room.mode !== mode) {
+      void navigate(modePath(state.room.mode as MultiplayerMode), { replace: true });
+    }
+  }, [state?.room, mode, navigate]);
   useEffect(() => {
     let disposed = false;
     const focus = () => connection.current?.focus(document.hasFocus(), document.hidden);
@@ -87,20 +107,31 @@ export function MultiplayerScreen({ mode, onBack }: { mode: MultiplayerMode; onB
   }, [state, clock]);
 
   return (
-    <MultiplayerView
-      mode={mode}
-      onBack={onBack}
-      playerName={localName()}
-      state={state}
-      error={error}
-      clock={clock}
-      actions={client}
-      focused={!document.hidden && document.hasFocus()}
-      renderRace={
-        client && state?.context
-          ? (props) => <RaceView key={state.roundId} connection={client} state={state} {...props} />
-          : undefined
-      }
-    />
+    <>
+      <MultiplayerView
+        mode={mode}
+        navigationBlocked={blocker.state === "blocked"}
+        onBack={onBack}
+        onModeChange={(value) => void navigate(modePath(value))}
+        playerName={localName()}
+        state={state}
+        error={error}
+        clock={clock}
+        actions={client}
+        focused={!document.hidden && document.hasFocus()}
+        renderRace={
+          client && state?.context
+            ? (props) => (
+                <RaceView key={state.roundId} connection={client} state={state} {...props} />
+              )
+            : undefined
+        }
+      />
+      <NavigationConfirmation
+        blocker={blocker}
+        multiplayer
+        onLeave={() => connection.current?.leave()}
+      />
+    </>
   );
 }

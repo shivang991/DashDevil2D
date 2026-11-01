@@ -110,6 +110,8 @@ test("public app: five-second start, actual canvas, keyboard pause and mute", as
   await page.getByRole("button", { name: "Mute sound" }).click();
   await expect(page.getByRole("button", { name: "Enable sound" })).toBeVisible();
   await page.reload();
+  await expect(page).toHaveURL(/\/long-drive$/);
+  await page.getByRole("button", { name: "Settings", exact: true }).click();
   await expect(page.getByRole("button", { name: "Enable sound" })).toBeVisible();
 });
 
@@ -162,6 +164,7 @@ test("record real-time public presentation for later human comparison", async ({
   await expect(page.getByText("GAME OVER", { exact: true })).toBeVisible({ timeout: 45000 });
   await page.screenshot({ path: path.join(evidence, "baseline-gameover.png") });
   await page.getByRole("button", { name: "Back to Menu" }).click();
+  await page.getByRole("button", { name: "End run", exact: true }).click();
   await expect(page.getByText("Long Drive", { exact: true })).toBeVisible();
   const audio = (await page.evaluate("finishBaselineAudio()")) as number[] | null;
   if (audio) fs.writeFileSync(path.join(evidence, "baseline-audio.webm"), Buffer.from(audio));
@@ -337,6 +340,7 @@ test("early Enter is discarded; restart and menu-return use fresh three-second c
   await page.clock.runFor(11000);
   await expect(page.getByText("GAME OVER", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Back to Menu" }).click();
+  await page.getByRole("button", { name: "End run", exact: true }).click();
   await page.keyboard.press("Space");
   await expect(page.locator("canvas")).toHaveCount(0);
   await page.getByText("Long Drive", { exact: true }).click();

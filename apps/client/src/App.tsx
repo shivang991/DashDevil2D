@@ -1,19 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
-import { GameWorld } from "@/components/GameWorld";
 import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
-import { ModeDragRace } from "@dashdevil/contracts/protocol";
+import { Navigate, useLocation, useNavigate } from "react-router";
+import { SoloRoute } from "@/screens/SoloRoute";
+import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
 import type { MultiplayerMode } from "@/transport/PairedConnection";
-
-type Screen = "menu" | "game" | "multiplayer";
 
 function App() {
   const hasStarted = useRef(false);
-  const [mode, setMode] = useState<MultiplayerMode>(ModeDragRace);
+  const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const screen = pathname === "/" ? "menu" : pathname === "/long-drive" ? "game" : "multiplayer";
+  const mode = pathname === "/multiplayer/road-rage" ? ModeRoadRage : ModeDragRace;
   const [countdown, setCountdown] = useState<5 | 3>(5);
-  const [screen, setScreen] = useState<Screen>("menu");
   const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
 
   useEffect(() => {
@@ -27,37 +28,33 @@ function App() {
     };
   }, []);
 
+  if (!["/", "/long-drive", "/multiplayer/drag-race", "/multiplayer/road-rage"].includes(pathname))
+    return <Navigate to="/" replace />;
+
+  const back = () => {
+    setSoundEnabled(gameAudio.enabled);
+    void navigate("/");
+  };
+  const selectMode = (mode: MultiplayerMode) => {
+    void navigate(mode === ModeRoadRage ? "/multiplayer/road-rage" : "/multiplayer/drag-race");
+  };
+
   return (
     <>
       {screen === "menu" ? (
         <MenuScreen
-          onMultiplayer={(mode) => {
-            setMode(mode);
-            setScreen("multiplayer");
-          }}
+          onMultiplayer={selectMode}
           onStartGame={() => {
             gameAudio.unlock();
             setCountdown(hasStarted.current ? 3 : 5);
             hasStarted.current = true;
-            setScreen("game");
+            void navigate("/long-drive");
           }}
         />
       ) : screen === "multiplayer" ? (
-        <MultiplayerScreen
-          mode={mode}
-          onBack={() => {
-            setSoundEnabled(gameAudio.enabled);
-            setScreen("menu");
-          }}
-        />
+        <MultiplayerScreen mode={mode} onBack={back} />
       ) : (
-        <GameWorld
-          countdown={countdown}
-          onBack={() => {
-            setSoundEnabled(gameAudio.enabled);
-            setScreen("menu");
-          }}
-        />
+        <SoloRoute countdown={countdown} onBack={back} />
       )}
       {screen === "menu" && (
         <button
