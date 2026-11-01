@@ -26,8 +26,8 @@ export function LoginScreen({
       setError("Username must contain 3–24 letters, digits, or underscores");
       return;
     }
-    if ([...password].length < 12 || [...password].length > 1024) {
-      setError("Password must contain 12–1024 characters");
+    if ([...password].length < 6 || [...password].length > 1024) {
+      setError("Password must contain 6–1024 characters");
       return;
     }
     if (temporary && password !== confirmation) {
@@ -86,7 +86,7 @@ export function LoginScreen({
               type="password"
               autoComplete={temporary ? "new-password" : "current-password"}
               required
-              minLength={12}
+              minLength={6}
               maxLength={2048}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
@@ -95,7 +95,7 @@ export function LoginScreen({
             />
           </label>
           <p id="password-rules" className="text-xs text-neutral-400">
-            At least 12 characters. Spaces and pasting allowed.
+            At least 6 characters. Spaces and pasting allowed.
           </p>
           {temporary && (
             <label className="flex flex-col gap-2 text-sm">

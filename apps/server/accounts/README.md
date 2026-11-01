@@ -2,7 +2,7 @@
 
 Accounts and sessions live in one SQLite database, including its WAL files. The server uses a named persistent Docker volume, or an explicit local `--database` path. Room simulations remain in memory; login survives restart, while room recovery after restart correctly fails.
 
-Usernames are 3–24 ASCII letters, digits or underscores, stored with original capitalization and SQLite `NOCASE` uniqueness. Passwords contain 12–1024 Unicode characters, including spaces. Argon2id uses a random 16-byte salt, 64 MiB, three passes and four threads. Only password hashes and SHA-256 session-token digests are stored. Sessions use 256-bit random bearer tokens and expire after 30 days without sliding renewal.
+Usernames are 3–24 ASCII letters, digits or underscores, stored with original capitalization and SQLite `NOCASE` uniqueness. Passwords contain 6–1024 Unicode characters, including spaces. Argon2id uses a random 16-byte salt, 64 MiB, three passes and four threads. Only password hashes and SHA-256 session-token digests are stored. Sessions use 256-bit random bearer tokens and expire after 30 days without sliding renewal.
 
 The `__Host-dashdevil-session` cookie is Secure, HttpOnly, SameSite=Strict, Path=/, with no Domain. The configured website origin must match every mutation, including binary room admission. Account mutations also require JSON; credentialed CORS permits only that exact origin. Login failures use a generic error. Login attempts are bounded per case-insensitive username (10/15 minutes) and TCP peer (100/15 minutes), with two concurrent password computations and bounded limiter storage. Successful login clears that username's failure budget. Behind nginx, the TCP peer budget is shared; forwarded headers are deliberately not trusted. Counters reset on process restart; accounts and sessions do not.
 
@@ -15,7 +15,7 @@ ADMIN_USERNAME=Site_Admin
 ADMIN_PASSWORD='your-strong-password'
 ```
 
-Compose passes these to the server. First startup creates the single admin in the mounted database; subsequent starts preserve existing credentials, including password changes made in the app. Changing these variables does not reset an existing admin. Username: 3–24 ASCII letters, digits or underscores. Password: 12–1024 characters. Keep `infra/.env` private and untracked.
+Compose passes these to the server. First startup creates the single admin in the mounted database; subsequent starts preserve existing credentials, including password changes made in the app. Changing these variables does not reset an existing admin. Username: 3–24 ASCII letters, digits or underscores. Password: 6–1024 characters. Keep `infra/.env` private and untracked.
 
 For Docker secrets, leave `ADMIN_PASSWORD` empty, mount a Compose secret on the server and set `ADMIN_PASSWORD_FILE=/run/secrets/admin_password`. The path is inside the container; setting the variable alone does not mount the file. Never set both password sources.
 
@@ -79,3 +79,38 @@ Chat identities are separate, non-reusable IDs. Account deletion clears the iden
 Every authoritative finished/forfeited multiplayer round queues one idempotent history record with stable chat identity IDs captured at admission for the off-thread writer (250 ms flush interval, retry on database failure, final flush on graceful shutdown). Abandoned rounds, cancelled countdowns, same-account pairs and Long Drive never qualify. Suggestions sort by shared-round count, then newest shared round, then chat identity ID; exclude deleted accounts, self, the current lobby opponent and any exchanged-message pair. History before this feature's deployment is unavailable because prior releases did not persist rounds.
 
 `go test ./transport -run TestChat` checks real HTTPS authorization, offline/retry delivery, monotonic reads, validation/throttling, deletion/restart retention, identity reuse isolation, multi-tab/session presence and stale timeout, lobby pinning and suggestions from actual forfeited rounds. `node apps/client/scripts/transport.mjs --test --chat` checks real-account browser messaging, unread badges, responsive layout, saved preferences and gameplay/result visibility.
+
+## Multiplayer race history
+
+The same SQLite volume retains thin Drag Race and Road Rage history indefinitely;
+no history UI or HTTP endpoint is added. `race_history` has one cryptographically
+namespaced round ID, mode, UTC microsecond start/end timestamps, gameplay duration,
+authoritative outcome and end reason. `race_participant` identifies each of the two
+seats independently, including two seats owned by one account. `drag_race_result`
+and `road_rage_result` contain only final HP, score and road progress for each seat.
+No names, avatars, input logs, replays or derived statistics are stored. Deleting
+an account sets its participant references to NULL while preserving shared results.
+
+Only a successfully installed countdown crossing its gameplay start creates a
+record. Cancelled countdowns and Long Drive are excluded; each rematch gets a new
+ID. A persistence worker commits the start before simulation advancement, outside
+the gameplay mutex. Active publication and recovery admission wait for that start
+barrier, so recovery cannot overtake a pending departure. Final results and the terminal outcome commit in one
+transaction; duplicate writes preserve the first outcome. Failed writes remain
+queued, log `race_history_retry`, disable readiness and prevent new round starts
+until retry succeeds. A room cannot rematch while its preceding result is pending.
+Shutdown waits for gameplay ownership to stop, then attempts to flush pending writes.
+If storage remains unavailable, `race_history_shutdown_pending` reports that fact.
+
+Before serving on startup, unfinished durable starts are marked abandoned with
+`server_restart`. Recovery time is stored as the end timestamp; duration and final
+car statistics remain unknown (NULL duration, no result rows). Other end reasons
+are the authoritative protocol OutcomeReason codes, stored as decimal text. A
+crash or unrecoverable storage outage can therefore recover an unfinished round
+as abandoned, without claiming an uncommitted final result. Continue running one
+room-owner process per database.
+
+`go test ./accounts ./transport -run TestRaceHistory` covers both modes, rematches,
+same-account seats, exact authoritative finals, duplicate writes, atomic rollback,
+retry, cancellation, forfeits, abandonment, restart recovery, deletion and a blocked
+SQLite writer without blocking gameplay ownership.

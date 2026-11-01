@@ -22,7 +22,7 @@ const Lifetime = 30 * 24 * time.Hour
 
 var ErrCredentials = errors.New("Invalid username or password")
 var ErrSession = errors.New("Session expired. Please log in again")
-var ErrPassword = errors.New("Password must contain 12–1024 characters")
+var ErrPassword = errors.New("Password must contain 6–1024 characters")
 var usernamePattern = regexp.MustCompile(`^[A-Za-z0-9_]{3,24}$`)
 
 type User struct {
@@ -78,6 +78,10 @@ func Open(path string) (*Store, error) {
 		db.Close()
 		return nil, err
 	}
+	if _, err = db.Exec(historySchema); err != nil {
+		db.Close()
+		return nil, err
+	}
 	store := &Store{db: db}
 	if err := store.initChat(); err != nil {
 		db.Close()
@@ -94,7 +98,7 @@ func Validate(username, password string) error {
 }
 func validatePassword(password string) error {
 	n := utf8.RuneCountInString(password)
-	if !utf8.ValidString(password) || n < 12 || n > 1024 {
+	if !utf8.ValidString(password) || n < 6 || n > 1024 {
 		return ErrPassword
 	}
 	return nil
