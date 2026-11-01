@@ -2,7 +2,7 @@ import { AdmissionOperationResume, RoomPhaseCountdown } from "@dashdevil/contrac
 
 import { useBlocker, useNavigate } from "react-router";
 import { NavigationConfirmation } from "./NavigationConfirmation";
-import { multiplayerPath } from "./multiplayerRoute";
+import { multiplayerPath } from "@/lib/uiUtils";
 import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
 import {

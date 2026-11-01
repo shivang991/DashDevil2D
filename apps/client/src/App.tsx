@@ -3,11 +3,24 @@ import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
 import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
 import { MenuScreen } from "@/screens/MenuScreen";
-import { Navigate, useLocation, useNavigate } from "react-router";
-import { SoloRoute } from "@/screens/SoloRoute";
+import { Navigate, useBlocker, useLocation, useNavigate } from "react-router";
+import { GameWorld } from "@/components/GameWorld";
+import { NavigationConfirmation } from "@/screens/NavigationConfirmation";
 import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
-import { multiplayerPath } from "@/screens/multiplayerRoute";
+import { multiplayerPath } from "@/lib/uiUtils";
 import type { MultiplayerMode } from "@/transport/PairedConnection";
+
+function SoloRoute(props: { countdown: 5 | 3; onBack: () => void }) {
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) => currentLocation.pathname !== nextLocation.pathname,
+  );
+  return (
+    <>
+      <GameWorld {...props} />
+      <NavigationConfirmation blocker={blocker} />
+    </>
+  );
+}
 
 function MenuSoundButton() {
   const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
