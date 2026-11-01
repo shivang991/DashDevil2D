@@ -2,7 +2,7 @@ import { AdmissionOperationResume, RoomPhaseCountdown } from "@dashdevil/contrac
 
 import { useBlocker, useNavigate } from "react-router";
 import { NavigationConfirmation } from "./NavigationConfirmation";
-import { ModeRoadRage } from "@dashdevil/contracts/protocol";
+import { multiplayerPath } from "./multiplayerRoute";
 import { GameAudio } from "@/lib/gameAudio";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -31,11 +31,9 @@ export function MultiplayerScreen({ mode, onBack }: { mode: MultiplayerMode; onB
   useEffect(() => {
     if (blocker.state === "blocked") connection.current?.releaseControls();
   }, [blocker.state]);
-  const modePath = (value: MultiplayerMode) =>
-    value === ModeRoadRage ? "/multiplayer/road-rage" : "/multiplayer/drag-race";
   useEffect(() => {
     if (state?.room && state.room.mode !== mode) {
-      void navigate(modePath(state.room.mode as MultiplayerMode), { replace: true });
+      void navigate(multiplayerPath(state.room.mode as MultiplayerMode), { replace: true });
     }
   }, [state?.room, mode, navigate]);
   useEffect(() => {
@@ -112,7 +110,7 @@ export function MultiplayerScreen({ mode, onBack }: { mode: MultiplayerMode; onB
         mode={mode}
         navigationBlocked={blocker.state === "blocked"}
         onBack={onBack}
-        onModeChange={(value) => void navigate(modePath(value))}
+        onModeChange={(value) => void navigate(multiplayerPath(value), { flushSync: true })}
         playerName={localName()}
         state={state}
         error={error}

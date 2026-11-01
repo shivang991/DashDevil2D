@@ -6,7 +6,32 @@ import { MenuScreen } from "@/screens/MenuScreen";
 import { Navigate, useLocation, useNavigate } from "react-router";
 import { SoloRoute } from "@/screens/SoloRoute";
 import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
+import { multiplayerPath } from "@/screens/multiplayerRoute";
 import type { MultiplayerMode } from "@/transport/PairedConnection";
+
+function MenuSoundButton() {
+  const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
+  return (
+    <button
+      type="button"
+      aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
+      aria-pressed={soundEnabled}
+      onClick={() => {
+        const enabled = !soundEnabled;
+        gameAudio.setEnabled(enabled);
+        setSoundEnabled(enabled);
+      }}
+      className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-950/90 px-3 py-2 text-xs text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-white"
+    >
+      {soundEnabled ? (
+        <Volume2 size={18} aria-hidden="true" />
+      ) : (
+        <VolumeX size={18} aria-hidden="true" />
+      )}
+      Sound {soundEnabled ? "on" : "off"}
+    </button>
+  );
+}
 
 function App() {
   const hasStarted = useRef(false);
@@ -15,7 +40,6 @@ function App() {
   const screen = pathname === "/" ? "menu" : pathname === "/long-drive" ? "game" : "multiplayer";
   const mode = pathname === "/multiplayer/road-rage" ? ModeRoadRage : ModeDragRace;
   const [countdown, setCountdown] = useState<5 | 3>(5);
-  const [soundEnabled, setSoundEnabled] = useState(gameAudio.enabled);
 
   useEffect(() => {
     window.addEventListener("pointerdown", gameAudio.unlock);
@@ -32,11 +56,10 @@ function App() {
     return <Navigate to="/" replace />;
 
   const back = () => {
-    setSoundEnabled(gameAudio.enabled);
-    void navigate("/");
+    void navigate("/", { flushSync: true });
   };
   const selectMode = (mode: MultiplayerMode) => {
-    void navigate(mode === ModeRoadRage ? "/multiplayer/road-rage" : "/multiplayer/drag-race");
+    void navigate(multiplayerPath(mode), { flushSync: true });
   };
 
   return (
@@ -48,7 +71,7 @@ function App() {
             gameAudio.unlock();
             setCountdown(hasStarted.current ? 3 : 5);
             hasStarted.current = true;
-            void navigate("/long-drive");
+            void navigate("/long-drive", { flushSync: true });
           }}
         />
       ) : screen === "multiplayer" ? (
@@ -56,26 +79,7 @@ function App() {
       ) : (
         <SoloRoute countdown={countdown} onBack={back} />
       )}
-      {screen === "menu" && (
-        <button
-          type="button"
-          aria-label={soundEnabled ? "Mute sound" : "Enable sound"}
-          aria-pressed={soundEnabled}
-          onClick={() => {
-            const enabled = !soundEnabled;
-            gameAudio.setEnabled(enabled);
-            setSoundEnabled(enabled);
-          }}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-neutral-600 bg-neutral-950/90 px-3 py-2 text-xs text-white hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-white"
-        >
-          {soundEnabled ? (
-            <Volume2 size={18} aria-hidden="true" />
-          ) : (
-            <VolumeX size={18} aria-hidden="true" />
-          )}
-          Sound {soundEnabled ? "on" : "off"}
-        </button>
-      )}
+      {screen === "menu" && <MenuSoundButton />}
     </>
   );
 }

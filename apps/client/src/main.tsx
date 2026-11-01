@@ -3,7 +3,8 @@ import { createRoot } from "react-dom/client";
 import "@fontsource-variable/bitcount-ink";
 import "@fontsource/bruno-ace-sc";
 import "./index.css";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter } from "react-router";
+import { RouterProvider } from "react-router/dom";
 import App from "./App.tsx";
 
 const router = createBrowserRouter([{ path: "*", element: <App /> }]);

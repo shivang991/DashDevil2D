@@ -321,3 +321,25 @@ test("expired saved seat explains failure and permits creating a fresh room", as
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
   await expect(page.getByTestId("connection-state")).toHaveText("Connected");
 });
+
+test("unreachable recovery expires credentials and returns to the requested start screen", async ({
+  page,
+}) => {
+  test.setTimeout(25000);
+  await page.goto("/multiplayer/road-rage");
+  await page.getByRole("button", { name: "Create Room", exact: true }).click();
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+  await page.route("**/admission", (route) => route.abort("failed"));
+  await page.reload();
+  await expect(page.getByRole("alert")).toContainText("Room recovery expired", { timeout: 20000 });
+  await expect(page.getByTestId("selected-mode")).toHaveText("Road Rage");
+  await expect(page.getByRole("button", { name: "Create Room", exact: true })).toBeEnabled();
+  expect(
+    await page.evaluate(() =>
+      Object.keys(sessionStorage).some((key) => key.startsWith("dashdevil-seat:")),
+    ),
+  ).toBe(false);
+  await page.unroute("**/admission");
+  await page.getByRole("button", { name: "Create Room", exact: true }).click();
+  await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+});
