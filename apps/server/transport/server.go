@@ -48,6 +48,9 @@ type Config struct {
 	RoadRageOverrides                                                            []byte
 }
 type Server struct {
+	chatRounds        []accounts.SharedRound
+	chatRun           string
+	chatDone          chan struct{}
 	sweepDone         chan struct{}
 	historyPrefix     string
 	historySequence   uint64
@@ -105,6 +108,7 @@ type room struct {
 type seat struct {
 	accountSession   string
 	accountID        int64
+	accountChatID    int64
 	accountExpires   time.Time
 	room             *room
 	index            p.SeatIndex
@@ -176,7 +180,7 @@ func New(config Config) (*Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Server{historyPrefix: token(prefix), avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
+	return &Server{chatRun: rand.Text(), historyPrefix: token(prefix), avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
 }
 func (s *Server) nowUs() uint64 { return uint64(max(0, s.config.Now().Sub(s.start).Microseconds())) }
 
@@ -272,6 +276,8 @@ func (s *Server) Start() error {
 	s.avatarCleanupDone = make(chan struct{})
 	s.cleanupAvatarsLocked()
 	go s.avatarCleanupLoop()
+	s.chatDone = make(chan struct{})
+	go s.chatHistoryLoop()
 	s.sweepDone = make(chan struct{})
 	s.historyDone = make(chan struct{})
 	go s.historyLoop()
@@ -306,12 +312,16 @@ func (s *Server) Close() {
 		if s.tcp != nil {
 			s.tcp.Close()
 		}
+		if s.chatDone != nil {
+			<-s.chatDone
+		}
 		if s.historyDone != nil {
 			<-s.historyDone
 		}
 		if s.sweepDone != nil {
 			<-s.sweepDone
 		}
+		s.flushChatRounds()
 		if !s.flushHistory() {
 			s.config.Logger.Error("race_history_shutdown_pending")
 		}
@@ -366,6 +376,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 	}
 	var account accounts.Session
+	var accountChatID int64
 	if !s.config.Diagnostic {
 		s.authMu.Lock()
 		defer s.authMu.Unlock()
@@ -375,6 +386,10 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		}
 		if account.MustChangePassword {
 			return s.failure(c, 403, 2, "Change your temporary password before multiplayer")
+		}
+		accountChatID, err = s.config.Accounts.ChatID(account.User.ID)
+		if err != nil {
+			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
 		}
 		request.Name = account.Username
 	}
@@ -496,6 +511,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		s.nextID++
 		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(roomDuration(r, "reconnectGrace"))}
 		participant.accountSession, participant.accountID, participant.accountExpires = account.ID, account.User.ID, account.Expires
+		participant.accountChatID = accountChatID
 		participant.avatar = account.Avatar
 		participant.savedName, participant.savedAvatar = request.Name, account.Avatar
 		if r.phase == p.RoomPhaseEnded {

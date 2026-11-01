@@ -37,6 +37,7 @@ func (s *Server) finalizeRaceLocked(r *room, result p.OutcomeResult, reason p.Ou
 	r.idle = s.nowTime().Add(time.Duration(r.settings.Value("room", "idleExpiry") * float64(time.Second)))
 	s.finishHistoryLocked(r, outcome)
 	r.outcome = &outcome
+	s.recordChatRoundLocked(r)
 	r.phase = p.RoomPhaseEnded
 	r.revision++
 	s.config.Logger.Info("race_finalized", "room", r.id, "round", r.roundID, "time_us", timeUs, "server_us", s.nowUs(), "result", result, "reason", reason)

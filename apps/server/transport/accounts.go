@@ -27,6 +27,7 @@ type accountAdmission struct {
 
 func (s *Server) accountRoutes() {
 	s.adminRoutes()
+	s.chatRoutes()
 	s.app.Get("/api/account", func(c *fiber.Ctx) error {
 		user, err := s.account(c)
 		if err != nil {

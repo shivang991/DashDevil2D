@@ -24,6 +24,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
 import defaults from "@dashdevil/contracts/configuration";
 import type { MultiplayerMode, PairedConnection, PairedState } from "@/transport/PairedConnection";
+import { ChatVisibility } from "@/components/Chat";
 import { Avatar } from "@/components/Avatar";
 import { RoundResult } from "@/components/RoundResult";
 import { Button } from "@/components/ui/button";
@@ -233,6 +234,11 @@ export function MultiplayerView({
         else if (!pending) onBack();
       }}
     >
+      <ChatVisibility
+        visible={!race || Boolean(resultKey && readyResult === resultKey)}
+        playing={Boolean(countdown || active)}
+        roomID={inRoom ? room?.identity.roomId : undefined}
+      />
       <section className={race ? "multiplayer-match-panel" : "multiplayer-panel"}>
         {!race && (
           <>
@@ -529,6 +535,7 @@ export function MultiplayerView({
       <MultiplayerDialog
         open={Boolean(resultKey && readyResult === resultKey)}
         title="Round Over"
+        modal={false}
         description="The multiplayer round has ended."
         className="round-result-dialog"
         returnFocus={main}
