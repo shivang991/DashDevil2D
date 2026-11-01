@@ -277,6 +277,7 @@ test("room recovery corrects URL; Back cancel retains seat and confirm explicitl
   page,
 }) => {
   await page.goto("/");
+  await loginTestAccount(page);
   await page.getByRole("button", { name: /Road Rage/ }).click();
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
   await expect(page.getByTestId("connection-state")).toHaveText("Connected");
@@ -301,6 +302,8 @@ test("room recovery corrects URL; Back cancel retains seat and confirm explicitl
 });
 
 test("expired saved seat explains failure and permits creating a fresh room", async ({ page }) => {
+  await page.goto("/");
+  await loginTestAccount(page);
   await page.goto("/multiplayer/road-rage");
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
   await expect(page.getByTestId("connection-state")).toHaveText("Connected");
@@ -328,6 +331,8 @@ test("unreachable recovery expires credentials and returns to the requested star
   page,
 }) => {
   test.setTimeout(25000);
+  await page.goto("/");
+  await loginTestAccount(page);
   await page.goto("/multiplayer/road-rage");
   await page.getByRole("button", { name: "Create Room", exact: true }).click();
   await expect(page.getByTestId("connection-state")).toHaveText("Connected");
