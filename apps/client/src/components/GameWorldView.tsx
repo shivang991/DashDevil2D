@@ -1,3 +1,4 @@
+import { ChatVisibility } from "./Chat";
 import { TouchControls } from "./TouchControls";
 import { GameSettings } from "./GameSettings";
 import type { Ref } from "react";
@@ -24,6 +25,7 @@ export function GameWorldView({
 }: GameWorldViewProps) {
   return (
     <div className="flex items-center justify-center w-full h-dvh bg-neutral-950 overflow-hidden">
+      <ChatVisibility visible={ui.gameOverAnimDone} playing={!ui.gameOverAnimDone} />
       <div className="relative flex flex-col w-full max-w-160 h-dvh overflow-hidden game-shell">
         <GameSettings ui={ui} onCommand={onCommand} onFocus={onFocus} onBack={onBack} />
         {/* ── Top HUD bar ── */}

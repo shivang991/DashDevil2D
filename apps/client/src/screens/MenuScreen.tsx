@@ -50,12 +50,6 @@ export function MenuScreen({
               </button>
             )}
             <ProfileDialog account={account} onLogout={onLogout} onSaved={onAccountSaved} />
-            <button
-              disabled
-              className="rounded-lg border border-neutral-700 px-3 py-2 text-sm text-neutral-500"
-            >
-              Chat · Coming soon
-            </button>
           </div>
         )}
         {/* Menu items */}

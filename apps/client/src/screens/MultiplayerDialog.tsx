@@ -8,6 +8,7 @@ export function MultiplayerDialog({
   description,
   onDismiss,
   dismissOutside = false,
+  modal = true,
   initialFocus,
   returnFocus,
   children,
@@ -18,6 +19,7 @@ export function MultiplayerDialog({
   description: string;
   onDismiss?: () => void;
   dismissOutside?: boolean;
+  modal?: boolean;
   initialFocus?: RefObject<HTMLButtonElement | null>;
   returnFocus: RefObject<HTMLElement | null>;
   children: ReactNode;
@@ -25,7 +27,7 @@ export function MultiplayerDialog({
 }) {
   const previousFocus = useRef<HTMLElement | null>(null);
   return (
-    <Dialog.Root open={open} onOpenChange={(next) => !next && onDismiss?.()}>
+    <Dialog.Root modal={modal} open={open} onOpenChange={(next) => !next && onDismiss?.()}>
       <Dialog.Overlay
         className={`multiplayer-dialog-scrim${className ? ` ${className}-scrim` : ""}`}
       />

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ChatShell } from "@/components/Chat";
 import { Volume2, VolumeX } from "lucide-react";
 import { gameAudio } from "@/lib/gameAudio";
 import { MultiplayerScreen } from "@/screens/MultiplayerScreen";
@@ -154,7 +155,7 @@ function App() {
   if (screen === "multiplayer" && !authLoaded) return null;
 
   return (
-    <>
+    <ChatShell key={account?.id ?? "guest"} account={account}>
       {account?.mustChangePassword ||
       screen === "login" ||
       (screen === "multiplayer" && !account) ? (
@@ -208,7 +209,7 @@ function App() {
         <SoloRoute countdown={countdown} onBack={back} />
       )}
       {screen === "menu" && <MenuSoundButton />}
-    </>
+    </ChatShell>
   );
 }
 

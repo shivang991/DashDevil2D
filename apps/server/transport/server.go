@@ -48,6 +48,9 @@ type Config struct {
 	RoadRageOverrides                                                            []byte
 }
 type Server struct {
+	chatRounds        []accounts.SharedRound
+	chatRun           string
+	chatDone          chan struct{}
 	accountAdmission  accountAdmission
 	avatarCleanup     chan struct{}
 	avatarCleanupDone chan struct{}
@@ -164,7 +167,7 @@ func New(config Config) (*Server, error) {
 	if config.Now == nil {
 		config.Now = time.Now
 	}
-	return &Server{avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
+	return &Server{chatRun: rand.Text(), avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
 }
 func (s *Server) nowUs() uint64 { return uint64(max(0, s.config.Now().Sub(s.start).Microseconds())) }
 
@@ -255,6 +258,8 @@ func (s *Server) Start() error {
 	s.avatarCleanupDone = make(chan struct{})
 	s.cleanupAvatarsLocked()
 	go s.avatarCleanupLoop()
+	s.chatDone = make(chan struct{})
+	go s.chatHistoryLoop()
 	go s.sweep()
 	return nil
 }
@@ -285,6 +290,9 @@ func (s *Server) Close() {
 		}
 		if s.tcp != nil {
 			s.tcp.Close()
+		}
+		if s.chatDone != nil {
+			<-s.chatDone
 		}
 		if s.avatarCleanupDone != nil {
 			<-s.avatarCleanupDone

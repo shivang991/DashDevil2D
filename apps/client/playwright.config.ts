@@ -57,6 +57,7 @@ export default defineConfig({
   testIgnore: [
     "accounts.spec.ts",
     "admin.spec.ts",
+    "chat.spec.ts",
     "dense.spec.ts",
     "failures.spec.ts",
     "responsibility.spec.ts",
