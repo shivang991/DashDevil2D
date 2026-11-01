@@ -56,6 +56,27 @@ The room participant who selects the multiplayer mode and starts rounds after bo
 **Lobby**:
 The room's gathering state in which players choose a mode and mark readiness for the next round.
 
+**Race history**:
+The persistent record of Drag Race and Road Rage rounds, including wins, ties, forfeits, and abandoned rounds. Long Drive is excluded.
+
+**Direct conversation**:
+A private, persistent exchange of messages between two accounts, independent of their room membership.
+
+**Lobby chat**:
+The direct conversation with the current lobby opponent, pinned above other conversations while they share the lobby. Leaving the lobby does not remove the conversation.
+
+**Challenge**:
+An invitation to join a multiplayer room, requiring the recipient's explicit acceptance. It does not interrupt an ongoing game.
+
+**Chat presence**:
+An account's activity across its sessions: Playing, Lobby, Active, or Offline, in descending priority. Playing includes Long Drive.
+
+**Suggested opponent**:
+A previous opponent with whom the account has exchanged no messages, excluding itself and its current lobby opponent. Suggestions are ordered by shared finished or forfeited round count, then latest such round; abandoned rounds do not contribute.
+
+**Acquaintance**:
+An account with which at least one direct message has been exchanged. The current lobby opponent appears in lobby chat instead of the Acquaintances list.
+
 **Ready**:
 A player's explicit agreement to play the room's selected mode. A mode change clears both players' readiness.
 
