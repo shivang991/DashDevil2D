@@ -81,6 +81,7 @@ type Server struct {
 	errors            chan error
 }
 type room struct {
+	invitationEpoch                   uint64
 	historyID                         string
 	historyStarting, historyFinishing bool
 	racers                            [2]p.RacerIdentity
@@ -377,6 +378,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	}
 	var account accounts.Session
 	var accountChatID int64
+	var challenge accounts.ChatChallenge
 	if !s.config.Diagnostic {
 		s.authMu.Lock()
 		defer s.authMu.Unlock()
@@ -390,6 +392,16 @@ func (s *Server) admission(c *fiber.Ctx) error {
 		accountChatID, err = s.config.Accounts.ChatID(account.User.ID)
 		if err != nil {
 			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
+		}
+		if c.Query("challenge") != "" {
+			id, parseErr := strconv.ParseInt(c.Query("challenge"), 10, 64)
+			if parseErr != nil || request.Operation != p.AdmissionOperationJoin || request.Code != "" {
+				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid challenge")
+			}
+			challenge, err = s.config.Accounts.ChatChallenge(id, accountChatID)
+			if err != nil {
+				return s.failure(c, 404, p.ProtocolErrorCodeAdmissionRejected, "Challenge unavailable")
+			}
 		}
 		request.Name = account.Username
 	}
@@ -405,6 +417,26 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			s.broadcast(r)
 		}
 	}()
+	if challenge.ID != 0 {
+		status, target := s.challengeStatusLocked(challenge)
+		if status != "Pending" {
+			s.mu.Unlock()
+			return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, "Challenge "+strings.ToLower(status))
+		}
+		for _, r := range s.rooms {
+			for _, seat := range r.seats {
+				if seat != nil && seat.accountID == account.User.ID {
+					detail := "Leave your current room before accepting"
+					if r.phase == p.RoomPhaseCountdown || r.phase == p.RoomPhaseActive {
+						detail = "Finish your game before accepting"
+					}
+					s.mu.Unlock()
+					return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, detail)
+				}
+			}
+		}
+		request.Code = target.code
+	}
 	var participant *seat
 	switch request.Operation {
 	case p.AdmissionOperationCreate, p.AdmissionOperationJoin:
@@ -523,6 +555,7 @@ func (s *Server) admission(c *fiber.Ctx) error {
 			}
 		}
 		r.seats[index] = participant
+		r.invitationEpoch++
 		r.idle = now.Add(roomDuration(r, "idleExpiry"))
 		s.credentials[token(credential)] = participant
 	case p.AdmissionOperationResume:
@@ -582,6 +615,16 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	response := p.Admission{Version: p.ProtocolVersion, Identity: pair.identity, Credential: participant.credential, RoomTicket: roomTicket, GameplayTicket: gameplayTicket, ExpiresUs: s.nowUs() + 30000000, Origin: s.config.Origin}
 	code := participant.room.code
 	s.mu.Unlock()
+	if challenge.ID != 0 {
+		if err := s.config.Accounts.AcceptChatChallenge(challenge.ID); err != nil {
+			s.mu.Lock()
+			s.removeSeatLocked(participant.room, participant.index)
+			s.mu.Unlock()
+			pair.close("challenge persistence failed")
+			s.broadcast(participant.room)
+			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to accept challenge. Retry")
+		}
+	}
 	if old != nil {
 		old.close("replaced")
 	}

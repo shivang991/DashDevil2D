@@ -3,7 +3,7 @@ import {
   AdmissionOperationJoin,
   AdmissionOperationResume,
 } from "@dashdevil/contracts/protocol";
-import { PairedConnection, type ConnectionOptions } from "./PairedConnection";
+import { PairedConnection, type ConnectionOptions } from "../game/multiplayer/PairedConnection";
 import "./diagnostic.css";
 
 const config: ConnectionOptions = import.meta.env.DEV

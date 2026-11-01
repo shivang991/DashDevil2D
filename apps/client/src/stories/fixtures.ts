@@ -10,7 +10,7 @@ import {
   SeatIndexPlayer1,
 } from "@dashdevil/contracts/protocol";
 
-import type { PairedState } from "@/transport/PairedConnection";
+import type { PairedState } from "@/game/multiplayer/PairedConnection";
 export const identity: Identity = {
   roomId: 1,
   seatSession: 1,

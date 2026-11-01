@@ -15,6 +15,7 @@ func (s *Store) initChat() error {
  INSERT OR IGNORE INTO chat_people(account_id) SELECT id FROM accounts;
  CREATE TRIGGER IF NOT EXISTS chat_account_created AFTER INSERT ON accounts BEGIN INSERT INTO chat_people(account_id) VALUES(NEW.id); END;
  CREATE TABLE IF NOT EXISTS chat_messages(id INTEGER PRIMARY KEY AUTOINCREMENT,sender INTEGER NOT NULL REFERENCES chat_people(id),recipient INTEGER NOT NULL REFERENCES chat_people(id),text TEXT NOT NULL,request_key TEXT NOT NULL,created_at INTEGER NOT NULL,UNIQUE(sender,request_key));
+ CREATE TABLE IF NOT EXISTS chat_challenges(message INTEGER PRIMARY KEY REFERENCES chat_messages(id),run TEXT NOT NULL,room INTEGER NOT NULL,epoch INTEGER NOT NULL,expires INTEGER NOT NULL,accepted INTEGER NOT NULL DEFAULT 0);
  CREATE INDEX IF NOT EXISTS chat_pair ON chat_messages(sender,recipient,id);
  CREATE INDEX IF NOT EXISTS chat_recipient ON chat_messages(recipient,id);
  CREATE TABLE IF NOT EXISTS chat_reads(reader INTEGER NOT NULL REFERENCES chat_people(id),peer INTEGER NOT NULL REFERENCES chat_people(id),through INTEGER NOT NULL,PRIMARY KEY(reader,peer));
@@ -192,6 +193,13 @@ func (s *Store) ChatThread(self, peer, after int64) ([]ChatMessage, error) {
 var ErrChatRate = errors.New("Too many messages. Wait a minute and retry")
 
 func (s *Store) ChatSend(self, peer int64, text, key string, now time.Time) (ChatMessage, error) {
+	return s.chatSend(self, peer, text, key, now, nil)
+}
+
+func (s *Store) ChatInvite(self, peer int64, key string, now time.Time, invitation ChatChallenge) (ChatMessage, error) {
+	return s.chatSend(self, peer, "Room challenge", key, now, &invitation)
+}
+func (s *Store) chatSend(self, peer int64, text, key string, now time.Time, invitation *ChatChallenge) (ChatMessage, error) {
 	var m ChatMessage
 	if self == peer || !utf8.ValidString(text) || utf8.RuneCountInString(text) > 2000 || strings.TrimSpace(text) == "" || len(key) < 1 || len(key) > 100 {
 		return m, errors.New("Enter 1–2,000 characters and a valid message key")
@@ -203,8 +211,21 @@ func (s *Store) ChatSend(self, peer int64, text, key string, now time.Time) (Cha
 	defer tx.Rollback()
 	err = tx.QueryRow(`SELECT id,sender,recipient,text,request_key,created_at FROM chat_messages WHERE sender=? AND request_key=?`, self, key).Scan(&m.ID, &m.Sender, &m.Recipient, &m.Text, &m.Key, &m.CreatedAt)
 	if err == nil {
-		if m.Recipient != peer || m.Text != text {
+		var isChallenge bool
+		if err = tx.QueryRow(`SELECT EXISTS(SELECT 1 FROM chat_challenges WHERE message=?)`, m.ID).Scan(&isChallenge); err != nil {
+			return m, err
+		}
+		if m.Recipient != peer || m.Text != text || isChallenge != (invitation != nil) {
 			return ChatMessage{}, errors.New("Message key already used")
+		}
+		if invitation != nil {
+			var original ChatChallenge
+			if err = tx.QueryRow(`SELECT run,room,epoch FROM chat_challenges WHERE message=?`, m.ID).Scan(&original.Run, &original.RoomID, &original.Epoch); err != nil {
+				return m, err
+			}
+			if original.Run != invitation.Run || original.RoomID != invitation.RoomID || original.Epoch != invitation.Epoch {
+				return ChatMessage{}, errors.New("Message key already used")
+			}
 		}
 		return m, nil
 	}
@@ -232,6 +253,11 @@ func (s *Store) ChatSend(self, peer int64, text, key string, now time.Time) (Cha
 	id, err := result.LastInsertId()
 	if err != nil {
 		return m, err
+	}
+	if invitation != nil {
+		if _, err = tx.Exec(`INSERT INTO chat_challenges(message,run,room,epoch,expires) VALUES(?,?,?,?,?)`, id, invitation.Run, invitation.RoomID, invitation.Epoch, invitation.ExpiresAt); err != nil {
+			return m, err
+		}
 	}
 	if err = tx.Commit(); err != nil {
 		return m, err

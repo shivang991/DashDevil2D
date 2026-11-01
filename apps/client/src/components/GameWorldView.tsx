@@ -3,7 +3,7 @@ import { TouchControls } from "./TouchControls";
 import { GameSettings } from "./GameSettings";
 import type { Ref } from "react";
 import { LONG_DRIVE_REFERENCE_HEIGHT } from "@dashdevil/simulation/track";
-import type { UISnapshot } from "@/game/GameSession";
+import type { UISnapshot } from "@/game/long-drive/LongDriveSession";
 
 interface GameWorldViewProps {
   ui: UISnapshot;

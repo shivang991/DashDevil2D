@@ -2,7 +2,7 @@ import { expect, test, vi } from "vitest";
 import {
   MultiplayerDrivingInput,
   type DrivingInputContext,
-} from "../../src/game/MultiplayerDrivingInput";
+} from "../../src/game/multiplayer/MultiplayerDrivingInput";
 
 const active: DrivingInputContext = {
   menu: false,
@@ -12,12 +12,10 @@ const active: DrivingInputContext = {
 };
 function setup() {
   const output = { input: vi.fn(), releaseControls: vi.fn() };
-  const clearKeys = vi.fn();
-  const driving = new MultiplayerDrivingInput(output, clearKeys);
+  const driving = new MultiplayerDrivingInput(output);
   driving.update(active);
   output.releaseControls.mockClear();
-  clearKeys.mockClear();
-  return { driving, output, clearKeys };
+  return { driving, output };
 }
 
 test("shared sources press once and release only when the final source releases", () => {
@@ -60,11 +58,10 @@ test("different controls pass through in order without synthesizing priority or 
 test.each([{ menu: true }, { suspended: true }, { status: "Reconnecting" }, { outcome: {} }])(
   "unavailable context %j resets holds and resumes only on fresh input",
   (change) => {
-    const { driving, output, clearKeys } = setup();
+    const { driving, output } = setup();
     driving.press("key:KeyW", 3);
     driving.update({ ...active, ...change });
     expect(output.releaseControls).toHaveBeenCalledTimes(1);
-    expect(clearKeys).toHaveBeenCalledTimes(1);
     expect(driving.release("key:KeyW")).toBe(false);
     expect(driving.press("touch:1", 1)).toBe(false);
     driving.update(active);
@@ -79,13 +76,11 @@ test.each([{ menu: true }, { suspended: true }, { status: "Reconnecting" }, { ou
 );
 
 test("unchanged snapshots preserve holds; a rematch clears them even when availability stays enabled", () => {
-  const { driving, output, clearKeys } = setup();
+  const { driving, output } = setup();
   driving.press("touch:1", 1);
   driving.update({ ...active });
   expect(output.releaseControls).not.toHaveBeenCalled();
-  expect(clearKeys).not.toHaveBeenCalled();
   driving.update({ ...active, roundId: 2 });
-  expect(clearKeys).toHaveBeenCalledTimes(1);
   expect(output.releaseControls).toHaveBeenCalledTimes(1);
   expect(driving.release("touch:1")).toBe(false);
   expect(output.input.mock.calls).toEqual([[0, 1]]);
@@ -98,21 +93,18 @@ test("unchanged snapshots preserve holds; a rematch clears them even when availa
 
 test("explicit reset synchronously clears sources and keyboard tracking before releasing delivery", () => {
   const calls: string[] = [];
-  const driving = new MultiplayerDrivingInput(
-    {
-      input: (intent, control) => calls.push(`${intent}:${control}`),
-      releaseControls: () => calls.push("release-all"),
-    },
-    () => calls.push("clear-keys"),
-  );
+  const driving = new MultiplayerDrivingInput({
+    input: (intent, control) => calls.push(`${intent}:${control}`),
+    releaseControls: () => calls.push("release-all"),
+  });
   driving.update(active);
   driving.press("touch:3", 3);
   calls.length = 0;
   driving.reset();
-  expect(calls).toEqual(["clear-keys", "release-all"]);
+  expect(calls).toEqual(["release-all"]);
   expect(driving.release("touch:3")).toBe(false);
   driving.press("touch:3", 3);
-  expect(calls).toEqual(["clear-keys", "release-all", "0:3"]);
+  expect(calls).toEqual(["release-all", "0:3"]);
 });
 
 test("connection admission remains independent: rejected presses remain locally held until reset", () => {

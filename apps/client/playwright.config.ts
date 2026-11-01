@@ -23,7 +23,7 @@ const capture = createCaptureRun({
   ],
   configuration: [
     "packages/contracts/configuration/defaults.json",
-    "apps/client/src/lib/constants.ts",
+    "packages/simulation/config.ts",
     "apps/client/playwright.config.ts",
     "apps/client/package.json",
     "pnpm-lock.yaml",

@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { GameAudio } from "../../src/lib/gameAudio";
-import { RaceAudio } from "../../src/game/RaceAudio";
-import { RaceSession } from "../../src/game/RaceSession";
+import { RaceAudio } from "../../src/game/multiplayer/RaceAudio";
+import { RaceSession } from "../../src/game/multiplayer/RaceSession";
 import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 

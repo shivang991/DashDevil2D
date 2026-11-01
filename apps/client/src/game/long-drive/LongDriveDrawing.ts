@@ -1,6 +1,13 @@
 import type { GameState } from "@dashdevil/simulation/state";
-import { gameConfig as defaultConfig, type GameConfig } from "./constants";
-import { drawRoad, drawCar, drawCoin, drawHeart, drawObstacle, drawGameOver } from "./renderUtils";
+import { gameConfig as defaultConfig, type GameConfig } from "@dashdevil/simulation/config";
+import {
+  drawRoad,
+  drawCar,
+  drawCoin,
+  drawHeart,
+  drawObstacle,
+  drawGameOver,
+} from "../../lib/renderUtils";
 
 /** Canvas drawing for one Long Drive configuration capture; does not mutate game state. */
 export class LongDriveDrawing {

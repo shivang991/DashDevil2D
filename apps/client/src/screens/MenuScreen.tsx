@@ -1,6 +1,6 @@
 import { Avatar } from "@/components/Avatar";
 import { ModeDragRace, ModeRoadRage } from "@dashdevil/contracts/protocol";
-import type { MultiplayerMode } from "@/transport/PairedConnection";
+import type { MultiplayerMode } from "@/game/multiplayer/PairedConnection";
 import { MenuItem } from "@/components/MenuItem";
 import type { Account } from "@/transport/account";
 import { ProfileDialog } from "./ProfileDialog";

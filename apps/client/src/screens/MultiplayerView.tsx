@@ -23,7 +23,11 @@ import {
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
 import defaults from "@dashdevil/contracts/configuration";
-import type { MultiplayerMode, PairedConnection, PairedState } from "@/transport/PairedConnection";
+import type {
+  MultiplayerMode,
+  PairedConnection,
+  PairedState,
+} from "@/game/multiplayer/PairedConnection";
 import { ChatVisibility } from "@/components/Chat";
 import { Avatar } from "@/components/Avatar";
 import { RoundResult } from "@/components/RoundResult";
@@ -237,6 +241,10 @@ export function MultiplayerView({
       <ChatVisibility
         visible={!race || Boolean(resultKey && readyResult === resultKey)}
         playing={Boolean(countdown || active)}
+        pending={pending}
+        admissionFailure={
+          !pending && roomError ? `${state?.errors.length ?? 0}:${roomError}` : undefined
+        }
         roomID={inRoom ? room?.identity.roomId : undefined}
       />
       <section className={race ? "multiplayer-match-panel" : "multiplayer-panel"}>

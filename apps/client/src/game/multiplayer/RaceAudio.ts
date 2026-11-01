@@ -1,5 +1,5 @@
 import { CarFlagsNOSActive } from "@dashdevil/contracts/protocol";
-import { GameAudio } from "../lib/gameAudio";
+import { GameAudio } from "../../lib/gameAudio";
 import type { RaceSession } from "./RaceSession";
 
 type Frame = ReturnType<RaceSession["frame"]>;

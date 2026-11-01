@@ -15,7 +15,11 @@ import {
 
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
-import type { MultiplayerMode, PairedConnection, PairedState } from "@/transport/PairedConnection";
+import type {
+  MultiplayerMode,
+  PairedConnection,
+  PairedState,
+} from "@/game/multiplayer/PairedConnection";
 import { lobby, room } from "./fixtures";
 
 /** Fixed render data: no transport, prediction, or advancing simulation. */

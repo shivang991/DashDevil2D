@@ -1,6 +1,6 @@
 import { AdmissionOperationCreate, AdmissionOperationResume } from "@dashdevil/contracts/protocol";
 import { afterEach, expect, test, vi } from "vitest";
-import { PairedConnection } from "../../src/transport/PairedConnection";
+import { PairedConnection } from "../../src/game/multiplayer/PairedConnection";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
 import { crc32c } from "@dashdevil/contracts/wire";

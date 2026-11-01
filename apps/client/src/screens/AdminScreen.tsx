@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { useAvatarDraft } from "./useAvatarDraft";
+import { AvatarEditor, type AvatarDraft } from "@/components/AvatarEditor";
 import { AlertDialog } from "radix-ui";
 import { Avatar } from "@/components/Avatar";
 import { accountAPI, adminAPI, type Account, type ManagedUser } from "@/transport/account";
@@ -340,12 +340,13 @@ function ProfileEditor({
   onError: (error: string) => void;
 }) {
   const [username, setUsername] = useState(user.username);
-  const { avatar, preview, reading, read, remove } = useAvatarDraft(onError);
+  const [{ value: avatar, reading }, setAvatarDraft] = useState<AvatarDraft>({ reading: false });
   return (
     <form
       className="flex max-w-sm flex-col gap-3"
       onSubmit={(event) => {
         event.preventDefault();
+        if (reading) return;
         if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
           onError("Username must contain 3–24 letters, digits, or underscores");
           return;
@@ -353,10 +354,12 @@ function ProfileEditor({
         onSave(username, avatar);
       }}
     >
-      <Avatar
+      <AvatarEditor
         username={username}
-        avatar={avatar === undefined ? user.avatar : ""}
-        preview={preview}
+        avatar={user.avatar}
+        disabled={busy}
+        onChange={setAvatarDraft}
+        onError={onError}
       />
       <label className="text-sm">
         Username
@@ -367,26 +370,6 @@ function ProfileEditor({
           onChange={(event) => setUsername(event.target.value)}
         />
       </label>
-      <label className="text-sm">
-        Avatar
-        <input
-          className="mt-2 block w-full text-xs"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          disabled={busy}
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            event.target.value = "";
-            if (file) void read(file);
-          }}
-        />
-      </label>
-      <p className="text-xs text-neutral-400">JPEG, PNG, WebP · up to 2 MB</p>
-      {(user.avatar || avatar) && (
-        <button type="button" className={button} disabled={busy} onClick={remove}>
-          Remove avatar
-        </button>
-      )}
       <div className="flex gap-3">
         <button className={button} disabled={busy || reading}>
           Save

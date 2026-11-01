@@ -1,7 +1,6 @@
 import { useState } from "react";
-import { useAvatarDraft } from "./useAvatarDraft";
+import { AvatarEditor, type AvatarDraft } from "@/components/AvatarEditor";
 import { Dialog } from "radix-ui";
-import { Avatar } from "@/components/Avatar";
 import { accountAPI, type Account } from "@/transport/account";
 
 export function ProfileDialog({
@@ -23,12 +22,14 @@ export function ProfileDialog({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [busy, setBusy] = useState(false);
-  const { avatar, preview, reading, read, reset: resetAvatar, remove } = useAvatarDraft(setError);
+  const [{ value: avatar, reading }, setAvatarDraft] = useState<AvatarDraft>({ reading: false });
+  const [avatarReset, setAvatarReset] = useState(0);
   const dirty = username !== saved.username || avatar !== undefined || reading;
   const button = "rounded-lg border border-neutral-600 px-4 py-3 disabled:opacity-50";
   const input = "w-full rounded-lg border border-neutral-600 bg-neutral-900 px-3 py-2 text-white";
   function reset(next: Account) {
-    resetAvatar();
+    setAvatarDraft({ reading: false });
+    setAvatarReset((value) => value + 1);
     setSaved(next);
     setUsername(next.username);
     setPasswordMode(false);
@@ -160,6 +161,7 @@ export function ProfileDialog({
               className="flex flex-col gap-4"
               onSubmit={(event) => {
                 event.preventDefault();
+                if (reading) return;
                 if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
                   setError("Username must contain 3–24 letters, digits, or underscores");
                   return;
@@ -172,34 +174,15 @@ export function ProfileDialog({
                 });
               }}
             >
-              <Avatar
+              <AvatarEditor
+                key={avatarReset}
                 username={username}
-                avatar={avatar === undefined ? saved.avatar : ""}
-                preview={preview}
+                avatar={saved.avatar}
+                disabled={busy}
+                onChange={setAvatarDraft}
+                onError={setError}
+                onSelect={() => setNotice("")}
               />
-              <label className="text-sm">
-                Avatar
-                <input
-                  type="file"
-                  className="mt-2 block w-full text-xs"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={busy}
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    event.target.value = "";
-                    if (file) {
-                      setNotice("");
-                      void read(file);
-                    }
-                  }}
-                />
-              </label>
-              <p className="text-xs text-neutral-400">JPEG, PNG, WebP · up to 2 MB</p>
-              {(saved.avatar || avatar) && (
-                <button type="button" className={button} disabled={busy} onClick={remove}>
-                  Remove avatar
-                </button>
-              )}
               <label className="text-sm">
                 Username
                 <input

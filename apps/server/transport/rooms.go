@@ -213,6 +213,7 @@ func (s *Server) removeSeatLocked(r *room, index p.SeatIndex) {
 		}
 	}
 	r.seats[index] = nil
+	r.invitationEpoch++
 	s.cleanupAvatarsLocked()
 	s.cancelCountdownLocked(r)
 	if r.phase == p.RoomPhaseEnded && r.seats[1-index] != nil && r.seats[1-index].returned {

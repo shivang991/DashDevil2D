@@ -114,7 +114,7 @@ function retainEvidence(code) {
       "apps/client/tests/browser/responsibility.spec.ts",
       "apps/client/tests/browser/responsibility.html",
       "apps/server/simulation/contacts.go",
-      "apps/client/src/game/RaceSession.ts",
+      "apps/client/src/game/multiplayer/RaceSession.ts",
       "infra/road-rage-track.json",
       "packages/contracts/race/road-rage.json",
       "apps/client/tests/browser/road-rage.spec.ts",
@@ -129,7 +129,7 @@ function retainEvidence(code) {
       "packages/simulation/multiplayer.ts",
       "apps/server/simulation/simulation.go",
       "apps/server/simulation/objects.go",
-      "apps/client/src/transport/PairedConnection.ts",
+      "apps/client/src/game/multiplayer/PairedConnection.ts",
       "apps/client/src/screens/MultiplayerScreen.tsx",
       "apps/client/playwright.transport.config.ts",
       "apps/server/go.mod",
@@ -293,7 +293,17 @@ const server = spawn(
   ],
   {
     cwd: root,
-    env: { ...process.env, ...(testPassword ? { ADMIN_USERNAME: "Test_Driver", ADMIN_PASSWORD: testPassword, ADMIN_PASSWORD_FILE: "", ADMIN_TEMPORARY_PASSWORD: accounts ? "true" : "false" } : {}) },
+    env: {
+      ...process.env,
+      ...(testPassword
+        ? {
+            ADMIN_USERNAME: "Test_Driver",
+            ADMIN_PASSWORD: testPassword,
+            ADMIN_PASSWORD_FILE: "",
+            ADMIN_TEMPORARY_PASSWORD: accounts ? "true" : "false",
+          }
+        : {}),
+    },
     stdio: ["ignore", serverLog, serverLog],
   },
 );

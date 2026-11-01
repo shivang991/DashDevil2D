@@ -1,4 +1,4 @@
-import type { ConnectionOptions } from "./PairedConnection";
+import type { ConnectionOptions } from "../game/multiplayer/PairedConnection";
 
 export interface Account {
   id: number;

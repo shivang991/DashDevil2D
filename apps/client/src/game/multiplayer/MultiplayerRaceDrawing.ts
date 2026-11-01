@@ -11,7 +11,6 @@ import {
 
 import type { RaceSession } from "./RaceSession";
 import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
-import { multiplayerRoadScale } from "@/lib/roadProjection";
 
 type DrawingFrame = Pick<ReturnType<RaceSession["frame"]>, "cars" | "renderedCars" | "objects">;
 
@@ -57,10 +56,11 @@ export class MultiplayerRaceDrawing {
       ctx.translate(-x, -y);
     }
     const camera = view.renderedCars[local].progress;
-    const roadScale = multiplayerRoadScale(
+    // Never expose road beyond the generation horizon; scale positions and extents
+    // consistently so both contact edges remain aligned.
+    const roadScale = Math.max(
       scale,
-      height,
-      g.maxRoadSpeed * g.accelSpeedMultiplier + g.carHeight / 2,
+      (height * 0.76) / (g.maxRoadSpeed * g.accelSpeedMultiplier + g.carHeight / 2),
     );
     const y = (progress: number) => height * 0.76 - (progress - camera) * roadScale;
     drawRoadScenery(

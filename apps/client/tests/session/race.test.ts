@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { expect, test } from "vitest";
-import { RaceSession } from "../../src/game/RaceSession";
+import { RaceSession } from "../../src/game/multiplayer/RaceSession";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext, initialBaseline } from "@dashdevil/contracts/validation";
 import type { Outcome } from "@dashdevil/contracts/protocol";

@@ -4,7 +4,7 @@ import { expect, test, vi } from "vitest";
 import { RaceView } from "../../src/components/RaceView";
 import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext } from "@dashdevil/contracts/validation";
-import type { PairedState } from "../../src/transport/PairedConnection";
+import type { PairedState } from "../../src/game/multiplayer/PairedConnection";
 
 test("multiplayer shares touch and keyboard holds and releases controls when settings open", () => {
   const connection = {
