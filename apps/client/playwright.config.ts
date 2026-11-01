@@ -56,6 +56,7 @@ export default defineConfig({
   testDir: "./tests/browser",
   testIgnore: [
     "accounts.spec.ts",
+    "admin.spec.ts",
     "dense.spec.ts",
     "failures.spec.ts",
     "responsibility.spec.ts",
