@@ -61,7 +61,7 @@ import {
   crc32c,
   quantize,
 } from "@dashdevil/contracts/wire";
-import { validateBaseline, validateVersion, nextCounter } from "@dashdevil/contracts/validation";
+import { validateBaseline, validateVersion } from "@dashdevil/contracts/validation";
 function hex(bytes: Uint8Array): string {
   return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 }
@@ -178,11 +178,8 @@ describe("shared versioned Go/TypeScript wire fixtures", () => {
     incomplete.push(a.subarray(0, 5));
     expect(() => incomplete.finish()).toThrow();
   });
-  it("rejects incompatible versions and refuses counter wrap", () => {
+  it("rejects incompatible versions", () => {
     expect(() => validateVersion(1)).toThrow();
-    expect(nextCounter(65534, 16)).toBe(65535);
-    expect(() => nextCounter(65535, 16)).toThrow();
-    expect(() => nextCounter(0xffffffff, 32)).toThrow();
   });
   it("validates continuation semantics beyond mechanical decoding", () => {
     const wrong = structuredClone(baseline);

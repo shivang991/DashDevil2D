@@ -493,13 +493,6 @@ export function validateBaseline(b: Baseline, expectedContext: Context): void {
       "insufficient reachable track coverage",
     );
 }
-export function nextCounter(value: number, bits: 16 | 32): number {
-  requireState(
-    Number.isInteger(value) && value >= 0 && value < (bits === 16 ? 65535 : CounterMax),
-    "counter exhausted; renew context",
-  );
-  return value + 1;
-}
 export function validateVersion(version: number): void {
   requireState(version === protocolVersion, "incompatible protocol version");
 }
