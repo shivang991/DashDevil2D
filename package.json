@@ -38,7 +38,8 @@
     "test:failures": "node apps/client/scripts/transport.mjs --test --failures",
     "test:responsibility": "node apps/client/scripts/transport.mjs --test --responsibility",
     "storybook": "turbo run storybook --filter=@dashdevil/client",
-    "build:storybook": "turbo run build:storybook --filter=@dashdevil/client"
+    "build:storybook": "turbo run build:storybook --filter=@dashdevil/client",
+    "test:storybook": "pnpm build:storybook && pnpm --filter @dashdevil/client test:storybook"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

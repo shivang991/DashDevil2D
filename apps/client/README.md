@@ -23,6 +23,7 @@ From the repository root:
 ```sh
 pnpm storybook        # http://localhost:6006
 pnpm build:storybook  # apps/client/storybook-static
+pnpm test:storybook   # build, then check every story and its play function in Chrome
 ```
 
 Storybook lives in `apps/client/.storybook` because the client owns the UI. It runs
@@ -32,10 +33,13 @@ output can be hosted separately. A shared UI package can follow if another app
 actually consumes these components; `packages/*` currently stays headless.
 
 Stories live alongside components as `*.stories.tsx`. Controls and Actions expose
-props and callback calls; the menu/navigation, join-code, and leave-confirmation
-stories also run interaction assertions. Typechecking includes stories and config.
+props and callback calls. Interaction assertions cover menu navigation, login and
+password changes, profile editing, admin confirmations, avatar uploads, chat,
+challenges, join codes, and leave confirmations. Typechecking includes stories and config.
 
-The catalog covers reusable buttons, actual game menu buttons, menu navigation,
+The catalog covers guest/authenticated/admin menus, login and temporary passwords,
+profile and admin dialogs, avatars and uploads, chat conversations, expiring room
+challenges, reusable buttons, actual game menu buttons, menu navigation,
 Long Drive HUD/countdown/pause/game-over, round outcomes, and multiplayer
 entry/loading/error/lobby/countdown/reconnection/result/leave states.
 `GameWorldView` and `MultiplayerView` are the same presentation components used
@@ -43,7 +47,19 @@ by the live screens. Stories supply fixed state and mock actions: the game canva
 is intentionally idle in Long Drive. Multiplayer playing stories use the real
 race renderer with frozen cars, objects, and HUD data; controls log calls without
 advancing gameplay. Sound toggles are isolated from saved game preferences.
-Network actions log calls rather than contacting a server. Use the existing game/browser tests for actual gameplay and transport.
+Account and chat transport modules are fully mocked through Storybook
+[automocking](https://storybook.js.org/docs/writing-stories/mocking-data-and-modules/mocking-modules).
+`src/stories/mockTransport.ts` restores fixture responses before each story;
+story-level hooks provide errors, loading, and other states. Mutations remain mock
+calls and do not persist. Chat preferences use a dedicated fixture account and
+restore its previous local storage value after each story.
+
+`pnpm test:storybook` requires Playwright Chrome (`pnpm --filter @dashdevil/client
+exec playwright install chrome`). It serves the static build on port 6007, runs
+every catalog story and its interaction assertions, and fails on render errors,
+browser exceptions, or unexpected account-server requests. CI runs it on pull
+requests and preserves failure screenshots/traces in `test-results/storybook`.
+Use the existing game/browser tests for actual gameplay and transport.
 Visual-regression CI is not configured.
 
 Configuration follows the [React/Vite integration](https://storybook.js.org/docs/get-started/frameworks/react-vite)
