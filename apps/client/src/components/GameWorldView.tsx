@@ -1,9 +1,9 @@
 import { ChatVisibility } from "./Chat";
 import { TouchControls } from "./TouchControls";
-import { GameSettings } from "./GameSettings";
-import { ArrowLeft } from "lucide-react";
+import { LongDrivePauseMenu } from "./LongDrivePauseMenu";
+import { Button } from "./ui/button";
+import { ChevronLeft, Pause, Play, RotateCcw } from "lucide-react";
 import type { Ref } from "react";
-import { LONG_DRIVE_REFERENCE_HEIGHT } from "@dashdevil/simulation/track";
 import type { UISnapshot } from "@/game/long-drive/LongDriveSession";
 
 interface GameWorldViewProps {
@@ -24,69 +24,87 @@ export function GameWorldView({
   onControl,
   onCommand,
 }: GameWorldViewProps) {
+  const command = (value: "pause" | "reset") => {
+    onCommand?.(value);
+    onFocus?.();
+  };
+  const PauseIcon = ui.paused ? Play : Pause;
   return (
-    <div className="flex items-center justify-center w-full h-dvh bg-neutral-950 overflow-hidden">
+    <div className="flex h-dvh w-full items-center justify-center overflow-hidden bg-neutral-950 p-3 pt-[max(12px,env(safe-area-inset-top))] pb-[max(12px,env(safe-area-inset-bottom))] [@media(max-height:450px)]:p-2">
       <ChatVisibility visible={ui.gameOverAnimDone} playing={!ui.gameOverAnimDone} />
-      <div className="relative flex flex-col w-full max-w-160 h-dvh overflow-hidden game-shell pt-[env(safe-area-inset-top)] [&_canvas]:touch-none">
-        <GameSettings ui={ui} onCommand={onCommand} onFocus={onFocus} onBack={onBack} />
-        {/* ── Top HUD bar ── */}
-        <div className="flex items-center justify-between pl-4 pr-14 sm:pl-6 py-2 sm:py-3 shrink-0">
-          {/* Left side */}
-          <div className="flex items-center gap-2">
-            {onBack && (
-              <button
-                type="button"
-                onClick={onBack}
-                aria-label="Back"
-                className="grid size-11 shrink-0 place-items-center rounded-[10px] text-neutral-300 hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      <section className="game-shell relative flex h-[min(100%,calc(min(560px,100vw_-_48px)*15/14_+_150px))] min-h-0 w-full max-w-[608px] flex-col gap-3 overflow-hidden rounded-[24px] border border-neutral-700 p-[clamp(10px,2vw,22px)] [@media(max-height:450px)]:gap-1 [&_canvas]:touch-none">
+        <header className="flex shrink-0 items-center gap-1 sm:gap-2">
+          {onBack && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-11 rounded-[10px] text-neutral-300"
+              onClick={onBack}
+              aria-label="Back"
+            >
+              <ChevronLeft className="size-6!" aria-hidden="true" />
+            </Button>
+          )}
+          <img
+            src={`${import.meta.env.BASE_URL}images/long-drive-logo.png`}
+            alt=""
+            width={36}
+            height={36}
+            draggable={false}
+            className="size-8 shrink-0 object-contain sm:size-9 [image-rendering:pixelated]"
+          />
+          <div className="min-w-0 flex-1">
+            <h1 className="truncate font-heading text-sm leading-tight text-red-400 min-[360px]:text-xl sm:text-2xl">
+              Long Drive
+            </h1>
+            <div className="mt-1 flex items-center gap-2 text-xs sm:gap-3 text-neutral-200">
+              <div
+                className="flex gap-1"
+                role="img"
+                aria-label={`Health: ${ui.health} of ${ui.maxHealth}`}
               >
-                <ArrowLeft size={22} aria-hidden="true" />
-              </button>
-            )}
-            <div className="flex flex-col gap-1">
-              <h1 className="text-white text-base sm:text-xl tracking-wide">Branding</h1>
-              <p className="keyboard-hint [@media(any-pointer:coarse)]:hidden text-neutral-400 text-xs sm:text-sm">
-                {ui.accelerating ? "Accelerating!" : "Hold [Up/W] to accelerate"} Hit [Space] to
-                pause
+                {Array.from({ length: ui.maxHealth }).map((_, i) => (
+                  <img
+                    key={i}
+                    src={`${import.meta.env.BASE_URL}textures/heart.png`}
+                    alt=""
+                    draggable={false}
+                    width={16}
+                    height={16}
+                    className={`size-4 object-contain [image-rendering:pixelated] ${i < ui.health ? "" : "grayscale opacity-30"}`}
+                  />
+                ))}
+              </div>
+              <p className="flex items-center gap-1 tabular-nums" aria-label={`Score: ${ui.score}`}>
+                <img
+                  src={`${import.meta.env.BASE_URL}textures/coin.png`}
+                  alt=""
+                  width={14}
+                  height={14}
+                  className="size-3.5 object-contain [image-rendering:pixelated]"
+                />
+                <span aria-hidden="true">× {ui.score}</span>
               </p>
             </div>
           </div>
-
-          {/* Right side */}
-          <div className="flex flex-col items-end gap-1">
-            {/* Health hearts */}
-            <div
-              className="flex gap-1.5 sm:gap-2"
-              role="img"
-              aria-label={`Health: ${ui.health} of ${ui.maxHealth}`}
+          <div className="shrink-0 border-l border-neutral-700 pl-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-11 rounded-[10px] text-neutral-300"
+              disabled={ui.status !== "playing"}
+              aria-label={ui.paused ? "Play" : "Pause"}
+              aria-expanded={ui.status === "playing" && ui.paused}
+              aria-controls="long-drive-pause"
+              onClick={() => command("pause")}
             >
-              {Array.from({ length: ui.maxHealth }).map((_, i) => (
-                <img
-                  key={i}
-                  src={`${import.meta.env.BASE_URL}textures/heart.png`}
-                  alt=""
-                  draggable={false}
-                  width={16}
-                  height={16}
-                  style={{ imageRendering: "pixelated" }}
-                  className={`w-5 h-5 sm:w-6 sm:h-6 object-contain ${
-                    i < ui.health ? "" : "grayscale opacity-30"
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Score */}
-            <p className="text-white text-xs sm:text-sm">Score: {ui.score}</p>
+              <PauseIcon className="size-5!" aria-hidden="true" />
+            </Button>
           </div>
-        </div>
-
-        {/* ── Game canvas ── */}
-        <div className="flex-1 min-h-0 flex items-center px-2 sm:px-4 pb-2 sm:pb-4">
+        </header>
+        <div className="flex min-h-0 flex-1 items-center justify-center [container-type:size]">
           <div
-            className="relative w-full h-full rounded-xl overflow-hidden border border-neutral-700"
-            // Keep the fixed spawn horizon above the view without stretching art.
-            style={{ maxHeight: LONG_DRIVE_REFERENCE_HEIGHT }}
+            className="relative aspect-[14/15] max-h-[600px] w-[min(100cqw,calc(100cqh*14/15),560px)] overflow-hidden rounded-xl border border-neutral-600"
             onPointerDown={(event) => {
               if (!(
                 event.target instanceof Element &&
@@ -95,61 +113,54 @@ export function GameWorldView({
                 onFocus?.();
             }}
           >
-            <canvas ref={canvasRef} aria-label="Long Drive game" className="block w-full h-full" />
-
-            {/* Countdown overlay */}
+            <canvas
+              ref={canvasRef}
+              width={560}
+              height={600}
+              aria-label="Long Drive game"
+              aria-description={ui.accelerating ? "Accelerating" : "Cruising"}
+              className="block h-full w-full focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-red-400"
+            />
             {ui.status === "countdown" && (
               <div
-                className="game-overlay absolute inset-0 flex items-center justify-center pointer-events-none"
-                style={{
-                  backdropFilter: "blur(3px)",
-                  WebkitBackdropFilter: "blur(3px)",
-                }}
+                className="game-overlay pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40"
+                role="status"
+                aria-label="Countdown"
               >
-                <DirtBackdrop />
-                <p className="font-heading font-light relative text-white text-8xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
+                <p className="font-heading text-7xl font-light text-white [text-shadow:0_2px_12px_#000]">
                   {ui.countdown}
                 </p>
               </div>
             )}
-
-            {/* Pause overlay */}
             {ui.paused && ui.status === "playing" && (
-              <div
-                className="game-overlay absolute inset-0 flex items-center justify-center"
-                style={{
-                  backdropFilter: "blur(3px)",
-                  WebkitBackdropFilter: "blur(3px)",
-                }}
-              >
-                <DirtBackdrop />
-                <h2 className="relative text-white text-2xl drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]">
-                  PAUSED
-                </h2>
-              </div>
+              <LongDrivePauseMenu
+                onResume={() => command("pause")}
+                onRestart={() => command("reset")}
+              />
             )}
-
-            {/* Game over overlay */}
             {ui.gameOverAnimDone && (
               <div
-                className="game-overlay absolute inset-0 flex flex-col items-center justify-center"
-                style={{
-                  backdropFilter: "blur(3px)",
-                  WebkitBackdropFilter: "blur(3px)",
-                }}
+                className="game-overlay absolute inset-0 flex overflow-auto bg-black/75 p-3 text-center"
+                role="region"
+                aria-label="Game over"
               >
-                <DirtBackdrop />
-                <h2 className="relative text-red-500 text-4xl">GAME OVER</h2>
-                <p className="relative text-white text-xl mt-4">Score: {ui.score}</p>
-                <p className="relative text-neutral-400 text-sm mt-3">Press [Enter] to restart</p>
-                {onBack && (
-                  <button
-                    onClick={onBack}
-                    className="relative mt-6 px-4 py-2 rounded-lg border border-neutral-600 text-neutral-300 text-sm hover:border-neutral-400 hover:text-white"
+                <div className="m-auto flex shrink-0 flex-col items-center gap-3">
+                  <h2 className="font-heading text-3xl text-red-400">Game over</h2>
+                  <p className="text-lg text-white">Score: {ui.score}</p>
+                  <Button
+                    className="min-h-11 w-36 bg-red-400 text-neutral-950 hover:bg-red-300"
+                    onClick={() => command("reset")}
                   >
-                    Back to Menu
-                  </button>
-                )}
+                    <RotateCcw aria-hidden="true" />
+                    Restart
+                  </Button>
+                  {onBack && (
+                    <Button variant="multiplayer" className="min-h-11 w-36" onClick={onBack}>
+                      <ChevronLeft aria-hidden="true" />
+                      Back to Menu
+                    </Button>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -157,22 +168,7 @@ export function GameWorldView({
         {onControl && (
           <TouchControls disabled={ui.status !== "playing" || ui.paused} onControl={onControl} />
         )}
-      </div>
+      </section>
     </div>
-  );
-}
-
-function DirtBackdrop() {
-  return (
-    <div
-      aria-hidden="true"
-      className="absolute inset-0 bg-[#49301f] opacity-60"
-      style={{
-        backgroundImage: `url(${import.meta.env.BASE_URL}textures/dirt.png)`,
-        backgroundRepeat: "repeat",
-        backgroundSize: "64px 64px",
-        imageRendering: "pixelated",
-      }}
-    />
   );
 }

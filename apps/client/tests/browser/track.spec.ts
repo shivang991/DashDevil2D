@@ -22,7 +22,7 @@ for (const resize of [false, true]) {
     await page.screenshot({ path: path.join(evidence, "obstacle-consumed.png") });
     await page.clock.runFor(1000);
     await expect(page.getByRole("img", { name: "Health: 4 of 4" })).toBeVisible();
-    await expect(page.getByText("Score: 0", { exact: true })).toBeVisible();
+    await expect(page.getByLabel("Score: 0", { exact: true })).toBeVisible();
     await page.screenshot({ path: path.join(evidence, "heart-consumed.png") });
     const dimensions = await page.locator("canvas").evaluate((c) => ({
       width: (c as HTMLCanvasElement).width,
@@ -57,11 +57,11 @@ test("seeded high-speed pickup adds exactly ten points", async ({ page, evidence
   await page.clock.runFor(3050);
   await page.keyboard.down("w");
   await page.clock.runFor(1400);
-  await expect(page.getByText("Score: 10", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Score: 10", { exact: true })).toBeVisible();
   await expect(page.getByRole("img", { name: "Health: 2 of 2" })).toBeVisible();
   await page.keyboard.up("w");
   await page.keyboard.press("Space");
-  await expect(page.getByText("PAUSED", { exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Game paused", exact: true })).toBeVisible();
   await page.screenshot({ path: path.join(evidence, "boost-coin-paused.png") });
 });
 
@@ -104,9 +104,10 @@ for (const height of [1440, 2160]) {
         cssHeight: bounds.height,
       };
     });
-    expect(dimensions.height).toBeLessThanOrEqual(806);
-    expect(dimensions.cssWidth).toBeCloseTo(dimensions.width, 0);
-    expect(dimensions.cssHeight).toBeCloseTo(dimensions.height, 0);
+    expect(dimensions.width).toBe(560);
+    expect(dimensions.height).toBe(600);
+    expect(dimensions.cssWidth / dimensions.cssHeight).toBeCloseTo(14 / 15, 2);
+    expect(dimensions.cssWidth).toBeLessThanOrEqual(dimensions.width);
     const sprites = (await page.evaluate("window.spriteSizes")) as {
       name: string;
       width: number;

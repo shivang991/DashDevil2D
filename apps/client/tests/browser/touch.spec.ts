@@ -29,17 +29,17 @@ test("touch driving combines inputs, clears cancellation, and keeps settings off
   await page.clock.runFor(40);
   await expect(accelerate).toHaveAttribute("aria-pressed", "true");
   await expect(left).toHaveAttribute("aria-pressed", "true");
-  await expect(page.locator(".keyboard-hint")).toContainText("Accelerating!");
+  await expect(page.locator("canvas")).toHaveAttribute("aria-description", "Accelerating");
   await client.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [steering] });
   await expect(left).toHaveAttribute("aria-pressed", "false");
   await expect(accelerate).toHaveAttribute("aria-pressed", "true");
   await client.send("Input.dispatchTouchEvent", { type: "touchCancel", touchPoints: [] });
   await page.clock.runFor(20);
   await expect(accelerate).toHaveAttribute("aria-pressed", "false");
-  await expect(page.locator(".keyboard-hint")).not.toContainText("Accelerating!");
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
-  await expect(page.getByRole("dialog", { name: "Game settings" })).toBeVisible();
-  await expect(page.getByText("PAUSED", { exact: true })).toBeVisible();
+  await expect(page.locator("canvas")).toHaveAttribute("aria-description", "Cruising");
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Game paused", exact: true })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Game paused", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Resume", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(accelerate).toBeEnabled();
@@ -61,7 +61,7 @@ test("touch driving combines inputs, clears cancellation, and keeps settings off
     await expect(left).toBeInViewport();
     await page.screenshot({ path: testInfo.outputPath(`touch-${viewport.width}.png`) });
   }
-  await page.getByRole("button", { name: "Settings", exact: true }).click();
+  await page.getByRole("button", { name: "Pause", exact: true }).click();
   await page.getByRole("button", { name: "Restart", exact: true }).click();
   await expect(page.locator(".game-overlay")).toHaveText("3");
   await expect(accelerate).toBeDisabled();
