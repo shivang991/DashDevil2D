@@ -1,6 +1,7 @@
 import { ChatVisibility } from "./Chat";
 import { TouchControls } from "./TouchControls";
 import { GameSettings } from "./GameSettings";
+import { ArrowLeft } from "lucide-react";
 import type { Ref } from "react";
 import { LONG_DRIVE_REFERENCE_HEIGHT } from "@dashdevil/simulation/track";
 import type { UISnapshot } from "@/game/long-drive/LongDriveSession";
@@ -31,11 +32,24 @@ export function GameWorldView({
         {/* ── Top HUD bar ── */}
         <div className="flex items-center justify-between pl-4 pr-14 sm:pl-6 py-2 sm:py-3 shrink-0">
           {/* Left side */}
-          <div className="flex flex-col gap-1">
-            <h1 className="text-white text-base sm:text-xl tracking-wide">Branding</h1>
-            <p className="keyboard-hint [@media(any-pointer:coarse)]:hidden text-neutral-400 text-xs sm:text-sm">
-              {ui.accelerating ? "Accelerating!" : "Hold [Up/W] to accelerate"} Hit [Space] to pause
-            </p>
+          <div className="flex items-center gap-2">
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                aria-label="Back"
+                className="grid size-11 shrink-0 place-items-center rounded-[10px] text-neutral-300 hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+              >
+                <ArrowLeft size={22} aria-hidden="true" />
+              </button>
+            )}
+            <div className="flex flex-col gap-1">
+              <h1 className="text-white text-base sm:text-xl tracking-wide">Branding</h1>
+              <p className="keyboard-hint [@media(any-pointer:coarse)]:hidden text-neutral-400 text-xs sm:text-sm">
+                {ui.accelerating ? "Accelerating!" : "Hold [Up/W] to accelerate"} Hit [Space] to
+                pause
+              </p>
+            </div>
           </div>
 
           {/* Right side */}

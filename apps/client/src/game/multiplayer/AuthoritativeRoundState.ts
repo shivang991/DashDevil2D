@@ -422,6 +422,7 @@ export class AuthoritativeRoundState {
     // sufficient to draw the frozen result while road-object state is unavailable.
     return {
       feedback: [],
+      damageAtUs: [-Infinity, -Infinity],
       sounds: [],
       objects: [],
       renderedCars: outcome.cars.map((car) => ({ ...car, tilt: 0 })),

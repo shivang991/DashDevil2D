@@ -1087,6 +1087,9 @@ for (const mode of ["drag-race", "road-rage"] as const)
         0,
       );
       const frame = race.frame(100000, 0);
+      frame.cars.forEach((car, target) => {
+        expect(Number.isFinite(frame.damageAtUs[target])).toBe(car.hp < b.cars[target].hp);
+      });
       expect(frame.sounds.filter((sound) => sound.type === "lane")).toHaveLength(1);
       expect(frame.sounds.filter((sound) => sound.type === "impact")).toEqual([
         { type: "impact", protected: false },

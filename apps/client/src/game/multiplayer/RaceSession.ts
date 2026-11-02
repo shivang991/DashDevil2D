@@ -56,6 +56,7 @@ export class RaceSession {
   private settlingSince?: number;
   private soundEpisode = 0;
   private sounds: RaceSound[] = [];
+  private damageAtUs = [-Infinity, -Infinity];
   private soundSeen = new Set<string>();
   private feedbackSeen = new Set<string>();
   private feedback: string[] = [];
@@ -95,6 +96,11 @@ export class RaceSession {
       connection: c.connection,
       operational: c.operational,
     });
+    if (c.gameplay.invincibleDuration > 0)
+      baseline.cars.forEach((car, seat) => {
+        if (car.protectionUs > baseline.timeUs)
+          this.damageAtUs[seat] = car.protectionUs - canonicalTime(c.gameplay.invincibleDuration);
+      });
     validateBaseline(baseline, c);
     this.lastAuthorityUs = baseline.timeUs;
     this.lastFrameUs = baseline.timeUs;
@@ -245,7 +251,7 @@ export class RaceSession {
         if (index >= 0) window.objects[index] = { ...object };
       }
     this.observeObjects(record.objects);
-    this.observeSounds(
+    this.observeEffects(
       record.objects,
       record.cars,
       record.timeUs,
@@ -341,7 +347,7 @@ export class RaceSession {
       );
     }
   }
-  private observeSounds(
+  private observeEffects(
     objects: readonly import("@dashdevil/contracts/protocol").ObjectState[],
     cars: readonly Car[],
     timeUs: number,
@@ -349,6 +355,16 @@ export class RaceSession {
     observation?: Observation,
     previousCars: readonly Car[] = this.baseline.cars,
   ) {
+    // Keep both cars' damage even when a later pickup restores HP before the next draw.
+    // Replayed prediction and authority records share round timestamps.
+    if (!observation || observation.type === "objects")
+      cars.forEach((candidate, seat) => {
+        if (
+          candidate.hp < previousCars[seat].hp ||
+          candidate.protectionUs > previousCars[seat].protectionUs
+        )
+          this.damageAtUs[seat] = Math.max(this.damageAtUs[seat], timeUs);
+      });
     const seat = this.baseline.identity.seat;
     const car = cars[seat];
     const g = this.configuration.gameplay;
@@ -406,6 +422,7 @@ export class RaceSession {
     if (this.outcome)
       return {
         feedback: [] as string[],
+        damageAtUs: [...this.damageAtUs],
         sounds: this.drainSounds(),
         objects: this.baseline.windows.flatMap((window) => window.objects),
         renderedCars: this.outcome.cars.map((c) => ({ ...c, tilt: 0 })),
@@ -533,6 +550,7 @@ export class RaceSession {
     this.feedback = [];
     return {
       feedback,
+      damageAtUs: [...this.damageAtUs],
       sounds: this.drainSounds(),
       objects: state.objects,
       renderedCars,
@@ -599,7 +617,7 @@ export class RaceSession {
       if (publish)
         for (const event of events) {
           if (event.objects) this.observeObjects(event.objects);
-          this.observeSounds(
+          this.observeEffects(
             event.objects ?? [],
             event.cars ?? game.preview().cars,
             event.timeUs,
