@@ -1,3 +1,4 @@
-// Package server reserves the native Go module for the multiplayer server.
-// Room coordination, authority and transport arrive in their owning tickets.
+// Package server documents the native multiplayer module. The executable uses
+// the server subpackage for process wiring; multiplayer owns game state,
+// transport owns network delivery, and accounthttp owns account HTTP handling.
 package server

@@ -24,12 +24,12 @@ func TestReplacementRejectsOldHandleAndReturnsCopiedBaseline(t *testing.T) {
 		t.Fatal(err)
 	}
 	before.Cars[0].Hp = 0
-	before.Windows[0].Objects = nil
+	before.Windows[0].Start = 123456
 	fresh, err := first.Handle.Baseline()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if fresh.Cars[0].Hp == 0 || len(fresh.Windows[0].Objects) == 0 {
+	if fresh.Cars[0].Hp == 0 || fresh.Windows[0].Start == 123456 {
 		t.Fatal("caller mutated authoritative baseline")
 	}
 	replacement, err := s.Admit(p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: first.Credential}, "", accounts.Session{}, 0, multiplayer.Invitation{})

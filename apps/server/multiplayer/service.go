@@ -26,7 +26,8 @@ type Config struct {
 	CodeStart                            func() (uint16, error)
 	Diagnostic                           bool
 	DragRaceOverrides, RoadRageOverrides []byte
-	NewConnection                        func(Handle, p.Identity, p.Connection) Delivery
+	// Called under room ownership: allocate only; no I/O or multiplayer callbacks.
+	NewConnection func(Handle, p.Identity, p.Connection) Delivery
 }
 type Server struct {
 	chatRounds      []accounts.SharedRound
