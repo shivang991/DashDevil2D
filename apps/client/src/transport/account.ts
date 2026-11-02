@@ -38,7 +38,20 @@ async function request<T>(path: string, body?: object): Promise<T> {
     throw new AccountError(result.error ?? "Request failed. Try again", response.status);
   return result as T;
 }
+export interface RaceHistoryEntry {
+  id: string;
+  seat: number;
+  mode: "drag-race" | "road-rage";
+  startedAt: string;
+  result: "win" | "loss" | "tie";
+  opponent: string;
+}
+export interface RaceHistoryPage {
+  races: RaceHistoryEntry[];
+  hasNext: boolean;
+}
 export const accountAPI = {
+  history: (page: number) => request<RaceHistoryPage>(`/history?page=${page}`),
   current: () => request<Account>(""),
   login: (username: string, password: string) => request<Account>("/login", { username, password }),
   changeTemporaryPassword: (password: string) => request<Account>("/password", { password }),

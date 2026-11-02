@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -27,6 +28,25 @@ type accountAdmission struct {
 func (s *Server) accountRoutes() {
 	s.adminRoutes()
 	s.chatRoutes()
+	s.app.Get("/api/account/history", func(c *fiber.Ctx) error {
+		session, err := s.account(c)
+		if err != nil {
+			return accountError(c, 401, accounts.ErrSession.Error())
+		}
+		if session.MustChangePassword {
+			return accountError(c, 403, "Change your temporary password first")
+		}
+		page, err := strconv.Atoi(c.Query("page", "0"))
+		if err != nil || page < 0 || page > 1000000 {
+			return accountError(c, 400, "Invalid history page")
+		}
+		result, err := s.config.Accounts.RaceHistory(session.User.ID, page)
+		if err != nil {
+			return accountError(c, 503, "Unable to load race history. Try again")
+		}
+		c.Set("Cache-Control", "no-store")
+		return c.JSON(result)
+	})
 	s.app.Get("/api/account", func(c *fiber.Ctx) error {
 		user, err := s.account(c)
 		if err != nil {

@@ -10,10 +10,6 @@ type Bounds struct {
 	Bottom float64 `json:"bottom"`
 }
 
-func Overlaps(a, b Bounds) bool {
-	return a.Right > b.Left && a.Left < b.Right && a.Bottom > b.Top && a.Top < b.Bottom
-}
-
 // FirstContact returns the boundary preceding strict overlap along a linear path.
 // Player edge blocking is a separate policy, introduced with contact resolution.
 func FirstContact(a0, a1, b0, b1 Bounds) (float64, bool) {
