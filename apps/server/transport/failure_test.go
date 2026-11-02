@@ -14,12 +14,12 @@ import (
 	ws "github.com/fasthttp/websocket"
 	wt "github.com/quic-go/webtransport-go"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 // Keep application acknowledgements under the scenario's control. These are
 // real TLS/QUIC endpoints, including the paired room channel.
-func failurePair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Admission, frameBounds ...int) (*ws.Conn, *wt.Session, *wt.Stream, *wt.SendStream, *wt.ReceiveStream, p.BaselineChunk) {
+func failurePair(t *testing.T, s *appserver.Server, roots *x509.CertPool, a p.Admission, frameBounds ...int) (*ws.Conn, *wt.Session, *wt.Stream, *wt.SendStream, *wt.ReceiveStream, p.BaselineChunk) {
 	t.Helper()
 	dialer := ws.Dialer{TLSClientConfig: &tls.Config{RootCAs: roots}}
 	socket, _, err := dialer.Dial("wss"+strings.TrimPrefix(s.URL(), "https")+"/room?ticket="+base64.RawURLEncoding.EncodeToString(a.RoomTicket), http.Header{"Origin": []string{origin}})
@@ -80,7 +80,7 @@ func failurePair(t *testing.T, s *transport.Server, roots *x509.CertPool, a p.Ad
 }
 
 func TestBaselineTransferHonorsConfiguredFrameAndQueueBounds(t *testing.T) {
-	s, c, roots := configuredServer(t, transport.Config{DragRaceOverrides: []byte(`{"connection":{"reliableFrameBytes":1024,"queueBytes":2048},"gameplay":{"sliceSpacing":50,"initialClearDistance":0}}`)})
+	s, c, roots := configuredServer(t, appserver.Config{DragRaceOverrides: []byte(`{"connection":{"reliableFrameBytes":1024,"queueBytes":2048},"gameplay":{"sliceSpacing":50,"initialClearDistance":0}}`)})
 	_, value := admit(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	_, _, _, _, _, chunk := failurePair(t, s, roots, value.(p.Admission), 1024)
 	if chunk.Count < 2 {
@@ -210,7 +210,7 @@ func TestMalformedAndExcessiveTrafficFailsBothChannels(t *testing.T) {
 }
 
 func TestReusedPairRetainsConnectionSettingsAcrossModeChange(t *testing.T) {
-	s, c, roots := configuredServer(t, transport.Config{RoadRageOverrides: []byte(`{"connection":{"controlRefreshInterval":0.1,"controlFreshnessExpiry":0.6}}`)})
+	s, c, roots := configuredServer(t, appserver.Config{RoadRageOverrides: []byte(`{"connection":{"controlRefreshInterval":0.1,"controlFreshnessExpiry":0.6}}`)})
 	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := value.(p.Admission)
 	initializations := make(chan p.Initialization, 4)

@@ -1,4 +1,4 @@
-package transport
+package multiplayer
 
 import (
 	"strconv"
@@ -11,7 +11,8 @@ import (
 // Immutable work survives room removal/rematches until its transaction succeeds.
 // Only the persistence loop does I/O; gameplay merely appends under mu.
 type historyWrite struct {
-	room     *room
+	roomID   uint32
+	roundID  uint32
 	id, mode string
 	started  time.Time
 	accounts [2]int64
@@ -27,7 +28,7 @@ func (s *Server) startHistoryLocked(r *room) {
 	s.historySequence++
 	r.historyID = s.historyPrefix + "-" + strconv.FormatUint(s.historySequence, 10)
 	r.historyStarting = true
-	w := historyWrite{room: r, id: r.historyID, mode: "drag-race", started: s.start.Add(time.Duration(r.startUs) * time.Microsecond)}
+	w := historyWrite{roomID: r.id, roundID: r.roundID, id: r.historyID, mode: "drag-race", started: s.start.Add(time.Duration(r.startUs) * time.Microsecond)}
 	if r.mode == p.ModeRoadRage {
 		w.mode = "road-rage"
 	}
@@ -46,16 +47,16 @@ func (s *Server) finishHistoryLocked(r *room, outcome p.Outcome) {
 		final.Cars[i] = accounts.RaceCar{HP: car.Hp, Score: car.Score, Progress: car.Progress}
 	}
 	r.historyFinishing = true
-	s.historyWrites = append(s.historyWrites, historyWrite{room: r, id: r.historyID, final: &final})
+	s.historyWrites = append(s.historyWrites, historyWrite{roomID: r.id, roundID: r.roundID, id: r.historyID, final: &final})
 }
 
 func (s *Server) flushHistory() bool {
 	for {
-		s.authMu.Lock()
+		s.config.Auth.Lock()
 		s.mu.Lock()
 		if len(s.historyWrites) == 0 {
 			s.mu.Unlock()
-			s.authMu.Unlock()
+			s.config.Auth.Unlock()
 			return true
 		}
 		w := s.historyWrites[0]
@@ -71,18 +72,20 @@ func (s *Server) flushHistory() bool {
 		if err == nil {
 			s.historyWrites[0] = historyWrite{}
 			s.historyWrites = s.historyWrites[1:]
-			if w.room.historyID == w.id {
-				if w.final == nil {
-					w.room.historyStarting = false
-				} else {
-					w.room.historyFinishing = false
+			for _, r := range s.rooms {
+				if r.id == w.roomID && r.roundID == w.roundID && r.historyID == w.id {
+					if w.final == nil {
+						r.historyStarting = false
+					} else {
+						r.historyFinishing = false
+					}
 				}
 			}
 		}
 		s.mu.Unlock()
-		s.authMu.Unlock()
+		s.config.Auth.Unlock()
 		if err == nil && w.final == nil {
-			s.broadcast(w.room)
+			s.broadcastRound(w.roomID, w.roundID)
 		}
 		if err != nil {
 			s.config.Logger.Error("race_history_retry", "race", w.id, "error", err)
@@ -109,5 +112,20 @@ func (s *Server) historyLoop() {
 				}
 			}
 		}
+	}
+}
+
+func (s *Server) broadcastRound(roomID, roundID uint32) {
+	s.mu.Lock()
+	var found *room
+	for _, r := range s.rooms {
+		if r.id == roomID && r.roundID == roundID {
+			found = r
+			break
+		}
+	}
+	s.mu.Unlock()
+	if found != nil {
+		s.broadcast(found)
 	}
 }

@@ -1,10 +1,11 @@
 package transport
 
 import (
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"testing"
 	"testing/synctest"
 	"time"
+
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
 func TestEssentialSendBackpressure(t *testing.T) {

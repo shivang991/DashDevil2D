@@ -1,16 +1,13 @@
-package transport
+package accounthttp
 
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"strconv"
 	"strings"
-	"time"
 
-	"github.com/gofiber/fiber/v2"
+	fiber "github.com/gofiber/fiber/v2"
 	"github.com/shivang991/DashDevil2D/apps/server/accounts"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
 func (s *Server) chatRoutes() {
@@ -18,8 +15,8 @@ func (s *Server) chatRoutes() {
 		if c.Method() != "GET" && !s.accountMutation(c) {
 			return accountError(c, 403, "Request rejected")
 		}
-		s.authMu.Lock()
-		defer s.authMu.Unlock()
+		s.config.Auth.Lock()
+		defer s.config.Auth.Unlock()
 		session, err := s.account(c)
 		if err != nil {
 			return accountError(c, 401, accounts.ErrSession.Error())
@@ -37,7 +34,7 @@ func (s *Server) chatRoutes() {
 	})
 	s.challengeRoutes()
 	s.app.Get("/api/account/chat/search", func(c *fiber.Ctx) error {
-		_, rooms := s.chatRoomState(c.Locals("chatSession").(accounts.Session).ID, 0)
+		_, rooms := s.multiplayer.Presence(c.Locals("chatSession").(accounts.Session).ID, 0)
 		people, err := s.config.Accounts.ChatPeople(s.config.Now(), rooms)
 		if err != nil {
 			return accountError(c, 503, "Search unavailable. Retry")
@@ -76,7 +73,7 @@ func (s *Server) chatRoutes() {
 		if err := s.config.Accounts.ChatHeartbeat(session.ID, request.Client, rank, s.config.Now()); err != nil {
 			return accountError(c, 503, "Chat unavailable. Retry")
 		}
-		pinned, rooms := s.chatRoomState(session.ID, request.RoomID)
+		pinned, rooms := s.multiplayer.Presence(session.ID, request.RoomID)
 		people, err := s.config.Accounts.ChatPeople(s.config.Now(), rooms)
 		if err != nil {
 			return accountError(c, 503, "Chat unavailable. Retry")
@@ -129,11 +126,9 @@ func (s *Server) chatRoutes() {
 		if err != nil {
 			return accountError(c, 503, "Invitations unavailable. Retry")
 		}
-		s.mu.Lock()
 		for i := range challenges {
-			challenges[i].Status, _ = s.challengeStatusLocked(challenges[i])
+			challenges[i].Status = s.multiplayer.InvitationStatus(invitation(challenges[i]))
 		}
-		s.mu.Unlock()
 		return c.JSON(fiber.Map{"messages": messages, "challenges": challenges})
 	})
 	s.app.Post("/api/account/chat/thread/:peer", func(c *fiber.Ctx) error {
@@ -166,64 +161,4 @@ func (s *Server) chatRoutes() {
 		}
 		return c.JSON(fiber.Map{"ok": true})
 	})
-}
-func (s *Server) chatRoomState(session string, roomID uint32) (int64, map[string]int) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	statuses := map[string]int{}
-	var pinned int64
-	for _, r := range s.rooms {
-		for i, seat := range r.seats {
-			if seat == nil {
-				continue
-			}
-			if seat.connected {
-				rank := 2
-				if r.phase == p.RoomPhaseCountdown || r.phase == p.RoomPhaseActive {
-					rank = 3
-				}
-				statuses[seat.accountSession] = max(statuses[seat.accountSession], rank)
-			}
-			if r.id == roomID && seat.accountSession == session && r.seats[1-i] != nil {
-				pinned = r.seats[1-i].accountID
-			}
-		}
-	}
-	return pinned, statuses
-}
-
-// Finalization queues value copies only. All persistence happens off the gameplay mutex.
-func (s *Server) recordChatRoundLocked(r *room) {
-	if s.config.Accounts == nil || r.outcome.Result == p.OutcomeResultAbandoned || r.seats[0] == nil || r.seats[1] == nil {
-		return
-	}
-	s.chatRounds = append(s.chatRounds, accounts.SharedRound{Key: fmt.Sprintf("%s:%d:%d", s.chatRun, r.id, r.roundID), A: r.seats[0].accountChatID, B: r.seats[1].accountChatID, Finished: s.config.Now().UnixMilli()})
-}
-func (s *Server) flushChatRounds() {
-	s.mu.Lock()
-	pending := s.chatRounds
-	s.chatRounds = nil
-	s.mu.Unlock()
-	for _, r := range pending {
-		if err := s.config.Accounts.RecordChatRound(r); err != nil {
-			s.config.Logger.Error("chat_history_write_failed", "error", err)
-			s.mu.Lock()
-			s.chatRounds = append(s.chatRounds, r)
-			s.mu.Unlock()
-		}
-	}
-}
-func (s *Server) chatHistoryLoop() {
-	defer close(s.chatDone)
-	ticker := time.NewTicker(250 * time.Millisecond)
-	defer ticker.Stop()
-	for {
-		select {
-		case <-s.stop:
-			s.flushChatRounds()
-			return
-		case <-ticker.C:
-			s.flushChatRounds()
-		}
-	}
 }

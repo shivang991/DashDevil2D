@@ -1,4 +1,4 @@
-package transport
+package server
 
 import (
 	"encoding/json"
@@ -47,6 +47,9 @@ func (s *Server) StartOperator(address string, timeout time.Duration) (*http.Ser
 		w.WriteHeader(http.StatusAccepted)
 	})
 	operator := &http.Server{Handler: mux, ReadHeaderTimeout: time.Second, ReadTimeout: 2 * time.Second, WriteTimeout: 2 * time.Second, IdleTimeout: 5 * time.Second, MaxHeaderBytes: 4096}
+	s.operatorMu.Lock()
+	s.operators = append(s.operators, operator)
+	s.operatorMu.Unlock()
 	go func() {
 		if err := operator.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			select {

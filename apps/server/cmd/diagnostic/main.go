@@ -5,7 +5,7 @@ import (
 	"flag"
 	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	"github.com/shivang991/DashDevil2D/apps/server/operations"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
+	"github.com/shivang991/DashDevil2D/apps/server/server"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -14,7 +14,7 @@ import (
 )
 
 func main() {
-	var c transport.Config
+	var c server.Config
 	var roundConfig, roadRageConfig string
 	var operatorAddress string
 	var database string
@@ -105,7 +105,7 @@ func main() {
 		}
 		c.Accounts = store
 	}
-	server, err := transport.New(c)
+	server, err := server.New(c)
 	if err != nil {
 		slog.Error("configuration", "error", err)
 		os.Exit(1)

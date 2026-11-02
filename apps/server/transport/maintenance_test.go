@@ -1,10 +1,11 @@
 package transport_test
 
 import (
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"testing"
 	"time"
+
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 func TestMaintenanceRejectsNewAdmissionsButAllowsReservedSeatRecovery(t *testing.T) {
@@ -69,7 +70,7 @@ func TestDeploymentRejectsPriorProtocolBeforeAllocatingSeat(t *testing.T) {
 }
 
 func TestConfiguredCapacityPreservesExistingSeats(t *testing.T) {
-	s, c, _ := configuredServer(t, transport.Config{RoomLimit: 1})
+	s, c, _ := configuredServer(t, appserver.Config{RoomLimit: 1})
 	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	host := value.(p.Admission)
 	status, value := admit(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Other"}, origin)

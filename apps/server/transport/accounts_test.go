@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	ws "github.com/fasthttp/websocket"
 	"net/http"
 	"net/http/cookiejar"
 	"path/filepath"
@@ -13,12 +12,13 @@ import (
 	"testing"
 	"time"
 
+	ws "github.com/fasthttp/websocket"
 	"github.com/shivang991/DashDevil2D/apps/server/accounts"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
-func accountRequest(t *testing.T, s *transport.Server, c *http.Client, method, path, body, from string) (int, map[string]any, *http.Response) {
+func accountRequest(t *testing.T, s *appserver.Server, c *http.Client, method, path, body, from string) (int, map[string]any, *http.Response) {
 	t.Helper()
 	req, err := http.NewRequest(method, s.URL()+"/api/account"+path, strings.NewReader(body))
 	if err != nil {
@@ -47,7 +47,7 @@ func TestAccountLoginSurvivesRestart(t *testing.T) {
 	if err := store.Bootstrap("Site_Admin", "a long password with spaces"); err != nil {
 		t.Fatal(err)
 	}
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	status, value, response := accountRequest(t, s, c, "POST", "/login", `{"username":"site_admin","password":"a long password with spaces"}`, origin)
 	if status != 200 || value["username"] != "Site_Admin" {
@@ -64,7 +64,7 @@ func TestAccountLoginSurvivesRestart(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { store.Close() })
-	s, restarted, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, restarted, _ := configuredServer(t, appserver.Config{Accounts: store})
 	restarted.Jar = c.Jar
 	status, value, _ = accountRequest(t, s, restarted, "GET", "", "", origin)
 	if status != 200 || value["username"] != "Site_Admin" {
@@ -78,7 +78,7 @@ func TestGuestsCannotAdmitOrRecoverMultiplayer(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { store.Close() })
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	for _, operation := range []p.AdmissionOperation{p.AdmissionOperationCreate, p.AdmissionOperationJoin, p.AdmissionOperationResume} {
 		status, _ := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: operation, Name: "Spoofed"}, origin)
 		if status != 401 {
@@ -87,7 +87,7 @@ func TestGuestsCannotAdmitOrRecoverMultiplayer(t *testing.T) {
 	}
 }
 
-func accountFixture(t *testing.T) (*accounts.Store, *transport.Server, *http.Client) {
+func accountFixture(t *testing.T) (*accounts.Store, *appserver.Server, *http.Client) {
 	t.Helper()
 	store, err := accounts.Open(filepath.Join(t.TempDir(), "accounts.sqlite"))
 	if err != nil {
@@ -97,11 +97,11 @@ func accountFixture(t *testing.T) (*accounts.Store, *transport.Server, *http.Cli
 	if err := store.Bootstrap("Case_Admin", "a long password with spaces"); err != nil {
 		t.Fatal(err)
 	}
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	return store, s, c
 }
-func loginAccount(t *testing.T, s *transport.Server, c *http.Client, username, password string) map[string]any {
+func loginAccount(t *testing.T, s *appserver.Server, c *http.Client, username, password string) map[string]any {
 	t.Helper()
 	body, _ := json.Marshal(map[string]string{"username": username, "password": password})
 	status, value, _ := accountRequest(t, s, c, "POST", "/login", string(body), origin)
@@ -238,7 +238,7 @@ func TestSessionExpiryRejectsHTTPRecoveryAndUnconsumedTickets(t *testing.T) {
 		t.Fatal(err)
 	}
 	now, advance := lifecycleClock()
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store, Now: now})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store, Now: now})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Expiry_Admin", "expiry password with spaces")
 	advance(accounts.Lifetime - time.Second)
@@ -357,7 +357,7 @@ func TestBlockedAccountWriteDoesNotBlockAnotherSessionsRoom(t *testing.T) {
 	if err = store.Bootstrap("Busy_Admin", "busy database password"); err != nil {
 		t.Fatal(err)
 	}
-	s, c, roots := configuredServer(t, transport.Config{Accounts: store})
+	s, c, roots := configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Busy_Admin", "busy database password")
 	other := independentClient(c)

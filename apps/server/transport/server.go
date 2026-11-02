@@ -1,200 +1,90 @@
-// Package transport owns the Stage 4 diagnostic admission and connection pair.
-// Diagnostic state is deliberately stationary; gameplay authority belongs to #28.
+// Package transport owns secure network delivery and bounded paired channels.
 package transport
 
 import (
 	"crypto/rand"
 	"crypto/tls"
 	"encoding/base64"
-	"encoding/binary"
-
 	"errors"
-	"fmt"
-	"github.com/shivang991/DashDevil2D/apps/server/accounts"
-	"github.com/shivang991/DashDevil2D/apps/server/configuration"
-	"github.com/shivang991/DashDevil2D/apps/server/simulation"
 	"log/slog"
-	"math/big"
 	"net"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
-	"unicode/utf8"
 
 	"github.com/gofiber/contrib/websocket"
-	"github.com/gofiber/fiber/v2"
-	"github.com/quic-go/quic-go"
+	fiber "github.com/gofiber/fiber/v2"
+	quic "github.com/quic-go/quic-go"
 	"github.com/quic-go/quic-go/http3"
 	wt "github.com/quic-go/webtransport-go"
+	"github.com/shivang991/DashDevil2D/apps/server/multiplayer"
 	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
 const frameLimit = p.DefaultFrameBytes
 
-// Config uses one hostname/port for TCP HTTPS and UDP HTTP/3. Local tests may
-// request port zero; the UDP listener then binds the allocated TCP port.
 type Config struct {
-	Accounts                                                                     *accounts.Store // required for product admission; diagnostic is stationary only
-	RoomLimit                                                                    int             // zero selects the default 50-room admission limit
+	Auth                *sync.Mutex
+	AuthenticateSession func(string) error
+	Admit               func(p.AdmissionRequest, string, string, string) (multiplayer.AdmissionResult, error)
+	Routes              func(*fiber.App)
+	NowUs               func() uint64
+
 	Address, Origin, Certificate, Key, QUICCertificate, QUICKey, StaticDirectory string
 	Logger                                                                       *slog.Logger
-	Now                                                                          func() time.Time       // authoritative clock; nil uses time.Now
-	CodeStart                                                                    func() (uint16, error) // nil uses cryptographic randomness
+	Now                                                                          func() time.Time // authoritative clock; nil uses time.Now
 	Diagnostic                                                                   bool
-	DragRaceOverrides                                                            []byte
-	RoadRageOverrides                                                            []byte
 }
 type Server struct {
-	chatRounds        []accounts.SharedRound
-	chatRun           string
-	chatDone          chan struct{}
-	sweepDone         chan struct{}
-	historyPrefix     string
-	historySequence   uint64
-	historyWrites     []historyWrite
-	historyFailed     bool
-	historyDone       chan struct{}
-	accountAdmission  accountAdmission
-	avatarCleanup     chan struct{}
-	avatarCleanupDone chan struct{}
-	authMu            sync.Mutex // serializes durable auth with admission/revocation; never held by gameplay ticks
-	draining          bool
-	drainComplete     bool
-	drainDeadline     time.Time
-	drainClosing      time.Time
-	config            Config
-	mu                sync.Mutex // serializes room, admission and pair ownership; never hold across I/O
-	rooms             map[string]*room
-	credentials       map[string]*seat
-	tickets           map[string]ticket
-	nextID            uint32
-	start             time.Time
-	app               *fiber.App
-	webtransport      *wt.Server
-	tcp               net.Listener
-	udp               net.PacketConn
-	stop              chan struct{}
-	closeOnce         sync.Once
-	errors            chan error
-}
-type room struct {
-	invitationEpoch                   uint64
-	historyID                         string
-	historyStarting, historyFinishing bool
-	racers                            [2]p.RacerIdentity
-	engine                            *simulation.Engine
-	history                           []raceRecord
-	outcome                           *p.Outcome
-	outcomeSessions                   [2]uint32
-	primed                            [2]bool
-	inputs                            [2]map[uint32]p.Input
-	phase                             p.RoomPhase
-	roundID                           uint32
-	startUs                           uint64
-	seed                              uint32
-	zero                              *p.Baseline
-	settings                          configuration.Configuration
-
-	id       uint32
-	code     string
-	seats    [2]*seat
-	revision uint32
-	host     p.SeatIndex
-	mode     p.Mode
-	idle     time.Time
-}
-type seat struct {
-	accountSession   string
-	accountID        int64
-	accountChatID    int64
-	accountExpires   time.Time
-	room             *room
-	index            p.SeatIndex
-	session          uint32
-	savedName        string
-	savedAvatar      string
-	avatar           string
-	name             string
-	credential       []byte
-	generation       uint32
-	pair             *pair
-	deadline         time.Time
-	leaving          time.Time
-	connected, ready bool
-	returned         bool
-	focused          bool
-	installedRound   uint32
-	inputGeneration  uint32
+	config       Config
+	mu           sync.Mutex
+	tickets      map[string]ticket
+	pairs        map[multiplayer.Handle]*pair
+	app          *fiber.App
+	webtransport *wt.Server
+	tcp          net.Listener
+	udp          net.PacketConn
+	stop         chan struct{}
+	closeOnce    sync.Once
+	ticketDone   chan struct{}
+	errors       chan error
 }
 type ticket struct {
-	seat            *seat
-	generation      uint32
-	channel, origin string
-	expires         time.Time
+	handle                   multiplayer.Handle
+	session, channel, origin string
+	expires                  time.Time
 }
 
 func New(config Config) (*Server, error) {
-	if config.RoomLimit == 0 {
-		config.RoomLimit = 50
-	}
-	if config.RoomLimit < 1 || config.RoomLimit > 10000 {
-		return nil, errors.New("room limit must be between 1 and 10000")
-	}
-	if len(config.DragRaceOverrides) > 0 {
-		if _, err := configuration.Capture([]byte(p.DefaultConfigurationJSON), "drag-race", config.DragRaceOverrides); err != nil {
-			return nil, err
-		}
-	}
-	config.DragRaceOverrides = append([]byte(nil), config.DragRaceOverrides...)
-	if len(config.RoadRageOverrides) > 0 {
-		if _, err := configuration.Capture([]byte(p.DefaultConfigurationJSON), "road-rage", config.RoadRageOverrides); err != nil {
-			return nil, err
-		}
-	}
-	config.RoadRageOverrides = append([]byte(nil), config.RoadRageOverrides...)
 	u, err := url.Parse(config.Origin)
 	if err != nil || u.Scheme != "https" || u.Host == "" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" || u.User != nil {
 		return nil, errors.New("one explicit HTTPS website origin is required")
 	}
-	if config.Logger == nil {
-		config.Logger = slog.Default()
-	}
 	if config.Address == "" {
 		config.Address = ":443"
 	}
-	if config.CodeStart == nil {
-		config.CodeStart = func() (uint16, error) {
-			n, err := rand.Int(rand.Reader, big.NewInt(10000))
-			if err != nil {
-				return 0, err
-			}
-			return uint16(n.Uint64()), nil
-		}
+	if config.Logger == nil {
+		config.Logger = slog.Default()
 	}
 	if config.Now == nil {
 		config.Now = time.Now
 	}
-	prefix, err := randomBytes()
-	if err != nil {
-		return nil, err
-	}
-	return &Server{chatRun: rand.Text(), historyPrefix: token(prefix), avatarCleanup: make(chan struct{}, 1), accountAdmission: accountAdmission{attempts: map[string]loginAttempt{}, hashing: make(chan struct{}, 2)}, config: config, rooms: map[string]*room{}, credentials: map[string]*seat{}, tickets: map[string]ticket{}, start: config.Now(), stop: make(chan struct{}), errors: make(chan error, 2)}, nil
+	return &Server{config: config, tickets: map[string]ticket{}, pairs: map[multiplayer.Handle]*pair{}, stop: make(chan struct{}), errors: make(chan error, 2)}, nil
 }
-func (s *Server) nowUs() uint64 { return uint64(max(0, s.config.Now().Sub(s.start).Microseconds())) }
-
-// Room event times share the wire protocol's integer-microsecond clock.
-func (s *Server) nowTime() time.Time   { return s.start.Add(time.Duration(s.nowUs()) * time.Microsecond) }
+func (s *Server) nowUs() uint64        { return s.config.NowUs() }
 func (s *Server) URL() string          { return "https://" + s.tcp.Addr().String() }
 func (s *Server) Errors() <-chan error { return s.errors }
-func (s *Server) Start() error {
-	if s.config.Accounts != nil && !s.config.Diagnostic {
-		if err := s.config.Accounts.RecoverRaces(s.config.Now()); err != nil {
-			return err
-		}
+func (s *Server) Ready() bool {
+	select {
+	case <-s.stop:
+		return false
+	default:
 	}
+	return s.tcp != nil && s.udp != nil
+}
+func (s *Server) Start() error {
 	cert, err := tls.LoadX509KeyPair(s.config.Certificate, s.config.Key)
 	if err != nil {
 		return err
@@ -222,7 +112,7 @@ func (s *Server) Start() error {
 		from := c.Get("Origin")
 		if from != "" && from != s.config.Origin {
 			if strings.HasPrefix(c.Path(), "/api/account") {
-				return accountError(c, 403, "Request rejected")
+				return c.Status(403).JSON(fiber.Map{"error": "Request rejected"})
 			}
 			return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
 		}
@@ -239,7 +129,9 @@ func (s *Server) Start() error {
 		}
 		return c.Next()
 	})
-	s.accountRoutes()
+	if s.config.Routes != nil {
+		s.config.Routes(s.app)
+	}
 	s.app.Post("/admission", s.admission)
 	s.app.Get("/room", func(c *fiber.Ctx) error {
 		if c.Get("Origin") != s.config.Origin || !websocket.IsWebSocketUpgrade(c) {
@@ -274,32 +166,24 @@ func (s *Server) Start() error {
 			s.errors <- err
 		}
 	}()
-	s.avatarCleanupDone = make(chan struct{})
-	s.cleanupAvatarsLocked()
-	go s.avatarCleanupLoop()
-	s.chatDone = make(chan struct{})
-	go s.chatHistoryLoop()
-	s.sweepDone = make(chan struct{})
-	s.historyDone = make(chan struct{})
-	go s.historyLoop()
-	go s.sweep()
+	s.ticketDone = make(chan struct{})
+	go s.expireTickets()
 	return nil
 }
 func (s *Server) Close() {
 	s.closeOnce.Do(func() {
 		close(s.stop)
+		if s.ticketDone != nil {
+			<-s.ticketDone
+		}
 		s.mu.Lock()
-		var pairs []*pair
-		for _, r := range s.rooms {
-			for _, seat := range r.seats {
-				if seat != nil && seat.pair != nil {
-					pairs = append(pairs, seat.pair)
-				}
-			}
+		pairs := make([]*pair, 0, len(s.pairs))
+		for _, c := range s.pairs {
+			pairs = append(pairs, c)
 		}
 		s.mu.Unlock()
-		for _, pair := range pairs {
-			pair.close("server shutdown")
+		for _, c := range pairs {
+			c.close("server shutdown")
 		}
 		if s.webtransport != nil {
 			s.webtransport.Close()
@@ -313,22 +197,6 @@ func (s *Server) Close() {
 		if s.tcp != nil {
 			s.tcp.Close()
 		}
-		if s.chatDone != nil {
-			<-s.chatDone
-		}
-		if s.historyDone != nil {
-			<-s.historyDone
-		}
-		if s.sweepDone != nil {
-			<-s.sweepDone
-		}
-		s.flushChatRounds()
-		if !s.flushHistory() {
-			s.config.Logger.Error("race_history_shutdown_pending")
-		}
-		if s.avatarCleanupDone != nil {
-			<-s.avatarCleanupDone
-		}
 	})
 }
 func (s *Server) failure(c *fiber.Ctx, status int, code p.ProtocolErrorCode, detail string) error {
@@ -337,18 +205,7 @@ func (s *Server) failure(c *fiber.Ctx, status int, code p.ProtocolErrorCode, det
 	return c.Status(status).Send(wire)
 }
 func randomBytes() ([]byte, error) { b := make([]byte, 32); _, err := rand.Read(b); return b, err }
-func newTrackSeed() (uint32, error) {
-	var bytes [4]byte
-	if _, err := rand.Read(bytes[:]); err != nil {
-		return 0, err
-	}
-	value := binary.BigEndian.Uint32(bytes[:])
-	if value == 0 {
-		value = 1
-	}
-	return value, nil
-}
-func token(b []byte) string { return base64.RawURLEncoding.EncodeToString(b) }
+func token(b []byte) string        { return base64.RawURLEncoding.EncodeToString(b) }
 func (s *Server) admission(c *fiber.Ctx) error {
 	if c.Get("Origin") != s.config.Origin {
 		return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
@@ -364,362 +221,75 @@ func (s *Server) admission(c *fiber.Ctx) error {
 	if request.Version != p.ProtocolVersion {
 		return s.failure(c, 409, p.ProtocolErrorCodeIncompatibleHandshake, "Incompatible protocol version")
 	}
-	credential, err := randomBytes()
-	if err != nil {
-		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
-	}
+
 	roomTicket, err := randomBytes()
 	if err != nil {
-		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
+		return s.failure(c, 503, 2, "Unable to connect")
 	}
 	gameplayTicket, err := randomBytes()
 	if err != nil {
-		return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
+		return s.failure(c, 503, 2, "Unable to connect")
 	}
-	var account accounts.Session
-	var accountChatID int64
-	var challenge accounts.ChatChallenge
-	if !s.config.Diagnostic {
-		s.authMu.Lock()
-		defer s.authMu.Unlock()
-		account, err = s.account(c)
-		if err != nil {
-			return s.failure(c, 401, 2, "Session expired. Please log in again")
+	// One auth turn includes room admission and publication of both tickets.
+	s.config.Auth.Lock()
+	defer s.config.Auth.Unlock()
+	result, err := s.config.Admit(request, c.Query("mode"), c.Cookies("__Host-dashdevil-session"), c.Query("challenge"))
+	if err != nil {
+		var rejection *multiplayer.AdmissionError
+		if errors.As(err, &rejection) {
+			return s.failure(c, rejection.Status, rejection.Code, rejection.Detail)
 		}
-		if account.MustChangePassword {
-			return s.failure(c, 403, 2, "Change your temporary password before multiplayer")
-		}
-		accountChatID, err = s.config.Accounts.ChatID(account.User.ID)
-		if err != nil {
-			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
-		}
-		if c.Query("challenge") != "" {
-			id, parseErr := strconv.ParseInt(c.Query("challenge"), 10, 64)
-			if parseErr != nil || request.Operation != p.AdmissionOperationJoin || request.Code != "" {
-				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid challenge")
-			}
-			challenge, err = s.config.Accounts.ChatChallenge(id, accountChatID)
-			if err != nil {
-				return s.failure(c, 404, p.ProtocolErrorCodeAdmissionRejected, "Challenge unavailable")
-			}
-		}
-		request.Name = account.Username
+		return s.failure(c, 503, 2, "Unable to connect")
 	}
 	s.mu.Lock()
-	if !s.config.Diagnostic && !s.config.Now().Before(account.Expires) {
-		s.mu.Unlock()
-		return s.failure(c, 401, 2, "Session expired. Please log in again")
-	}
-	now := s.nowTime()
-	changedRooms := s.expireLocked(now)
-	defer func() {
-		for _, r := range changedRooms {
-			s.broadcast(r)
-		}
-	}()
-	if challenge.ID != 0 {
-		status, target := s.challengeStatusLocked(challenge)
-		if status != "Pending" {
-			s.mu.Unlock()
-			return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, "Challenge "+strings.ToLower(status))
-		}
-		for _, r := range s.rooms {
-			for _, seat := range r.seats {
-				if seat != nil && seat.accountID == account.User.ID {
-					detail := "Leave your current room before accepting"
-					if r.phase == p.RoomPhaseCountdown || r.phase == p.RoomPhaseActive {
-						detail = "Finish your game before accepting"
-					}
-					s.mu.Unlock()
-					return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, detail)
-				}
-			}
-		}
-		request.Code = target.code
-	}
-	var participant *seat
-	switch request.Operation {
-	case p.AdmissionOperationCreate, p.AdmissionOperationJoin:
-		if s.draining {
-			s.mu.Unlock()
-			return s.failure(c, 503, p.ProtocolErrorCodeMaintenance, maintenanceMessage)
-		}
-		if len(request.Credential) != 0 || len(request.Name) == 0 || len(request.Name) > 128 || !utf8.ValidString(request.Name) {
-			s.mu.Unlock()
-			return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid admission")
-		}
-		var r *room
-		if request.Operation == p.AdmissionOperationCreate {
-			if request.Code != "" {
-				s.mu.Unlock()
-				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid room code")
-			}
-			if len(s.rooms) >= s.config.RoomLimit {
-				s.config.Logger.Info("capacity_rejected", "rooms", len(s.rooms), "limit", s.config.RoomLimit)
-				s.mu.Unlock()
-				return s.failure(c, 503, p.ProtocolErrorCodeCapacityUnavailable, "Server full. Try again later.")
-			}
-			n, e := s.config.CodeStart()
-			if e != nil || n >= 10000 {
-				s.mu.Unlock()
-				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
-			}
-			code := ""
-			for i := 0; i < 10000; i++ {
-				candidate := fmt.Sprintf("%04d", (int(n)+i)%10000)
-				if s.rooms[candidate] == nil {
-					code = candidate
-					break
-				}
-			}
-			if code == "" {
-				s.mu.Unlock()
-				return s.failure(c, 503, p.ProtocolErrorCodeCapacityUnavailable, "No rooms available")
-			}
-			if s.nextID == p.CounterMax {
-				s.mu.Unlock()
-				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Identity exhausted")
-			}
-			s.nextID++
-			r = &room{id: s.nextID, code: code, revision: 1, mode: p.ModeDragRace, idle: now.Add(15 * time.Minute)}
-			mode := p.ModeDragRace
-			if c.Query("mode") == strconv.Itoa(int(p.ModeRoadRage)) {
-				mode = p.ModeRoadRage
-			} else if c.Query("mode") != "" && c.Query("mode") != strconv.Itoa(int(p.ModeDragRace)) {
-				s.mu.Unlock()
-				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid mode")
-			}
-			r.mode = mode
-			r.roundID = 1
-			r.seed, err = newTrackSeed()
-			if err != nil {
-				s.mu.Unlock()
-				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
-			}
-			modeName := "drag-race"
-			if mode == p.ModeRoadRage {
-				modeName = "road-rage"
-			}
-			definition := []byte(p.DefaultConfigurationJSON)
-			r.settings, err = configuration.Capture(definition, modeName, s.roundOverrides(mode))
-			if err != nil {
-				s.mu.Unlock()
-				return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Invalid configuration")
-			}
-			s.rooms[code] = r
-		} else {
-			if len(request.Code) != p.RoomCodeLength {
-				s.mu.Unlock()
-				return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid room code")
-			}
-			for _, v := range request.Code {
-				if v < '0' || v > '9' {
-					s.mu.Unlock()
-					return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid room code")
-				}
-			}
-			r = s.rooms[request.Code]
-			if r == nil {
-				s.mu.Unlock()
-				return s.failure(c, 404, p.ProtocolErrorCodeRoomNotFound, "Room not found")
-			}
-		}
-		if r.phase == p.RoomPhaseCountdown || r.phase == p.RoomPhaseActive {
-			s.mu.Unlock()
-			return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, "Round in progress")
-		}
-		index := p.SeatIndexPlayer1
-		if r.seats[0] != nil {
-			index = p.SeatIndexPlayer2
-		}
-		if r.seats[index] != nil {
-			s.mu.Unlock()
-			return s.failure(c, 409, p.ProtocolErrorCodeRoomUnavailable, "Room full")
-		}
-		if s.nextID == p.CounterMax {
-			s.mu.Unlock()
-			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Identity exhausted")
-		}
-		s.nextID++
-		participant = &seat{room: r, index: index, session: s.nextID, name: request.Name, focused: true, credential: credential, deadline: now.Add(roomDuration(r, "reconnectGrace"))}
-		participant.accountSession, participant.accountID, participant.accountExpires = account.ID, account.User.ID, account.Expires
-		participant.accountChatID = accountChatID
-		participant.avatar = account.Avatar
-		participant.savedName, participant.savedAvatar = request.Name, account.Avatar
-		if r.phase == p.RoomPhaseEnded {
-			r.phase = p.RoomPhaseLobby
-		}
-		for _, other := range r.seats {
-			if other != nil {
-				other.ready = false
-			}
-		}
-		r.seats[index] = participant
-		r.invitationEpoch++
-		r.idle = now.Add(roomDuration(r, "idleExpiry"))
-		s.credentials[token(credential)] = participant
-	case p.AdmissionOperationResume:
-		if len(request.Credential) != 32 {
-			s.mu.Unlock()
-			return s.failure(c, 403, p.ProtocolErrorCodeAdmissionRejected, "Admission rejected")
-		}
-		participant = s.credentials[token(request.Credential)]
-		if participant == nil || (!s.config.Diagnostic && participant.accountSession != account.ID) || !participant.leaving.IsZero() || (!participant.deadline.IsZero() && !now.Before(participant.deadline)) {
-			s.mu.Unlock()
-			return s.failure(c, 410, p.ProtocolErrorCodeRoomExpired, "Room expired")
-		}
-		// Reconnection cannot overtake a departure while the durable start
-		// barrier is pending and lifecycle resolution is suspended.
-		if participant.room.historyStarting {
-			s.mu.Unlock()
-			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Round is starting. Try again")
-		}
-	default:
-		s.mu.Unlock()
-		return s.failure(c, 400, p.ProtocolErrorCodeAdmissionRejected, "Invalid admission")
-	}
-	if participant.generation == p.CounterMax || participant.inputGeneration == p.CounterMax {
-		s.mu.Unlock()
-		return s.failure(c, 409, p.ProtocolErrorCodeAdmissionRejected, "Connection generation exhausted")
-	}
-	old := participant.pair
-	// Ticket issuance alone cannot extend an existing disconnected reservation.
-	if participant.deadline.IsZero() {
-		participant.deadline = now.Add(roomDuration(participant.room, "reconnectGrace"))
-	}
-	s.cancelCountdownLocked(participant.room)
-	participant.connected = false
-	participant.ready = false
-	for _, other := range participant.room.seats {
-		if other != nil {
-			other.ready = false
-		}
-	}
-	participant.generation++
-	participant.inputGeneration++
-	pair := newPair(s, participant)
-	participant.pair = pair
-	if r := participant.room; r.phase == p.RoomPhaseActive && r.engine != nil {
-		r.engine.ResetSeat(pair.identity, participant.inputGeneration, 0)
-		r.primed[participant.index] = false
-		r.zero.Cars = r.engine.Snapshot().Cars
-	}
 	for key, t := range s.tickets {
-		if t.seat == participant {
+		if !s.config.Now().Before(t.expires) || t.handle.Identity().SeatSession == result.Identity.SeatSession {
 			delete(s.tickets, key)
 		}
 	}
-	expires := now.Add(30 * time.Second)
-	s.tickets[token(roomTicket)] = ticket{participant, participant.generation, "room", s.config.Origin, expires}
-	s.tickets[token(gameplayTicket)] = ticket{participant, participant.generation, "gameplay", s.config.Origin, expires}
-	response := p.Admission{Version: p.ProtocolVersion, Identity: pair.identity, Credential: participant.credential, RoomTicket: roomTicket, GameplayTicket: gameplayTicket, ExpiresUs: s.nowUs() + 30000000, Origin: s.config.Origin}
-	code := participant.room.code
+	expires := s.config.Now().Add(30 * time.Second)
+	s.tickets[token(roomTicket)] = ticket{result.Handle, result.Session, "room", s.config.Origin, expires}
+	s.tickets[token(gameplayTicket)] = ticket{result.Handle, result.Session, "gameplay", s.config.Origin, expires}
 	s.mu.Unlock()
-	if challenge.ID != 0 {
-		if err := s.config.Accounts.AcceptChatChallenge(challenge.ID); err != nil {
-			s.mu.Lock()
-			s.removeSeatLocked(participant.room, participant.index)
-			s.mu.Unlock()
-			pair.close("challenge persistence failed")
-			s.broadcast(participant.room)
-			return s.failure(c, 503, p.ProtocolErrorCodeAdmissionRejected, "Unable to accept challenge. Retry")
-		}
-	}
-	if old != nil {
-		old.close("replaced")
-	}
-	s.broadcast(participant.room)
+	response := p.Admission{Version: p.ProtocolVersion, Identity: result.Identity, Credential: result.Credential, RoomTicket: roomTicket, GameplayTicket: gameplayTicket, ExpiresUs: s.nowUs() + 30000000, Origin: s.config.Origin}
 	wire, err := p.EncodeMessage(response, frameLimit)
 	if err != nil {
-		return s.failure(c, 500, p.ProtocolErrorCodeAdmissionRejected, "Unable to connect")
+		return s.failure(c, 500, 2, "Unable to connect")
 	}
-	c.Set("X-Room-Code", code)
+	c.Set("X-Room-Code", result.Code)
 	c.Type("bin")
 	return c.Status(201).Send(wire)
 }
 func (s *Server) consume(key, channel, origin string) (*pair, error) {
-	s.authMu.Lock()
-	defer s.authMu.Unlock()
-	// Snapshot immutable ownership, then release gameplay ownership for SQLite I/O.
+	s.config.Auth.Lock()
+	defer s.config.Auth.Unlock()
 	s.mu.Lock()
 	t, ok := s.tickets[key]
 	s.mu.Unlock()
-	if !ok {
+	if !ok || t.channel != channel || t.origin != origin || !s.config.Now().Before(t.expires) {
 		return nil, errors.New("admission rejected")
 	}
-	if !s.config.Diagnostic {
-		if s.config.Accounts == nil {
-			return nil, errors.New("admission rejected")
+	if s.config.AuthenticateSession != nil {
+		if err := s.config.AuthenticateSession(t.session); err != nil {
+			return nil, err
 		}
-		account, err := s.config.Accounts.Session(t.seat.accountSession, s.config.Now())
-		if err != nil || account.MustChangePassword {
-			return nil, errors.New("admission rejected")
-		}
+	}
+	if !t.handle.Valid() {
+		return nil, errors.New("admission rejected")
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	// Sweeps may expire/remove the ticket while the database is being read.
-	t, ok = s.tickets[key]
-	if !ok || t.channel != channel || t.origin != origin || !s.nowTime().Before(t.expires) || !t.seat.accountLive(s.nowTime()) || t.seat.generation != t.generation || t.seat.pair == nil || t.seat.room.seats[t.seat.index] != t.seat || !t.seat.leaving.IsZero() || (!t.seat.deadline.IsZero() && !s.nowTime().Before(t.seat.deadline)) {
+	c := s.pairs[t.handle]
+	if _, ok := s.tickets[key]; !ok || c == nil || !s.config.Now().Before(t.expires) {
 		return nil, errors.New("admission rejected")
 	}
 	delete(s.tickets, key)
-	return t.seat.pair, nil
+	return c, nil
 }
-func (s *Server) expireLocked(now time.Time) []*room {
-	changed := s.expireAccountSeatsLocked(now)
-	for code, r := range s.rooms {
-		modified := false
-		if r.historyStarting {
-			continue
-		}
-		s.resolveDeparturesLocked(r, now)
-		idleExpired := (r.phase == p.RoomPhaseLobby || r.phase == p.RoomPhaseEnded) && !now.Before(r.idle)
-		for i, participant := range r.seats {
-			if participant == nil {
-				continue
-			}
-			expired := !participant.deadline.IsZero() && !now.Before(participant.deadline)
-			leaving := !participant.leaving.IsZero()
-			// Keep every active equal-time departure group open until its instant closes.
-			if r.phase == p.RoomPhaseActive && !earliestDeparture(r).IsZero() && !now.After(earliestDeparture(r)) {
-				continue
-			}
-			if expired || leaving || idleExpired {
-				s.removeSeatLocked(r, p.SeatIndex(i))
-				modified = true
-				reason := "Reconnect grace expired"
-				if idleExpired {
-					reason = "Room expired"
-				} else if leaving {
-					reason = "explicit leave"
-				}
-				if participant.pair != nil {
-					go participant.pair.close(reason)
-				}
-			}
-		}
-		if modified {
-			r.revision++
-			changed = append(changed, r)
-		}
-		if r.seats[r.host] == nil {
-			r.host = 1 - r.host
-		}
-		if r.seats[0] == nil && r.seats[1] == nil {
-			delete(s.rooms, code)
-		}
-	}
-	for key, t := range s.tickets {
-		if !now.Before(t.expires) {
-			delete(s.tickets, key)
-		}
-	}
-	return changed
-}
-func (s *Server) sweep() {
-	defer close(s.sweepDone)
-	ticker := time.NewTicker(5 * time.Millisecond)
+
+func (s *Server) expireTickets() {
+	defer close(s.ticketDone)
+	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	for {
 		select {
@@ -727,30 +297,12 @@ func (s *Server) sweep() {
 			return
 		case <-ticker.C:
 			s.mu.Lock()
-			now := s.nowTime()
-			changed := s.expireAccountSeatsLocked(now)
-			changed = append(changed, s.advanceCountdownsLocked()...)
-			changed = append(changed, s.advanceRacesLocked()...)
-			changed = append(changed, s.expireLocked(now)...)
-			maintenanceChanged, closingPairs := s.advanceMaintenanceLocked(now)
-			changed = append(changed, maintenanceChanged...)
+			for key, t := range s.tickets {
+				if !s.config.Now().Before(t.expires) {
+					delete(s.tickets, key)
+				}
+			}
 			s.mu.Unlock()
-			for _, r := range changed {
-				s.broadcast(r)
-			}
-			for _, pair := range closingPairs {
-				pair.close("Server maintenance")
-			}
 		}
 	}
-}
-
-func (s *Server) roundOverrides(mode p.Mode) []byte {
-	if mode == p.ModeDragRace {
-		return s.config.DragRaceOverrides
-	}
-	if mode == p.ModeRoadRage {
-		return s.config.RoadRageOverrides
-	}
-	return nil
 }

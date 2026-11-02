@@ -3,20 +3,21 @@ package transport_test
 import (
 	"crypto/x509"
 	"fmt"
-	ws "github.com/fasthttp/websocket"
-	wt "github.com/quic-go/webtransport-go"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"io"
 	"math"
 	"net/http"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	ws "github.com/fasthttp/websocket"
+	wt "github.com/quic-go/webtransport-go"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 func TestRoomUsesConfiguredIdleAndReconnectWindows(t *testing.T) {
-	s, c, roots := configuredServer(t, transport.Config{DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2,"idleExpiry":120,"idleWarning":10}}`)})
+	s, c, roots := configuredServer(t, appserver.Config{DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2,"idleExpiry":120,"idleWarning":10}}`)})
 	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, game := initializedPair(t, s, roots, a, true)
@@ -46,7 +47,7 @@ func lifecycleClock() (func() time.Time, func(time.Duration)) {
 
 func TestDuplicateLobbyActionsDoNotExtendIdleExpiry(t *testing.T) {
 	now, advance := lifecycleClock()
-	s, c, roots := configuredServer(t, transport.Config{Now: now})
+	s, c, roots := configuredServer(t, appserver.Config{Now: now})
 	_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	socket, _ := initializedPair(t, s, roots, a, true)
@@ -71,7 +72,7 @@ func TestRecoveryAdmissionStrictGraceBoundary(t *testing.T) {
 	for _, offset := range []time.Duration{-time.Microsecond, 0, time.Microsecond} {
 		t.Run(offset.String(), func(t *testing.T) {
 			now, advance := lifecycleClock()
-			s, c, _ := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
+			s, c, _ := configuredServer(t, appserver.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
 			_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 			a := v.(p.Admission)
 			advance(2*time.Second + offset)
@@ -108,7 +109,7 @@ func receiveOutcome(t *testing.T, outcomes <-chan p.Outcome) p.Outcome {
 }
 
 type activeLifecycleRoom struct {
-	server       *transport.Server
+	server       *appserver.Server
 	client       *http.Client
 	roots        *x509.CertPool
 	code         string
@@ -122,10 +123,10 @@ type activeLifecycleRoom struct {
 	state        p.RoomState
 }
 
-func activeLifecycle(t *testing.T, overrides string, beforeAdmission ...func(*transport.Server, *http.Client)) activeLifecycleRoom {
+func activeLifecycle(t *testing.T, overrides string, beforeAdmission ...func(*appserver.Server, *http.Client)) activeLifecycleRoom {
 	t.Helper()
 	now, advance := lifecycleClock()
-	s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(overrides)})
+	s, c, roots := configuredServer(t, appserver.Config{Now: now, DragRaceOverrides: []byte(overrides)})
 	f := activeLifecycleRoom{server: s, client: c, roots: roots, advance: advance}
 	for _, setup := range beforeAdmission {
 		setup(s, c)
@@ -180,7 +181,7 @@ func TestIdleExpiryBoundaryCannotBeResetByRecovery(t *testing.T) {
 	for _, offset := range []time.Duration{-time.Microsecond, 0, time.Microsecond} {
 		t.Run(offset.String(), func(t *testing.T) {
 			now, advance := lifecycleClock()
-			s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"idleExpiry":120,"idleWarning":10}}`)})
+			s, c, roots := configuredServer(t, appserver.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"idleExpiry":120,"idleWarning":10}}`)})
 			_, v, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 			a := v.(p.Admission)
 			initializedPair(t, s, roots, a, true)
@@ -202,7 +203,7 @@ func TestIdleExpiryBoundaryCannotBeResetByRecovery(t *testing.T) {
 
 func TestReservedHostBlocksGuestsUntilExactGraceThenTransfers(t *testing.T) {
 	now, advance := lifecycleClock()
-	s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
+	s, c, roots := configuredServer(t, appserver.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
 	_, v, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Host"}, origin)
 	a := v.(p.Admission)
 	host, game := initializedPair(t, s, roots, a, true)
@@ -289,7 +290,7 @@ func TestAbandonmentIsRecoverableBeforeRemainingReservationExpires(t *testing.T)
 
 func TestExpiredEmptyRoomCodeIsImmediatelyReusableWithNewIdentity(t *testing.T) {
 	now, advance := lifecycleClock()
-	s, c, _ := configuredServer(t, transport.Config{Now: now, CodeStart: func() (uint16, error) { return 42, nil }, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
+	s, c, _ := configuredServer(t, appserver.Config{Now: now, CodeStart: func() (uint16, error) { return 42, nil }, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
 	_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Original"}, origin)
 	a := value.(p.Admission)
 	if code != "0042" {
@@ -308,7 +309,7 @@ func TestExpiredEmptyRoomCodeIsImmediatelyReusableWithNewIdentity(t *testing.T) 
 
 func TestBothChannelsInitializedJustBeforeGraceClearReservation(t *testing.T) {
 	now, advance := lifecycleClock()
-	s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
+	s, c, roots := configuredServer(t, appserver.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
 	_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin)
 	original := value.(p.Admission)
 	status, value := admit(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: p.AdmissionOperationResume, Credential: original.Credential}, origin)
@@ -402,7 +403,7 @@ func TestPairedBaselineAcknowledgementMustPrecedeGrace(t *testing.T) {
 	for _, offset := range []time.Duration{-time.Microsecond, 0, time.Microsecond} {
 		t.Run(offset.String(), func(t *testing.T) {
 			now, advance := lifecycleClock()
-			s, c, roots := configuredServer(t, transport.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
+			s, c, roots := configuredServer(t, appserver.Config{Now: now, DragRaceOverrides: []byte(`{"room":{"reconnectGrace":2}}`)})
 			_, value, _ := admitWithCode(t, s, c, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion, Name: "Driver"}, origin)
 			a := value.(p.Admission)
 			pairAtReady(t, s, roots, a, false, nil, func() { advance(2*time.Second + offset) }, offset < 0)

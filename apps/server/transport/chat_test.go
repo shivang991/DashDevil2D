@@ -3,15 +3,16 @@ package transport_test
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/shivang991/DashDevil2D/apps/server/accounts"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"net/http"
 	"net/http/cookiejar"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/shivang991/DashDevil2D/apps/server/accounts"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 func TestChatOfflineRetryAuthorizationAndReadSync(t *testing.T) {
@@ -90,7 +91,7 @@ func TestChatRetentionDeletionValidationAndRateLimit(t *testing.T) {
 	if err = store.Bootstrap("Chat_Admin", "original password"); err != nil {
 		t.Fatal(err)
 	}
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Chat_Admin", "original password")
 	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Retained_Driver"}`, origin)
@@ -139,7 +140,7 @@ func TestChatRetentionDeletionValidationAndRateLimit(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer store.Close()
-	s, c, _ = configuredServer(t, transport.Config{Accounts: store})
+	s, c, _ = configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Chat_Admin", "original password")
 	_, state, _ = accountRequest(t, s, c, "POST", "/chat/sync", `{"activity":"Active"}`, origin)
@@ -171,7 +172,7 @@ func TestChatPresenceAggregatesTabsSessionsAndExpires(t *testing.T) {
 	}
 	defer store.Close()
 	store.Bootstrap("Presence_Admin", "original password")
-	s, c, _ := configuredServer(t, transport.Config{Accounts: store, Now: now})
+	s, c, _ := configuredServer(t, appserver.Config{Accounts: store, Now: now})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Presence_Admin", "original password")
 	other := independentClient(c)
@@ -213,7 +214,7 @@ func TestChatPinnedLobbyAndQualifiedRaceSuggestions(t *testing.T) {
 	}
 	defer store.Close()
 	store.Bootstrap("Race_Admin", "original password")
-	s, c, roots := configuredServer(t, transport.Config{Accounts: store, Now: now, DragRaceOverrides: []byte(`{"operational":{"simulationLagThreshold":10}}`)})
+	s, c, roots := configuredServer(t, appserver.Config{Accounts: store, Now: now, DragRaceOverrides: []byte(`{"operational":{"simulationLagThreshold":10}}`)})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Race_Admin", "original password")
 	peers := []*http.Client{}

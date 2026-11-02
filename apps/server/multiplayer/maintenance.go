@@ -1,9 +1,10 @@
-package transport
+package multiplayer
 
 import (
 	"errors"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"time"
+
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
 const maintenanceMessage = "Server maintenance. Try again later."
@@ -61,7 +62,7 @@ func (s *Server) BeginDrain(timeout time.Duration) error {
 // Runs under the room-owner mutex after gameplay and lifecycle events. Terminal
 // outcomes remain immutable. Allow one application-progress window for delivery
 // before invalidating all rooms and their credentials.
-func (s *Server) advanceMaintenanceLocked(now time.Time) ([]*room, []*pair) {
+func (s *Server) advanceMaintenanceLocked(now time.Time) ([]*room, []*connection) {
 	if !s.draining || s.drainComplete {
 		return nil, nil
 	}
@@ -87,18 +88,18 @@ func (s *Server) advanceMaintenanceLocked(now time.Time) ([]*room, []*pair) {
 	if now.Before(s.drainClosing) {
 		return changed, nil
 	}
-	var pairs []*pair
+	var pairs []*connection
 	for _, r := range s.rooms {
 		for _, seat := range r.seats {
-			if seat != nil && seat.pair != nil {
-				pairs = append(pairs, seat.pair)
+			if seat != nil && seat.connection != nil {
+				pairs = append(pairs, seat.connection)
 			}
 		}
 	}
 	s.rooms = map[string]*room{}
 	s.cleanupAvatarsLocked()
 	s.credentials = map[string]*seat{}
-	s.tickets = map[string]ticket{}
+
 	s.drainComplete = true
 	s.config.Logger.Info("maintenance_complete", "closed_pairs", len(pairs))
 	return changed, pairs
@@ -113,5 +114,5 @@ func (s *Server) Ready() bool {
 		return false
 	default:
 	}
-	return s.tcp != nil && s.udp != nil && !s.draining && !s.historyFailed
+	return !s.draining && !s.historyFailed
 }

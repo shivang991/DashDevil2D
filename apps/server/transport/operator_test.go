@@ -3,14 +3,15 @@ package transport_test
 import (
 	"context"
 	"crypto/tls"
-	"github.com/shivang991/DashDevil2D/apps/server/operations"
-	"github.com/shivang991/DashDevil2D/apps/server/transport"
 	"net"
 	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/shivang991/DashDevil2D/apps/server/operations"
+	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
 func TestOperatorReadinessDrainAndPublicIsolation(t *testing.T) {
@@ -69,7 +70,7 @@ func TestPublicDeploymentProbeRequiresClientAdmissionAndRealUDP(t *testing.T) {
 	if err = os.WriteFile(filepath.Join(assets, "index.html"), []byte("<!doctype html><html>deployment fixture</html>"), 0600); err != nil {
 		t.Fatal(err)
 	}
-	s, err := transport.New(transport.Config{Address: address, Origin: "https://" + address, Certificate: cert, Key: key, StaticDirectory: assets})
+	s, err := appserver.New(appserver.Config{Address: address, Origin: "https://" + address, Certificate: cert, Key: key, StaticDirectory: assets})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +91,7 @@ func TestPublicDeploymentProbeRequiresClientAdmissionAndRealUDP(t *testing.T) {
 		t.Fatal(err)
 	}
 	s.Close()
-	s, err = transport.New(transport.Config{Address: address, Origin: "https://" + address, Certificate: cert, Key: key, StaticDirectory: assets})
+	s, err = appserver.New(appserver.Config{Address: address, Origin: "https://" + address, Certificate: cert, Key: key, StaticDirectory: assets})
 	if err != nil {
 		t.Fatal(err)
 	}

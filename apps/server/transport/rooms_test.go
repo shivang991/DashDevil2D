@@ -1,10 +1,11 @@
 package transport_test
 
 import (
-	ws "github.com/fasthttp/websocket"
-	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 	"testing"
 	"time"
+
+	ws "github.com/fasthttp/websocket"
+	p "github.com/shivang991/DashDevil2D/apps/server/protocol"
 )
 
 func roomState(t *testing.T, socket *ws.Conn, match func(p.RoomState) bool) p.RoomState {
