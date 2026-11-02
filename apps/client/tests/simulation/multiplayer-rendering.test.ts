@@ -39,6 +39,36 @@ function fixture(mode: "drag-race" | "road-rage" = "drag-race") {
 }
 
 for (const mode of ["drag-race", "road-rage"] as const)
+  for (const local of [0, 1])
+    test.each([0, 1])(
+      `${mode} viewer ${local}: car %s still blinks after healing between draws`,
+      (damaged) => {
+        const { context, baseline, ctx, fillRect } = fixture(mode);
+        baseline.windows[0].objects = [
+          { id: 1, sliceId: 1, lane: baseline.cars[damaged].lane, distance: 100, flags: 2 },
+          { id: 4, sliceId: 2, lane: baseline.cars[damaged].lane, distance: 150, flags: 3 },
+        ];
+        baseline.windows[0].lastSlice = 2;
+        baseline.generator.nextSlice = 3;
+        baseline.generator.nextObject = 7;
+        baseline.identity.seat = local;
+        const race = new RaceSession(baseline);
+        const drawing = new MultiplayerRaceDrawing(context, local);
+        drawing.draw(ctx, 560, 600, race.frame(0, 0), 0);
+        const healed = race.frame(500_000, 0);
+        expect(healed.cars[damaged].hp).toBe(context.gameplay.maxHealth);
+        expect(healed.sounds.some((sound) => sound.type === "damage")).toBe(local === damaged);
+        fillRect.mockClear();
+        drawing.draw(ctx, 560, 600, healed, 50_000);
+        const carWidth = (context.gameplay.carWidth * 560) / (context.gameplay.laneSpacing * 3.9);
+        const cars = fillRect.mock.calls.filter(
+          (call) => Math.abs(Number(call[2]) - carWidth) < 1e-8,
+        );
+        expect(cars).toHaveLength(1);
+      },
+    );
+
+for (const mode of ["drag-race", "road-rage"] as const)
   for (const seat of [0, 1])
     test(`${mode} seat ${seat}: obstacle scrolling and per-car damage effects`, () => {
       const { context, frame, ctx, fillRect, rotate } = fixture(mode);

@@ -12,7 +12,10 @@ import {
 import type { RaceSession } from "./RaceSession";
 import { drawRoadScenery, drawSprite } from "@/lib/renderUtils";
 
-type DrawingFrame = Pick<ReturnType<RaceSession["frame"]>, "cars" | "renderedCars" | "objects">;
+type DrawingFrame = Pick<
+  ReturnType<RaceSession["frame"]>,
+  "cars" | "renderedCars" | "objects" | "damageAtUs" | "timeUs"
+>;
 
 /** The synchronized three-second countdown spends its first 1.5s revealing the grid. */
 export function countdownReveal(remainingUs: number, reducedMotion = false): number {
@@ -25,6 +28,7 @@ export function countdownReveal(remainingUs: number, reducedMotion = false): num
 export class MultiplayerRaceDrawing {
   private readonly previousHp: number[] = [];
   private readonly hitAt = [-Infinity, -Infinity];
+  private readonly previousDamageAtUs = [-Infinity, -Infinity];
   private readonly context: Context;
   private readonly local: number;
 
@@ -127,7 +131,13 @@ export class MultiplayerRaceDrawing {
     }
     view.renderedCars.forEach((car, seat) => {
       const hp = view.cars[seat].hp;
-      if (this.previousHp[seat] !== undefined && hp < this.previousHp[seat])
+      const damageAtUs = view.damageAtUs[seat];
+      if (Number.isFinite(damageAtUs) && damageAtUs !== this.previousDamageAtUs[seat]) {
+        // Start at the hit's round-time phase, including on delayed frames/recovery.
+        // Wall time then lets the last hit finish blinking after the round ends.
+        this.hitAt[seat] = time - Math.max(0, view.timeUs - damageAtUs) / 1000;
+        this.previousDamageAtUs[seat] = damageAtUs;
+      } else if (this.previousHp[seat] !== undefined && hp < this.previousHp[seat])
         this.hitAt[seat] = time;
       this.previousHp[seat] = hp;
       const elapsed = (time - this.hitAt[seat]) / 1000;

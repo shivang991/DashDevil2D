@@ -40,6 +40,7 @@ export function playingFixture(mode: MultiplayerMode) {
     effective: seat === SeatIndexPlayer1 ? ControlNOS : ControlNone,
   }));
   const frame: NonNullable<ReturnType<PairedConnection["frame"]>> = {
+    damageAtUs: [-Infinity, -Infinity],
     cars: [cars[0], cars[1]],
     renderedCars: cars.map(({ progress, lateral }) => ({ progress, lateral, tilt: 0 })),
     objects: [

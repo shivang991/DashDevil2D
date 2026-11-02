@@ -66,6 +66,8 @@ for (const mode of ["drag-race", "road-rage"] as const) {
           320,
           height,
           {
+            damageAtUs: [-Infinity, -Infinity],
+            timeUs: state.timeUs,
             cars: state.cars,
             renderedCars: state.cars.map((car) => ({ ...car, tilt: 0 })),
             objects: state.objects,

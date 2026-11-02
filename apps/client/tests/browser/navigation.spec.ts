@@ -57,6 +57,26 @@ test("solo Back cancellation preserves run; confirmation ends it; reload starts 
   await expect(page.locator("canvas")).toBeVisible();
 });
 
+test.describe("mobile navigation", () => {
+  test.use({ hasTouch: true, viewport: { width: 360, height: 640 } });
+  test("Long Drive back button works without opening settings", async ({ page }) => {
+    await page.goto(`${origin}/long-drive`);
+    const back = page.getByRole("button", { name: "Back", exact: true });
+    await expect(back).toBeVisible();
+    const bounds = await back.boundingBox();
+    expect(bounds!.width).toBeGreaterThanOrEqual(44);
+    expect(bounds!.height).toBeGreaterThanOrEqual(44);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await back.tap();
+    await expect(page.getByRole("dialog", { name: "End run?" })).toBeVisible();
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(page).toHaveURL(`${origin}/long-drive`);
+    await back.click();
+    await page.getByRole("button", { name: "End run", exact: true }).click();
+    await expect(page).toHaveURL(`${origin}/`);
+  });
+});
+
 test("browser Back restores the saved sound setting on menu", async ({ page }) => {
   await page.goto(origin);
   await page.getByRole("button", { name: /Long Drive/ }).click();
