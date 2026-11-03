@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AvatarEditor, type AvatarDraft } from "@/components/AvatarEditor";
+import { Button } from "@/components/ui/button";
 import { Dialog } from "radix-ui";
 import { accountAPI, type Account } from "@/transport/account";
 
@@ -18,7 +19,6 @@ export function ProfileDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [saved, setSaved] = useState(account);
-  const [username, setUsername] = useState(account.username);
   const [passwordMode, setPasswordMode] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
@@ -28,14 +28,12 @@ export function ProfileDialog({
   const [busy, setBusy] = useState(false);
   const [{ value: avatar, reading }, setAvatarDraft] = useState<AvatarDraft>({ reading: false });
   const [avatarReset, setAvatarReset] = useState(0);
-  const dirty = username !== saved.username || avatar !== undefined || reading;
-  const button = "rounded-lg border border-neutral-600 px-4 py-3 disabled:opacity-50";
+  const dirty = avatar !== undefined || reading;
   const input = "w-full rounded-lg border border-neutral-600 bg-neutral-900 px-3 py-2 text-white";
   function reset(next: Account) {
     setAvatarDraft({ reading: false });
     setAvatarReset((value) => value + 1);
     setSaved(next);
-    setUsername(next.username);
     setPasswordMode(false);
     setCurrentPassword("");
     setPassword("");
@@ -82,13 +80,11 @@ export function ProfileDialog({
             if (busy) event.preventDefault();
           }}
         >
-          <Dialog.Title className="text-xl">
+          <Dialog.Title className="text-center text-xl">
             {passwordMode ? "Change password" : "Profile"}
           </Dialog.Title>
-          <Dialog.Description className="text-sm text-neutral-400">
-            {passwordMode
-              ? "Changing your password logs out other devices."
-              : "Edit your username or avatar, then save."}
+          <Dialog.Description className="sr-only">
+            {passwordMode ? "Change your account password." : "Manage your avatar and password."}
           </Dialog.Description>
           {error && (
             <p role="alert" className="text-sm text-red-400">
@@ -143,7 +139,6 @@ export function ProfileDialog({
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </label>
-              <p className="text-xs text-neutral-400">6–1024 characters; spaces allowed.</p>
               <label className="text-sm">
                 Confirm new password
                 <input
@@ -157,12 +152,18 @@ export function ProfileDialog({
                   onChange={(e) => setConfirmation(e.target.value)}
                 />
               </label>
-              <button className={button} disabled={busy}>
-                Save password
-              </button>
-              <button type="button" className={button} disabled={busy} onClick={() => reset(saved)}>
+              <p className="text-xs text-neutral-400">Other devices will be logged out.</p>
+              <Button variant="multiplayer" disabled={busy}>
+                {busy ? "Saving…" : "Save password"}
+              </Button>
+              <Button
+                type="button"
+                variant="multiplayer"
+                disabled={busy}
+                onClick={() => reset(saved)}
+              >
                 Back
-              </button>
+              </Button>
             </form>
           ) : (
             <form
@@ -170,12 +171,8 @@ export function ProfileDialog({
               onSubmit={(event) => {
                 event.preventDefault();
                 if (reading) return;
-                if (!/^[A-Za-z0-9_]{3,24}$/.test(username)) {
-                  setError("Username must contain 3–24 letters, digits, or underscores");
-                  return;
-                }
                 void run(async () => {
-                  const next = await accountAPI.updateProfile(username, avatar);
+                  const next = await accountAPI.updateProfile(avatar);
                   reset(next);
                   onSaved?.(next);
                   setNotice("Profile saved");
@@ -184,35 +181,23 @@ export function ProfileDialog({
             >
               <AvatarEditor
                 key={avatarReset}
-                username={username}
+                username={saved.username}
                 avatar={saved.avatar}
                 disabled={busy}
                 onChange={setAvatarDraft}
                 onError={setError}
                 onSelect={() => setNotice("")}
               />
-              <label className="text-sm">
-                Username
-                <input
-                  className={input}
-                  autoComplete="username"
-                  disabled={busy}
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    setNotice("");
-                  }}
-                />
-              </label>
+              <p className="break-all text-center">{saved.username}</p>
               {dirty ? (
-                <button className={button} disabled={busy || reading}>
-                  {busy ? "Saving…" : "Save"}
-                </button>
+                <Button variant="multiplayer" disabled={busy || reading}>
+                  {reading ? "Processing…" : busy ? "Saving…" : "Save"}
+                </Button>
               ) : (
                 <>
-                  <button
+                  <Button
                     type="button"
-                    className={button}
+                    variant="multiplayer"
                     disabled={busy}
                     onClick={() => {
                       setPasswordMode(true);
@@ -221,13 +206,20 @@ export function ProfileDialog({
                     }}
                   >
                     Change password
-                  </button>
+                  </Button>
                 </>
               )}
             </form>
           )}
-          <Dialog.Close disabled={busy} className="text-sm text-neutral-400">
-            Close
+          <Dialog.Close asChild>
+            <Button
+              type="button"
+              variant="multiplayer"
+              disabled={busy}
+              className="border-transparent bg-transparent text-neutral-400"
+            >
+              Close
+            </Button>
           </Dialog.Close>
         </Dialog.Content>
       </Dialog.Portal>

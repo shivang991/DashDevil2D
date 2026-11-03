@@ -69,7 +69,9 @@ test("temporary admin changes password, plays with an independent session, then 
     await logout.goto("/");
     await logout.getByRole("button", { name: "Account menu" }).click();
     await logout.getByRole("menuitem", { name: "Profile", exact: true }).click();
-    await expect(logout.getByLabel("Username", { exact: true })).toHaveValue("Test_Driver");
+    await expect(
+      logout.getByRole("dialog").getByText("Test_Driver", { exact: true }),
+    ).toBeVisible();
     await logout.getByRole("button", { name: "Close", exact: true }).click();
     await expect(logout.getByRole("dialog")).toHaveCount(0);
     await logout.getByRole("button", { name: "Account menu" }).click();
@@ -99,7 +101,7 @@ test("temporary admin changes password, plays with an independent session, then 
   }
 });
 
-test("profile edits save explicitly, discard on Escape, retain errors and update login", async ({
+test("avatar edits compress oversized sources, save explicitly, discard on Escape and retain errors", async ({
   page,
   browser,
   baseURL,
@@ -116,18 +118,32 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
     await page.getByRole("menuitem", { name: "Profile", exact: true }).click();
   }
   await openProfile();
-  await page.getByLabel("Username", { exact: true }).fill("Unsaved_Name");
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByText("Test_Driver", { exact: true })).toBeVisible();
+  await expect(dialog.getByRole("textbox")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Logout", exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Save", exact: true })).toBeVisible();
+  // A real decoded image over 2 MB verifies browser compression before the API.
+  const sharp = (await import("sharp")).default;
+  const source = await sharp({
+    create: { width: 1200, height: 1200, channels: 4, background: "red" },
+  })
+    .png()
+    .toBuffer();
+  const oversized = Buffer.concat([source, Buffer.alloc(2 * 1024 * 1024)]);
+  const upload = async () => {
+    const chooser = page.waitForEvent("filechooser");
+    await page.getByRole("button", { name: "Change avatar" }).focus();
+    await page.keyboard.press("Enter");
+    await (await chooser).setFiles({ name: "large.png", mimeType: "image/png", buffer: oversized });
+    await expect(page.getByRole("button", { name: "Save", exact: true })).toBeEnabled();
+  };
+  await upload();
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
   await openProfile();
-  await expect(page.getByLabel("Username", { exact: true })).toHaveValue("Test_Driver");
-  await page.getByLabel("Username", { exact: true }).fill("x");
-  await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByRole("alert")).toContainText("3–24");
-  await expect(page.getByLabel("Username", { exact: true })).toHaveValue("x");
-  await page.getByLabel("Username", { exact: true }).fill("Renamed_Driver");
+  await expect(page.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
+  await expect(dialog.locator("img")).toHaveCount(0);
+  await upload();
   await page.route("**/api/account/profile", (route) =>
     route.fulfill({
       status: 503,
@@ -137,16 +153,16 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
   );
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("alert")).toHaveText("Unable to save. Try again");
-  await expect(page.getByLabel("Username", { exact: true })).toHaveValue("Renamed_Driver");
   await page.unroute("**/api/account/profile");
-  const webp = Buffer.from(
-    "UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoCAAIAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA=",
-    "base64",
-  );
-  await page
-    .getByLabel("Avatar", { exact: true })
-    .setInputFiles({ name: "avatar.webp", mimeType: "image/webp", buffer: webp });
+  const savedRequest = page.waitForRequest("**/api/account/profile");
   await page.getByRole("button", { name: "Save", exact: true }).click();
+  const payload = (await savedRequest).postDataJSON();
+  expect(payload.username).toBeUndefined();
+  const output = Buffer.from(payload.avatar, "base64");
+  expect(output.length).toBeLessThan(2 * 1024 * 1024);
+  const metadata = await sharp(output).metadata();
+  expect(metadata.width).toBeLessThanOrEqual(512);
+  expect(metadata.height).toBeLessThanOrEqual(512);
   await expect(page.getByRole("button", { name: "Change password", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Logout", exact: true })).toHaveCount(0);
   await expect(page.getByRole("dialog").locator("img")).toBeVisible();
@@ -155,7 +171,7 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
     .attach("saved-profile", { body: await page.screenshot(), contentType: "image/png" });
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await page.reload();
-  await expect(page.getByText("Renamed_Driver", { exact: true })).toBeVisible();
+  await expect(page.getByText("Test_Driver", { exact: true })).toBeVisible();
   await expect(page.locator("img")).toBeVisible();
   await openProfile();
   await page.getByRole("button", { name: "Change password", exact: true }).click();
@@ -181,7 +197,7 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
   await trigger.click();
   await page.getByRole("menuitem", { name: "Logout", exact: true }).click();
   await page.getByRole("button", { name: "Login to play multiplayer" }).click();
-  await page.getByLabel("Username", { exact: true }).fill("Renamed_Driver");
+  await page.getByLabel("Username", { exact: true }).fill("Test_Driver");
   await page
     .getByLabel("Password", { exact: true })
     .fill(process.env.DASHDEVIL_TEST_ACCOUNT_PASSWORD!);

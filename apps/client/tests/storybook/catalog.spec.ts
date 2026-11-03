@@ -75,3 +75,44 @@ for (const width of [1280, 320]) {
     await expect(menu).toHaveCount(0);
   });
 }
+
+for (const width of [1280, 320]) {
+  test(`Profile layout and keyboard avatar picker at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/iframe.html?id=screens-profile--open&viewMode=story");
+    const dialog = page.getByRole("dialog", { name: "Profile" });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("textbox")).toHaveCount(0);
+    const pencil = dialog.getByRole("button", { name: "Change avatar" });
+    const avatar = dialog.getByLabel("Driver_01 avatar");
+    const username = dialog.getByText("Driver_01", { exact: true });
+    const avatarBox = (await avatar.boundingBox())!;
+    const pencilBox = (await pencil.boundingBox())!;
+    const usernameBox = (await username.boundingBox())!;
+    expect(pencilBox.x).toBeGreaterThan(avatarBox.x + avatarBox.width / 2);
+    expect(pencilBox.y).toBeLessThan(avatarBox.y + avatarBox.height / 2);
+    expect(usernameBox.y).toBeGreaterThanOrEqual(avatarBox.y + avatarBox.height);
+    for (const control of [
+      pencil,
+      dialog.getByRole("button", { name: "Change password" }),
+      dialog.getByRole("button", { name: "Close" }),
+    ]) {
+      await expect(control).toBeInViewport();
+      expect(
+        await control.evaluate((element) => getComputedStyle(element).transitionDuration),
+      ).toBe("0s");
+    }
+    await pencil.focus();
+    const chooser = page.waitForEvent("filechooser");
+    await page.keyboard.press("Enter");
+    await (await chooser).setFiles([]);
+    await expect(dialog.getByRole("button", { name: "Save", exact: true })).toHaveCount(0);
+    await test.info().attach(`profile-${width}`, {
+      body: await page.screenshot({ path: test.info().outputPath(`profile-${width}.png`) }),
+      contentType: "image/png",
+    });
+    await page.keyboard.press("Escape");
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Profile", exact: true })).toBeFocused();
+  });
+}

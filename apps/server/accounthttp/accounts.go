@@ -222,11 +222,14 @@ func (s *Server) updateProfile(c *fiber.Ctx) error {
 		return accountError(c, 403, "Change your temporary password first")
 	}
 	var request struct {
-		Username string  `json:"username"`
+		Username *string `json:"username"`
 		Avatar   *string `json:"avatar"`
 	}
 	if len(c.Body()) > 3*1024*1024 || json.Unmarshal(c.Body(), &request) != nil {
 		return accountError(c, 400, "Invalid profile")
+	}
+	if request.Username != nil && *request.Username != session.Username {
+		return accountError(c, 403, "Only admins can change usernames through user management")
 	}
 	var avatar *[]byte
 	if request.Avatar != nil {
@@ -236,7 +239,7 @@ func (s *Server) updateProfile(c *fiber.Ctx) error {
 		}
 		avatar = &data
 	}
-	next, err := s.config.Accounts.UpdateProfile(session.ID, request.Username, avatar, s.config.Now())
+	next, err := s.config.Accounts.UpdateProfile(session.ID, avatar, s.config.Now())
 	if err != nil {
 		status := 400
 		if errors.Is(err, accounts.ErrUsernameConflict) {

@@ -55,8 +55,7 @@ export const accountAPI = {
   current: () => request<Account>(""),
   login: (username: string, password: string) => request<Account>("/login", { username, password }),
   changeTemporaryPassword: (password: string) => request<Account>("/password", { password }),
-  updateProfile: (username: string, avatar?: string) =>
-    request<Account>("/profile", { username, avatar }),
+  updateProfile: (avatar?: string) => request<Account>("/profile", { avatar }),
   changePassword: (currentPassword: string, password: string) =>
     request<Account>("/password", { currentPassword, password }),
   logout: () => request<{ ok: boolean }>("/logout", {}),

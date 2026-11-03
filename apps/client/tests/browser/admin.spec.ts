@@ -92,7 +92,7 @@ test("admin creates, edits, resets and deletes users; normal accounts have no ad
         .getByRole("button", { name: "Delete", exact: true }),
     ).toBeDisabled();
     await page.reload();
-    await page.getByRole("button", { name: "Admin", exact: true }).click();
+    await expect(page.getByRole("tab", { name: "Users", selected: true })).toBeVisible();
     await expect(page.getByLabel("Temporary password", { exact: true })).toHaveCount(0);
     await page.getByRole("button", { name: "Back", exact: true }).click();
     await expect(page.getByRole("button", { name: /Long Drive/ })).toBeVisible();
