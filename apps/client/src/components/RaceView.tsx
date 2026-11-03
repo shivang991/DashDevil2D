@@ -163,30 +163,13 @@ export function RaceView({
           <h1 className="text-3xl font-heading text-red-400">
             {context.mode === ModeRoadRage ? "Road Rage" : "Drag Race"}
           </h1>
-          <div
-            className="flex gap-1"
+          <span
+            className="sr-only"
             data-testid={`hp-${local}`}
             aria-label={`Your HP: ${hp} of ${context.gameplay.maxHealth}`}
           >
-            {context.gameplay.maxHealth <= 8 && <span className="sr-only">HP {hp}</span>}
-            {context.gameplay.maxHealth > 8 ? (
-              <span>
-                ♥ {hp}/{context.gameplay.maxHealth}
-              </span>
-            ) : (
-              Array.from({ length: context.gameplay.maxHealth }, (_, heart) => (
-                <img
-                  key={heart}
-                  src={`${import.meta.env.BASE_URL}textures/heart.png`}
-                  alt=""
-                  width={22}
-                  height={22}
-                  style={{ imageRendering: "pixelated" }}
-                  className={heart < hp ? "object-contain" : "object-contain grayscale opacity-30"}
-                />
-              ))
-            )}
-          </div>
+            HP {hp}
+          </span>
         </div>
         <div className="flex items-center justify-between gap-3 text-xs text-neutral-400">
           <p className="flex min-w-0 gap-2">
