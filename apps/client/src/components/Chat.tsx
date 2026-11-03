@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useLocation, useNavigate } from "react-router";
+import { ChevronLeft, X } from "lucide-react";
 import { Avatar } from "./Avatar";
 import type { Account } from "@/transport/account";
 import {
@@ -421,10 +422,10 @@ function ChatPanel({
       }}
       onKeyUp={(event) => event.stopPropagation()}
     >
-      <header className="flex items-center justify-between border-b border-neutral-700 px-4 py-3 [&_h2]:text-[18px] [&_button]:min-h-10 [&_button]:min-w-10 [&_button]:text-[28px]">
+      <header className="flex items-center justify-between border-b border-neutral-700 px-4 py-3 [&_h2]:text-[18px] [&_button]:min-h-10 [&_button]:min-w-10 [&_button]:inline-flex [&_button]:items-center [&_button]:justify-center">
         <h2>Chat</h2>
         <button onClick={() => toggle(false)} aria-label="Close chat">
-          ×
+          <X size={24} aria-hidden="true" />
         </button>
       </header>
       {error && (
@@ -434,9 +435,9 @@ function ChatPanel({
       )}
       {selected ? (
         <>
-          <div className="flex items-center gap-2.5 border-b border-neutral-700 p-2 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:text-[28px] [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&_strong]:text-[12px] [&_strong]:wrap-anywhere">
+          <div className="flex items-center gap-2.5 border-b border-neutral-700 p-2 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&_strong]:text-[12px] [&_strong]:wrap-anywhere">
             <button onClick={() => setPeer(undefined)} aria-label="Back to conversations">
-              ‹
+              <ChevronLeft size={24} aria-hidden="true" />
             </button>
             <Avatar username={selected.username} avatar={selected.avatar} />
             <div>
@@ -444,68 +445,6 @@ function ChatPanel({
               <Presence value={selected.presence} />
             </div>
           </div>
-          {!selected.deleted && (
-            <div className="border-b border-neutral-700 px-4 py-2 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
-              <button
-                disabled={playing || challengeBusy || admissionPending}
-                onClick={() => void challenge()}
-              >
-                {challengeBusy ? "Inviting…" : "Challenge"}
-              </button>
-              {createOffer && (
-                <div>
-                  <p>
-                    Create a room to invite {selected.username}. You’ll choose the mode and
-                    readiness in the lobby.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setCreateOffer(false);
-                      void navigate("/multiplayer/drag-race", {
-                        state: { challengePeer: selected.id },
-                      });
-                    }}
-                  >
-                    Create room &amp; invite
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-          <nav
-            className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-neutral-700 p-2 [&_button]:relative [&_button]:min-w-11 [&_button]:shrink-0 [&_button]:rounded-full [&_button]:border-2 [&_button]:border-transparent [&_button[aria-pressed=true]]:border-[#60a5fa]"
-            aria-label="Switch conversation"
-          >
-            <button
-              onClick={() => {
-                setPeer(undefined);
-                setQuery("");
-              }}
-              aria-label="Search conversations"
-            >
-              ⌕
-            </button>
-            {people
-              .filter(
-                (p, i, list) => list.findIndex((v) => v.id === p.id) === i && p.lastMessage > 0,
-              )
-              .map((person) => (
-                <button
-                  key={person.id}
-                  title={person.username}
-                  aria-label={`Switch to ${person.username}`}
-                  aria-pressed={person.id === selected.id}
-                  onClick={() => open(person)}
-                >
-                  <Avatar username={person.username} avatar={person.avatar} />
-                  {person.unread > 0 && (
-                    <span className={`${chatBadge} absolute right-0 bottom-0`}>
-                      {person.unread}
-                    </span>
-                  )}
-                </button>
-              ))}
-          </nav>
           <div
             className="min-h-0 flex-1 overflow-auto p-4 font-chat [&>p]:py-3 [&>p]:font-chat [&>p]:leading-normal [&>p]:text-neutral-400"
             aria-label="Messages"
@@ -552,6 +491,34 @@ function ChatPanel({
               <button disabled={sending} onClick={() => void send()}>
                 Retry send
               </button>
+            </div>
+          )}
+          {!selected.deleted && (
+            <div className="border-t border-neutral-700 px-4 py-2 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
+              <button
+                disabled={playing || challengeBusy || admissionPending}
+                onClick={() => void challenge()}
+              >
+                {challengeBusy ? "Inviting…" : "Challenge"}
+              </button>
+              {createOffer && (
+                <div>
+                  <p>
+                    Create a room to invite {selected.username}. You’ll choose the mode and
+                    readiness in the lobby.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setCreateOffer(false);
+                      void navigate("/multiplayer/drag-race", {
+                        state: { challengePeer: selected.id },
+                      });
+                    }}
+                  >
+                    Create room &amp; invite
+                  </button>
+                </div>
+              )}
             </div>
           )}
           {selected.deleted ? (
@@ -625,21 +592,20 @@ function ChatPanel({
                     {row(snapshot.pinned)}
                   </section>
                 )}
-                <section>
-                  <h3>Acquaintances</h3>
-                  {snapshot?.acquaintances.map(row)}
-                  {snapshot && !snapshot.acquaintances.length && (
-                    <p>Search for a driver to start a conversation.</p>
-                  )}
-                  {!snapshot && <p>Loading conversations…</p>}
-                </section>
-                <section>
-                  <h3>Suggested</h3>
-                  {snapshot?.suggested.map(row)}
-                  {snapshot && !snapshot.suggested.length && (
-                    <p>Previous race opponents will appear here.</p>
-                  )}
-                </section>
+                {!snapshot && <p>Loading conversations…</p>}
+                {snapshot && snapshot.acquaintances.length > 0 && (
+                  <section>
+                    <h3>Acquaintances</h3>
+                    {snapshot.acquaintances.map(row)}
+                  </section>
+                )}
+                {snapshot && snapshot.suggested.length > 0 && (
+                  <section>
+                    <h3>Suggested</h3>
+                    {snapshot.suggested.map(row)}
+                  </section>
+                )}
+                {snapshot && !people.length && <p>No chats found.</p>}
               </>
             )}
           </div>

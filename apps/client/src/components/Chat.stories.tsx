@@ -80,9 +80,7 @@ export const Empty: Story = {
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByRole("button", { name: "Open chat" }));
-    await expect(
-      await canvas.findByText("Search for a driver to start a conversation."),
-    ).toBeVisible();
+    await expect(await canvas.findByText("No chats found.")).toBeVisible();
   },
 };
 export const Error: Story = {
