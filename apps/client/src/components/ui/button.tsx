@@ -14,6 +14,8 @@ const buttonVariants = cva(
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        "danger-outlined":
+          "border border-destructive bg-transparent text-destructive hover:bg-destructive/10 focus-visible:ring-destructive/40",
         outline:
           "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
@@ -45,10 +47,15 @@ export function Button({
   variant = "default",
   size = "default",
   asChild = false,
+  iconLeft: IconLeft,
+  dividerLeft = false,
+  children,
   ...props
 }: React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     asChild?: boolean;
+    iconLeft?: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    dividerLeft?: boolean;
   }) {
   const Comp = asChild ? Slot.Root : "button";
 
@@ -59,6 +66,16 @@ export function Button({
       data-size={size}
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
-    />
+    >
+      {IconLeft && <IconLeft aria-hidden="true" />}
+      {IconLeft && dividerLeft && (
+        <span
+          role="separator"
+          aria-orientation="vertical"
+          className="h-4 border-l border-current opacity-40"
+        />
+      )}
+      {asChild ? <Slot.Slottable>{children}</Slot.Slottable> : children}
+    </Comp>
   );
 }

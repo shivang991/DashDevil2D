@@ -36,7 +36,7 @@ test("temporary admin changes password, plays with an independent session, then 
     await host.reload();
     await expect(host.getByRole("button", { name: /Drag Race/ })).toBeEnabled();
     await expect(host.getByText("Test_Driver", { exact: true })).toBeVisible();
-    await expect(host.getByRole("button", { name: /Chat/ })).toBeDisabled();
+    await expect(host.getByRole("button", { name: "Open chat" })).toBeEnabled();
     await info.attach("authenticated-menu", {
       body: await host.screenshot(),
       contentType: "image/png",
@@ -67,12 +67,13 @@ test("temporary admin changes password, plays with an independent session, then 
     }
     const logout = await contexts[0].newPage();
     await logout.goto("/");
-    await logout.getByRole("button", { name: "Profile", exact: true }).click();
+    await logout.getByRole("button", { name: "Account menu" }).click();
+    await logout.getByRole("menuitem", { name: "Profile", exact: true }).click();
     await expect(logout.getByLabel("Username", { exact: true })).toHaveValue("Test_Driver");
     await logout.getByRole("button", { name: "Close", exact: true }).click();
     await expect(logout.getByRole("dialog")).toHaveCount(0);
-    await logout.getByRole("button", { name: "Profile", exact: true }).click();
-    await logout.getByRole("button", { name: "Logout", exact: true }).click();
+    await logout.getByRole("button", { name: "Account menu" }).click();
+    await logout.getByRole("menuitem", { name: "Logout", exact: true }).click();
     for (const page of [host, logout]) {
       await expect(page.getByRole("button", { name: /Drag Race/ })).toBeDisabled();
       expect(
@@ -109,14 +110,18 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
   const other = await otherContext.newPage();
   await other.goto("/");
   await loginTestAccount(other);
-  const trigger = page.getByRole("button", { name: "Profile", exact: true });
-  await trigger.click();
+  const trigger = page.getByRole("button", { name: "Account menu" });
+  async function openProfile() {
+    await trigger.click();
+    await page.getByRole("menuitem", { name: "Profile", exact: true }).click();
+  }
+  await openProfile();
   await page.getByLabel("Username", { exact: true }).fill("Unsaved_Name");
   await expect(page.getByRole("button", { name: "Logout", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Save", exact: true })).toBeVisible();
   await page.keyboard.press("Escape");
   await expect(trigger).toBeFocused();
-  await trigger.click();
+  await openProfile();
   await expect(page.getByLabel("Username", { exact: true })).toHaveValue("Test_Driver");
   await page.getByLabel("Username", { exact: true }).fill("x");
   await page.getByRole("button", { name: "Save", exact: true }).click();
@@ -142,7 +147,8 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
     .getByLabel("Avatar", { exact: true })
     .setInputFiles({ name: "avatar.webp", mimeType: "image/webp", buffer: webp });
   await page.getByRole("button", { name: "Save", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Logout", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Change password", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Logout", exact: true })).toHaveCount(0);
   await expect(page.getByRole("dialog").locator("img")).toBeVisible();
   await test
     .info()
@@ -151,7 +157,7 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
   await page.reload();
   await expect(page.getByText("Renamed_Driver", { exact: true })).toBeVisible();
   await expect(page.locator("img")).toBeVisible();
-  await trigger.click();
+  await openProfile();
   await page.getByRole("button", { name: "Change password", exact: true }).click();
   const previousPassword = process.env.DASHDEVIL_TEST_ACCOUNT_PASSWORD!;
   const newPassword = `${previousPassword} profile`;
@@ -171,7 +177,9 @@ test("profile edits save explicitly, discard on Escape, retain errors and update
   await page.getByRole("button", { name: "Remove avatar", exact: true }).click();
   await page.getByRole("button", { name: "Save", exact: true }).click();
   await expect(page.getByRole("dialog").locator("img")).toHaveCount(0);
-  await page.getByRole("button", { name: "Logout", exact: true }).click();
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+  await trigger.click();
+  await page.getByRole("menuitem", { name: "Logout", exact: true }).click();
   await page.getByRole("button", { name: "Login to play multiplayer" }).click();
   await page.getByLabel("Username", { exact: true }).fill("Renamed_Driver");
   await page

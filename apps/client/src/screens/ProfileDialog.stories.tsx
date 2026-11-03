@@ -7,7 +7,7 @@ import { ProfileDialog } from "./ProfileDialog";
 const meta = {
   title: "Screens/Profile",
   component: ProfileDialog,
-  args: { account, onLogout: fn(async () => {}), onSaved: fn() },
+  args: { account, onSaved: fn() },
   beforeEach() {
     mocked(accountAPI.updateProfile).mockResolvedValue({ ...account, username: "Driver_renamed" });
   },

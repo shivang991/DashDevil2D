@@ -26,7 +26,10 @@ for (const story of Object.values(entries).filter((entry) => entry.type === "sto
           };
         }
       ).__STORYBOOK_ADDONS_CHANNEL__;
-      return new Promise<Result>((resolve) => {
+      return new Promise<Result>((resolve, reject) => {
+        channel.on("playFunctionThrewException", (error) =>
+          reject(new Error(JSON.stringify(error))),
+        );
         channel.on("storyFinished", (result) => {
           if (result.storyId === storyId) resolve(result);
         });
@@ -36,5 +39,39 @@ for (const story of Object.values(entries).filter((entry) => entry.type === "sto
     expect(result.status).toBe("success");
     await expect(page.locator("#storybook-root > *").first()).toBeVisible();
     expect(errors).toEqual([]);
+  });
+}
+
+for (const width of [1280, 320]) {
+  test(`Account dropdown overlays games at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/iframe.html?id=screens-menu--default&viewMode=story");
+    const trigger = page.getByRole("button", { name: "Account menu" });
+    const games = ["Long Drive", "Drag Race", "Road Rage"].map((name) =>
+      page.getByRole("button", { name: new RegExp(name) }),
+    );
+    await expect(trigger).toBeVisible();
+    const before = await Promise.all(games.map((game) => game.boundingBox()));
+    await trigger.click();
+    const menu = page.getByRole("menu");
+    await expect(menu).toBeVisible();
+    expect(await Promise.all(games.map((game) => game.boundingBox()))).toEqual(before);
+    const menuBox = (await menu.boundingBox())!;
+    const triggerBox = (await trigger.boundingBox())!;
+    expect(menuBox.y).toBeGreaterThanOrEqual(triggerBox.y + triggerBox.height);
+    expect(menuBox.x + menuBox.width).toBeCloseTo(triggerBox.x + triggerBox.width, 0);
+    expect(menuBox.x).toBeGreaterThanOrEqual(0);
+    expect(menuBox.x + menuBox.width).toBeLessThanOrEqual(width);
+    for (const name of ["Profile", "Race History", "Logout"]) {
+      await expect(page.getByRole("menuitem", { name })).toBeInViewport();
+    }
+    await test
+      .info()
+      .attach(`account-menu-${width}`, { body: await page.screenshot(), contentType: "image/png" });
+    await page.keyboard.press("Escape");
+    await expect(trigger).toBeFocused();
+    await trigger.click();
+    await page.getByRole("heading", { name: "Branding" }).click();
+    await expect(menu).toHaveCount(0);
   });
 }
