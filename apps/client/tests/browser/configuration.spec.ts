@@ -42,7 +42,7 @@ test("developer capture drives actual Long Drive HP HUD, heart drawing, healing 
   await page.clock.runFor(500);
   await expect(page.getByRole("img", { name: "Health: 4 of 4" })).toBeVisible();
   expect(await page.evaluate("recordedNotes()")).toBeGreaterThan(before);
-  await expect(page.getByText("Score: 0", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("Score: 0", { exact: true })).toBeVisible();
   await page.evaluate("window.configurationOverride.gameplay.maxHealth = 2");
   await page.clock.runFor(1500);
   await expect(page.getByRole("img", { name: "Health: 4 of 4" })).toBeVisible();

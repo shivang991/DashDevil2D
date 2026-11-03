@@ -144,8 +144,9 @@ export class LongDriveSession {
     if (this.disposed) return;
     const gameConfig = renderingConfig(this.game.configuration);
     const canvas = this.options.canvas;
-    canvas.width = canvas.clientWidth;
-    canvas.height = canvas.clientHeight;
+    // Keep world geometry independent of responsive CSS size, as in multiplayer.
+    canvas.width = 560;
+    canvas.height = 600;
     const state = this.game.state;
     const base = canvas.height - gameConfig.carHeight - gameConfig.carBottomMargin;
     const displacement = -state.carOffset;
