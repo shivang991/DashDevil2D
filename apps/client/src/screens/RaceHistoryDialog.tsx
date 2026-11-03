@@ -99,18 +99,29 @@ function History() {
 export function RaceHistoryDialog({
   authenticated,
   onLogin,
+  open,
+  onOpenChange,
+  onCloseAutoFocus,
 }: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onCloseAutoFocus?: (event: Event) => void;
   authenticated: boolean;
   onLogin?: () => void;
 }) {
   return (
-    <Dialog.Root>
-      <Dialog.Trigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
-        Race History
-      </Dialog.Trigger>
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      {open === undefined && (
+        <Dialog.Trigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
+          Race History
+        </Dialog.Trigger>
+      )}
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/75" />
-        <Dialog.Content className="fixed left-1/2 top-1/2 z-50 flex max-h-[90dvh] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-xl border border-neutral-600 bg-neutral-950 p-6 text-white">
+        <Dialog.Content
+          onCloseAutoFocus={onCloseAutoFocus}
+          className="fixed left-1/2 top-1/2 z-50 flex max-h-[90dvh] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-xl border border-neutral-600 bg-neutral-950 p-6 text-white"
+        >
           <Dialog.Title className="text-xl">Race History</Dialog.Title>
           <Dialog.Description className="text-sm text-neutral-400">
             Your completed races, newest first.

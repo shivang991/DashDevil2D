@@ -58,7 +58,7 @@ for (const mode of ["profile", "admin"] as const) {
       await act(async () =>
         root.render(
           mode === "profile" ? (
-            <ProfileDialog account={account} onLogout={vi.fn()} />
+            <ProfileDialog account={account} />
           ) : (
             <AdminScreen onBack={vi.fn()} onAccountSaved={vi.fn()} />
           ),

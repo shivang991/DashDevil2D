@@ -5,11 +5,15 @@ import { accountAPI, type Account } from "@/transport/account";
 
 export function ProfileDialog({
   account,
-  onLogout,
+  open: controlledOpen,
+  onOpenChange,
+  onCloseAutoFocus,
   onSaved,
 }: {
   account: Account;
-  onLogout: () => Promise<void>;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onCloseAutoFocus?: (event: Event) => void;
   onSaved?: (account: Account) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -53,19 +57,23 @@ export function ProfileDialog({
   }
   return (
     <Dialog.Root
-      open={open}
+      open={controlledOpen ?? open}
       onOpenChange={(next) => {
         if (busy) return;
         reset(account);
         setOpen(next);
+        onOpenChange?.(next);
       }}
     >
-      <Dialog.Trigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
-        Profile
-      </Dialog.Trigger>
+      {controlledOpen === undefined && (
+        <Dialog.Trigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
+          Profile
+        </Dialog.Trigger>
+      )}
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/75" />
         <Dialog.Content
+          onCloseAutoFocus={onCloseAutoFocus}
           className="fixed left-1/2 top-1/2 z-50 flex max-h-[90dvh] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-xl border border-neutral-600 bg-neutral-950 p-6 text-white"
           onEscapeKeyDown={(event) => {
             if (busy) event.preventDefault();
@@ -213,14 +221,6 @@ export function ProfileDialog({
                     }}
                   >
                     Change password
-                  </button>
-                  <button
-                    type="button"
-                    className={button}
-                    disabled={busy}
-                    onClick={() => void run(onLogout)}
-                  >
-                    Logout
                   </button>
                 </>
               )}
