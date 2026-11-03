@@ -159,7 +159,7 @@ test("avatar edits compress oversized sources, save explicitly, discard on Escap
   const payload = (await savedRequest).postDataJSON();
   expect(payload.username).toBeUndefined();
   const output = Buffer.from(payload.avatar, "base64");
-  expect(output.length).toBeLessThan(2 * 1024 * 1024);
+  expect(output.length).toBeLessThanOrEqual(512 * 1024);
   const metadata = await sharp(output).metadata();
   expect(metadata.width).toBeLessThanOrEqual(512);
   expect(metadata.height).toBeLessThanOrEqual(512);

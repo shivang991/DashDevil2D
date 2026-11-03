@@ -56,7 +56,7 @@ export function AvatarEditor({
     compression.current = controller;
     try {
       const compressed = await imageCompression(file, {
-        maxSizeMB: 1,
+        maxSizeMB: 0.5,
         maxWidthOrHeight: 512,
         fileType: "image/png",
         useWebWorker: true,
@@ -64,7 +64,7 @@ export function AvatarEditor({
         signal: controller.signal,
       });
       if (epoch.current !== current) return;
-      if (!compressed.size || compressed.size > 2 * 1024 * 1024) {
+      if (!compressed.size || compressed.size > 512 * 1024) {
         throw new Error("Image could not be compressed");
       }
       const data = await new Promise<string>((resolve, reject) => {

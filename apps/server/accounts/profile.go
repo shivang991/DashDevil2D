@@ -13,14 +13,14 @@ import (
 	_ "golang.org/x/image/webp"
 )
 
-const MaxAvatarBytes = 2 * 1024 * 1024
+const MaxAvatarBytes = 512 * 1024
 
 var ErrUsernameConflict = errors.New("Username already taken")
 
 // Decode before storing, then re-encode to strip metadata and trailing payloads.
 // A pixel bound keeps a small compressed upload from exhausting server memory.
 func ValidateAvatar(data []byte) ([]byte, error) {
-	invalid := errors.New("Choose a valid JPEG, PNG, or WebP up to 2 MB and 16 megapixels")
+	invalid := errors.New("Choose a valid JPEG, PNG, or WebP up to 0.5 MiB and 16 megapixels")
 	if len(data) == 0 || len(data) > MaxAvatarBytes {
 		return nil, invalid
 	}

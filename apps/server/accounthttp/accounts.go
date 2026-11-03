@@ -56,6 +56,7 @@ func (s *Server) accountRoutes() {
 	})
 	s.app.Post("/api/account/profile", s.updateProfile)
 	s.app.Get("/api/account/avatars/:id", func(c *fiber.Ctx) error {
+		c.Set("Cache-Control", "no-store")
 		if s.config.Accounts == nil {
 			return c.SendStatus(404)
 		}
@@ -66,6 +67,15 @@ func (s *Server) accountRoutes() {
 		c.Set("X-Content-Type-Options", "nosniff")
 		c.Set("Content-Security-Policy", "default-src 'none'; sandbox")
 		c.Type("png")
+		c.Set("Cache-Control", "public, max-age=86400, immutable")
+		etag := strconv.Quote(c.Params("id"))
+		c.Set("ETag", etag)
+		for _, candidate := range strings.Split(c.Get("If-None-Match"), ",") {
+			candidate = strings.TrimSpace(candidate)
+			if candidate == "*" || strings.TrimPrefix(candidate, "W/") == etag {
+				return c.SendStatus(fiber.StatusNotModified)
+			}
+		}
 		return c.Send(data)
 	})
 	s.app.Post("/api/account/login", s.login)
