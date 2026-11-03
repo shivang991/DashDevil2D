@@ -182,7 +182,7 @@ export class MultiplayerRaceDrawing {
         const barX = Math.max(8, Math.min(width - barWidth - 8, x - barWidth / 2));
         ctx.fillStyle = "#171717";
         ctx.fillRect(barX - 2, barY - 2, barWidth + 4, 12);
-        ctx.fillStyle = "#fb7185";
+        ctx.fillStyle = seat === local ? "#2196f3" : "#fb7185";
         ctx.fillRect(barX, barY, barWidth * Math.max(0, Math.min(1, hp / g.maxHealth)), 8);
         if (seat !== local && offscreen) {
           ctx.fillStyle = "#fff";
