@@ -213,7 +213,7 @@
       }
     },
     {
-      "name": "release preserves shift and held NOS",
+      "name": "release preserves shift without restarting cancelled NOS",
       "mode": "road-rage",
       "seed": 1,
       "overrides": {},
@@ -293,17 +293,18 @@
         ],
         "cars": [
           {
-            "progress": 160,
+            "progress": 100,
             "lateral": 0,
             "lane": 1,
             "effective": 3,
-            "heldMask": 4
+            "heldMask": 4,
+            "flags": 0
           },
           {
             "progress": 80
           }
         ],
-        "derivation": ".2*800=160. Steering release preserves held acceleration."
+        "derivation": ".05*800 + .15*400 = 100. Steering cancels NOS; releasing steering preserves the shift but does not restart held boost."
       }
     },
     {
@@ -386,7 +387,7 @@
       }
     },
     {
-      "name": "edge steering preserves NOS and counts once; held repeat ignored",
+      "name": "edge steering cancels NOS and counts once; held repeat ignored",
       "mode": "road-rage",
       "seed": 1,
       "overrides": {},
@@ -448,9 +449,10 @@
         ],
         "cars": [
           {
-            "progress": 80,
+            "progress": 40,
             "lateral": -120,
-            "effective": 1
+            "effective": 1,
+            "flags": 0
           },
           {
             "progress": 40
@@ -463,7 +465,7 @@
           "timeUs": 0,
           "order": 2
         },
-        "derivation": ".1*800=80 with held NOS. Left at left edge has no lateral motion; only fresh press enters history."
+        "derivation": ".1*400=40 after steering cancels NOS. Left at left edge has no lateral motion; only fresh press enters history."
       }
     },
     {

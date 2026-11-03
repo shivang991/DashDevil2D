@@ -30,6 +30,37 @@ test("authenticated NOS starts at the next unprocessed tick without backdating",
   expect(game.snapshot().cars[0].progress).toBeCloseTo(120, 9);
   expect(game.snapshot().cars[1].progress).toBeCloseTo(80, 9);
 });
+test.each(["drag-race", "road-rage"] as const)(
+  "%s steering cancels NOS until boost is released and freshly pressed",
+  (mode) => {
+    const game = new Multiplayer(captureConfiguration(mode), 1, [
+      identity,
+      { ...identity, seat: 1, seatSession: 22 },
+    ]);
+    let sequence = 0;
+    const send = (intent: number, control: number, heldMask: number, end: number) => {
+      expect(
+        game.submit(identity, { ...input, sequence: ++sequence, intent, control, heldMask }),
+      ).toBe(true);
+      game.advanceTo(end);
+    };
+    game.advanceTo(0.1);
+    send(0, 3, 4, 0.2);
+    send(0, 2, 6, 0.3);
+    expect(game.snapshot().cars[0]).toMatchObject({ flags: 0, heldMask: 6 });
+    expect(game.snapshot().cars[0].progress).toBeCloseTo(160, 6);
+    send(1, 2, 4, 0.4);
+    send(2, 3, 4, 0.5);
+    send(0, 3, 4, 0.6);
+    expect(game.snapshot().cars[0].flags).toBe(0);
+    expect(game.snapshot().cars[0].progress).toBeCloseTo(280, 6);
+    send(1, 3, 0, 0.7);
+    send(0, 3, 4, 0.8);
+    expect(game.snapshot().cars[0].flags).toBe(1);
+    expect(game.snapshot().cars[0].progress).toBeCloseTo(400, 6);
+  },
+);
+
 test("held steering shifts at constant speed and repeats only after completion", () => {
   const game = new Multiplayer(captureConfiguration("road-rage"), 1, [
     identity,
