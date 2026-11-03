@@ -175,8 +175,7 @@ export class MultiplayerRaceDrawing {
         ctx.fillRect(x - carWidth / 2, cy - carHeight / 2, carWidth, carHeight);
       }
       ctx.restore();
-      if (seat !== local) {
-        const hp = view.cars[seat].hp;
+      {
         const barWidth = Math.max(64, carWidth);
         const offscreen = cy - carHeight / 2 < 30 || cy + carHeight / 2 > height;
         const barY = Math.max(30, Math.min(height - 64, cy - carHeight / 2 - 18));
@@ -185,7 +184,7 @@ export class MultiplayerRaceDrawing {
         ctx.fillRect(barX - 2, barY - 2, barWidth + 4, 12);
         ctx.fillStyle = "#fb7185";
         ctx.fillRect(barX, barY, barWidth * Math.max(0, Math.min(1, hp / g.maxHealth)), 8);
-        if (offscreen) {
+        if (seat !== local && offscreen) {
           ctx.fillStyle = "#fff";
           ctx.font = "14px sans-serif";
           ctx.textAlign = "center";

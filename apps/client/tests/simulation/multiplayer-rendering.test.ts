@@ -62,7 +62,7 @@ for (const mode of ["drag-race", "road-rage"] as const)
         drawing.draw(ctx, 560, 600, healed, 50_000);
         const carWidth = (context.gameplay.carWidth * 560) / (context.gameplay.laneSpacing * 3.9);
         const cars = fillRect.mock.calls.filter(
-          (call) => Math.abs(Number(call[2]) - carWidth) < 1e-8,
+          (call) => Math.abs(Number(call[2]) - carWidth) < 1e-8 && Number(call[3]) > 12,
         );
         expect(cars).toHaveLength(1);
       },
@@ -109,7 +109,9 @@ for (const mode of ["drag-race", "road-rage"] as const)
         const carsAt = (time: number) => {
           fillRect.mockClear();
           draw(time);
-          return fillRect.mock.calls.filter((call) => Math.abs(Number(call[2]) - carWidth) < 1e-8);
+          return fillRect.mock.calls.filter(
+            (call) => Math.abs(Number(call[2]) - carWidth) < 1e-8 && Number(call[3]) > 12,
+          );
         };
         frame.renderedCars[seat].tilt = 0.35;
         rotate.mockClear();
@@ -193,7 +195,7 @@ for (const mode of ["drag-race", "road-rage"] as const)
         const texts = fillText.mock.calls.map(([text]) => text);
         expect(texts.includes("FINISH")).toBe(mode === "drag-race");
         expect(texts).toContain(arrow);
-        const bar = fillRect.mock.calls.find((call) => call[3] === 8)!;
+        const bar = fillRect.mock.calls.filter((call) => call[3] === 8)[rival]!;
         expect(bar).toBeDefined();
         expect(bar[0]).toBeGreaterThanOrEqual(8);
         expect(bar[0] + bar[2]).toBeLessThanOrEqual(552);
@@ -226,7 +228,9 @@ test("damage history starts at first HP, updates on healing, and resets with a n
   const carsAt = (time: number) => {
     fillRect.mockClear();
     drawing.draw(ctx, 560, 600, frame, time);
-    return fillRect.mock.calls.filter((call) => Math.abs(Number(call[2]) - carWidth) < 1e-8);
+    return fillRect.mock.calls.filter(
+      (call) => Math.abs(Number(call[2]) - carWidth) < 1e-8 && Number(call[3]) > 12,
+    );
   };
   try {
     frame.cars[0].hp = 1;
@@ -254,12 +258,12 @@ test("zero shake and blink settings keep damaged cars visible and stationary", (
   Object.assign(context.presentation, { shakeDuration: 0, blinkCount: 0 });
   const drawing = new MultiplayerRaceDrawing(context, 0);
   drawing.draw(ctx, 560, 600, frame, 0);
-  const before = fillRect.mock.calls.slice();
+  const before = fillRect.mock.calls.filter((call) => Number(call[3]) !== 8);
   frame.cars[0].hp--;
   for (const time of [10, 410, 2210]) {
     fillRect.mockClear();
     drawing.draw(ctx, 560, 600, frame, time);
-    expect(fillRect.mock.calls).toEqual(before);
+    expect(fillRect.mock.calls.filter((call) => Number(call[3]) !== 8)).toEqual(before);
   }
 });
 
@@ -308,6 +312,11 @@ test("RaceView reuses drawing history, acquires each frame once, and cancels on 
     const canvas = host.querySelector("canvas")!;
     expect(drawingSpy.mock.calls[0]).toEqual([ctx, canvas.width, canvas.height, frame, 100]);
     expect(host.querySelector('[data-testid="object-feedback"]')).toBeNull();
+    expect(host.querySelector('[data-testid="hp-0"]')?.className).toBe("sr-only");
+    expect(host.querySelector('[data-testid="hp-0"]')?.getAttribute("aria-label")).toBe(
+      `Your HP: ${frame.cars[0].hp} of ${context.gameplay.maxHealth}`,
+    );
+    expect(host.querySelector('img[src$="heart.png"]')).toBeNull();
     state.context = { ...context };
     render();
     act(() => next(300));
@@ -431,3 +440,29 @@ for (const reduced of [false, true])
       vi.unstubAllGlobals();
     }
   });
+
+for (const mode of ["drag-race", "road-rage"] as const)
+  for (const local of [0, 1])
+    test(`${mode} viewer ${local}: both health bars follow cars and update immediately`, () => {
+      const { context, frame, ctx, fillRect } = fixture(mode);
+      frame.objects = [];
+      context.presentation.shakeDuration = 0;
+      const drawing = new MultiplayerRaceDrawing(context, local);
+      const g = context.gameplay;
+      const scale = 560 / (g.laneSpacing * 3.9);
+      const barWidth = Math.max(64, g.carWidth * scale);
+      const originalHp = frame.cars.map((car) => car.hp);
+      for (const hp of [g.maxHealth, g.maxHealth / 2, 0, g.maxHealth]) {
+        frame.cars[local].hp = hp;
+        fillRect.mockClear();
+        drawing.draw(ctx, 560, 600, frame, 0);
+        const bars = fillRect.mock.calls.filter((call) => call[3] === 8);
+        expect(bars).toHaveLength(2);
+        expect(bars[local][2]).toBeCloseTo((barWidth * hp) / g.maxHealth);
+        expect(bars[1 - local][2]).toBeCloseTo((barWidth * originalHp[1 - local]) / g.maxHealth);
+        expect(bars[local][0]).toBeCloseTo(
+          280 + frame.renderedCars[local].lateral * scale - barWidth / 2,
+        );
+        expect(bars[local][1]).toBeLessThan(600 * 0.76 - (g.carHeight * scale) / 2);
+      }
+    });
