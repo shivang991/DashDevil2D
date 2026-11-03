@@ -376,7 +376,7 @@ function ChatPanel({
   const row = (person: ChatPerson) => (
     <button
       key={person.id}
-      className="flex w-full items-center gap-3 border-b border-neutral-800 px-1 py-2.5 text-left [&_strong]:text-[12px] [&_strong]:wrap-anywhere [&_small]:font-chat [&_small]:text-neutral-400"
+      className="flex w-full items-center gap-3 border-b border-neutral-800 px-1 py-2.5 text-left [&_strong]:text-[12px] [&_strong]:wrap-anywhere"
       aria-label={`Open conversation with ${person.username}`}
       onClick={() => open(person)}
     >
@@ -384,7 +384,6 @@ function ChatPanel({
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <strong>{person.username}</strong>
         <Presence value={person.presence} />
-        {person.rounds > 0 && <small>{person.rounds} shared rounds</small>}
       </span>
       {person.unread > 0 && (
         <span className={chatBadge}>
