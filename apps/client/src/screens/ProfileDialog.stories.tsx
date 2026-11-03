@@ -9,13 +9,17 @@ const meta = {
   component: ProfileDialog,
   args: { account, onSaved: fn() },
   beforeEach() {
-    mocked(accountAPI.updateProfile).mockResolvedValue({ ...account, username: "Driver_renamed" });
+    mocked(accountAPI.updateProfile).mockResolvedValue(account);
   },
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole("button", { name: "Profile" }));
     await expect(
       within(canvasElement.ownerDocument.body).getByRole("dialog", { name: "Profile" }),
     ).toBeVisible();
+    const body = within(canvasElement.ownerDocument.body);
+    await expect(body.queryByRole("textbox")).not.toBeInTheDocument();
+    await expect(body.getByText(account.username)).toBeVisible();
+    await expect(body.getByRole("button", { name: "Change avatar" })).toBeVisible();
   },
 } satisfies Meta<typeof ProfileDialog>;
 export default meta;
@@ -25,23 +29,22 @@ export const Save: Story = {
   play: async ({ canvasElement, args }) => {
     const body = within(canvasElement.ownerDocument.body);
     await userEvent.click(within(canvasElement).getByRole("button", { name: "Profile" }));
-    await userEvent.clear(body.getByLabelText("Username"));
-    await userEvent.type(body.getByLabelText("Username"), "Driver_renamed");
+    await uploadAvatar(body);
     await userEvent.click(body.getByRole("button", { name: "Save" }));
     await expect(body.getByRole("status")).toHaveTextContent("Profile saved");
-    await expect(args.onSaved).toHaveBeenCalledWith({ ...account, username: "Driver_renamed" });
+    await expect(args.onSaved).toHaveBeenCalledWith(account);
   },
 };
 export const SaveError: Story = {
   beforeEach() {
-    mocked(accountAPI.updateProfile).mockRejectedValue(new Error("Username already taken"));
+    mocked(accountAPI.updateProfile).mockRejectedValue(new Error("Unable to save. Try again"));
   },
   play: async ({ canvasElement }) => {
     const body = within(canvasElement.ownerDocument.body);
     await userEvent.click(within(canvasElement).getByRole("button", { name: "Profile" }));
-    await userEvent.type(body.getByLabelText("Username"), "_taken");
+    await uploadAvatar(body);
     await userEvent.click(body.getByRole("button", { name: "Save" }));
-    await expect(body.getByRole("alert")).toHaveTextContent("Username already taken");
+    await expect(body.getByRole("alert")).toHaveTextContent("Unable to save. Try again");
   },
 };
 export const ChangePassword: Story = {
@@ -53,3 +56,17 @@ export const ChangePassword: Story = {
     await expect(body.getByLabelText("Confirm new password")).toBeVisible();
   },
 };
+
+async function uploadAvatar(body: ReturnType<typeof within>) {
+  const data = Uint8Array.from(
+    atob(
+      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
+    ),
+    (character) => character.charCodeAt(0),
+  );
+  await userEvent.upload(
+    body.getByLabelText("Avatar", { exact: true }),
+    new File([data], "avatar.png", { type: "image/png" }),
+  );
+  await expect(await body.findByRole("button", { name: "Save", exact: true })).toBeEnabled();
+}

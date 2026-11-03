@@ -1,9 +1,12 @@
+import imageCompression from "browser-image-compression";
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, expect, test, vi } from "vitest";
 import { ProfileDialog } from "@/screens/ProfileDialog";
 import { AdminScreen } from "@/screens/AdminScreen";
 import { accountAPI, adminAPI } from "@/transport/account";
+
+vi.mock("browser-image-compression", () => ({ default: vi.fn() }));
 
 const account = {
   id: 1,
@@ -19,6 +22,9 @@ afterEach(() => {
 });
 for (const mode of ["profile", "admin"] as const) {
   test(`${mode} editor validates uploads, disables pending saves, previews, removes, and invalidates closed reads`, async () => {
+    vi.mocked(imageCompression).mockImplementation(
+      async () => new File(["compressed"], "avatar.png", { type: "image/png" }),
+    );
     Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
     const readers: { result: string; onload?: () => void; onerror?: () => void }[] = [];
     vi.stubGlobal(
@@ -42,7 +48,9 @@ for (const mode of ["profile", "admin"] as const) {
     document.body.append(host);
     const root = createRoot(host);
     const button = (text: string) =>
-      Array.from(document.querySelectorAll("button")).find((b) => b.textContent === text)!;
+      Array.from(document.querySelectorAll("button")).find(
+        (b) => b.textContent === text || (text === "Save" && b.textContent === "Processing…"),
+      )!;
     const click = async (text: string) => {
       await act(async () => button(text).click());
     };
@@ -68,20 +76,32 @@ for (const mode of ["profile", "admin"] as const) {
       for (const invalid of [
         new File([], "empty.png", { type: "image/png" }),
         new File(["x"], "bad.txt", { type: "text/plain" }),
-        new File([new Uint8Array(2 * 1024 * 1024 + 1)], "large.png", { type: "image/png" }),
       ]) {
         await file(invalid);
-        expect(document.querySelector('[role="alert"]')?.textContent).toContain("up to 2 MB");
+        expect(document.querySelector('[role="alert"]')?.textContent).toContain(
+          "Choose a valid JPEG, PNG, or WebP",
+        );
       }
       expect(readers).toHaveLength(0);
-      await file(new File(["x"], "new.png", { type: "image/png" }));
-      expect(button("Save").disabled).toBe(true);
+      const source = new File([new Uint8Array(2 * 1024 * 1024 + 1)], "large.png", {
+        type: "image/png",
+      });
+      await file(source);
+      expect(imageCompression).toHaveBeenCalledWith(
+        source,
+        expect.objectContaining({
+          maxSizeMB: 1,
+          maxWidthOrHeight: 512,
+          signal: expect.any(AbortSignal),
+        }),
+      );
+      expect(button("Processing…")?.disabled ?? button("Save").disabled).toBe(true);
       await complete(0);
       expect(document.querySelector('img[src="data:image/png;base64,bmV3"]')).not.toBeNull();
       expect(button("Save").disabled).toBe(false);
       await click("Save");
       expect(mode === "profile" ? saveProfile : saveAdmin).toHaveBeenCalledWith(
-        ...(mode === "profile" ? ["Driver", "bmV3"] : [1, "Driver", "bmV3"]),
+        ...(mode === "profile" ? ["bmV3"] : [1, "Driver", "bmV3"]),
       );
       if (mode === "admin") await click("Edit");
       await file(new File(["x"], "new.webp", { type: "image/webp" }));
@@ -91,7 +111,7 @@ for (const mode of ["profile", "admin"] as const) {
       expect(button("Save").disabled).toBe(false);
       await click("Save");
       expect(mode === "profile" ? saveProfile : saveAdmin).toHaveBeenLastCalledWith(
-        ...(mode === "profile" ? ["Driver", ""] : [1, "Driver", ""]),
+        ...(mode === "profile" ? [""] : [1, "Driver", ""]),
       );
       if (mode === "admin") await click("Edit");
       await file(new File(["x"], "new.jpg", { type: "image/jpeg" }));
@@ -107,3 +127,71 @@ for (const mode of ["profile", "admin"] as const) {
     }
   });
 }
+
+test("avatar processing failures preserve drafts; replacing, removing and closing cancel pending compression", async () => {
+  Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+  const pending: {
+    resolve: (file: File) => void;
+    reject: (error: Error) => void;
+    signal: AbortSignal;
+  }[] = [];
+  vi.mocked(imageCompression).mockImplementation(
+    (_file, options) =>
+      new Promise((resolve, reject) => {
+        pending.push({ resolve, reject, signal: options.signal! });
+      }),
+  );
+  const host = document.createElement("div");
+  document.body.append(host);
+  const root = createRoot(host);
+  const button = (name: string) =>
+    Array.from(document.querySelectorAll("button")).find((b) => b.textContent === name)!;
+  const select = async () => {
+    const input = document.querySelector('input[type="file"]')!;
+    Object.defineProperty(input, "files", {
+      configurable: true,
+      value: [new File(["source"], "photo.png", { type: "image/png" })],
+    });
+    await act(async () => input.dispatchEvent(new Event("change", { bubbles: true })));
+  };
+  const saved = vi.spyOn(accountAPI, "updateProfile").mockResolvedValue(account);
+  try {
+    await act(async () => root.render(<ProfileDialog account={account} />));
+    await act(async () => button("Profile").click());
+    await select();
+    await select();
+    expect(pending[0].signal.aborted).toBe(true);
+    await act(async () => pending[0].reject(new Error("cancelled")));
+    expect(document.querySelector('[role="alert"]')).toBeNull();
+    expect(button("Processing…").disabled).toBe(true);
+    await act(async () => pending[1].reject(new Error("decode failed")));
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain("Choose another image");
+    expect(button("Change password")).toBeDefined();
+    expect(saved).not.toHaveBeenCalled();
+    await select();
+    await act(async () =>
+      pending[2].resolve(
+        new File([new Uint8Array(2 * 1024 * 1024 + 1)], "too-large.png", { type: "image/png" }),
+      ),
+    );
+    expect(document.querySelector('[role="alert"]')?.textContent).toContain("Choose another image");
+    await select();
+    await act(async () => button("Remove avatar").click());
+    expect(pending[3].signal.aborted).toBe(true);
+    await act(async () =>
+      pending[3].resolve(new File(["old"], "stale.png", { type: "image/png" })),
+    );
+    await act(async () => button("Save").click());
+    expect(saved).toHaveBeenLastCalledWith("");
+    await select();
+    await act(async () => button("Close").click());
+    expect(pending[4].signal.aborted).toBe(true);
+    await act(async () => pending[4].reject(new Error("closed")));
+    await act(async () => button("Profile").click());
+    expect(document.querySelector('[role="alert"]')).toBeNull();
+    expect(button("Change password")).toBeDefined();
+  } finally {
+    await act(async () => root.unmount());
+    host.remove();
+  }
+});

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -22,13 +23,25 @@ import (
 )
 
 func profileBody(username string, avatar any) string {
-	value := map[string]any{"username": username}
+	value := map[string]any{}
+	if username != "" {
+		value["username"] = username
+	}
 	if avatar != nil {
 		value["avatar"] = avatar
 	}
 	data, _ := json.Marshal(value)
 	return string(data)
 }
+func ownAdminProfilePath(t *testing.T, s *appserver.Server, c *http.Client) string {
+	t.Helper()
+	status, value, _ := accountRequest(t, s, c, "GET", "", "", origin)
+	if status != 200 {
+		t.Fatalf("current account: %d %v", status, value)
+	}
+	return fmt.Sprintf("/admin/users/%.0f/profile", value["id"])
+}
+
 func avatarPNG(t *testing.T) string {
 	t.Helper()
 	img := image.NewRGBA(image.Rect(0, 0, 2, 2))
@@ -39,7 +52,7 @@ func avatarPNG(t *testing.T) string {
 	}
 	return base64.StdEncoding.EncodeToString(out.Bytes())
 }
-func TestProfileRenameAndAvatarAreAtomicAndAuthorized(t *testing.T) {
+func TestProfileAvatarAndAdminRenameAreAtomicAndAuthorized(t *testing.T) {
 	_, s, c := accountFixture(t)
 	status, _, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("New_Name", nil), origin)
 	if status != 401 {
@@ -52,13 +65,21 @@ func TestProfileRenameAndAvatarAreAtomicAndAuthorized(t *testing.T) {
 	if status != 403 {
 		t.Fatalf("cross-site: %d", status)
 	}
-	for _, body := range []string{profileBody("x", nil), profileBody("Invalid_Avatar", base64.StdEncoding.EncodeToString([]byte("fake png"))), profileBody("Invalid_Avatar", base64.StdEncoding.EncodeToString(make([]byte, 2*1024*1024+1)))} {
+	for _, body := range []string{profileBody("Case_Admin", base64.StdEncoding.EncodeToString([]byte("fake png"))), profileBody("Case_Admin", base64.StdEncoding.EncodeToString(make([]byte, 2*1024*1024+1)))} {
 		status, _, _ = accountRequest(t, s, c, "POST", "/profile", body, origin)
 		if status != 400 {
 			t.Fatalf("invalid profile: %d", status)
 		}
 	}
-	status, value, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Saved_Name", avatarPNG(t)), origin)
+	status, _, _ = accountRequest(t, s, c, "POST", "/profile", profileBody("Forbidden_Name", avatarPNG(t)), origin)
+	if status != 403 {
+		t.Fatalf("admin self-service rename: %d", status)
+	}
+	status, unchanged, _ := accountRequest(t, s, c, "GET", "", "", origin)
+	if status != 200 || unchanged["username"] != "Case_Admin" || unchanged["avatar"] != "" {
+		t.Fatalf("rejected rename mutated account: %d %v", status, unchanged)
+	}
+	status, value, _ := accountRequest(t, s, c, "POST", ownAdminProfilePath(t, s, c), profileBody("Saved_Name", avatarPNG(t)), origin)
 	if status != 200 || value["username"] != "Saved_Name" || value["avatar"] == "" {
 		t.Fatalf("save: %d %v", status, value)
 	}
@@ -84,7 +105,7 @@ func TestProfileRenameAndAvatarAreAtomicAndAuthorized(t *testing.T) {
 		t.Fatalf("old login: %d", status)
 	}
 	loginAccount(t, s, c, "saved_name", "a long password with spaces")
-	status, value, _ = accountRequest(t, s, c, "POST", "/profile", profileBody("Saved_Name", ""), origin)
+	status, value, _ = accountRequest(t, s, c, "POST", "/profile", profileBody("", ""), origin)
 	if status != 200 || value["avatar"] != "" {
 		t.Fatalf("remove: %d %v", status, value)
 	}
@@ -150,7 +171,7 @@ func TestProfileActiveRaceIdentitySurvivesRenameAndRemoval(t *testing.T) {
 		}
 		originalAvatar = value["avatar"].(string)
 	})
-	status, value, _ := accountRequest(t, f.server, f.client, "POST", "/profile", profileBody("Future_Driver", avatarPNG(t)), origin)
+	status, value, _ := accountRequest(t, f.server, f.client, "POST", ownAdminProfilePath(t, f.server, f.client), profileBody("Future_Driver", avatarPNG(t)), origin)
 	if status != 200 {
 		t.Fatalf("rename: %d %v", status, value)
 	}
@@ -197,7 +218,7 @@ func TestProfileSurvivesRestartWithPasswordAndAvatar(t *testing.T) {
 	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Original_Name", "original password")
-	status, value, _ := accountRequest(t, s, c, "POST", "/profile", profileBody("Durable_Name", avatarPNG(t)), origin)
+	status, value, _ := accountRequest(t, s, c, "POST", ownAdminProfilePath(t, s, c), profileBody("Durable_Name", avatarPNG(t)), origin)
 	if status != 200 {
 		t.Fatalf("save: %d %v", status, value)
 	}
@@ -243,24 +264,25 @@ func TestProfileConcurrentRenamesCannotDuplicateAccounts(t *testing.T) {
 		t.Fatal(status)
 	}
 	results := make(chan int, 2)
-	for i, client := range []*http.Client{c, other} {
-		go func(client *http.Client, name string) {
+	paths := []string{ownAdminProfilePath(t, s, c), ownAdminProfilePath(t, s, other)}
+	for i, path := range paths {
+		go func(path, name string) {
 			data := profileBody(name, nil)
-			req, err := http.NewRequest("POST", s.URL()+"/api/account/profile", strings.NewReader(data))
+			req, err := http.NewRequest("POST", s.URL()+"/api/account"+path, strings.NewReader(data))
 			if err != nil {
 				results <- 0
 				return
 			}
 			req.Header.Set("Origin", origin)
 			req.Header.Set("Content-Type", "application/json")
-			response, err := client.Do(req)
+			response, err := c.Do(req)
 			if err != nil {
 				results <- 0
 				return
 			}
 			response.Body.Close()
 			results <- response.StatusCode
-		}(client, []string{"Contested_Name", "contested_name"}[i])
+		}(path, []string{"Contested_Name", "contested_name"}[i])
 	}
 	a, b := <-results, <-results
 	if !((a == 200 && b == 409) || (a == 409 && b == 200)) {
@@ -330,7 +352,7 @@ func TestProfileResultRetainsAvatarAfterParticipantLeaves(t *testing.T) {
 		}
 		startingAvatar = value["avatar"].(string)
 	})
-	status, _, _ := accountRequest(t, f.server, f.client, "POST", "/profile", profileBody("Future_Driver", ""), origin)
+	status, _, _ := accountRequest(t, f.server, f.client, "POST", ownAdminProfilePath(t, f.server, f.client), profileBody("Future_Driver", ""), origin)
 	if status != 200 {
 		t.Fatal(status)
 	}
@@ -373,5 +395,47 @@ func waitAvatarDeleted(t *testing.T, s *appserver.Server, c *http.Client, id str
 			t.Fatalf("avatar still served: %d", response.StatusCode)
 		}
 		time.Sleep(5 * time.Millisecond)
+	}
+}
+
+func TestProfileNormalAccountCannotRenameEvenWithAvatar(t *testing.T) {
+	store, s, admin := accountFixture(t)
+	loginAccount(t, s, admin, "Case_Admin", "a long password with spaces")
+	if err := store.CreateTemporary("Normal_Driver", "temporary password"); err != nil {
+		t.Fatal(err)
+	}
+	driver := independentClient(admin)
+	loginAccount(t, s, driver, "Normal_Driver", "temporary password")
+	status, _, _ := accountRequest(t, s, driver, "POST", "/profile", profileBody("", avatarPNG(t)), origin)
+	if status != 403 {
+		t.Fatalf("temporary account update: %d", status)
+	}
+	status, _, _ = accountRequest(t, s, driver, "POST", "/password", `{"password":"normal driver password"}`, origin)
+	if status != 200 {
+		t.Fatal(status)
+	}
+	status, saved, _ := accountRequest(t, s, driver, "POST", "/profile", profileBody("", avatarPNG(t)), origin)
+	if status != 200 || saved["username"] != "Normal_Driver" || saved["avatar"] == "" {
+		t.Fatalf("avatar-only save: %d %v", status, saved)
+	}
+	for _, name := range []string{"New_Name", "normal_driver", ""} {
+		body, _ := json.Marshal(map[string]any{"username": name, "avatar": ""})
+		status, _, _ = accountRequest(t, s, driver, "POST", "/profile", string(body), origin)
+		if status != 403 {
+			t.Fatalf("self-service rename %q: %d", name, status)
+		}
+	}
+	status, unchanged, _ := accountRequest(t, s, driver, "GET", "", "", origin)
+	if status != 200 || unchanged["username"] != saved["username"] || unchanged["avatar"] != saved["avatar"] {
+		t.Fatalf("partial mutation: %d %v", status, unchanged)
+	}
+	path := fmt.Sprintf("/admin/users/%.0f/profile", saved["id"])
+	status, _, _ = accountRequest(t, s, driver, "POST", path, profileBody("New_Name", nil), origin)
+	if status != 403 {
+		t.Fatalf("non-admin management: %d", status)
+	}
+	status, renamed, _ := accountRequest(t, s, admin, "POST", path, profileBody("New_Name", nil), origin)
+	if status != 200 || renamed["username"] != "New_Name" || renamed["avatar"] != saved["avatar"] {
+		t.Fatalf("admin rename: %d %v", status, renamed)
 	}
 }

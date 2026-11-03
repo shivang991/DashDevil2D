@@ -10,9 +10,8 @@ export function resetTransportMocks() {
   mocked(accountAPI.login).mockResolvedValue(account);
   mocked(accountAPI.changeTemporaryPassword).mockResolvedValue(account);
   mocked(accountAPI.changePassword).mockResolvedValue(account);
-  mocked(accountAPI.updateProfile).mockImplementation(async (username, avatar) => ({
+  mocked(accountAPI.updateProfile).mockImplementation(async (avatar) => ({
     ...account,
-    username,
     avatar,
   }));
   mocked(accountAPI.logout).mockResolvedValue({ ok: true });

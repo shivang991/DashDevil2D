@@ -53,14 +53,13 @@ func ValidateAvatar(data []byte) ([]byte, error) {
 	return out.Bytes(), nil
 }
 
-// UpdateProfile saves username and optional avatar replacement/removal together.
-// SQLite's NOCASE unique index arbitrates concurrent renames across processes.
-func (s *Store) UpdateProfile(id, username string, avatar *[]byte, now time.Time) (Session, error) {
+// UpdateProfile changes only the avatar; renaming requires UpdateManagedProfile.
+func (s *Store) UpdateProfile(id string, avatar *[]byte, now time.Time) (Session, error) {
 	session, err := s.Session(id, now)
 	if err != nil {
 		return Session{}, err
 	}
-	if err = s.updateProfile(session.User.ID, id, false, username, avatar, now); err != nil {
+	if err = s.updateProfile(session.User.ID, id, false, "", avatar, now); err != nil {
 		return Session{}, err
 	}
 	return s.Session(id, now)
@@ -73,7 +72,7 @@ func (s *Store) UpdateManagedProfile(actor string, accountID int64, username str
 	return s.User(accountID)
 }
 func (s *Store) updateProfile(accountID int64, actor string, admin bool, username string, avatar *[]byte, now time.Time) error {
-	if !usernamePattern.MatchString(username) {
+	if admin && !usernamePattern.MatchString(username) {
 		return errors.New("Username must contain 3–24 letters, digits, or underscores")
 	}
 	var err error
@@ -94,7 +93,7 @@ func (s *Store) updateProfile(accountID int64, actor string, admin bool, usernam
 		return err
 	}
 	defer tx.Rollback()
-	result, err := tx.Exec(`UPDATE accounts SET username=? WHERE id=? AND EXISTS(SELECT 1 FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=? AND s.expires>? AND a.must_change=0 AND ((?=1 AND a.admin=1) OR (?=0 AND a.id=?)))`, username, accountID, actor, now.Unix(), admin, admin, accountID)
+	result, err := tx.Exec(`UPDATE accounts SET username=CASE WHEN ?=1 THEN ? ELSE username END WHERE id=? AND EXISTS(SELECT 1 FROM sessions s JOIN accounts a ON a.id=s.account_id WHERE s.id=? AND s.expires>? AND a.must_change=0 AND ((?=1 AND a.admin=1) OR (?=0 AND a.id=?)))`, admin, username, accountID, actor, now.Unix(), admin, admin, accountID)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE constraint failed") {
 			return ErrUsernameConflict
