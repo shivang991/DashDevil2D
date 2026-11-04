@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -65,7 +66,7 @@ func TestProfileAvatarAndAdminRenameAreAtomicAndAuthorized(t *testing.T) {
 	if status != 403 {
 		t.Fatalf("cross-site: %d", status)
 	}
-	for _, body := range []string{profileBody("Case_Admin", base64.StdEncoding.EncodeToString([]byte("fake png"))), profileBody("Case_Admin", base64.StdEncoding.EncodeToString(make([]byte, 2*1024*1024+1)))} {
+	for _, body := range []string{profileBody("Case_Admin", base64.StdEncoding.EncodeToString([]byte("fake png"))), profileBody("Case_Admin", base64.StdEncoding.EncodeToString(make([]byte, accounts.MaxAvatarBytes+1)))} {
 		status, _, _ = accountRequest(t, s, c, "POST", "/profile", body, origin)
 		if status != 400 {
 			t.Fatalf("invalid profile: %d", status)
@@ -100,6 +101,33 @@ func TestProfileAvatarAndAdminRenameAreAtomicAndAuthorized(t *testing.T) {
 	if _, err := png.Decode(bytes.NewReader(data)); err != nil {
 		t.Fatal(err)
 	}
+	etag := response.Header.Get("ETag")
+	if etag != strconv.Quote(avatar) || response.Header.Get("Cache-Control") != "public, max-age=86400, immutable" {
+		t.Fatalf("avatar cache headers: %v", response.Header)
+	}
+	for _, match := range []string{etag, "W/" + etag, `"different", ` + etag, "*"} {
+		req, _ := http.NewRequest("GET", s.URL()+"/api/account/avatars/"+avatar, nil)
+		req.Header.Set("If-None-Match", match)
+		cached, err := c.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		body, _ := io.ReadAll(cached.Body)
+		cached.Body.Close()
+		if cached.StatusCode != 304 || len(body) != 0 || cached.Header.Get("ETag") != etag || cached.Header.Get("Cache-Control") != "public, max-age=86400, immutable" {
+			t.Fatalf("conditional avatar %s: %d %v body=%q", match, cached.StatusCode, cached.Header, body)
+		}
+	}
+	req, _ := http.NewRequest("GET", s.URL()+"/api/account/avatars/"+avatar, nil)
+	req.Header.Set("If-None-Match", `"different"`)
+	fresh, err := c.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fresh.Body.Close()
+	if fresh.StatusCode != 200 {
+		t.Fatalf("unmatched etag: %d", fresh.StatusCode)
+	}
 	status, _, _ = accountRequest(t, s, c, "POST", "/login", `{"username":"Case_Admin","password":"a long password with spaces"}`, origin)
 	if status != 401 {
 		t.Fatalf("old login: %d", status)
@@ -114,7 +142,7 @@ func TestProfileAvatarAndAdminRenameAreAtomicAndAuthorized(t *testing.T) {
 		t.Fatal(err)
 	}
 	response.Body.Close()
-	if response.StatusCode != 404 {
+	if response.StatusCode != 404 || response.Header.Get("Cache-Control") != "no-store" {
 		t.Fatalf("removed upload retained: %d", response.StatusCode)
 	}
 }
@@ -295,6 +323,13 @@ func TestProfileAcceptsDecodedImagesAtUploadLimitAndStripsPayloads(t *testing.T)
 	loginAccount(t, s, c, "Case_Admin", "a long password with spaces")
 	pngData, _ := base64.StdEncoding.DecodeString(avatarPNG(t))
 	padded := append(pngData, make([]byte, accounts.MaxAvatarBytes-len(pngData))...)
+	for _, path := range []string{"/profile", ownAdminProfilePath(t, s, c)} {
+		oversized := append(append([]byte{}, padded...), 0)
+		status, _, _ := accountRequest(t, s, c, "POST", path, profileBody("Case_Admin", base64.StdEncoding.EncodeToString(oversized)), origin)
+		if status != 400 {
+			t.Fatalf("oversized valid image at %s: %d", path, status)
+		}
+	}
 	webp, _ := base64.StdEncoding.DecodeString("UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoCAAIAAUAmJaACdLoB+AADsAD+8ut//NgVzXPv9//S4P0uD9Lg/9KQAAA=")
 	var jpg bytes.Buffer
 	if err := jpeg.Encode(&jpg, image.NewRGBA(image.Rect(0, 0, 2, 2)), nil); err != nil {
@@ -309,6 +344,9 @@ func TestProfileAcceptsDecodedImagesAtUploadLimitAndStripsPayloads(t *testing.T)
 			t.Fatalf("valid image: %d %v", status, value)
 		}
 		id := value["avatar"].(string)
+		if id == previous {
+			t.Fatal("replacement reused immutable avatar URL")
+		}
 		response, err := c.Get(s.URL() + "/api/account/avatars/" + id)
 		if err != nil {
 			t.Fatal(err)

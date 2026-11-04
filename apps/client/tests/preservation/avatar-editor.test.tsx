@@ -90,7 +90,7 @@ for (const mode of ["profile", "admin"] as const) {
       expect(imageCompression).toHaveBeenCalledWith(
         source,
         expect.objectContaining({
-          maxSizeMB: 1,
+          maxSizeMB: 0.5,
           maxWidthOrHeight: 512,
           signal: expect.any(AbortSignal),
         }),
@@ -171,7 +171,7 @@ test("avatar processing failures preserve drafts; replacing, removing and closin
     await select();
     await act(async () =>
       pending[2].resolve(
-        new File([new Uint8Array(2 * 1024 * 1024 + 1)], "too-large.png", { type: "image/png" }),
+        new File([new Uint8Array(512 * 1024 + 1)], "too-large.png", { type: "image/png" }),
       ),
     );
     expect(document.querySelector('[role="alert"]')?.textContent).toContain("Choose another image");
