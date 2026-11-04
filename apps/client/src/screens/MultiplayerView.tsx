@@ -257,8 +257,8 @@ export function MultiplayerView({
       tabIndex={-1}
       className={
         race
-          ? "flex h-dvh items-center justify-center overflow-hidden px-3 py-[clamp(8px,2vh,24px)] bg-neutral-950 text-white"
-          : "grid min-h-dvh place-items-center bg-neutral-950 px-5 py-8 text-neutral-50 [@media(max-width:520px)]:px-4 [@media(max-width:520px)]:py-6 [&_button:enabled]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-[5px] [&_button:focus-visible]:outline-neutral-50"
+          ? "flex h-[var(--app-page-height,100dvh)] items-center justify-center overflow-hidden px-3 py-[clamp(8px,2vh,24px)] bg-neutral-950 text-white"
+          : "grid min-h-[var(--app-page-height,100dvh)] place-items-center bg-neutral-950 px-5 py-8 text-neutral-50 [@media(max-width:520px)]:px-4 [@media(max-width:520px)]:py-6 [&_button:enabled]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-[5px] [&_button:focus-visible]:outline-neutral-50"
       }
       onKeyDown={(event) => {
         if (event.key !== "Escape" || event.repeat || event.defaultPrevented) return;

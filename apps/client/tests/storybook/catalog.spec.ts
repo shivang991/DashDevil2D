@@ -195,7 +195,7 @@ for (const story of ["error", "countdown-cancelled"]) {
   });
 }
 
-test("Race Pause menu, sound, resume, leave and HUD alignment", async ({ page }) => {
+test("Race Pause menu, resume, leave and HUD alignment", async ({ page }) => {
   await page.goto("/iframe.html?id=screens-multiplayer--playing-drag-race&viewMode=story");
   const pause = page.getByRole("button", { name: "Pause", exact: true });
   await expect(pause).toBeVisible();
@@ -208,11 +208,7 @@ test("Race Pause menu, sound, resume, leave and HUD alignment", async ({ page })
     .attach("race-pause", { body: await page.screenshot(), contentType: "image/png" });
   const menu = page.getByRole("dialog", { name: "Race menu" });
   await expect(menu.getByRole("button", { name: "Resume" })).toBeFocused();
-  await menu.getByRole("button", { name: "Enable sound" }).click();
-  await expect(menu.getByRole("button", { name: "Mute sound" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(menu.getByRole("button")).toHaveCount(2);
   await menu.getByRole("button", { name: "Resume" }).click();
   await expect(menu).toHaveCount(0);
   await expect(page.getByRole("img", { name: "Multiplayer race" })).toBeFocused();

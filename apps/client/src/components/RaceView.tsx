@@ -1,7 +1,7 @@
 import { multiplayerTextButton } from "@/components/ui/styles";
 import { CarFlagsNOSActive, ModeRoadRage, SeatFlagsConnected } from "@dashdevil/contracts/protocol";
 import { RaceAudio } from "@/game/multiplayer/RaceAudio";
-import { Pause, Play, Volume2, VolumeX, LogOut } from "lucide-react";
+import { Pause, Play, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { TouchControls } from "./TouchControls";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -68,7 +68,6 @@ export function RaceView({
       }),
     [connection],
   );
-  const [muted, setMuted] = useState(!audio.enabled);
   const [menu, setMenu] = useState(false);
   const [frame, setFrame] = useState<Frame>();
   const local = state.identity?.seat ?? 0;
@@ -79,7 +78,6 @@ export function RaceView({
       menu: () => setMenu((value) => !value),
       mute: () => {
         audio.setEnabled(!audio.enabled);
-        setMuted(!audio.enabled);
       },
     });
   }, [driving, audio]);
@@ -284,19 +282,6 @@ export function RaceView({
             >
               <Play aria-hidden="true" />
               Resume
-            </Button>
-            <Button
-              variant="multiplayer"
-              className="min-h-11"
-              aria-label={muted ? "Enable sound" : "Mute sound"}
-              aria-pressed={!muted}
-              onClick={() => {
-                audio.setEnabled(muted);
-                setMuted(!muted);
-              }}
-            >
-              {muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}Sound{" "}
-              {muted ? "off" : "on"}
             </Button>
             <Button variant="multiplayer" className="min-h-11" onClick={onLeave}>
               <LogOut aria-hidden="true" />

@@ -22,7 +22,7 @@
   animation: none !important;
 }
 .admin-shell {
-  min-height: 100dvh;
+  min-height: var(--app-page-height, 100dvh);
   background: var(--admin-bg);
   padding: 32px;
 }

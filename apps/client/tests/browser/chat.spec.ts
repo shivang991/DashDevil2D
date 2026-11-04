@@ -107,7 +107,7 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await page.getByRole("button", { name: "Start round" }).click();
     await expect(page.getByTestId("countdown")).toBeVisible();
     await expect(panel).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /Open chat/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Open chat/ })).toBeDisabled();
     await expect(page.getByTestId("countdown")).toHaveCount(0);
     await page.keyboard.press("Escape");
     await expect(page.getByRole("dialog", { name: "Race menu" })).toBeVisible();
@@ -178,7 +178,7 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await page.getByRole("button", { name: "Confirm leave", exact: true }).click();
     await page.getByRole("button", { name: "Back", exact: true }).click();
     await page.getByRole("button", { name: /Long Drive/ }).click();
-    await expect(page.getByRole("button", { name: /Open chat/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Open chat/ })).toBeDisabled();
     await expect(panel).toHaveCount(0);
   } finally {
     await context.close();

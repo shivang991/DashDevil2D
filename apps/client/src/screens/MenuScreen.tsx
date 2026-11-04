@@ -51,7 +51,7 @@ export function MenuScreen({
   }
   const authenticated = Boolean(account && !account.mustChangePassword);
   return (
-    <div className="flex items-center justify-center w-full min-h-dvh bg-neutral-950">
+    <div className="flex items-center justify-center w-full min-h-[var(--app-page-height,100dvh)] bg-neutral-950">
       <div className="flex flex-col w-full max-w-96 gap-6 p-6 pb-20">
         {/* Branding */}
         <div className="flex items-center justify-center px-6 py-8 rounded-xl border border-neutral-700">
