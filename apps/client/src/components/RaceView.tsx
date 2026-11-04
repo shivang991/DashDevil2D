@@ -182,7 +182,7 @@ export function RaceView({
             </span>
           </p>
           <p
-            className="shrink-0 text-base text-white tabular-nums"
+            className="mr-[11px] shrink-0 text-base text-white tabular-nums"
             data-testid={context.mode === ModeRoadRage ? "time-remaining" : "distance-remaining"}
           >
             {context.mode === ModeRoadRage

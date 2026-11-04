@@ -135,6 +135,9 @@ for (const width of [320, 639, 640, 1280]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,
     );
+    await test
+      .info()
+      .attach(`multiplayer-${width}`, { body: await page.screenshot(), contentType: "image/png" });
   });
 }
 
@@ -197,9 +200,12 @@ test("Race Pause menu, sound, resume, leave and HUD alignment", async ({ page })
   const pause = page.getByRole("button", { name: "Pause", exact: true });
   await expect(pause).toBeVisible();
   const indicator = (await page.getByTestId("distance-remaining").boundingBox())!;
-  const icon = (await pause.boundingBox())!;
+  const icon = (await pause.locator("svg").boundingBox())!;
   expect(indicator.x + indicator.width).toBeCloseTo(icon.x + icon.width, 0);
   await pause.click();
+  await test
+    .info()
+    .attach("race-pause", { body: await page.screenshot(), contentType: "image/png" });
   const menu = page.getByRole("dialog", { name: "Race menu" });
   await expect(menu.getByRole("button", { name: "Resume" })).toBeFocused();
   await menu.getByRole("button", { name: "Enable sound" }).click();

@@ -279,12 +279,11 @@ test("round result stays over the race until this player returns, then waits in 
   expect(host.textContent).toContain("Ready");
 });
 
-test("guest readiness keeps Ready disabled and offers a separate cancel control", () => {
+test("guest readiness can be cancelled through Waiting for host", () => {
   const guest = { ...lobby, identity: { ...lobby.identity!, seat: 1 } };
   const props = renderMultiplayer({ state: guest });
-  expect(getButton("Ready").disabled).toBe(true);
-  expect(getButton("Cancel ready").disabled).toBe(false);
-  clickButton("Cancel ready");
+  expect(getButton("Waiting for host.").disabled).toBe(false);
+  clickButton("Waiting for host.");
   expect(props.actions.command).toHaveBeenCalledWith(1, room.mode, 0, "Confirming readiness");
 });
 function escape() {
@@ -333,7 +332,8 @@ test("host start requires both ready and local focus; readiness remains reversib
   expect(getButton("Waiting for player…").disabled).toBe(true);
 });
 
-test("join keeps leading zeros, blocks dismissal in flight, restores errors, and closes on admission", () => {
+test("join keeps leading zeros, blocks dismissal in flight, and returns failures to entry", () => {
+  vi.useFakeTimers();
   const props = renderMultiplayer();
   clickButton("Join Room");
   enterCode("0042");
@@ -354,8 +354,11 @@ test("join keeps leading zeros, blocks dismissal in flight, restores errors, and
   });
   const input = host.querySelector("input")!;
   expect(input.value).toBe("0042");
-  expect(input.getAttribute("aria-invalid")).toBe("true");
+  expect(input.getAttribute("aria-invalid")).toBeNull();
   expect(document.activeElement).toBe(input);
+  expect(host.querySelector('[role="alert"]')).toBeNull();
+  act(() => vi.advanceTimersByTime(500));
+  expect(host.querySelector('[role="dialog"]')).toBeNull();
   expect(host.querySelector('[role="alert"]')?.textContent).toContain("Room not found");
   renderMultiplayer({ ...props, state: { ...lobby, room: { ...room, mode: 2 } } });
   expect(host.querySelector('[role="dialog"]')).toBeNull();
