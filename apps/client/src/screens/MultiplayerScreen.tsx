@@ -24,10 +24,12 @@ export function MultiplayerScreen({
   mode,
   onBack,
   playerName,
+  playerAvatar,
 }: {
   mode: MultiplayerMode;
   onBack: () => void;
   playerName: string;
+  playerAvatar?: string;
 }) {
   const location = useLocation();
   const intent = location.state as { challenge?: number; challengePeer?: number } | null;
@@ -159,6 +161,7 @@ export function MultiplayerScreen({
         onBack={onBack}
         onModeChange={(value) => void navigate(multiplayerPath(value), { flushSync: true })}
         playerName={playerName}
+        playerAvatar={playerAvatar}
         state={state}
         error={error}
         clock={clock}

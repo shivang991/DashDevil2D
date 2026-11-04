@@ -1,7 +1,8 @@
-import { settingsPanel, multiplayerTextButton } from "@/components/ui/styles";
+import { multiplayerTextButton } from "@/components/ui/styles";
 import { CarFlagsNOSActive, ModeRoadRage, SeatFlagsConnected } from "@dashdevil/contracts/protocol";
 import { RaceAudio } from "@/game/multiplayer/RaceAudio";
-import { Settings } from "lucide-react";
+import { Pause, Play, Volume2, VolumeX, LogOut } from "lucide-react";
+import { Button } from "./ui/button";
 import { TouchControls } from "./TouchControls";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { MultiplayerDrivingInput } from "@/game/multiplayer/MultiplayerDrivingInput";
@@ -9,7 +10,6 @@ import { countdownReveal, MultiplayerRaceDrawing } from "@/game/multiplayer/Mult
 import { gameAudio } from "@/lib/gameAudio";
 import type { PairedConnection, PairedState } from "@/game/multiplayer/PairedConnection";
 
-const button = "rounded-lg border border-neutral-600 px-4 py-2 hover:bg-neutral-800";
 type Frame = NonNullable<ReturnType<PairedConnection["frame"]>>;
 
 export function RaceView({
@@ -146,10 +146,10 @@ export function RaceView({
   );
   return (
     <div className="race-view relative flex min-h-0 flex-1 flex-col gap-3 [@media(max-height:450px)]:gap-1 [&_canvas]:touch-none">
-      <header className="shrink-0 space-y-2 pr-12">
+      <header className="shrink-0 space-y-2">
         <button
           className="grid size-11 place-items-center rounded-[10px] text-neutral-300 hover:bg-neutral-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white absolute top-0 right-0"
-          aria-label="Settings"
+          aria-label="Pause"
           aria-expanded={menu}
           disabled={countdown !== undefined}
           onClick={() => {
@@ -157,10 +157,10 @@ export function RaceView({
             setMenu((value) => !value);
           }}
         >
-          <Settings size={22} aria-hidden="true" />
+          <Pause size={22} aria-hidden="true" />
         </button>
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl font-heading text-red-400">
+          <h1 className="pr-12 text-3xl font-heading text-red-400">
             {context.mode === ModeRoadRage ? "Road Rage" : "Drag Race"}
           </h1>
           <span
@@ -218,7 +218,7 @@ export function RaceView({
             {((countdown === undefined && frame?.stale) || state.status !== "Connected") &&
               !outcome && (
                 <p role="alert" className="bg-black/80 p-2">
-                  Reconnecting—round continues.
+                  Reconnecting
                 </p>
               )}
             {state.pending && (
@@ -271,23 +271,38 @@ export function RaceView({
         }}
       />
       {menu && !outcome && (
-        <div role="dialog" aria-label="Race menu" className={settingsPanel}>
-          <p>The round continues.</p>
-          <button autoFocus className={button} onClick={() => setMenu(false)}>
-            Resume
-          </button>
-          <button
-            className={button}
-            onClick={() => {
-              audio.setEnabled(muted);
-              setMuted(!muted);
-            }}
-          >
-            {muted ? "Unmute" : "Mute"}
-          </button>
-          <button className={button} onClick={onLeave}>
-            Leave
-          </button>
+        <div
+          role="dialog"
+          aria-label="Race menu"
+          className="game-overlay absolute inset-0 z-30 flex overflow-auto bg-black/65 p-3"
+        >
+          <div className="m-auto flex w-36 shrink-0 flex-col gap-2">
+            <Button
+              autoFocus
+              className="min-h-11 bg-red-400 text-neutral-950 hover:bg-red-300"
+              onClick={() => setMenu(false)}
+            >
+              <Play aria-hidden="true" />
+              Resume
+            </Button>
+            <Button
+              variant="multiplayer"
+              className="min-h-11"
+              aria-label={muted ? "Enable sound" : "Mute sound"}
+              aria-pressed={!muted}
+              onClick={() => {
+                audio.setEnabled(muted);
+                setMuted(!muted);
+              }}
+            >
+              {muted ? <VolumeX aria-hidden="true" /> : <Volume2 aria-hidden="true" />}Sound{" "}
+              {muted ? "off" : "on"}
+            </Button>
+            <Button variant="multiplayer" className="min-h-11" onClick={onLeave}>
+              <LogOut aria-hidden="true" />
+              Leave
+            </Button>
+          </div>
         </div>
       )}
     </div>

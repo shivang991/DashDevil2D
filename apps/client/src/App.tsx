@@ -204,7 +204,12 @@ function App() {
           }}
         />
       ) : screen === "multiplayer" ? (
-        <MultiplayerScreen playerName={account?.username ?? "Guest"} mode={mode} onBack={back} />
+        <MultiplayerScreen
+          playerName={account?.username ?? "Guest"}
+          playerAvatar={account?.avatar}
+          mode={mode}
+          onBack={back}
+        />
       ) : (
         <SoloRoute countdown={countdown} onBack={back} />
       )}

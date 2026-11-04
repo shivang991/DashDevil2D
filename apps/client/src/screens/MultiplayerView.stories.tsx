@@ -1,5 +1,11 @@
 import {
   AdmissionOperationJoin,
+  CarFlagsNOSActive,
+  ControlNOS,
+  InputIntentPress,
+  RoomCommandCodeReady,
+  SeatFlagsReady,
+  WireBooleanTrue,
   ModeDragRace,
   ModeRoadRage,
   OutcomeResultTie,
@@ -38,14 +44,31 @@ export const RoadRage: Story = { args: { mode: ModeRoadRage } };
 export const Loading: Story = { args: { state: undefined } };
 export const Joining: Story = { args: { state: { ...disconnected, pending: "Joining room" } } };
 export const Error: Story = { args: { error: "Unable to join: room is full." } };
-export const JoinError: Story = {
-  ...Error,
-  play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "Join Room" }));
-    await userEvent.type(canvas.getByLabelText("Room code"), "0042");
-  },
-};
+function FailedJoin(args: ComponentProps<typeof MultiplayerView>) {
+  const [state, setState] = useState(disconnected);
+  return (
+    <MultiplayerView
+      {...args}
+      state={state}
+      actions={{
+        ...args.actions!,
+        connect: async () => {
+          setState({ ...disconnected, pending: "Joining room" });
+          setTimeout(
+            () =>
+              setState({
+                ...disconnected,
+                status: "Unable to join: room is full.",
+                errors: ["Unable to join: room is full."],
+              }),
+            100,
+          );
+        },
+      }}
+    />
+  );
+}
+export const JoinError: Story = { render: FailedJoin };
 export const Creating: Story = { args: { state: { ...disconnected, pending: "Creating room" } } };
 export const Guest: Story = {
   args: { state: { ...lobby, identity: { ...lobby.identity!, seat: SeatIndexPlayer2 } } },
@@ -143,7 +166,7 @@ export const TiedRound: Story = {
   render: PlayingPreview,
 };
 
-function PlayingPreview(args: ComponentProps<typeof MultiplayerView>) {
+function PlayingPreview(args: ComponentProps<typeof MultiplayerView> & { advancing?: boolean }) {
   // Each mount owns sound preferences and mock controls; nothing touches saved game settings.
   const [audio] = useState(() => ({
     enabled: false,
@@ -151,16 +174,25 @@ function PlayingPreview(args: ComponentProps<typeof MultiplayerView>) {
       this.enabled = enabled;
     },
   }));
-  const connection = useMemo(
-    () => ({
-      frame: () => (args.mode === ModeRoadRage ? roadRage.frame : dragRace.frame),
-      input: fn(),
-      releaseControls: fn(),
+  const connection = useMemo(() => {
+    const fixture = playingFixture(args.mode);
+    const started = performance.now();
+    return {
+      frame: () =>
+        args.advancing
+          ? { ...fixture.frame, timeUs: 38_000_000 + (performance.now() - started) * 1000 }
+          : fixture.frame,
+      input: fn((intent, control) => {
+        if (args.advancing && control === ControlNOS)
+          fixture.frame.cars[0].flags = intent === InputIntentPress ? CarFlagsNOSActive : 0;
+      }),
+      releaseControls: fn(() => {
+        if (args.advancing) fixture.frame.cars[0].flags = 0;
+      }),
       recordDraw: () => {},
       recordResultCommit: () => {},
-    }),
-    [args.mode],
-  );
+    };
+  }, [args.mode, args.advancing]);
   return (
     <MultiplayerView
       {...args}
@@ -213,7 +245,7 @@ export const PlayingMenu: Story = {
   ...PlayingDragRace,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "[ESC] Menu" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Pause" }));
     await expect(canvas.getByRole("dialog", { name: "Race menu" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Resume" })).toHaveFocus();
   },
@@ -222,9 +254,51 @@ export const PlayingLeaveConfirmation: Story = {
   ...PlayingDragRace,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole("button", { name: "[ESC] Menu" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Pause" }));
     await userEvent.click(canvas.getByRole("button", { name: "Leave" }));
     await expect(canvas.getByRole("dialog", { name: "Leave room?" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Cancel" })).toHaveFocus();
   },
 };
+
+export const AdvancingRace: Story = {
+  args: { mode: ModeRoadRage, state: roadRage.state },
+  render: (args) => <PlayingPreview {...args} advancing />,
+};
+
+function GuestReadiness(args: ComponentProps<typeof MultiplayerView>) {
+  const [state, setState] = useState<NonNullable<ComponentProps<typeof MultiplayerView>["state"]>>({
+    ...lobby,
+    identity: { ...lobby.identity!, seat: SeatIndexPlayer2 },
+  });
+  return (
+    <MultiplayerView
+      {...args}
+      state={state}
+      actions={{
+        ...args.actions!,
+        command: (command, _mode, ready) => {
+          if (command !== RoomCommandCodeReady) return;
+          setState((previous) => ({
+            ...previous,
+            room: {
+              ...previous.room!,
+              seats: previous.room!.seats.map((seat, index) =>
+                index === SeatIndexPlayer2
+                  ? {
+                      ...seat,
+                      flags:
+                        ready === WireBooleanTrue
+                          ? seat.flags | SeatFlagsReady
+                          : seat.flags & ~SeatFlagsReady,
+                    }
+                  : seat,
+              ),
+            },
+          }));
+        },
+      }}
+    />
+  );
+}
+export const GuestReadinessToggle: Story = { render: GuestReadiness };
