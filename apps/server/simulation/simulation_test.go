@@ -43,6 +43,60 @@ func TestNextUnprocessedTick(t *testing.T) {
 	}
 }
 
+func TestSteeringCancelsNOSUntilFreshPress(t *testing.T) {
+	definition, err := os.ReadFile("../../../packages/contracts/configuration/defaults.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, mode := range []string{"drag-race", "road-rage"} {
+		t.Run(mode, func(t *testing.T) {
+			cfg, err := configuration.Capture(definition, mode, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			identities := [2]protocol.Identity{{RoomId: 1, SeatSession: 11, PairGeneration: 1, Seat: 0}, {RoomId: 1, SeatSession: 22, PairGeneration: 1, Seat: 1}}
+			game, err := New(cfg, 1, identities, 1)
+			if err != nil {
+				t.Fatal(err)
+			}
+			advance := func(end float64) {
+				t.Helper()
+				if _, err := game.AdvanceTo(end); err != nil {
+					t.Fatal(err)
+				}
+			}
+			sequence := uint32(0)
+			send := func(intent protocol.InputIntent, control protocol.Control, heldMask uint8, end float64) {
+				t.Helper()
+				sequence++
+				ok, err := game.Submit(identities[0], protocol.Input{Identity: identities[0], Round: protocol.Round{RoundId: 1, InputGeneration: 1}, Sequence: sequence, Intent: intent, Control: control, HeldMask: heldMask})
+				if err != nil || !ok {
+					t.Fatalf("submit: %v %v", ok, err)
+				}
+				advance(end)
+			}
+			check := func(progress float64, flags uint8) {
+				t.Helper()
+				car := game.Snapshot().Cars[0]
+				if math.Abs(car.Progress-progress) > 1e-6 || car.Flags != flags {
+					t.Fatalf("progress %g flags %d; want %g flags %d", car.Progress, car.Flags, progress, flags)
+				}
+			}
+			advance(.1)
+			send(0, 3, 4, .2)
+			send(0, 2, 6, .3)
+			check(160, protocol.CarFlagsNone)
+			send(1, 2, 4, .4)
+			send(2, 3, 4, .5)
+			send(0, 3, 4, .6)
+			check(280, protocol.CarFlagsNone)
+			send(1, 3, 0, .7)
+			send(0, 3, 4, .8)
+			check(400, protocol.CarFlagsNOSActive)
+		})
+	}
+}
+
 func TestSharedTimelines(t *testing.T) {
 	definition, err := os.ReadFile("../../../packages/contracts/configuration/defaults.json")
 	if err != nil {

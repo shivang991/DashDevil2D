@@ -320,7 +320,8 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 					car.Controls = input.Control
 					car.Effective = input.Control
 					car.Flags = protocol.CarFlagsNone
-					if car.HeldMask&protocol.HeldControlsNOS != 0 {
+					// Steering cancels boost; a still-held NOS key needs a fresh press.
+					if input.Control == protocol.ControlNOS {
 						car.Flags = protocol.CarFlagsNOSActive
 					}
 					expiry, _ := CanonicalTime(e.connections[q.seat].ControlFreshnessExpiry)
@@ -340,9 +341,8 @@ func (e *Engine) apply(timeUs uint64, events *[]Observation) {
 					clear(car)
 				} else {
 					car.HeldMask &^= protocol.HeldControlsLeft << (input.Control - 1)
-					car.Flags = protocol.CarFlagsNone
-					if car.HeldMask&protocol.HeldControlsNOS != 0 {
-						car.Flags = protocol.CarFlagsNOSActive
+					if input.Control == protocol.ControlNOS {
+						car.Flags = protocol.CarFlagsNone
 					}
 					if car.Controls == input.Control {
 						car.Controls = protocol.ControlNone

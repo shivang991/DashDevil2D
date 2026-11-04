@@ -380,7 +380,8 @@ export class Multiplayer {
             car.heldMask |= 1 << (input.control - 1);
             car.controls = input.control;
             car.effective = input.control;
-            car.flags = car.heldMask & HeldControlsNOS ? CarFlagsNOSActive : CarFlagsNone;
+            // Steering cancels boost; a still-held NOS key needs a fresh press.
+            car.flags = input.control === ControlNOS ? CarFlagsNOSActive : CarFlagsNone;
             car.freshnessUs =
               timeUs + canonicalTime(this.configuration.connection.controlFreshnessExpiry);
             if (this.configuration.mode === "road-rage") {
@@ -404,7 +405,7 @@ export class Multiplayer {
           if (input.control === ControlNone) this.clear(car);
           else {
             car.heldMask &= ~(1 << (input.control - 1));
-            car.flags = car.heldMask & HeldControlsNOS ? CarFlagsNOSActive : CarFlagsNone;
+            if (input.control === ControlNOS) car.flags = CarFlagsNone;
             if (car.controls === input.control) {
               car.controls =
                 car.heldMask & HeldControlsNOS
