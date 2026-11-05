@@ -8,7 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import { useLocation, useNavigate } from "react-router";
-import { ChevronLeft, X } from "lucide-react";
+import { ChevronLeft, MessageCircle, X } from "lucide-react";
+import { AppHeader } from "./AppHeader";
 import { Avatar } from "./Avatar";
 import type { Account } from "@/transport/account";
 import {
@@ -62,18 +63,28 @@ export function ChatShell({ account, children }: { account?: Account; children: 
   const playing = game && (boundary?.path !== pathname || boundary.playing);
   return (
     <Visibility.Provider value={{ path: pathname, report: setBoundary }}>
-      {children}
-      {account && !account.mustChangePassword && (
-        <ChatPanel
-          key={account.id}
-          account={account}
-          visible={Boolean(visible)}
-          playing={playing}
-          pending={boundary?.path === pathname && boundary.pending}
-          admissionFailure={boundary?.path === pathname ? boundary.admissionFailure : undefined}
-          roomID={boundary?.path === pathname ? boundary.roomID : undefined}
-        />
-      )}
+      <div className="app-shell">
+        <div className="app-content">{children}</div>
+        <AppHeader>
+          {account && !account.mustChangePassword ? (
+            <ChatPanel
+              key={account.id}
+              account={account}
+              visible={Boolean(visible)}
+              playing={playing}
+              pending={boundary?.path === pathname && boundary.pending}
+              admissionFailure={boundary?.path === pathname ? boundary.admissionFailure : undefined}
+              roomID={boundary?.path === pathname ? boundary.roomID : undefined}
+            />
+          ) : (
+            <span title="Sign in to use chat">
+              <button type="button" className="header-icon-button" aria-label="Open chat" disabled>
+                <MessageCircle size={20} aria-hidden="true" />
+              </button>
+            </span>
+          )}
+        </AppHeader>
+      </div>
     </Visibility.Provider>
   );
 }
@@ -393,223 +404,236 @@ function ChatPanel({
       )}
     </button>
   );
-  if (!visible) return null;
-  if (!expanded)
-    return (
-      <button
-        className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 bottom-[72px] flex items-center gap-2.5 rounded-[10px] px-[18px] py-3 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[#60a5fa] [@media(max-width:600px)]:right-3"
-        aria-label="Open chat"
-        aria-expanded={false}
-        onClick={() => toggle(true)}
-      >
-        Chat{" "}
-        {snapshot && snapshot.unread > 0 && (
-          <span className={chatBadge}>
-            {snapshot.unread}
-            <span className="sr-only"> unread</span>
-          </span>
-        )}
-      </button>
-    );
+  const unavailableReason = playing
+    ? "Chat unavailable during a race"
+    : "Chat unavailable on this page";
   return (
-    <aside
-      className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-4 bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [&_button]:cursor-pointer [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 [&_button:enabled:hover]:bg-neutral-800 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:-outline-offset-2 [&_button:focus-visible]:outline-[#60a5fa] [&_input:focus-visible]:outline-2 [&_input:focus-visible]:-outline-offset-2 [&_input:focus-visible]:outline-[#60a5fa] [&_textarea:focus-visible]:outline-2 [&_textarea:focus-visible]:-outline-offset-2 [&_textarea:focus-visible]:outline-[#60a5fa] [@media(max-width:600px)]:inset-0 [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
-      aria-label="Chat"
-      onKeyDown={(event) => {
-        event.stopPropagation();
-        if (event.key === "Escape") toggle(false);
-      }}
-      onKeyUp={(event) => event.stopPropagation()}
-    >
-      <header className="flex items-center justify-between border-b border-neutral-700 px-4 py-3 [&_h2]:text-[18px] [&_button]:min-h-10 [&_button]:min-w-10 [&_button]:inline-flex [&_button]:items-center [&_button]:justify-center">
-        <h2>Chat</h2>
-        <button onClick={() => toggle(false)} aria-label="Close chat">
-          <X size={24} aria-hidden="true" />
+    <>
+      <span title={visible ? (expanded ? "Close chat" : "Open chat") : unavailableReason}>
+        <button
+          type="button"
+          className="header-icon-button"
+          aria-label={visible && expanded ? "Hide chat" : "Open chat"}
+          aria-expanded={visible && expanded}
+          disabled={!visible}
+          onClick={() => toggle(!expanded)}
+        >
+          <MessageCircle size={20} aria-hidden="true" />
+          {snapshot && snapshot.unread > 0 && (
+            <span className="header-chat-badge">
+              {snapshot.unread > 99 ? "99+" : snapshot.unread}
+              <span className="sr-only"> unread</span>
+            </span>
+          )}
         </button>
-      </header>
-      {error && (
-        <div role="alert" className={chatError}>
-          {error} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
-        </div>
-      )}
-      {selected ? (
-        <>
-          <div className="flex items-center gap-2.5 border-b border-neutral-700 p-2 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&_strong]:text-[12px] [&_strong]:wrap-anywhere">
-            <button onClick={() => setPeer(undefined)} aria-label="Back to conversations">
-              <ChevronLeft size={24} aria-hidden="true" />
+      </span>
+      {visible && expanded && (
+        <aside
+          className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-[calc(var(--app-header-height,0px)_+_16px)] bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [&_button]:cursor-pointer [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 [&_button:enabled:hover]:bg-neutral-800 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:-outline-offset-2 [&_button:focus-visible]:outline-[#60a5fa] [&_input:focus-visible]:outline-2 [&_input:focus-visible]:-outline-offset-2 [&_input:focus-visible]:outline-[#60a5fa] [&_textarea:focus-visible]:outline-2 [&_textarea:focus-visible]:-outline-offset-2 [&_textarea:focus-visible]:outline-[#60a5fa] [@media(max-width:600px)]:inset-x-0 [@media(max-width:600px)]:bottom-0 [@media(max-width:600px)]:top-[var(--app-header-height,0px)] [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
+          aria-label="Chat"
+          onKeyDown={(event) => {
+            event.stopPropagation();
+            if (event.key === "Escape") toggle(false);
+          }}
+          onKeyUp={(event) => event.stopPropagation()}
+        >
+          <header className="flex items-center justify-between border-b border-neutral-700 px-4 py-3 [&_h2]:text-[18px] [&_button]:min-h-10 [&_button]:min-w-10 [&_button]:inline-flex [&_button]:items-center [&_button]:justify-center">
+            <h2>Chat</h2>
+            <button onClick={() => toggle(false)} aria-label="Close chat">
+              <X size={24} aria-hidden="true" />
             </button>
-            <Avatar username={selected.username} avatar={selected.avatar} />
-            <div>
-              <strong>{selected.username}</strong>
-              <Presence value={selected.presence} />
-            </div>
-          </div>
-          <div
-            className="min-h-0 flex-1 overflow-auto p-4 font-chat [&>p]:py-3 [&>p]:font-chat [&>p]:leading-normal [&>p]:text-neutral-400"
-            aria-label="Messages"
-          >
-            {!activeMessages.length && !historyError && <p>No messages yet.</p>}
-            {activeMessages.map((message) => (
-              <div
-                key={message.id}
-                className={`mb-3 w-fit max-w-[90%] rounded-[10px] px-3 py-2.5 wrap-anywhere [&_p]:text-[15px] [&_p]:leading-[1.45] [&_p]:whitespace-pre-wrap [&_time]:mt-1.5 [&_time]:block [&_time]:text-[10px] [&_time]:text-neutral-400 ${message.sender === snapshot?.self ? "ml-auto mr-0 border border-[#3b82f6] bg-[#172235]" : "ml-0 mr-auto bg-neutral-800"}`}
-              >
-                {invitationsByID.get(message.id) ? (
-                  <ChallengeInvitation
-                    key={`${message.id}:${admissionFailure ?? ""}`}
-                    pending={admissionPending}
-                    invitation={invitationsByID.get(message.id)!}
-                    incoming={message.recipient === snapshot?.self}
-                    playing={playing}
-                    inRoom={Boolean(roomID)}
-                    onAccept={() => {
-                      if (!playing && !roomID)
-                        void navigate("/multiplayer/drag-race", {
-                          state: { challenge: message.id },
-                        });
-                    }}
-                  />
-                ) : (
-                  <p>{message.text}</p>
-                )}
-                <time dateTime={new Date(message.createdAt).toISOString()}>
-                  {new Date(message.createdAt).toLocaleString()}
-                </time>
-              </div>
-            ))}
-            <div ref={bottom} />
-          </div>
-          {historyError && (
-            <div className={chatError} role="alert">
-              {historyError} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
+          </header>
+          {error && (
+            <div role="alert" className={chatError}>
+              {error} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
             </div>
           )}
-          {sendError && (
-            <div className={chatError} role="alert">
-              {sendError}{" "}
-              <button disabled={sending} onClick={() => void send()}>
-                Retry send
-              </button>
-            </div>
-          )}
-          {!selected.deleted && (
-            <div className="border-t border-neutral-700 px-4 py-2 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
-              <button
-                disabled={playing || challengeBusy || admissionPending}
-                onClick={() => void challenge()}
-              >
-                {challengeBusy ? "Inviting…" : "Challenge"}
-              </button>
-              {createOffer && (
+          {selected ? (
+            <>
+              <div className="flex items-center gap-2.5 border-b border-neutral-700 p-2 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&_strong]:text-[12px] [&_strong]:wrap-anywhere">
+                <button onClick={() => setPeer(undefined)} aria-label="Back to conversations">
+                  <ChevronLeft size={24} aria-hidden="true" />
+                </button>
+                <Avatar username={selected.username} avatar={selected.avatar} />
                 <div>
-                  <p>
-                    Create a room to invite {selected.username}. You’ll choose the mode and
-                    readiness in the lobby.
-                  </p>
-                  <button
-                    onClick={() => {
-                      setCreateOffer(false);
-                      void navigate("/multiplayer/drag-race", {
-                        state: { challengePeer: selected.id },
-                      });
-                    }}
+                  <strong>{selected.username}</strong>
+                  <Presence value={selected.presence} />
+                </div>
+              </div>
+              <div
+                className="min-h-0 flex-1 overflow-auto p-4 font-chat [&>p]:py-3 [&>p]:font-chat [&>p]:leading-normal [&>p]:text-neutral-400"
+                aria-label="Messages"
+              >
+                {!activeMessages.length && !historyError && <p>No messages yet.</p>}
+                {activeMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`mb-3 w-fit max-w-[90%] rounded-[10px] px-3 py-2.5 wrap-anywhere [&_p]:text-[15px] [&_p]:leading-[1.45] [&_p]:whitespace-pre-wrap [&_time]:mt-1.5 [&_time]:block [&_time]:text-[10px] [&_time]:text-neutral-400 ${message.sender === snapshot?.self ? "ml-auto mr-0 border border-[#3b82f6] bg-[#172235]" : "ml-0 mr-auto bg-neutral-800"}`}
                   >
-                    Create room &amp; invite
+                    {invitationsByID.get(message.id) ? (
+                      <ChallengeInvitation
+                        key={`${message.id}:${admissionFailure ?? ""}`}
+                        pending={admissionPending}
+                        invitation={invitationsByID.get(message.id)!}
+                        incoming={message.recipient === snapshot?.self}
+                        playing={playing}
+                        inRoom={Boolean(roomID)}
+                        onAccept={() => {
+                          if (!playing && !roomID)
+                            void navigate("/multiplayer/drag-race", {
+                              state: { challenge: message.id },
+                            });
+                        }}
+                      />
+                    ) : (
+                      <p>{message.text}</p>
+                    )}
+                    <time dateTime={new Date(message.createdAt).toISOString()}>
+                      {new Date(message.createdAt).toLocaleString()}
+                    </time>
+                  </div>
+                ))}
+                <div ref={bottom} />
+              </div>
+              {historyError && (
+                <div className={chatError} role="alert">
+                  {historyError} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
+                </div>
+              )}
+              {sendError && (
+                <div className={chatError} role="alert">
+                  {sendError}{" "}
+                  <button disabled={sending} onClick={() => void send()}>
+                    Retry send
                   </button>
                 </div>
               )}
-            </div>
-          )}
-          {selected.deleted ? (
-            <p className={chatError}>This account was deleted. Shared messages remain available.</p>
-          ) : (
-            <form
-              className="border-t border-neutral-700 p-3 [&>div]:mt-2 [&>div]:flex [&>div]:items-center [&>div]:justify-between [&_small]:font-chat [&_small]:text-neutral-400 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-[18px] [&_button]:py-2"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void send();
-              }}
-            >
-              <textarea
-                className={`${chatField} min-h-[76px] max-h-[180px] resize-y`}
-                aria-label="Message"
-                placeholder="Write a message"
-                value={draft}
-                maxLength={2000}
-                onChange={(event) => setDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) {
+              {!selected.deleted && (
+                <div className="border-t border-neutral-700 px-4 py-2 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
+                  <button
+                    disabled={playing || challengeBusy || admissionPending}
+                    onClick={() => void challenge()}
+                  >
+                    {challengeBusy ? "Inviting…" : "Challenge"}
+                  </button>
+                  {createOffer && (
+                    <div>
+                      <p>
+                        Create a room to invite {selected.username}. You’ll choose the mode and
+                        readiness in the lobby.
+                      </p>
+                      <button
+                        onClick={() => {
+                          setCreateOffer(false);
+                          void navigate("/multiplayer/drag-race", {
+                            state: { challengePeer: selected.id },
+                          });
+                        }}
+                      >
+                        Create room &amp; invite
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+              {selected.deleted ? (
+                <p className={chatError}>
+                  This account was deleted. Shared messages remain available.
+                </p>
+              ) : (
+                <form
+                  className="border-t border-neutral-700 p-3 [&>div]:mt-2 [&>div]:flex [&>div]:items-center [&>div]:justify-between [&_small]:font-chat [&_small]:text-neutral-400 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-[18px] [&_button]:py-2"
+                  onSubmit={(event) => {
                     event.preventDefault();
                     void send();
-                  }
-                }}
-              />
-              <div>
-                <small>{draft.length}/2,000</small>
-                <button disabled={sending || !draft.trim()} type="submit">
-                  {sending ? "Sending…" : "Send"}
-                </button>
+                  }}
+                >
+                  <textarea
+                    className={`${chatField} min-h-[76px] max-h-[180px] resize-y`}
+                    aria-label="Message"
+                    placeholder="Write a message"
+                    value={draft}
+                    maxLength={2000}
+                    onChange={(event) => setDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (
+                        event.key === "Enter" &&
+                        !event.shiftKey &&
+                        !event.nativeEvent.isComposing
+                      ) {
+                        event.preventDefault();
+                        void send();
+                      }
+                    }}
+                  />
+                  <div>
+                    <small>{draft.length}/2,000</small>
+                    <button disabled={sending || !draft.trim()} type="submit">
+                      {sending ? "Sending…" : "Send"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="p-4 [&_label]:mb-2 [&_label]:block">
+                <label htmlFor="chat-search">Search accounts</label>
+                <input
+                  className={chatField}
+                  id="chat-search"
+                  value={query}
+                  placeholder="Find a driver"
+                  onChange={(event) => {
+                    setQuery(event.target.value);
+                    setSearchState("");
+                    setSearch(undefined);
+                  }}
+                />
               </div>
-            </form>
+              <div className="overflow-y-auto px-4 pb-4 [&_section]:mb-6 [&_h3]:mb-2 [&_h3]:text-[12px] [&_h3]:text-neutral-400 [&_p]:py-3 [&_p]:font-chat [&_p]:leading-normal [&_p]:text-neutral-400">
+                {query.trim() ? (
+                  <>
+                    <p role="status">
+                      {searchState ||
+                        (!search || search.query !== query
+                          ? "Searching…"
+                          : `${search.total} matching ${search.total === 1 ? "account" : "accounts"}${search.total > 50 ? " · first 50 shown" : ""}`)}
+                    </p>
+                    {search?.query === query && search.users.map(row)}
+                    {searchState.startsWith("Search failed") && (
+                      <button onClick={() => setRevision((n) => n + 1)}>Retry search</button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {snapshot?.pinned && (
+                      <section>
+                        <h3>Lobby opponent</h3>
+                        {row(snapshot.pinned)}
+                      </section>
+                    )}
+                    {!snapshot && <p>Loading conversations…</p>}
+                    {snapshot && snapshot.acquaintances.length > 0 && (
+                      <section>
+                        <h3>Acquaintances</h3>
+                        {snapshot.acquaintances.map(row)}
+                      </section>
+                    )}
+                    {snapshot && snapshot.suggested.length > 0 && (
+                      <section>
+                        <h3>Suggested</h3>
+                        {snapshot.suggested.map(row)}
+                      </section>
+                    )}
+                    {snapshot && !people.length && <p>No chats found.</p>}
+                  </>
+                )}
+              </div>
+            </>
           )}
-        </>
-      ) : (
-        <>
-          <div className="p-4 [&_label]:mb-2 [&_label]:block">
-            <label htmlFor="chat-search">Search accounts</label>
-            <input
-              className={chatField}
-              id="chat-search"
-              value={query}
-              placeholder="Find a driver"
-              onChange={(event) => {
-                setQuery(event.target.value);
-                setSearchState("");
-                setSearch(undefined);
-              }}
-            />
-          </div>
-          <div className="overflow-y-auto px-4 pb-4 [&_section]:mb-6 [&_h3]:mb-2 [&_h3]:text-[12px] [&_h3]:text-neutral-400 [&_p]:py-3 [&_p]:font-chat [&_p]:leading-normal [&_p]:text-neutral-400">
-            {query.trim() ? (
-              <>
-                <p role="status">
-                  {searchState ||
-                    (!search || search.query !== query
-                      ? "Searching…"
-                      : `${search.total} matching ${search.total === 1 ? "account" : "accounts"}${search.total > 50 ? " · first 50 shown" : ""}`)}
-                </p>
-                {search?.query === query && search.users.map(row)}
-                {searchState.startsWith("Search failed") && (
-                  <button onClick={() => setRevision((n) => n + 1)}>Retry search</button>
-                )}
-              </>
-            ) : (
-              <>
-                {snapshot?.pinned && (
-                  <section>
-                    <h3>Lobby opponent</h3>
-                    {row(snapshot.pinned)}
-                  </section>
-                )}
-                {!snapshot && <p>Loading conversations…</p>}
-                {snapshot && snapshot.acquaintances.length > 0 && (
-                  <section>
-                    <h3>Acquaintances</h3>
-                    {snapshot.acquaintances.map(row)}
-                  </section>
-                )}
-                {snapshot && snapshot.suggested.length > 0 && (
-                  <section>
-                    <h3>Suggested</h3>
-                    {snapshot.suggested.map(row)}
-                  </section>
-                )}
-                {snapshot && !people.length && <p>No chats found.</p>}
-              </>
-            )}
-          </div>
-        </>
+        </aside>
       )}
-    </aside>
+    </>
   );
 }

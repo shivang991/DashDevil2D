@@ -49,7 +49,7 @@ export function LoginScreen({
     }
   }
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-neutral-950 text-white">
+    <main className="flex min-h-[var(--app-page-height,100dvh)] items-center justify-center bg-neutral-950 text-white">
       <div className="flex w-full max-w-96 flex-col gap-6 p-6">
         <div className="rounded-xl border border-neutral-700 px-6 py-8 text-center text-xl">
           Branding

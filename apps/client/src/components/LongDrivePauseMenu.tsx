@@ -1,6 +1,4 @@
-import { useState } from "react";
-import { Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
-import { gameAudio } from "@/lib/gameAudio";
+import { Play, RotateCcw } from "lucide-react";
 import { Button } from "./ui/button";
 
 export function LongDrivePauseMenu({
@@ -10,8 +8,6 @@ export function LongDrivePauseMenu({
   onResume: () => void;
   onRestart: () => void;
 }) {
-  const [sound, setSound] = useState(gameAudio.enabled);
-  const SoundIcon = sound ? Volume2 : VolumeX;
   return (
     <div
       id="long-drive-pause"
@@ -30,19 +26,6 @@ export function LongDrivePauseMenu({
         <Button variant="multiplayer" className="min-h-11" onClick={onRestart}>
           <RotateCcw aria-hidden="true" />
           Restart
-        </Button>
-        <Button
-          variant="multiplayer"
-          className="min-h-11"
-          aria-label={sound ? "Mute sound" : "Enable sound"}
-          aria-pressed={sound}
-          onClick={() => {
-            gameAudio.setEnabled(!gameAudio.enabled);
-            setSound(gameAudio.enabled);
-          }}
-        >
-          <SoundIcon aria-hidden="true" />
-          Sound {sound ? "on" : "off"}
         </Button>
       </div>
     </div>

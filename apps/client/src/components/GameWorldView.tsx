@@ -30,7 +30,7 @@ export function GameWorldView({
   };
   const PauseIcon = ui.paused ? Play : Pause;
   return (
-    <div className="flex h-dvh w-full items-center justify-center overflow-hidden bg-neutral-950 p-3 pt-[max(12px,env(safe-area-inset-top))] pb-[max(12px,env(safe-area-inset-bottom))] [@media(max-height:450px)]:p-2">
+    <div className="flex h-[var(--app-page-height,100dvh)] w-full items-center justify-center overflow-hidden bg-neutral-950 p-3 pt-[max(12px,env(safe-area-inset-top))] pb-[max(12px,env(safe-area-inset-bottom))] [@media(max-height:450px)]:p-2">
       <ChatVisibility visible={ui.gameOverAnimDone} playing={!ui.gameOverAnimDone} />
       <section className="game-shell relative flex h-[min(100%,calc(min(560px,100vw_-_48px)*15/14_+_150px))] min-h-0 w-full max-w-[608px] flex-col gap-3 overflow-hidden rounded-[24px] border border-neutral-700 p-[clamp(10px,2vw,22px)] [@media(max-height:450px)]:gap-1 [&_canvas]:touch-none">
         <header className="flex shrink-0 items-center gap-1 sm:gap-2">

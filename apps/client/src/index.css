@@ -211,3 +211,65 @@
     box-shadow: 0 0 0 5px rgb(250 250 250 / 12%);
   }
 }
+
+.app-shell {
+  --app-header-height: 48px;
+  --app-page-height: calc(100dvh - var(--app-header-height));
+  padding-top: var(--app-header-height);
+  min-height: 100dvh;
+  background: #0a0a0a;
+}
+
+.app-header {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 70;
+  height: var(--app-header-height);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  padding-inline: 12px;
+  border-bottom: 1px solid #404040;
+  background: #0a0a0a;
+  color: #fafafa;
+}
+
+.header-icon-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.header-icon-button:enabled:hover {
+  background: #262626;
+}
+
+.header-icon-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.header-icon-button:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: -2px;
+}
+
+.header-chat-badge {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  min-width: 16px;
+  padding: 0 3px;
+  border-radius: 9px;
+  background: #2563eb;
+  color: white;
+  font:
+    10px/16px Arial,
+    sans-serif;
+}
