@@ -57,6 +57,22 @@ export const ChangePassword: Story = {
   },
 };
 
+export const SavingPassword: Story = {
+  beforeEach() {
+    mocked(accountAPI.changePassword).mockImplementation(() => new Promise(() => {}));
+  },
+  play: async ({ canvasElement }) => {
+    const body = within(canvasElement.ownerDocument.body);
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "Profile" }));
+    await userEvent.click(body.getByRole("button", { name: "Change password" }));
+    await userEvent.type(body.getByLabelText("Current password"), "old-password");
+    await userEvent.type(body.getByLabelText("New password", { exact: true }), "new-password");
+    await userEvent.type(body.getByLabelText("Confirm new password"), "new-password");
+    await userEvent.click(body.getByRole("button", { name: "Save password" }));
+    await expect(body.getByRole("button", { name: "Saving…" })).toBeDisabled();
+  },
+};
+
 async function uploadAvatar(body: ReturnType<typeof within>) {
   const data = Uint8Array.from(
     atob(
