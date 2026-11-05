@@ -43,10 +43,13 @@ for (const name of ["Profile", "Race History"]) {
       expect(await close.evaluate((node) => getComputedStyle(node).transitionDuration)).toBe("0s");
       if (viewport.height === 320) {
         expect(
-          await dialog.getByRole("heading").evaluate((node) => {
-            const body = node.parentElement!;
-            return body.scrollHeight > body.clientHeight;
-          }),
+          await dialog.evaluate((node) =>
+            [...node.querySelectorAll("*")].some(
+              (element) =>
+                element.scrollHeight > element.clientHeight &&
+                getComputedStyle(element).overflowY === "auto",
+            ),
+          ),
         ).toBe(true);
       }
       await page.keyboard.press("Escape");

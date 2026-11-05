@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { AvatarEditor, type AvatarDraft } from "@/components/AvatarEditor";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "radix-ui";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { DialogContent } from "@/components/ui/dialog-content";
 import { accountAPI, type Account } from "@/transport/account";
 
@@ -55,7 +55,7 @@ export function ProfileDialog({
     }
   }
   return (
-    <Dialog.Root
+    <Dialog
       open={controlledOpen ?? open}
       onOpenChange={(next) => {
         if (busy) return;
@@ -65,9 +65,9 @@ export function ProfileDialog({
       }}
     >
       {controlledOpen === undefined && (
-        <Dialog.Trigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
+        <DialogTrigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
           Profile
-        </Dialog.Trigger>
+        </DialogTrigger>
       )}
       <DialogContent
         title={passwordMode ? "Change password" : "Profile"}
@@ -209,6 +209,6 @@ export function ProfileDialog({
           </form>
         )}
       </DialogContent>
-    </Dialog.Root>
+    </Dialog>
   );
 }

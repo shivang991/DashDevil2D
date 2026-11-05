@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dialog } from "radix-ui";
+import { Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { DialogContent } from "@/components/ui/dialog-content";
 import { accountAPI, type RaceHistoryPage } from "@/transport/account";
 
@@ -111,11 +111,11 @@ export function RaceHistoryDialog({
   onLogin?: () => void;
 }) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       {open === undefined && (
-        <Dialog.Trigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
+        <DialogTrigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
           Race History
-        </Dialog.Trigger>
+        </DialogTrigger>
       )}
       <DialogContent
         title="Race History"
@@ -127,14 +127,14 @@ export function RaceHistoryDialog({
         ) : (
           <>
             <p>Sign in to view your race history.</p>
-            <Dialog.Close asChild>
+            <DialogClose asChild>
               <button className="rounded-lg border border-neutral-600 px-3 py-2" onClick={onLogin}>
                 Sign in
               </button>
-            </Dialog.Close>
+            </DialogClose>
           </>
         )}
       </DialogContent>
-    </Dialog.Root>
+    </Dialog>
   );
 }
