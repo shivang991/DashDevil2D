@@ -6,7 +6,7 @@ import { captureConfiguration } from "@dashdevil/simulation/config";
 import { configurationContext } from "@dashdevil/contracts/validation";
 import type { PairedState } from "../../src/game/multiplayer/PairedConnection";
 
-test("multiplayer shares touch and keyboard holds and releases controls when settings open", () => {
+test("multiplayer shares touch and keyboard holds and releases controls when pause menu opens", () => {
   const connection = {
     frame: () => undefined,
     input: vi.fn(),
@@ -95,7 +95,7 @@ test("multiplayer shares touch and keyboard holds and releases controls when set
     expect(connection.input).not.toHaveBeenCalled();
     pointer(gas, "pointerdown", 3);
     connection.releaseControls.mockClear();
-    act(() => host.querySelector<HTMLButtonElement>('[aria-label="Settings"]')!.click());
+    act(() => host.querySelector<HTMLButtonElement>('[aria-label="Pause"]')!.click());
     expect(connection.releaseControls).toHaveBeenCalled();
     expect(gas.disabled).toBe(true);
     expect(gas.getAttribute("aria-pressed")).toBe("false");

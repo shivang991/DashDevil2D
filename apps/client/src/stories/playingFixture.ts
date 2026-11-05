@@ -1,5 +1,6 @@
 import {
   type Car,
+  CarFlagsNOSActive,
   ControlNone,
   ControlNOS,
   LaneLeft,
@@ -38,6 +39,7 @@ export function playingFixture(mode: MultiplayerMode) {
         : Math.max(1, context.gameplay.maxHealth - 1),
     score: seat === SeatIndexPlayer1 ? 120 : 90,
     effective: seat === SeatIndexPlayer1 ? ControlNOS : ControlNone,
+    flags: seat === SeatIndexPlayer1 ? CarFlagsNOSActive : 0,
   }));
   const frame: NonNullable<ReturnType<PairedConnection["frame"]>> = {
     damageAtUs: [-Infinity, -Infinity],

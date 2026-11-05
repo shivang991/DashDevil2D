@@ -42,10 +42,10 @@ for (const viewport of [
       await pause.click();
       const menu = page.getByRole("region", { name: "Game paused", exact: true });
       await expect(menu).toBeVisible();
-      await expect(menu.getByRole("button")).toHaveCount(3);
-      const sound = menu.getByRole("button", { name: "Mute sound", exact: true });
+      await expect(menu.getByRole("button")).toHaveCount(2);
+      const sound = page.getByRole("button", { name: "Mute sound", exact: true });
       await sound.click();
-      await expect(menu.getByRole("button", { name: "Enable sound", exact: true })).toHaveAttribute(
+      await expect(page.getByRole("button", { name: "Enable sound", exact: true })).toHaveAttribute(
         "aria-pressed",
         "false",
       );
@@ -76,6 +76,7 @@ test("game over exposes restart and disables pause", async ({ page }) => {
   });
   await page.clock.install();
   await page.goto(`${origin}/long-drive`);
+  await expect(page.locator("canvas")).toBeFocused();
   await page.clock.runFor(20000);
   const result = page.getByRole("region", { name: "Game over", exact: true });
   await expect(result).toBeVisible();

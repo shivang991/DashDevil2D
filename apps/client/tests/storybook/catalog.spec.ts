@@ -116,3 +116,139 @@ for (const width of [1280, 320]) {
     await expect(page.getByRole("button", { name: "Profile", exact: true })).toBeFocused();
   });
 }
+
+for (const width of [320, 639, 640, 1280]) {
+  test(`Multiplayer identity and player layout at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/iframe.html?id=screens-multiplayer--entry&viewMode=story");
+    const avatar = page.getByLabel("Driver 01 avatar");
+    await expect(avatar).toBeVisible();
+    const identity = (await avatar.boundingBox())!;
+    const modes = (await page.getByRole("group", { name: "Multiplayer mode" }).boundingBox())!;
+    expect(identity.y + identity.height).toBeLessThanOrEqual(modes.y);
+    await page.goto("/iframe.html?id=screens-multiplayer--guest&viewMode=story");
+    const players = page.getByRole("list", { name: "Players" }).getByRole("listitem");
+    const first = (await players.nth(0).boundingBox())!;
+    const second = (await players.nth(1).boundingBox())!;
+    if (width < 640) expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
+    else expect(second.y + second.height / 2).toBeCloseTo(first.y + first.height / 2, 0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+    await test
+      .info()
+      .attach(`multiplayer-${width}`, { body: await page.screenshot(), contentType: "image/png" });
+  });
+}
+
+test("Failed join closes at 500ms then shows error for 2 seconds", async ({ page }) => {
+  await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
+  await page.clock.pauseAt(new Date("2026-01-01T00:00:00Z"));
+  await page.goto("/iframe.html?id=screens-multiplayer--join-error&viewMode=story");
+  await page.getByRole("button", { name: "Join Room" }).click();
+  const dialog = page.getByRole("dialog", { name: "Join room", exact: true });
+  await expect(dialog.getByLabel("Room code")).toBeVisible();
+  await dialog.getByLabel("Room code").fill("1234");
+  await dialog.getByRole("button", { name: "Join Room" }).click();
+  await page.clock.runFor(100);
+  await expect(page.getByRole("dialog", { name: "Join room", exact: true })).toBeVisible();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await page.clock.runFor(499);
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.clock.runFor(1);
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByRole("alert")).toHaveText("Unable to join: room is full.");
+  await page.clock.runFor(1999);
+  await expect(page.getByRole("alert")).toBeVisible();
+  await page.clock.runFor(1);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+});
+
+for (const story of ["error", "countdown-cancelled"]) {
+  test(`Stable timed multiplayer error: ${story}`, async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 1100 });
+    await page.clock.install({ time: new Date("2026-01-01T00:00:00Z") });
+    await page.clock.pauseAt(new Date("2026-01-01T00:00:00Z"));
+    await page.goto(`/iframe.html?id=screens-multiplayer--${story}&viewMode=story`);
+    const alert = page.getByRole("alert");
+    await expect(alert).toBeVisible();
+    await expect(alert.locator("svg")).toHaveCount(1);
+    const buttons = page.getByRole("button");
+    const before = await buttons.evaluateAll((nodes) =>
+      nodes.map((node) => {
+        const r = node.getBoundingClientRect();
+        return [r.x, r.y, r.width, r.height];
+      }),
+    );
+    await page.clock.runFor(1999);
+    await expect(alert).toBeVisible();
+    await page.clock.runFor(1);
+    await expect(alert).toHaveCount(0);
+    expect(
+      await buttons.evaluateAll((nodes) =>
+        nodes.map((node) => {
+          const r = node.getBoundingClientRect();
+          return [r.x, r.y, r.width, r.height];
+        }),
+      ),
+    ).toEqual(before);
+  });
+}
+
+test("Race Pause menu, resume, leave and HUD alignment", async ({ page }) => {
+  await page.goto("/iframe.html?id=screens-multiplayer--playing-drag-race&viewMode=story");
+  const pause = page.getByRole("button", { name: "Pause", exact: true });
+  await expect(pause).toBeVisible();
+  const indicator = (await page.getByTestId("distance-remaining").boundingBox())!;
+  const icon = (await pause.locator("svg").boundingBox())!;
+  expect(indicator.x + indicator.width).toBeCloseTo(icon.x + icon.width, 0);
+  await pause.click();
+  await test
+    .info()
+    .attach("race-pause", { body: await page.screenshot(), contentType: "image/png" });
+  const menu = page.getByRole("dialog", { name: "Race menu" });
+  await expect(menu.getByRole("button", { name: "Resume" })).toBeFocused();
+  await expect(menu.getByRole("button")).toHaveCount(2);
+  await menu.getByRole("button", { name: "Resume" }).click();
+  await expect(menu).toHaveCount(0);
+  await expect(page.getByRole("img", { name: "Multiplayer race" })).toBeFocused();
+  await pause.click();
+  await menu.getByRole("button", { name: "Leave", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Leave room?" })).toBeVisible();
+  await page.getByRole("button", { name: "Cancel", exact: true }).click();
+  await expect(menu).toBeVisible();
+});
+
+test("Race reconnect banner is concise", async ({ page }) => {
+  await page.goto("/iframe.html?id=screens-multiplayer--playing-reconnecting&viewMode=story");
+  await expect(page.getByRole("alert")).toHaveText("Reconnecting");
+});
+
+test("Ready guest can cancel through Waiting for host button", async ({ page }) => {
+  await page.goto("/iframe.html?id=screens-multiplayer--guest-readiness-toggle&viewMode=story");
+  await page.getByRole("button", { name: "Waiting for host.", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Ready", exact: true })).toBeEnabled();
+  await page.getByRole("button", { name: "Ready", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Waiting for host.", exact: true })).toBeEnabled();
+  await expect(page.getByText("Both players must be connected and ready to start.")).toHaveCount(0);
+});
+
+test("Round progresses through menu while driving requires a fresh press", async ({ page }) => {
+  await page.goto("/iframe.html?id=screens-multiplayer--advancing-race&viewMode=story");
+  const race = page.getByRole("img", { name: "Multiplayer race" });
+  await race.focus();
+  await page.keyboard.down("ArrowUp");
+  await expect(page.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
+  await page.keyboard.press("Escape");
+  const menu = page.getByRole("dialog", { name: "Race menu" });
+  await expect(menu).toBeVisible();
+  await expect(page.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
+  const before = await page.getByTestId("time-remaining").textContent();
+  await expect(page.getByTestId("time-remaining")).not.toHaveText(before!);
+  await menu.getByRole("button", { name: "Resume" }).click();
+  await expect(page.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "ready");
+  await page.keyboard.up("ArrowUp");
+  await page.keyboard.down("ArrowUp");
+  await expect(page.getByTestId("nos-status")).toHaveAttribute("data-nos-state", "active");
+  await page.keyboard.up("ArrowUp");
+});

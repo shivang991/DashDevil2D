@@ -21,8 +21,8 @@ import {
   WireBooleanTrue,
 } from "@dashdevil/contracts/protocol";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Check, ChevronLeft, Copy, LockKeyhole, X } from "lucide-react";
+import { useEffect, useEffectEvent, useRef, useState, type ReactNode } from "react";
+import { Check, ChevronLeft, Copy, LockKeyhole, TriangleAlert, X } from "lucide-react";
 import defaults from "@dashdevil/contracts/configuration";
 import type {
   MultiplayerMode,
@@ -44,6 +44,7 @@ interface MultiplayerViewProps {
   onModeChange?: (mode: MultiplayerMode) => void;
   navigationBlocked?: boolean;
   playerName: string;
+  playerAvatar?: string;
   state?: PairedState;
   error?: string;
   clock: number;
@@ -63,6 +64,7 @@ export function MultiplayerView({
   onModeChange,
   navigationBlocked = false,
   playerName,
+  playerAvatar,
   state,
   error = "",
   clock,
@@ -162,16 +164,41 @@ export function MultiplayerView({
       ? state.status
       : "") ||
     state?.notice;
-  const errorMessage = roomError && (
+  const [visibleError, setVisibleError] = useState("");
+  const errorCount = state?.errors.length ?? 0;
+  const presentError = useEffectEvent((message: string) => {
+    setJoinOpen(false);
+    setVisibleError(message);
+  });
+  const joinFailure = useEffectEvent(() => joinOpen && !inRoom);
+  const clearError = useEffectEvent(() => setVisibleError(""));
+  useEffect(() => {
+    if (!roomError || pending) {
+      clearError();
+      return;
+    }
+    const delay = joinFailure() ? 500 : 0;
+    const show = delay ? setTimeout(() => presentError(roomError), delay) : undefined;
+    if (!delay) presentError(roomError);
+    const hide = setTimeout(() => setVisibleError(""), delay + 2000);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
+  }, [roomError, pending, errorCount]);
+  const errorMessage = visibleError && (
     <div
       id="room-error"
-      className="text-center text-[12px] leading-[1.7] text-[#f87171] wrap-anywhere [&_p+p]:mt-2"
       role="alert"
+      className="flex items-start justify-center gap-2 text-[12px] leading-[1.7] text-[#f87171] wrap-anywhere"
     >
-      <p>{roomError}</p>
-      {roomError.startsWith("Countdown cancelled") && (
-        <p>A player left, lost connection, or hid the game.</p>
-      )}
+      <TriangleAlert className="mt-1 size-4 shrink-0" aria-hidden="true" />
+      <div className="min-w-0 text-left [&_p+p]:mt-2">
+        <p>{visibleError}</p>
+        {visibleError.startsWith("Countdown cancelled") && (
+          <p>A player left, lost connection, or hid the game.</p>
+        )}
+      </div>
     </div>
   );
   const shownMode = inRoom ? room!.mode : selectedMode;
@@ -230,8 +257,8 @@ export function MultiplayerView({
       tabIndex={-1}
       className={
         race
-          ? "flex h-dvh items-center justify-center overflow-hidden px-3 py-[clamp(8px,2vh,24px)] bg-neutral-950 text-white"
-          : "grid min-h-dvh place-items-center bg-neutral-950 px-5 py-8 text-neutral-50 [@media(max-width:520px)]:px-4 [@media(max-width:520px)]:py-6 [&_button:enabled]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-[5px] [&_button:focus-visible]:outline-neutral-50"
+          ? "flex h-[var(--app-page-height,100dvh)] items-center justify-center overflow-hidden px-3 py-[clamp(8px,2vh,24px)] bg-neutral-950 text-white"
+          : "grid min-h-[var(--app-page-height,100dvh)] place-items-center bg-neutral-950 px-5 py-8 text-neutral-50 [@media(max-width:520px)]:px-4 [@media(max-width:520px)]:py-6 [&_button:enabled]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-[5px] [&_button:focus-visible]:outline-neutral-50"
       }
       onKeyDown={(event) => {
         if (event.key !== "Escape" || event.repeat || event.defaultPrevented) return;
@@ -265,6 +292,12 @@ export function MultiplayerView({
         {!race && (
           <>
             <h1 className="sr-only">Multiplayer</h1>
+            {!inRoom && (
+              <div className="flex items-center justify-center gap-2 text-[12px] text-neutral-400 wrap-anywhere">
+                <Avatar username={playerName} avatar={playerAvatar} className="size-7" />
+                <span>{playerName}</span>
+              </div>
+            )}
             <header className="flex items-center gap-5 [@media(max-width:520px)]:gap-1">
               <button
                 ref={backButton}
@@ -317,7 +350,6 @@ export function MultiplayerView({
         )}
         {!inRoom ? (
           <div className="flex flex-col gap-7">
-            <p className="text-center text-[12px] text-neutral-400 wrap-anywhere">{playerName}</p>
             <div className="flex flex-col gap-4">
               <Button
                 variant="multiplayer"
@@ -344,30 +376,23 @@ export function MultiplayerView({
                 Join Room
               </Button>
             </div>
-            {pending && !showJoin && (
-              <p className={multiplayerNote} role="status">
-                {state?.pending}…
-              </p>
-            )}
           </div>
         ) : (
           <>
             {!race && (
               <>
-                <p className="-mt-1.5 text-center text-[10px] leading-[1.8] text-neutral-400">
-                  {host
-                    ? "Changing mode resets both players’ readiness."
-                    : "The host chooses the mode."}
-                </p>
-                <div className="flex items-center justify-between gap-6 pt-[30px] pb-3 [@media(max-width:520px)]:flex-col [@media(max-width:520px)]:items-stretch [@media(max-width:520px)]:gap-7 [@media(max-width:520px)]:pt-3">
-                  <ul className="flex min-w-0 flex-1 items-center gap-[18px]" aria-label="Players">
+                <div className="flex items-center justify-between gap-6 pt-[30px] pb-3 max-sm:flex-col max-sm:items-stretch max-sm:gap-7 max-sm:pt-3">
+                  <ul
+                    className="flex min-w-0 flex-1 flex-col items-stretch gap-[18px] sm:flex-row sm:items-center"
+                    aria-label="Players"
+                  >
                     {[room!.host, 1 - room!.host].map((index, position) => {
                       const seat = room!.seats[index];
                       return (
                         <li key={index} className="flex min-w-0 flex-1 items-center gap-[18px]">
                           {position === 1 && (
                             <span
-                              className="font-heading text-[20px] text-neutral-400"
+                              className="hidden font-heading text-[20px] text-neutral-400 sm:block"
                               aria-hidden="true"
                             >
                               vs
@@ -412,7 +437,7 @@ export function MultiplayerView({
                       );
                     })}
                   </ul>
-                  <div className="relative shrink-0 [@media(max-width:520px)]:self-center">
+                  <div className="relative shrink-0 max-sm:self-center">
                     <div className="flex items-center rounded-[12px] border border-neutral-700 pl-4 [&>span]:font-heading [&>span]:text-[32px] [&>span]:tracking-[2px] [&>span]:select-all [&_button]:grid [&_button]:min-h-12 [&_button]:w-11 [&_button]:place-items-center [&_button]:rounded-[10px] [&_button:hover]:bg-neutral-800 [&_button:hover]:text-neutral-50 [&_svg]:size-4">
                       <span data-testid="room-code" aria-label="Room code">
                         {state?.code}
@@ -437,13 +462,6 @@ export function MultiplayerView({
                     </span>
                   </div>
                 </div>
-                <p
-                  data-testid="connection-state"
-                  role="status"
-                  className={connected ? "sr-only" : multiplayerNote}
-                >
-                  {state?.status}
-                </p>
               </>
             )}
             {race ? (
@@ -488,7 +506,7 @@ export function MultiplayerView({
                       ? "border-neutral-50 animate-[multiplayer-start-pulse_2.4s_ease-in-out_infinite] motion-reduce:animate-none"
                       : undefined
                   }
-                  disabled={!eligible || !focused || (ready && (!host || !canStart))}
+                  disabled={!eligible || !focused || (ready && host && !canStart)}
                   onClick={
                     host && canStart
                       ? () =>
@@ -506,10 +524,10 @@ export function MultiplayerView({
                     : ready
                       ? host
                         ? "Waiting for player…"
-                        : "Ready"
+                        : "Waiting for host."
                       : "Ready"}
                 </Button>
-                {ready && (
+                {ready && host && (
                   <button
                     className={multiplayerTextButton}
                     disabled={!eligible}
@@ -518,19 +536,6 @@ export function MultiplayerView({
                     Cancel ready
                   </button>
                 )}
-                <p className={multiplayerNote}>
-                  {!focused
-                    ? "Return to the game to ready up."
-                    : !host && ready
-                      ? "Waiting for the host to start."
-                      : host && canStart
-                        ? "Both players ready. Start your engines."
-                        : "Both players must be connected and ready to start."}
-                </p>
-                {room!.idleWarningUs > 0 &&
-                  clock + (state?.clockOffsetUs ?? 0) >= room!.idleWarningUs && (
-                    <p role="alert">This room will expire soon without activity.</p>
-                  )}
               </div>
             )}
             {import.meta.env.VITE_MULTIPLAYER_DEBUG === "true" && (
@@ -571,12 +576,13 @@ export function MultiplayerView({
             )}
           </>
         )}
-        {!race && inRoom && state?.pending && (
-          <p className={multiplayerNote} role="status">
-            {state.pending}…
-          </p>
+        {!race && (
+          <div className="relative h-[144px] shrink-0" aria-label="Room messages">
+            <div className="absolute inset-0 overflow-y-auto">
+              {!showJoin && !pending && errorMessage}
+            </div>
+          </div>
         )}
-        {!race && !showJoin && !pending && errorMessage}
       </section>
       <MultiplayerDialog
         open={Boolean(resultKey && readyResult === resultKey)}
@@ -639,7 +645,9 @@ export function MultiplayerView({
                   void actions?.connect(AdmissionOperationJoin, code);
               }}
             >
-              <label htmlFor="room-code">Room code</label>
+              <label className="sr-only" htmlFor="room-code">
+                Room code
+              </label>
               <input
                 id="room-code"
                 className="min-h-[70px] w-full rounded-[10px] border border-neutral-600 bg-neutral-900 p-3 text-center text-[24px] tracking-[8px] text-neutral-50 placeholder:text-[16px] placeholder:tracking-normal placeholder:text-neutral-400 aria-invalid:border-[#f87171] focus-visible:outline-2 focus-visible:outline-offset-[5px] focus-visible:outline-neutral-50"
@@ -652,10 +660,7 @@ export function MultiplayerView({
                 placeholder="Enter code"
                 value={code}
                 onChange={(event) => setCode(event.target.value.replace(/[^0-9]/g, ""))}
-                aria-invalid={Boolean(roomError)}
-                aria-describedby={roomError ? "room-error" : undefined}
               />
-              {errorMessage}
               <Button
                 variant="multiplayer"
                 size="multiplayer"

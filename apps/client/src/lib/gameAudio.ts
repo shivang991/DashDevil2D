@@ -101,6 +101,7 @@ function readPreference() {
 
 let preference = readPreference();
 const players = new Set<GameAudio>();
+const preferenceListeners = new Set<() => void>();
 
 export class GameAudio {
   private disposed = false;
@@ -583,6 +584,12 @@ export const gameAudio = {
   get enabled() {
     return preference;
   },
+  subscribe(listener: () => void) {
+    preferenceListeners.add(listener);
+    return () => {
+      preferenceListeners.delete(listener);
+    };
+  },
   setEnabled(enabled: boolean) {
     preference = enabled;
     try {
@@ -595,6 +602,7 @@ export const gameAudio = {
       if (enabled) player.unlock();
       player.syncVisibility();
     }
+    for (const listener of preferenceListeners) listener();
   },
   unlock: () => {
     for (const player of players) player.unlock();
