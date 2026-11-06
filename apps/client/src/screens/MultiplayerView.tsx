@@ -342,9 +342,17 @@ export function MultiplayerView({
                       }
                     }}
                   >
-                    <span data-testid={shownMode === value ? "selected-mode" : undefined}>
+                    <span
+                      className="sr-only"
+                      data-testid={shownMode === value ? "selected-mode" : undefined}
+                    >
                       {modeName(value)}
                     </span>
+                    <img
+                      src={`${import.meta.env.BASE_URL}images/branding/${value === ModeRoadRage ? "road-rage" : "drag-race"}-logo.png`}
+                      alt=""
+                      className="mx-auto h-[112px] w-full object-contain [image-rendering:pixelated] [@media(max-width:520px)]:h-[88px]"
+                    />
                     {inRoom && !host && shownMode === value && <LockKeyhole aria-hidden="true" />}
                   </Button>
                 ))}

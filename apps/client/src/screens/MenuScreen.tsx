@@ -54,9 +54,13 @@ export function MenuScreen({
     <div className="flex items-center justify-center w-full min-h-[var(--app-page-height,100dvh)] bg-neutral-950">
       <div className="flex flex-col w-full max-w-96 gap-6 p-6 pb-20">
         {/* Branding */}
-        <div className="flex items-center justify-center px-6 py-8 rounded-xl border border-neutral-700">
-          <h1 className="text-white text-xl tracking-wide">Branding</h1>
-        </div>
+        <h1 className="flex items-center justify-center py-2">
+          <img
+            src={`${import.meta.env.BASE_URL}images/branding/dash-devil-logo.png`}
+            alt="Dash Devil"
+            className="h-auto w-64 max-w-full [image-rendering:pixelated]"
+          />
+        </h1>
 
         {authenticated && account && (
           <>
@@ -145,14 +149,21 @@ export function MenuScreen({
         )}
         {/* Menu items */}
         <div className="flex flex-col gap-3">
-          <MenuItem title="Long Drive" subtitle="Single player runner" onClick={onStartGame} />
           <MenuItem
+            icon="long-drive-icon"
+            title="Long Drive"
+            subtitle="Single player runner"
+            onClick={onStartGame}
+          />
+          <MenuItem
+            icon="drag-race-icon"
             title="Drag Race"
             disabled={!authenticated}
             subtitle="Private two-player race"
             onClick={() => onMultiplayer(ModeDragRace)}
           />
           <MenuItem
+            icon="road-rage-icon"
             title="Road Rage"
             disabled={!authenticated}
             subtitle="Multiplayer aggressive run"
