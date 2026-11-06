@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dialog } from "radix-ui";
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { accountAPI, type RaceHistoryPage } from "@/transport/account";
 
 function History() {
@@ -110,40 +110,30 @@ export function RaceHistoryDialog({
   onLogin?: () => void;
 }) {
   return (
-    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       {open === undefined && (
-        <Dialog.Trigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
+        <DialogTrigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
           Race History
-        </Dialog.Trigger>
+        </DialogTrigger>
       )}
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/75" />
-        <Dialog.Content
-          onCloseAutoFocus={onCloseAutoFocus}
-          className="fixed left-1/2 top-1/2 z-50 flex max-h-[90dvh] w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 -translate-y-1/2 flex-col gap-5 overflow-y-auto rounded-xl border border-neutral-600 bg-neutral-950 p-6 text-white"
-        >
-          <Dialog.Title className="text-xl">Race History</Dialog.Title>
-          <Dialog.Description className="text-sm text-neutral-400">
-            Your completed races, newest first.
-          </Dialog.Description>
-          {authenticated ? (
-            <History />
-          ) : (
-            <>
-              <p>Sign in to view your race history.</p>
-              <Dialog.Close asChild>
-                <button
-                  className="rounded-lg border border-neutral-600 px-3 py-2"
-                  onClick={onLogin}
-                >
-                  Sign in
-                </button>
-              </Dialog.Close>
-            </>
-          )}
-          <Dialog.Close className="text-sm text-neutral-400">Close</Dialog.Close>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+      <DialogContent
+        title="Race History"
+        description="Your completed races, newest first."
+        onCloseAutoFocus={onCloseAutoFocus}
+      >
+        {authenticated ? (
+          <History />
+        ) : (
+          <>
+            <p>Sign in to view your race history.</p>
+            <DialogClose asChild>
+              <button className="rounded-lg border border-neutral-600 px-3 py-2" onClick={onLogin}>
+                Sign in
+              </button>
+            </DialogClose>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
