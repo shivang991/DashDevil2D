@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { AvatarEditor, type AvatarDraft } from "@/components/AvatarEditor";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { DialogContent } from "@/components/ui/dialog-content";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { accountAPI, type Account } from "@/transport/account";
 
 export function ProfileDialog({

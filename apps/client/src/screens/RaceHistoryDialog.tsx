@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { Dialog, DialogTrigger, DialogClose } from "@/components/ui/dialog";
-import { DialogContent } from "@/components/ui/dialog-content";
+import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { accountAPI, type RaceHistoryPage } from "@/transport/account";
 
 function History() {
