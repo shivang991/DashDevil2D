@@ -1,3 +1,6 @@
+import { InlineFeedback } from "@/components/ui/inline-feedback";
+import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/form-field";
 import { useState } from "react";
 import { AvatarEditor, type AvatarDraft } from "@/components/AvatarEditor";
 import { Button } from "@/components/ui/button";
@@ -29,7 +32,6 @@ export function ProfileDialog({
   const [{ value: avatar, reading }, setAvatarDraft] = useState<AvatarDraft>({ reading: false });
   const [avatarReset, setAvatarReset] = useState(0);
   const dirty = avatar !== undefined || reading;
-  const input = "w-full rounded-lg border border-neutral-600 bg-neutral-900 px-3 py-2 text-white";
   function reset(next: Account) {
     setAvatarDraft({ reading: false });
     setAvatarReset((value) => value + 1);
@@ -82,16 +84,8 @@ export function ProfileDialog({
           if (busy) event.preventDefault();
         }}
       >
-        {error && (
-          <p role="alert" className="text-sm text-red-400">
-            {error}
-          </p>
-        )}
-        {notice && (
-          <p role="status" className="text-sm text-green-400">
-            {notice}
-          </p>
-        )}
+        {error && <InlineFeedback tone="error">{error}</InlineFeedback>}
+        {notice && <InlineFeedback tone="success">{notice}</InlineFeedback>}
         {passwordMode ? (
           <form
             className="flex flex-col gap-4"
@@ -109,10 +103,8 @@ export function ProfileDialog({
               });
             }}
           >
-            <label className="text-sm">
-              Current password
-              <input
-                className={input}
+            <FormField label="Current password">
+              <Input
                 type="password"
                 autoComplete="current-password"
                 required
@@ -121,11 +113,9 @@ export function ProfileDialog({
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
               />
-            </label>
-            <label className="text-sm">
-              New password
-              <input
-                className={input}
+            </FormField>
+            <FormField label="New password">
+              <Input
                 type="password"
                 autoComplete="new-password"
                 required
@@ -134,20 +124,21 @@ export function ProfileDialog({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-            </label>
-            <label className="text-sm">
-              Confirm new password
-              <input
-                className={input}
+            </FormField>
+            <FormField label="Confirm new password">
+              <Input
                 type="password"
                 autoComplete="new-password"
                 required
                 maxLength={2048}
                 disabled={busy}
+                aria-invalid={
+                  (error === "Passwords do not match" && password !== confirmation) || undefined
+                }
                 value={confirmation}
                 onChange={(e) => setConfirmation(e.target.value)}
               />
-            </label>
+            </FormField>
             <p className="text-xs text-neutral-400">Other devices will be logged out.</p>
             <Button variant="multiplayer" disabled={busy}>
               {busy ? "Saving…" : "Save password"}

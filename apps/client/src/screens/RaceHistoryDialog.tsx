@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { InlineFeedback } from "@/components/ui/inline-feedback";
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger, DialogClose } from "@/components/ui/dialog";
 import { accountAPI, type RaceHistoryPage } from "@/transport/account";
@@ -27,23 +29,21 @@ function History() {
     setError("");
     setPage(next);
   }
-  const button = "rounded-lg border border-neutral-600 px-3 py-2 text-sm disabled:opacity-50";
   return (
     <>
       <div aria-live="polite" aria-busy={!data && !error}>
         {error ? (
-          <div role="alert" className="space-y-3">
-            <p className="text-red-400">{error}</p>
-            <button
-              className={button}
-              onClick={() => {
+          <InlineFeedback
+            tone="error"
+            retry={{
+              onClick: () => {
                 setError("");
                 setAttempt(attempt + 1);
-              }}
-            >
-              Retry
-            </button>
-          </div>
+              },
+            }}
+          >
+            {error}
+          </InlineFeedback>
         ) : !data ? (
           <p className="text-neutral-400">Loading races…</p>
         ) : data.races.length === 0 ? (
@@ -80,17 +80,18 @@ function History() {
         )}
       </div>
       <div className="flex items-center justify-between gap-3">
-        <button
-          className={button}
+        <Button
+          variant="multiplayer"
+
           disabled={page === 0 || (!data && !error)}
           onClick={() => navigate(page - 1)}
         >
           Previous
-        </button>
+        </Button>
         <span className="text-sm text-neutral-400">Page {page + 1}</span>
-        <button className={button} disabled={!data?.hasNext} onClick={() => navigate(page + 1)}>
+        <Button variant="multiplayer" disabled={!data?.hasNext} onClick={() => navigate(page + 1)}>
           Next
-        </button>
+        </Button>
       </div>
     </>
   );
@@ -127,9 +128,9 @@ export function RaceHistoryDialog({
           <>
             <p>Sign in to view your race history.</p>
             <DialogClose asChild>
-              <button className="rounded-lg border border-neutral-600 px-3 py-2" onClick={onLogin}>
+              <Button variant="multiplayer" onClick={onLogin}>
                 Sign in
-              </button>
+              </Button>
             </DialogClose>
           </>
         )}

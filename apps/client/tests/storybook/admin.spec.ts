@@ -17,7 +17,7 @@ for (const width of [1280, 320]) {
     const edit = page.getByRole("button", { name: "Edit Driver_01", exact: true });
     await edit.click();
     await expect(page.getByRole("dialog")).toBeInViewport();
-    await expect(page.getByLabel("Avatar", { exact: true })).toBeFocused();
+    await expect(page.getByRole("button", { name: "Change avatar", exact: true })).toBeFocused();
     await page.keyboard.press("Escape");
     await expect(edit).toBeFocused();
     await page.getByRole("button", { name: "Create user", exact: true }).click();

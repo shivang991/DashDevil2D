@@ -1,3 +1,5 @@
+import { Button } from "./ui/button";
+import { InlineFeedback } from "./ui/inline-feedback";
 import { useEffect, useState } from "react";
 import type { ChatChallenge } from "@/transport/chat";
 
@@ -35,14 +37,15 @@ export function ChallengeInvitation({
             ? "Join the lobby, then choose readiness"
             : "Waiting for acceptance";
   return (
-    <div className="[&_strong]:block [&_small]:block [&_small]:font-chat [&_small]:leading-[1.45] [&_small]:text-neutral-400 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
+    <div className="[&_strong]:block [&_small]:block [&_small]:font-chat [&_small]:leading-[1.45] [&_small]:text-neutral-400 [&_p]:font-chat [&_p]:leading-[1.45]">
       <strong>Room challenge</strong>
-      <p role="status">{note}</p>
+      <InlineFeedback tone="info">{note}</InlineFeedback>
       {status === "Pending" && (
         <small>Expires {new Date(invitation.expiresAt).toLocaleTimeString()}</small>
       )}
       {incoming && status === "Pending" && (
-        <button
+        <Button
+          variant="chat"
           disabled={playing || inRoom || pending || accepting}
           onClick={(event) => {
             event.currentTarget.disabled = true;
@@ -51,7 +54,7 @@ export function ChallengeInvitation({
           }}
         >
           {accepting || pending ? "Accepting…" : "Accept challenge"}
-        </button>
+        </Button>
       )}
     </div>
   );

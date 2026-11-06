@@ -132,6 +132,6 @@ export const AccountRefresh: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Refresh account" }));
     await userEvent.click(canvas.getByRole("button", { name: "Account menu" }));
     await userEvent.click(body.getByRole("menuitem", { name: "Profile" }));
-    await expect(body.getByLabelText("Username")).toHaveValue("Updated_Driver");
+    await expect(within(body.getByRole("dialog")).getByText("Updated_Driver")).toBeVisible();
   },
 };

@@ -1,7 +1,7 @@
-import { multiplayerTextButton } from "@/components/ui/styles";
+import { PauseMenu } from "@/components/PauseMenu";
 import { CarFlagsNOSActive, ModeRoadRage, SeatFlagsConnected } from "@dashdevil/contracts/protocol";
 import { RaceAudio } from "@/game/multiplayer/RaceAudio";
-import { Pause, Play, LogOut } from "lucide-react";
+import { Pause, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { TouchControls } from "./TouchControls";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
@@ -244,9 +244,9 @@ export function RaceView({
                 {countdown}
               </p>
               <p className="text-sm text-white">Get ready!</p>
-              <button className={`${multiplayerTextButton} pointer-events-auto`} onClick={onLeave}>
+              <Button variant="text" className="pointer-events-auto" onClick={onLeave}>
                 Leave
-              </button>
+              </Button>
             </div>
           )}
           <canvas
@@ -269,26 +269,12 @@ export function RaceView({
         }}
       />
       {menu && !outcome && (
-        <div
-          role="dialog"
-          aria-label="Race menu"
-          className="game-overlay absolute inset-0 z-30 flex overflow-auto bg-black/65 p-3"
-        >
-          <div className="m-auto flex w-36 shrink-0 flex-col gap-2">
-            <Button
-              autoFocus
-              className="min-h-11 bg-red-400 text-neutral-950 hover:bg-red-300"
-              onClick={() => setMenu(false)}
-            >
-              <Play aria-hidden="true" />
-              Resume
-            </Button>
-            <Button variant="multiplayer" className="min-h-11" onClick={onLeave}>
-              <LogOut aria-hidden="true" />
-              Leave
-            </Button>
-          </div>
-        </div>
+        <PauseMenu mode="race" onResume={() => setMenu(false)}>
+          <Button variant="multiplayer" className="min-h-11" onClick={onLeave}>
+            <LogOut aria-hidden="true" />
+            Leave
+          </Button>
+        </PauseMenu>
       )}
     </div>
   );

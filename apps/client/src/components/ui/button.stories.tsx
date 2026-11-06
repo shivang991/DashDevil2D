@@ -4,6 +4,19 @@ import { expect, fn, userEvent, within } from "storybook/test";
 import { ArrowRight } from "lucide-react";
 import { Button } from "./button";
 
+const variants = [
+  "default",
+  "destructive",
+  "danger-outlined",
+  "text",
+  "chat",
+  "multiplayer",
+  "outline",
+  "secondary",
+  "ghost",
+  "link",
+] as const;
+
 const meta = {
   title: "Controls/Button",
   component: Button,
@@ -12,15 +25,7 @@ const meta = {
   argTypes: {
     variant: {
       control: "select",
-      options: [
-        "default",
-        "destructive",
-        "danger-outlined",
-        "outline",
-        "secondary",
-        "ghost",
-        "link",
-      ],
+      options: variants,
     },
     size: {
       control: "select",
@@ -48,17 +53,7 @@ export const IconOnly: Story = {
 export const Variants: Story = {
   render: (args) => (
     <div className="flex flex-wrap gap-3 p-6">
-      {(
-        [
-          "default",
-          "destructive",
-          "danger-outlined",
-          "outline",
-          "secondary",
-          "ghost",
-          "link",
-        ] as const
-      ).map((variant) => (
+      {variants.map((variant) => (
         <Button {...args} key={variant} variant={variant}>
           {variant}
         </Button>
