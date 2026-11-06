@@ -205,6 +205,7 @@ export function AdminScreen({
           <label className="admin-sort">
             Sort by{" "}
             <select
+              className="arcade-select"
               value={sort}
               onChange={(event) => {
                 setSort(event.target.value as Sort);
@@ -322,7 +323,11 @@ export function AdminScreen({
                             <MoreHorizontal size={20} />
                           </DropdownMenu.Trigger>
                           <DropdownMenu.Portal>
-                            <DropdownMenu.Content className="admin-menu" align="end" sideOffset={6}>
+                            <DropdownMenu.Content
+                              className="admin-menu arcade-dropdown"
+                              align="end"
+                              sideOffset={6}
+                            >
                               <DropdownMenu.Item
                                 onSelect={() => {
                                   setError("");

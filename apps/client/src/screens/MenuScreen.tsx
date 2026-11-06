@@ -83,7 +83,7 @@ export function MenuScreen({
                     onCloseAutoFocus={(event) => {
                       if (dialog) event.preventDefault();
                     }}
-                    className="z-40 flex w-56 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-neutral-600 bg-neutral-950 p-3 text-white shadow-lg"
+                    className="arcade-dropdown z-40 flex w-56 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-neutral-600 bg-neutral-950 p-3 text-white shadow-lg"
                   >
                     <DropdownMenu.Item asChild onSelect={() => setDialog("profile")}>
                       <Button

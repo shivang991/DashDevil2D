@@ -323,6 +323,7 @@ export function MultiplayerView({
                     key={value}
                     type="button"
                     className="relative whitespace-normal min-h-[154px] scale-[0.86] rounded-[20px] border border-neutral-700 bg-neutral-900 px-3 py-5 font-heading text-[clamp(23px,4vw,32px)] leading-[1.2] font-light text-neutral-50 opacity-75 aria-pressed:scale-100 aria-pressed:border-neutral-400 aria-pressed:opacity-100 [@media(max-width:520px)]:min-h-[120px] [@media(max-width:520px)]:rounded-[16px] [@media(max-width:520px)]:px-2 [@media(max-width:520px)]:py-4 [@media(max-width:520px)]:text-[23px] [&_svg]:absolute [&_svg]:bottom-3 [&_svg]:left-[calc(50%_-_6px)] [&_svg]:size-3 [&_svg]:text-neutral-400"
+                    data-mode={value === ModeRoadRage ? "road-rage" : "drag-race"}
                     aria-pressed={shownMode === value}
                     disabled={
                       inRoom ? !host || !eligible || room!.phase !== RoomPhaseLobby : pending
