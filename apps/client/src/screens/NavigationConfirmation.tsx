@@ -1,8 +1,6 @@
-import { multiplayerTextButton } from "@/components/ui/styles";
 import { useRef } from "react";
 import type { Blocker } from "react-router";
-import { MultiplayerDialog } from "./MultiplayerDialog";
-import { Button } from "@/components/ui/button";
+import { LeaveConfirmation } from "./LeaveConfirmation";
 
 export function NavigationConfirmation({
   blocker,
@@ -13,34 +11,23 @@ export function NavigationConfirmation({
   multiplayer?: boolean;
   onLeave?: () => void;
 }) {
-  const cancel = useRef<HTMLButtonElement>(null);
   const focus = useRef<HTMLElement>(null);
   return (
-    <MultiplayerDialog
+    <LeaveConfirmation
       open={blocker.state === "blocked"}
-      title={multiplayer ? "Leave room?" : "End run?"}
+      multiplayer={multiplayer}
       description={
         multiplayer
           ? "Leaving ends your room session and may forfeit the round."
           : "Leaving ends this Long Drive run."
       }
-      onDismiss={() => blocker.state === "blocked" && blocker.reset()}
-      initialFocus={cancel}
+      onCancel={() => blocker.state === "blocked" && blocker.reset()}
       returnFocus={focus}
-    >
-      <Button ref={cancel} onClick={() => blocker.state === "blocked" && blocker.reset()}>
-        Cancel
-      </Button>
-      <button
-        className={multiplayerTextButton}
-        onClick={() => {
-          if (blocker.state !== "blocked") return;
-          onLeave?.();
-          blocker.proceed();
-        }}
-      >
-        {multiplayer ? "Confirm leave" : "End run"}
-      </button>
-    </MultiplayerDialog>
+      onConfirm={() => {
+        if (blocker.state !== "blocked") return;
+        onLeave?.();
+        blocker.proceed();
+      }}
+    />
   );
 }

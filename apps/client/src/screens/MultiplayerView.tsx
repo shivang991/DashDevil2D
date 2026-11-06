@@ -1,4 +1,5 @@
-import { multiplayerNote, multiplayerTextButton } from "@/components/ui/styles";
+import { LeaveConfirmation } from "./LeaveConfirmation";
+import { multiplayerNote } from "@/components/ui/styles";
 import {
   AdmissionOperationCreate,
   AdmissionOperationJoin,
@@ -82,7 +83,6 @@ export function MultiplayerView({
   const [copy, setCopy] = useState("");
   const [joinOpen, setJoinOpen] = useState(state?.pending === "Joining room");
   const [confirmLeave, setConfirmLeave] = useState(false);
-  const cancelLeave = useRef<HTMLButtonElement>(null);
   const backButton = useRef<HTMLButtonElement>(null);
   const joinButton = useRef<HTMLButtonElement>(null);
   const main = useRef<HTMLElement>(null);
@@ -485,9 +485,9 @@ export function MultiplayerView({
                   <p data-testid="connection-state">
                     {!connected ? state?.status : countdown ? "Preparing round…" : "Synchronizing…"}
                   </p>
-                  <button className={multiplayerTextButton} onClick={requestLeave}>
+                  <Button variant="text" onClick={requestLeave}>
                     Leave
-                  </button>
+                  </Button>
                 </div>
               )
             ) : active ? (
@@ -528,13 +528,9 @@ export function MultiplayerView({
                       : "Ready"}
                 </Button>
                 {ready && host && (
-                  <button
-                    className={multiplayerTextButton}
-                    disabled={!eligible}
-                    onClick={toggleReady}
-                  >
+                  <Button variant="text" disabled={!eligible} onClick={toggleReady}>
                     Cancel ready
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
@@ -672,12 +668,12 @@ export function MultiplayerView({
           </>
         )}
       </MultiplayerDialog>
-      <MultiplayerDialog
+      <LeaveConfirmation
         open={confirmLeave && inRoom && (!race || !state?.outcome)}
-        title="Leave room?"
+        multiplayer
         description="Confirm before leaving your multiplayer room."
-        onDismiss={() => setConfirmLeave(false)}
-        initialFocus={cancelLeave}
+        onCancel={() => setConfirmLeave(false)}
+        onConfirm={leave}
         returnFocus={main}
       >
         <p className="text-center text-[12px] leading-[1.8] text-neutral-300">
@@ -692,18 +688,7 @@ export function MultiplayerView({
         {!race && host && Boolean(room?.seats[1 - local].session) && (
           <p className={multiplayerNote}>{room!.seats[1 - local].name} becomes the host.</p>
         )}
-        <Button
-          ref={cancelLeave}
-          variant="multiplayer"
-          size="multiplayer"
-          onClick={() => setConfirmLeave(false)}
-        >
-          Cancel
-        </Button>
-        <button className={multiplayerTextButton} onClick={leave}>
-          Confirm leave
-        </button>
-      </MultiplayerDialog>
+      </LeaveConfirmation>
     </main>
   );
 }

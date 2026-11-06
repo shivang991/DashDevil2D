@@ -21,7 +21,7 @@ export const Login: Story = {
     const canvas = within(canvasElement);
     await userEvent.type(canvas.getByLabelText("Username"), "Driver_01");
     await userEvent.type(canvas.getByLabelText("Password"), "storybook-password");
-    await userEvent.click(canvas.getByRole("button", { name: "Login" }));
+    await userEvent.keyboard("{Enter}");
     await expect(args.onAuthenticated).toHaveBeenCalledWith(account);
   },
 };
@@ -48,6 +48,7 @@ export const PasswordMismatch: Story = {
     await userEvent.type(canvas.getByLabelText("Confirm new password"), "different-password");
     await userEvent.click(canvas.getByRole("button", { name: "Save password" }));
     await expect(canvas.getByRole("alert")).toHaveTextContent("Passwords do not match");
+    await expect(canvas.getByLabelText("Confirm new password")).toBeInvalid();
     await expect(accountAPI.changeTemporaryPassword).not.toHaveBeenCalled();
   },
 };

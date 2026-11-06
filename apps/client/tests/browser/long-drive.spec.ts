@@ -42,7 +42,7 @@ for (const viewport of [
       await pause.click();
       const menu = page.getByRole("region", { name: "Game paused", exact: true });
       await expect(menu).toBeVisible();
-      await expect(menu.getByRole("button")).toHaveCount(2);
+      await expect(menu.getByRole("button")).toHaveText(["Resume", "Restart"]);
       const sound = page.getByRole("button", { name: "Mute sound", exact: true });
       await sound.click();
       await expect(page.getByRole("button", { name: "Enable sound", exact: true })).toHaveAttribute(

@@ -110,7 +110,9 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await expect(page.getByRole("button", { name: /Open chat/ })).toBeDisabled();
     await expect(page.getByTestId("countdown")).toHaveCount(0);
     await page.keyboard.press("Escape");
-    await expect(page.getByRole("dialog", { name: "Race menu" })).toBeVisible();
+    const menu = page.getByRole("dialog", { name: "Race menu" });
+    await expect(menu.getByRole("button")).toHaveText(["Resume", "Leave"]);
+    await expect(menu.getByRole("button", { name: "Resume" })).toBeFocused();
     await expect(panel).toHaveCount(0);
     await page.getByRole("button", { name: "Resume", exact: true }).click();
     // Delivery continues while every chat surface is hidden.

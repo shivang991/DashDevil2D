@@ -1,3 +1,5 @@
+import { Button } from "./ui/button";
+import { InlineFeedback } from "./ui/inline-feedback";
 import {
   createContext,
   useContext,
@@ -23,8 +25,7 @@ import { ChallengeInvitation } from "./ChallengeInvitation";
 
 const chatBadge =
   "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[12px] bg-[#2563eb] px-[5px] font-chat text-[12px] text-white";
-const chatError =
-  "p-3 font-chat text-[14px] text-[#fca5a5] [&_button]:p-1 [&_button]:text-neutral-50 [&_button]:underline";
+const chatError = "p-3 font-chat text-[14px]";
 const chatField =
   "w-full rounded-[8px] border border-neutral-600 bg-neutral-950 p-2.5 font-chat text-[16px]";
 
@@ -385,9 +386,10 @@ function ChatPanel({
       peer)
     : undefined;
   const row = (person: ChatPerson) => (
-    <button
+    <Button
+      variant="ghost"
       key={person.id}
-      className="flex w-full items-center gap-3 border-b border-neutral-800 px-1 py-2.5 text-left [&_strong]:text-[12px] [&_strong]:wrap-anywhere"
+      className="h-auto w-full justify-start whitespace-normal items-center gap-3 border-b border-neutral-800 px-1 py-2.5 text-left [&_strong]:text-[12px] [&_strong]:wrap-anywhere"
       aria-label={`Open conversation with ${person.username}`}
       onClick={() => open(person)}
     >
@@ -402,7 +404,7 @@ function ChatPanel({
           <span className="sr-only"> unread</span>
         </span>
       )}
-    </button>
+    </Button>
   );
   const unavailableReason = playing
     ? "Chat unavailable during a race"
@@ -429,7 +431,7 @@ function ChatPanel({
       </span>
       {visible && expanded && (
         <aside
-          className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-[calc(var(--app-header-height,0px)_+_16px)] bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [&_button]:cursor-pointer [&_button:disabled]:cursor-default [&_button:disabled]:opacity-50 [&_button:enabled:hover]:bg-neutral-800 [&_button:focus-visible]:outline-2 [&_button:focus-visible]:-outline-offset-2 [&_button:focus-visible]:outline-[#60a5fa] [&_input:focus-visible]:outline-2 [&_input:focus-visible]:-outline-offset-2 [&_input:focus-visible]:outline-[#60a5fa] [&_textarea:focus-visible]:outline-2 [&_textarea:focus-visible]:-outline-offset-2 [&_textarea:focus-visible]:outline-[#60a5fa] [@media(max-width:600px)]:inset-x-0 [@media(max-width:600px)]:bottom-0 [@media(max-width:600px)]:top-[var(--app-header-height,0px)] [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
+          className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-[calc(var(--app-header-height,0px)_+_16px)] bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [&_input:focus-visible]:outline-2 [&_input:focus-visible]:-outline-offset-2 [&_input:focus-visible]:outline-[#60a5fa] [&_textarea:focus-visible]:outline-2 [&_textarea:focus-visible]:-outline-offset-2 [&_textarea:focus-visible]:outline-[#60a5fa] [@media(max-width:600px)]:inset-x-0 [@media(max-width:600px)]:bottom-0 [@media(max-width:600px)]:top-[var(--app-header-height,0px)] [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
           aria-label="Chat"
           onKeyDown={(event) => {
             event.stopPropagation();
@@ -437,23 +439,37 @@ function ChatPanel({
           }}
           onKeyUp={(event) => event.stopPropagation()}
         >
-          <header className="flex items-center justify-between border-b border-neutral-700 px-4 py-3 [&_h2]:text-[18px] [&_button]:min-h-10 [&_button]:min-w-10 [&_button]:inline-flex [&_button]:items-center [&_button]:justify-center">
+          <header className="flex items-center justify-between border-b border-neutral-700 px-4 py-3 [&_h2]:text-[18px]">
             <h2>Chat</h2>
-            <button onClick={() => toggle(false)} aria-label="Close chat">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => toggle(false)}
+              aria-label="Close chat"
+            >
               <X size={24} aria-hidden="true" />
-            </button>
+            </Button>
           </header>
           {error && (
-            <div role="alert" className={chatError}>
-              {error} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
-            </div>
+            <InlineFeedback
+              tone="error"
+              className={chatError}
+              retry={{ onClick: () => setRevision((n) => n + 1) }}
+            >
+              {error}
+            </InlineFeedback>
           )}
           {selected ? (
             <>
-              <div className="flex items-center gap-2.5 border-b border-neutral-700 p-2 [&>button]:min-h-10 [&>button]:min-w-10 [&>button]:inline-flex [&>button]:items-center [&>button]:justify-center [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&_strong]:text-[12px] [&_strong]:wrap-anywhere">
-                <button onClick={() => setPeer(undefined)} aria-label="Back to conversations">
+              <div className="flex items-center gap-2.5 border-b border-neutral-700 p-2 [&>div]:flex [&>div]:flex-col [&>div]:gap-1.5 [&_strong]:text-[12px] [&_strong]:wrap-anywhere">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setPeer(undefined)}
+                  aria-label="Back to conversations"
+                >
                   <ChevronLeft size={24} aria-hidden="true" />
-                </button>
+                </Button>
                 <Avatar username={selected.username} avatar={selected.avatar} />
                 <div>
                   <strong>{selected.username}</strong>
@@ -496,33 +512,40 @@ function ChatPanel({
                 <div ref={bottom} />
               </div>
               {historyError && (
-                <div className={chatError} role="alert">
-                  {historyError} <button onClick={() => setRevision((n) => n + 1)}>Retry</button>
-                </div>
+                <InlineFeedback
+                  tone="error"
+                  className={chatError}
+                  retry={{ onClick: () => setRevision((n) => n + 1) }}
+                >
+                  {historyError}
+                </InlineFeedback>
               )}
               {sendError && (
-                <div className={chatError} role="alert">
-                  {sendError}{" "}
-                  <button disabled={sending} onClick={() => void send()}>
-                    Retry send
-                  </button>
-                </div>
+                <InlineFeedback
+                  tone="error"
+                  className={chatError}
+                  retry={{ disabled: sending, label: "Retry send", onClick: () => void send() }}
+                >
+                  {sendError}
+                </InlineFeedback>
               )}
               {!selected.deleted && (
-                <div className="border-t border-neutral-700 px-4 py-2 [&_p]:font-chat [&_p]:leading-[1.45] [&_button]:my-1.5 [&_button]:rounded-[6px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-3 [&_button]:py-2">
-                  <button
+                <div className="border-t border-neutral-700 px-4 py-2 [&_p]:font-chat [&_p]:leading-[1.45]">
+                  <Button
+                    variant="chat"
                     disabled={playing || challengeBusy || admissionPending}
                     onClick={() => void challenge()}
                   >
                     {challengeBusy ? "Inviting…" : "Challenge"}
-                  </button>
+                  </Button>
                   {createOffer && (
                     <div>
                       <p>
                         Create a room to invite {selected.username}. You’ll choose the mode and
                         readiness in the lobby.
                       </p>
-                      <button
+                      <Button
+                        variant="chat"
                         onClick={() => {
                           setCreateOffer(false);
                           void navigate("/multiplayer/drag-race", {
@@ -531,18 +554,18 @@ function ChatPanel({
                         }}
                       >
                         Create room &amp; invite
-                      </button>
+                      </Button>
                     </div>
                   )}
                 </div>
               )}
               {selected.deleted ? (
-                <p className={chatError}>
+                <p className="p-3 font-chat text-sm text-red-300">
                   This account was deleted. Shared messages remain available.
                 </p>
               ) : (
                 <form
-                  className="border-t border-neutral-700 p-3 [&>div]:mt-2 [&>div]:flex [&>div]:items-center [&>div]:justify-between [&_small]:font-chat [&_small]:text-neutral-400 [&_button]:rounded-[8px] [&_button]:border [&_button]:border-[#60a5fa] [&_button]:px-[18px] [&_button]:py-2"
+                  className="border-t border-neutral-700 p-3 [&>div]:mt-2 [&>div]:flex [&>div]:items-center [&>div]:justify-between [&_small]:font-chat [&_small]:text-neutral-400"
                   onSubmit={(event) => {
                     event.preventDefault();
                     void send();
@@ -568,9 +591,9 @@ function ChatPanel({
                   />
                   <div>
                     <small>{draft.length}/2,000</small>
-                    <button disabled={sending || !draft.trim()} type="submit">
+                    <Button variant="chat" disabled={sending || !draft.trim()} type="submit">
                       {sending ? "Sending…" : "Send"}
-                    </button>
+                    </Button>
                   </div>
                 </form>
               )}
@@ -602,7 +625,9 @@ function ChatPanel({
                     </p>
                     {search?.query === query && search.users.map(row)}
                     {searchState.startsWith("Search failed") && (
-                      <button onClick={() => setRevision((n) => n + 1)}>Retry search</button>
+                      <Button variant="chat" onClick={() => setRevision((n) => n + 1)}>
+                        Retry search
+                      </Button>
                     )}
                   </>
                 ) : (

@@ -1,3 +1,7 @@
+import { Button } from "@/components/ui/button";
+import { InlineFeedback } from "@/components/ui/inline-feedback";
+import { Input } from "@/components/ui/input";
+import { FormField } from "@/components/ui/form-field";
 import { useState, type FormEvent } from "react";
 import { accountAPI, type Account } from "@/transport/account";
 
@@ -62,9 +66,8 @@ export function LoginScreen({
         )}
         <form onSubmit={(event) => void submit(event)} className="flex flex-col gap-4">
           {!temporary && (
-            <label className="flex flex-col gap-2 text-sm">
-              Username
-              <input
+            <FormField label="Username">
+              <Input
                 autoFocus
                 autoComplete="username"
                 autoCapitalize="none"
@@ -75,13 +78,15 @@ export function LoginScreen({
                 pattern="[A-Za-z0-9_]{3,24}"
                 value={username}
                 onChange={(event) => setUsername(event.target.value)}
-                className="rounded-lg border border-neutral-600 bg-neutral-900 px-3 py-3"
               />
-            </label>
+            </FormField>
           )}
-          <label className="flex flex-col gap-2 text-sm">
-            {temporary ? "New password" : "Password"}
-            <input
+          <FormField
+            label={temporary ? "New password" : "Password"}
+            hintId="password-rules"
+            hint="At least 6 characters. Spaces and pasting allowed."
+          >
+            <Input
               autoFocus={temporary}
               type="password"
               autoComplete={temporary ? "new-password" : "current-password"}
@@ -91,40 +96,29 @@ export function LoginScreen({
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               aria-describedby="password-rules"
-              className="rounded-lg border border-neutral-600 bg-neutral-900 px-3 py-3"
             />
-          </label>
-          <p id="password-rules" className="text-xs text-neutral-400">
-            At least 6 characters. Spaces and pasting allowed.
-          </p>
+          </FormField>
           {temporary && (
-            <label className="flex flex-col gap-2 text-sm">
-              Confirm new password
-              <input
+            <FormField label="Confirm new password">
+              <Input
                 type="password"
                 autoComplete="new-password"
                 required
+                aria-invalid={error === "Passwords do not match" || undefined}
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
-                className="rounded-lg border border-neutral-600 bg-neutral-900 px-3 py-3"
               />
-            </label>
+            </FormField>
           )}
-          {error && (
-            <p role="alert" className="text-sm text-red-400">
-              {error}
-            </p>
-          )}
-          <button
-            disabled={busy}
-            className="rounded-xl border border-neutral-500 bg-neutral-800 px-4 py-3 disabled:opacity-50"
-          >
+          {error && <InlineFeedback tone="error">{error}</InlineFeedback>}
+          <Button disabled={busy} type="submit" variant="multiplayer">
             {busy ? "Please wait…" : temporary ? "Save password" : "Login"}
-          </button>
+          </Button>
         </form>
-        <button
+        <Button
           disabled={busy}
-          className="text-sm text-neutral-400 disabled:opacity-50"
+          type="button"
+          variant="text"
           onClick={() => {
             if (temporary)
               void onLogout().catch((failure: unknown) =>
@@ -134,7 +128,7 @@ export function LoginScreen({
           }}
         >
           {temporary ? "Logout" : "Back"}
-        </button>
+        </Button>
       </div>
     </main>
   );

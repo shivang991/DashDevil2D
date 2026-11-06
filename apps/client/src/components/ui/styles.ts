@@ -1,7 +1,3 @@
-// Shared utility combinations used across game and multiplayer views.
-export const multiplayerTextButton =
-  "min-h-11 self-center rounded-[8px] px-3 py-2 text-[11px] text-neutral-400 underline underline-offset-4 disabled:opacity-40";
-
 export const multiplayerNote =
   "text-center text-[11px] leading-[1.8] text-neutral-400 wrap-anywhere";
 
