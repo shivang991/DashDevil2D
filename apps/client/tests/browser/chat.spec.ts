@@ -95,7 +95,7 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await expect(peer.getByRole("button", { name: "Accept challenge" })).toBeEnabled();
     await expect(peer.getByTestId("room-code")).toHaveCount(0);
     await peer.getByRole("button", { name: "Accept challenge" }).click();
-    await expect(peer.getByTestId("connection-state")).toHaveText("Connected");
+    await expect(peer.getByTestId("room-code")).toHaveText(/^\d{4}$/);
     await page.getByRole("button", { name: "Close chat" }).click();
     await page.getByRole("button", { name: /Open chat/ }).click();
     await page.getByRole("button", { name: "Back to conversations" }).click();

@@ -25,6 +25,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
+        bare: "",
         multiplayer:
           "h-auto min-h-[76px] w-full rounded-[16px] p-5 text-[16px] leading-normal whitespace-normal",
         default: "h-9 px-4 py-2 has-[>svg]:px-3",

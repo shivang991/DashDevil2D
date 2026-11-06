@@ -45,14 +45,14 @@ test("temporary admin changes password, plays with an independent session, then 
     await loginTestAccount(guest);
     await host.getByRole("button", { name: /Drag Race/ }).click();
     await host.getByRole("button", { name: "Create Room", exact: true }).click();
-    await expect(host.getByTestId("connection-state")).toHaveText("Connected");
+    await expect(host.getByTestId("room-code")).toHaveText(/^\d{4}$/);
     const code = await host.getByTestId("room-code").innerText();
     await guest.getByRole("button", { name: /Drag Race/ }).click();
     await guest.getByRole("button", { name: "Join Room", exact: true }).click();
     await guest.getByLabel("Room code").fill(code);
     await guest.getByLabel("Room code").press("Enter");
     for (const page of [host, guest]) {
-      await expect(page.getByTestId("connection-state")).toHaveText("Connected");
+      await expect(page.getByTestId("room-code")).toHaveText(/^\d{4}$/);
       await expect(page.getByText("Test_Driver (You)", { exact: true })).toBeVisible();
     }
     await host.getByRole("button", { name: "Ready", exact: true }).click();

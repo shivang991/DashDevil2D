@@ -132,7 +132,9 @@ export function ProfileDialog({
                 required
                 maxLength={2048}
                 disabled={busy}
-                aria-invalid={error === "Passwords do not match" || undefined}
+                aria-invalid={
+                  (error === "Passwords do not match" && password !== confirmation) || undefined
+                }
                 value={confirmation}
                 onChange={(e) => setConfirmation(e.target.value)}
               />

@@ -258,7 +258,7 @@ export function MultiplayerView({
       className={
         race
           ? "flex h-[var(--app-page-height,100dvh)] items-center justify-center overflow-hidden px-3 py-[clamp(8px,2vh,24px)] bg-neutral-950 text-white"
-          : "grid min-h-[var(--app-page-height,100dvh)] place-items-center bg-neutral-950 px-5 py-8 text-neutral-50 [@media(max-width:520px)]:px-4 [@media(max-width:520px)]:py-6 [&_button:enabled]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button:focus-visible]:outline-2 [&_button:focus-visible]:outline-offset-[5px] [&_button:focus-visible]:outline-neutral-50"
+          : "grid min-h-[var(--app-page-height,100dvh)] place-items-center bg-neutral-950 px-5 py-8 text-neutral-50 [@media(max-width:520px)]:px-4 [@media(max-width:520px)]:py-6"
       }
       onKeyDown={(event) => {
         if (event.key !== "Escape" || event.repeat || event.defaultPrevented) return;
@@ -299,7 +299,9 @@ export function MultiplayerView({
               </div>
             )}
             <header className="flex items-center gap-5 [@media(max-width:520px)]:gap-1">
-              <button
+              <Button
+                variant="ghost"
+                size="bare"
                 ref={backButton}
                 type="button"
                 className="grid h-14 flex-[0_0_44px] place-items-center rounded-[12px] text-neutral-400 enabled:hover:bg-neutral-800 enabled:hover:text-neutral-50 [@media(max-width:520px)]:basis-9 [&_svg]:size-8 [&_svg]:stroke-[1.5]"
@@ -308,17 +310,19 @@ export function MultiplayerView({
                 onClick={inRoom ? requestLeave : onBack}
               >
                 <ChevronLeft aria-hidden="true" />
-              </button>
+              </Button>
               <div
                 className="grid min-w-0 flex-1 grid-cols-2 items-center gap-2"
                 role="group"
                 aria-label="Multiplayer mode"
               >
                 {([2, 1] as const).map((value) => (
-                  <button
+                  <Button
+                    variant="ghost"
+                    size="bare"
                     key={value}
                     type="button"
-                    className="relative min-h-[154px] scale-[0.86] rounded-[20px] border border-neutral-700 bg-neutral-900 px-3 py-5 font-heading text-[clamp(23px,4vw,32px)] leading-[1.2] font-light text-neutral-50 opacity-75 aria-pressed:scale-100 aria-pressed:border-neutral-400 aria-pressed:opacity-100 [@media(max-width:520px)]:min-h-[120px] [@media(max-width:520px)]:rounded-[16px] [@media(max-width:520px)]:px-2 [@media(max-width:520px)]:py-4 [@media(max-width:520px)]:text-[23px] [&_svg]:absolute [&_svg]:bottom-3 [&_svg]:left-[calc(50%_-_6px)] [&_svg]:size-3 [&_svg]:text-neutral-400"
+                    className="relative whitespace-normal min-h-[154px] scale-[0.86] rounded-[20px] border border-neutral-700 bg-neutral-900 px-3 py-5 font-heading text-[clamp(23px,4vw,32px)] leading-[1.2] font-light text-neutral-50 opacity-75 aria-pressed:scale-100 aria-pressed:border-neutral-400 aria-pressed:opacity-100 [@media(max-width:520px)]:min-h-[120px] [@media(max-width:520px)]:rounded-[16px] [@media(max-width:520px)]:px-2 [@media(max-width:520px)]:py-4 [@media(max-width:520px)]:text-[23px] [&_svg]:absolute [&_svg]:bottom-3 [&_svg]:left-[calc(50%_-_6px)] [&_svg]:size-3 [&_svg]:text-neutral-400"
                     aria-pressed={shownMode === value}
                     disabled={
                       inRoom ? !host || !eligible || room!.phase !== RoomPhaseLobby : pending
@@ -342,7 +346,7 @@ export function MultiplayerView({
                       {modeName(value)}
                     </span>
                     {inRoom && !host && shownMode === value && <LockKeyhole aria-hidden="true" />}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </header>
@@ -438,12 +442,15 @@ export function MultiplayerView({
                     })}
                   </ul>
                   <div className="relative shrink-0 max-sm:self-center">
-                    <div className="flex items-center rounded-[12px] border border-neutral-700 pl-4 [&>span]:font-heading [&>span]:text-[32px] [&>span]:tracking-[2px] [&>span]:select-all [&_button]:grid [&_button]:min-h-12 [&_button]:w-11 [&_button]:place-items-center [&_button]:rounded-[10px] [&_button:hover]:bg-neutral-800 [&_button:hover]:text-neutral-50 [&_svg]:size-4">
+                    <div className="flex items-center rounded-[12px] border border-neutral-700 pl-4 [&>span]:font-heading [&>span]:text-[32px] [&>span]:tracking-[2px] [&>span]:select-all [&_svg]:size-4">
                       <span data-testid="room-code" aria-label="Room code">
                         {state?.code}
                       </span>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="bare"
                         type="button"
+                        className="grid min-h-12 w-11 place-items-center rounded-[10px] hover:bg-neutral-800"
                         aria-label="Copy room code"
                         onClick={() => void copyCode()}
                       >
@@ -452,7 +459,7 @@ export function MultiplayerView({
                         ) : (
                           <Copy aria-hidden="true" />
                         )}
-                      </button>
+                      </Button>
                     </div>
                     <span
                       className="absolute top-[calc(100%_+_8px)] right-0 min-w-full max-w-[200px] text-center text-[10px] text-neutral-400"
@@ -625,14 +632,16 @@ export function MultiplayerView({
           </div>
         ) : (
           <>
-            <button
+            <Button
+              variant="ghost"
+              size="bare"
               type="button"
               className="absolute top-2 right-2 grid size-11 place-items-center rounded-[12px] text-neutral-400 hover:bg-neutral-800 hover:text-neutral-50 [&_svg]:size-[18px]"
               aria-label="Close join dialog"
               onClick={() => setJoinOpen(false)}
             >
               <X aria-hidden="true" />
-            </button>
+            </Button>
             <form
               className="flex flex-col gap-4 [&_label]:text-[11px] [&_label]:text-neutral-400"
               onSubmit={(event) => {

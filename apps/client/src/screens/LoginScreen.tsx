@@ -104,7 +104,9 @@ export function LoginScreen({
                 type="password"
                 autoComplete="new-password"
                 required
-                aria-invalid={error === "Passwords do not match" || undefined}
+                aria-invalid={
+                  (error === "Passwords do not match" && password !== confirmation) || undefined
+                }
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
               />

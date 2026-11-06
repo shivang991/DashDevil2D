@@ -27,7 +27,7 @@ const chatBadge =
   "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[12px] bg-[#2563eb] px-[5px] font-chat text-[12px] text-white";
 const chatError = "p-3 font-chat text-[14px]";
 const chatField =
-  "w-full rounded-[8px] border border-neutral-600 bg-neutral-950 p-2.5 font-chat text-[16px]";
+  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-400 w-full rounded-[8px] border border-neutral-600 bg-neutral-950 p-2.5 font-chat text-[16px]";
 
 interface ChatBoundary {
   path: string;
@@ -431,7 +431,7 @@ function ChatPanel({
       </span>
       {visible && expanded && (
         <aside
-          className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-[calc(var(--app-header-height,0px)_+_16px)] bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [&_input:focus-visible]:outline-2 [&_input:focus-visible]:-outline-offset-2 [&_input:focus-visible]:outline-[#60a5fa] [&_textarea:focus-visible]:outline-2 [&_textarea:focus-visible]:-outline-offset-2 [&_textarea:focus-visible]:outline-[#60a5fa] [@media(max-width:600px)]:inset-x-0 [@media(max-width:600px)]:bottom-0 [@media(max-width:600px)]:top-[var(--app-header-height,0px)] [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
+          className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-[calc(var(--app-header-height,0px)_+_16px)] bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [@media(max-width:600px)]:inset-x-0 [@media(max-width:600px)]:bottom-0 [@media(max-width:600px)]:top-[var(--app-header-height,0px)] [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
           aria-label="Chat"
           onKeyDown={(event) => {
             event.stopPropagation();
