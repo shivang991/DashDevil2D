@@ -55,8 +55,12 @@ export function LoginScreen({
   return (
     <main className="flex min-h-[var(--app-page-height,100dvh)] items-center justify-center bg-neutral-950 text-white">
       <div className="flex w-full max-w-96 flex-col gap-6 p-6">
-        <div className="rounded-xl border border-neutral-700 px-6 py-8 text-center text-xl">
-          Branding
+        <div className="flex justify-center py-2">
+          <img
+            src={`${import.meta.env.BASE_URL}images/branding/dash-devil-logo.png`}
+            alt="Dash Devil"
+            className="h-auto w-64 max-w-full [image-rendering:pixelated]"
+          />
         </div>
         <h1 className="text-xl">{temporary ? "Change temporary password" : "Login"}</h1>
         {temporary && (

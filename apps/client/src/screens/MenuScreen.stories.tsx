@@ -66,7 +66,7 @@ export const Navigation: Story = {
     await userEvent.click(body.getByRole("button", { name: "Close" }));
     await expect(trigger).toHaveFocus();
     await userEvent.click(trigger);
-    await userEvent.click(canvas.getByRole("heading", { name: "Branding" }));
+    await userEvent.click(canvas.getByRole("heading", { name: "Dash Devil" }));
     await expect(body.queryByRole("menu")).not.toBeInTheDocument();
     await userEvent.click(canvas.getByRole("button", { name: /Long Drive/ }));
     await expect(args.onStartGame).toHaveBeenCalled();

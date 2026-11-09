@@ -71,7 +71,7 @@ for (const width of [1280, 320]) {
     await page.keyboard.press("Escape");
     await expect(trigger).toBeFocused();
     await trigger.click();
-    await page.getByRole("heading", { name: "Branding" }).click();
+    await page.getByRole("heading", { name: "Dash Devil" }).click();
     await expect(menu).toHaveCount(0);
   });
 }

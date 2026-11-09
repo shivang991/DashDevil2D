@@ -2,13 +2,14 @@ import { ArrowRight } from "lucide-react";
 
 interface MenuItemProps {
   title: string;
+  icon?: string;
   subtitle: string;
   onClick?: () => void;
   disabled?: boolean;
   comingSoon?: boolean;
 }
 
-export function MenuItem({ title, subtitle, onClick, disabled, comingSoon }: MenuItemProps) {
+export function MenuItem({ title, subtitle, onClick, disabled, comingSoon, icon }: MenuItemProps) {
   return (
     <div className="flex flex-col gap-1">
       <button
@@ -20,9 +21,18 @@ export function MenuItem({ title, subtitle, onClick, disabled, comingSoon }: Men
             : "border-neutral-600 hover:border-neutral-400 hover:bg-neutral-800 cursor-pointer"
         }`}
       >
-        <div className="flex flex-col gap-0.5">
-          <span className="font-heading text-white text-sm font-light">{title}</span>
-          <span className="text-neutral-400 text-xs">{subtitle}</span>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          {icon && (
+            <img
+              src={`${import.meta.env.BASE_URL}images/branding/${icon}.png`}
+              alt=""
+              className="size-10 shrink-0 object-contain [image-rendering:pixelated]"
+            />
+          )}
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="font-heading text-white text-sm font-light">{title}</span>
+            <span className="text-neutral-400 text-xs">{subtitle}</span>
+          </div>
         </div>
         <div
           className={`flex items-center justify-center w-8 h-8 rounded-full border ${disabled ? "border-neutral-700" : "border-neutral-500"}`}
