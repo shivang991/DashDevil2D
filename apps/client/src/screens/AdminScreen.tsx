@@ -42,7 +42,11 @@ export function AdminScreen({
   const [loaded, setLoaded] = useState(false);
   const [creating, setCreating] = useState(false);
   const [editing, setEditing] = useState<ManagedUser>();
-  const [secret, setSecret] = useState<{ username: string; password: string }>();
+  const [secret, setSecret] = useState<{
+    username: string;
+    password: string;
+    temporary: boolean;
+  }>();
   const [confirmation, setConfirmation] = useState<Confirmation>();
   const [pending, setPending] = useState("");
   const [error, setError] = useState("");
@@ -103,8 +107,8 @@ export function AdminScreen({
       setPending("");
     }
   }
-  function showSecret(username: string, password: string) {
-    setSecret({ username, password });
+  function showSecret(username: string, password: string, temporary = true) {
+    setSecret({ username, password, temporary });
     setCopyStatus("");
   }
   const filtered = users
@@ -148,14 +152,16 @@ export function AdminScreen({
           {notice}
         </p>
         {secret && (
-          <section className="admin-credential" aria-label="Temporary credential">
+          <section className="admin-credential" aria-label="User credential">
             <div>
-              <h2>Temporary password for {secret.username}</h2>
+              <h2>
+                {secret.temporary ? "Temporary password" : "Password"} for {secret.username}
+              </h2>
               <p>Copy now and share manually. It cannot be revealed later.</p>
             </div>
             <div className="admin-credential-controls">
               <label className="admin-sr-only" htmlFor="temporary-password">
-                Temporary password
+                {secret.temporary ? "Temporary password" : "Password"}
               </label>
               <input
                 id="temporary-password"
@@ -424,18 +430,20 @@ export function AdminScreen({
             }}
           >
             <Dialog.Title>Create user</Dialog.Title>
-            <Dialog.Description>Give a driver access with a temporary password.</Dialog.Description>
+            <Dialog.Description>
+              Choose a password. The driver can keep it or change it later.
+            </Dialog.Description>
             <CreateUserForm
               busy={busy}
               error={error}
-              onSubmit={(username) =>
+              onSubmit={(username, password) =>
                 void run("create", async () => {
-                  const result = await adminAPI.create(username);
+                  const result = await adminAPI.create(username, password);
                   setUsers((current) => [
                     ...current,
                     { ...result.user, createdAt: null, lastSeenAt: null },
                   ]);
-                  showSecret(result.user.username, result.temporaryPassword);
+                  showSecret(result.user.username, password, false);
                   setCreating(false);
                   setQuery("");
                   setPage(0);
@@ -578,15 +586,16 @@ function CreateUserForm({
 }: {
   busy: boolean;
   error: string;
-  onSubmit: (username: string) => void;
+  onSubmit: (username: string, password: string) => void;
 }) {
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   return (
     <form
       className="admin-form"
       onSubmit={(event) => {
         event.preventDefault();
-        onSubmit(username);
+        onSubmit(username, password);
       }}
     >
       <label>
@@ -605,6 +614,38 @@ function CreateUserForm({
       </label>
       <p id="create-username-hint" className="admin-hint">
         {usernameHint}
+      </p>
+      <label>
+        Password
+        <input
+          className="admin-input"
+          value={password}
+          disabled={busy}
+          required
+          minLength={6}
+          maxLength={1024}
+          autoComplete="new-password"
+          aria-describedby="create-password-hint"
+          onChange={(event) => setPassword(event.target.value)}
+        />
+      </label>
+      <button
+        type="button"
+        className="admin-button"
+        disabled={busy}
+        onClick={() => {
+          // Rejection sampling avoids modulo bias while preserving leading zeros.
+          let value: number;
+          do {
+            value = crypto.getRandomValues(new Uint32Array(1))[0];
+          } while (value >= 4294000000);
+          setPassword(String(value % 1000000).padStart(6, "0"));
+        }}
+      >
+        Auto Generate
+      </button>
+      <p id="create-password-hint" className="admin-hint">
+        At least 6 characters. Share with the driver; no password change required.
       </p>
       {error && (
         <p className="admin-error" role="alert">

@@ -17,8 +17,7 @@ export function resetTransportMocks() {
   mocked(accountAPI.logout).mockResolvedValue({ ok: true });
   mocked(adminAPI.users).mockResolvedValue({ users: managedUsers });
   mocked(adminAPI.create).mockImplementation(async (username) => ({
-    user: { ...account, username, id: 900004, mustChangePassword: true },
-    temporaryPassword: "storybook-only-password",
+    user: { ...account, username, id: 900004, admin: false, mustChangePassword: false },
   }));
   mocked(adminAPI.update).mockImplementation(async (id, username, avatar) => ({
     ...account,

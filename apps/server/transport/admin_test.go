@@ -12,25 +12,34 @@ import (
 	appserver "github.com/shivang991/DashDevil2D/apps/server/server"
 )
 
-func TestAdminCreatesTemporaryUserAndListsObservedMetadata(t *testing.T) {
+func TestAdminCreatesPlayableUserAndListsObservedMetadata(t *testing.T) {
 	_, s, c := accountFixture(t)
 	status, _, _ := accountRequest(t, s, c, "GET", "/admin/users", "", origin)
 	if status != 401 {
 		t.Fatalf("guest: %d", status)
 	}
 	loginAccount(t, s, c, "Case_Admin", "a long password with spaces")
-	status, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"New_Driver","admin":true}`, origin)
+	for _, body := range []string{`{"username":"New_Driver"}`, `{"username":"New_Driver","password":"12345"}`} {
+		status, _, _ = accountRequest(t, s, c, "POST", "/admin/users", body, origin)
+		if status != 400 {
+			t.Fatalf("invalid password accepted: %d", status)
+		}
+	}
+	status, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"New_Driver","admin":true,"password":"123456"}`, origin)
 	if status != 200 {
 		t.Fatalf("create: %d %v", status, created)
 	}
-	password, ok := created["temporaryPassword"].(string)
-	if !ok || len(password) < 12 {
-		t.Fatal("missing temporary password")
+	if created["temporaryPassword"] != nil {
+		t.Fatal("create must not return password data")
 	}
+	password := "123456"
 	user := independentClient(c)
 	value := loginAccount(t, s, user, "New_Driver", password)
-	if value["admin"] != false || value["mustChangePassword"] != true {
+	if value["admin"] != false || value["mustChangePassword"] != false {
 		t.Fatalf("unsafe user: %v", value)
+	}
+	if status, _ := admit(t, s, user, p.AdmissionRequest{Version: p.ProtocolVersion}, origin); status != 201 {
+		t.Fatalf("play without password change: %d", status)
 	}
 	status, _, _ = accountRequest(t, s, user, "GET", "/admin/users", "", origin)
 	if status != 403 {
@@ -48,9 +57,9 @@ func TestAdminCreatesTemporaryUserAndListsObservedMetadata(t *testing.T) {
 	if driver["createdAt"] == nil || driver["lastSeenAt"] == nil || driver["temporaryPassword"] != nil {
 		t.Fatalf("metadata: %v", driver)
 	}
-	status, _, _ = accountRequest(t, s, user, "POST", "/password", `{"password":"replacement password"}`, origin)
+	status, _, _ = accountRequest(t, s, user, "POST", "/password", `{"currentPassword":"123456","password":"replacement password"}`, origin)
 	if status != 200 {
-		t.Fatalf("first login: %d", status)
+		t.Fatalf("optional password change: %d", status)
 	}
 	status, _, _ = accountRequest(t, s, c, "POST", fmt.Sprintf("/admin/users/%.0f/delete", created["user"].(map[string]any)["id"]), `{}`, origin)
 	if status != 400 {
@@ -61,7 +70,7 @@ func TestAdminCreatesTemporaryUserAndListsObservedMetadata(t *testing.T) {
 func TestAdminEditsProfilesAndProtectsAdminDeletion(t *testing.T) {
 	_, s, c := accountFixture(t)
 	admin := loginAccount(t, s, c, "Case_Admin", "a long password with spaces")
-	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Profile_Driver"}`, origin)
+	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Profile_Driver","password":"123456"}`, origin)
 	id := created["user"].(map[string]any)["id"].(float64)
 	path := fmt.Sprintf("/admin/users/%.0f", id)
 	status, value, _ := accountRequest(t, s, c, "POST", path+"/profile", profileBody("Renamed_Driver", avatarPNG(t)), origin)
@@ -100,12 +109,12 @@ func TestAdminResetAndDeleteRevokeConcurrentRoomsAndRecovery(t *testing.T) {
 		t.Run(action, func(t *testing.T) {
 			_, s, c := accountFixture(t)
 			loginAccount(t, s, c, "Case_Admin", "a long password with spaces")
-			_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Target_Driver"}`, origin)
+			_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Target_Driver","password":"123456"}`, origin)
 			id := created["user"].(map[string]any)["id"].(float64)
-			password := created["temporaryPassword"].(string)
+			password := "123456"
 			first := independentClient(c)
 			loginAccount(t, s, first, "Target_Driver", password)
-			status, _, _ := accountRequest(t, s, first, "POST", "/password", `{"password":"replacement password"}`, origin)
+			status, _, _ := accountRequest(t, s, first, "POST", "/password", `{"currentPassword":"123456","password":"replacement password"}`, origin)
 			if status != 200 {
 				t.Fatalf("password: %d", status)
 			}
@@ -167,7 +176,7 @@ func TestAdminResetAndDeleteRevokeConcurrentRoomsAndRecovery(t *testing.T) {
 				if response.StatusCode != 404 {
 					t.Fatal("deleted avatar survived")
 				}
-				_, _, _ = accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Target_Driver"}`, origin)
+				_, _, _ = accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Target_Driver","password":"123456"}`, origin)
 				status, list, _ := accountRequest(t, s, c, "GET", "/admin/users", "", origin)
 				if status != 200 {
 					t.Fatal(list)
@@ -196,7 +205,7 @@ func TestEveryAdminEndpointRejectsGuestsNormalUsersAndCrossSiteWrites(t *testing
 	loginAccount(t, s, normal, "Normal_Driver", "temporary password")
 	accountRequest(t, s, normal, "POST", "/password", `{"password":"normal replacement password"}`, origin)
 	endpoints := []struct{ method, path, body string }{
-		{"GET", "/admin/users", ""}, {"POST", "/admin/users", `{"username":"Blocked_Driver"}`},
+		{"GET", "/admin/users", ""}, {"POST", "/admin/users", `{"username":"Blocked_Driver","password":"123456"}`},
 		{"POST", "/admin/users/1/profile", profileBody("Hacked_Admin", nil)},
 		{"POST", "/admin/users/1/reset", `{}`}, {"POST", "/admin/users/1/delete", `{"confirm":true}`},
 	}
@@ -256,9 +265,9 @@ func TestAdminMetadataAndProfileSurviveRestart(t *testing.T) {
 	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c = independentClient(c)
 	loginAccount(t, s, c, "Restart_Admin", "test fixture password")
-	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Restart_Driver"}`, origin)
+	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Restart_Driver","password":"123456"}`, origin)
 	driver := independentClient(c)
-	loginAccount(t, s, driver, "Restart_Driver", created["temporaryPassword"].(string))
+	loginAccount(t, s, driver, "Restart_Driver", "123456")
 	accountRequest(t, s, driver, "GET", "", "", origin)
 	id := created["user"].(map[string]any)["id"].(float64)
 	status, _, _ := accountRequest(t, s, c, "POST", fmt.Sprintf("/admin/users/%.0f/profile", id), profileBody("Saved_Driver", avatarPNG(t)), origin)
@@ -303,11 +312,11 @@ func TestAdminResetAndDeletionForfeitActiveOpponent(t *testing.T) {
 			s, c, roots := configuredServer(t, appserver.Config{Accounts: store, Now: now, DragRaceOverrides: []byte(`{"operational":{"simulationLagThreshold":10},"gameplay":{"obstacleWeight":0,"emptyWeight":1}}`)})
 			c = independentClient(c)
 			loginAccount(t, s, c, "Race_Admin", "test fixture password")
-			_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Race_Driver"}`, origin)
+			_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Race_Driver","password":"123456"}`, origin)
 			id := created["user"].(map[string]any)["id"].(float64)
 			driver := independentClient(c)
-			loginAccount(t, s, driver, "Race_Driver", created["temporaryPassword"].(string))
-			accountRequest(t, s, driver, "POST", "/password", `{"password":"race replacement password"}`, origin)
+			loginAccount(t, s, driver, "Race_Driver", "123456")
+			accountRequest(t, s, driver, "POST", "/password", `{"currentPassword":"123456","password":"race replacement password"}`, origin)
 			_, value, code := admitWithCode(t, s, c, p.AdmissionRequest{Version: p.ProtocolVersion}, origin)
 			host := value.(p.Admission)
 			_, value = admit(t, s, driver, p.AdmissionRequest{Version: p.ProtocolVersion, Operation: 1, Code: code}, origin)

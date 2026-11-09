@@ -57,12 +57,12 @@ The menu profile displays a read-only username and opens the avatar picker from 
 Only the configured admin with a normal session can reach the users panel. Every `/api/account/admin` endpoint independently requires that authorization through shared middleware; writes additionally require the configured Origin and JSON. The private readiness/drain listener stays separate.
 
 - `GET /api/account/admin/users`: `{users}` with username, avatar, creation and last-observed authenticated activity timestamps. Migrated accounts have unknown creation times; an unobserved last-seen time is null. Activity is observed at successful login, authenticated HTTP requests and ticket consumption, not exact live presence.
-- `POST /api/account/admin/users`: `{username}` creates a non-admin with a cryptographically generated temporary password.
+- `POST /api/account/admin/users`: `{username,password}` creates a non-admin with the admin-chosen password (6–1024 characters), immediately eligible to play. Changing it later is optional.
 - `POST /api/account/admin/users/:id/profile`: `{username,avatar?}` uses the same validation, atomic save, lobby refresh and frozen race/result snapshots as player edits, including for accounts still using temporary passwords.
 - `POST /api/account/admin/users/:id/reset`: generates a temporary password and atomically revokes all sessions before removing seats, tickets and reconnect access. A fresh password change is required.
 - `POST /api/account/admin/users/:id/delete`: requires `{confirm:true}` and permanently deletes a non-admin account and its sessions/profile. SQL and HTTP both protect the configured admin. Existing explicit-departure forfeit/abandonment semantics apply. Unreferenced avatars are removed; immutable avatars still referenced by active/result snapshots retain the existing snapshot lifetime.
 
-Create/reset return `temporaryPassword` only in that successful response. Only its Argon2id hash is persisted. The panel keeps the response in memory for copying and manual sharing, with dismissal; reload/navigation cannot reveal it. There is no password retrieval, email, role editing, history.
+Create returns only the user. Reset returns `temporaryPassword` only in that successful response. Only its Argon2id hash is persisted. The panel keeps the response in memory for copying and manual sharing, with dismissal; reload/navigation cannot reveal it. There is no password retrieval, email, role editing, history.
 
 `node apps/client/scripts/transport.mjs --test --admin` exercises the admin UI in Chrome against real HTTPS/SQLite. `go test ./transport -run 'TestAdmin|TestEveryAdmin'` covers authorization, first login, profiles, metadata/restart, concurrent sessions/rooms, active forfeits, cleanup and rejected stale/authenticated recovery.
 

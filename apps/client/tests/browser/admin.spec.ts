@@ -16,9 +16,10 @@ test("admin creates, edits, resets and deletes users; normal accounts have no ad
   ).toBeVisible();
   await page.getByRole("button", { name: "Create user", exact: true }).click();
   await page.getByLabel("New username").fill("Panel_Driver");
+  await page.getByRole("button", { name: "Auto Generate" }).click();
+  const password = await page.getByLabel("Password", { exact: true }).inputValue();
+  expect(password).toMatch(/^\d{6}$/);
   await page.getByRole("dialog").getByRole("button", { name: "Create user", exact: true }).click();
-  const password = await page.getByLabel("Temporary password", { exact: true }).inputValue();
-  expect(password.length).toBeGreaterThanOrEqual(12);
   const context = await browser.newContext({ baseURL });
   const driver = await context.newPage();
   try {
@@ -27,10 +28,6 @@ test("admin creates, edits, resets and deletes users; normal accounts have no ad
     await driver.getByLabel("Username").fill("Panel_Driver");
     await driver.getByLabel("Password", { exact: true }).fill(password);
     await driver.getByRole("button", { name: "Login", exact: true }).click();
-    await expect(driver.getByRole("heading", { name: "Change temporary password" })).toBeVisible();
-    await driver.getByLabel("New password", { exact: true }).fill("panel replacement password");
-    await driver.getByLabel("Confirm new password").fill("panel replacement password");
-    await driver.getByRole("button", { name: "Save password" }).click();
     await expect(driver.getByRole("button", { name: /Drag Race/ })).toBeEnabled();
     await expect(driver.getByRole("button", { name: "Admin", exact: true })).toHaveCount(0);
     const row = page.getByRole("row").filter({ hasText: "Panel_Driver" });
