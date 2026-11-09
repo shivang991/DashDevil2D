@@ -110,13 +110,14 @@ export const CreateUser: Story = {
     await userEvent.click(await canvas.findByRole("button", { name: "Create user" }));
     const body = within(canvasElement.ownerDocument.body);
     await userEvent.type(body.getByRole("textbox", { name: "New username" }), "New_Driver");
+    await userEvent.type(body.getByRole("textbox", { name: /^Password$/ }), "chosen-password");
     await userEvent.click(
       within(body.getByRole("dialog")).getByRole("button", { name: "Create user" }),
     );
-    await expect(await canvas.findByRole("textbox", { name: "Temporary password" })).toHaveValue(
-      "storybook-only-password",
+    await expect(await canvas.findByRole("textbox", { name: /^Password$/ })).toHaveValue(
+      "chosen-password",
     );
-    await expect(adminAPI.create).toHaveBeenCalledWith("New_Driver");
+    await expect(adminAPI.create).toHaveBeenCalledWith("New_Driver", "chosen-password");
   },
 };
 export const RetryLoading: Story = {

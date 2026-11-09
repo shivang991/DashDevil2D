@@ -19,10 +19,10 @@ import (
 func TestChallengeDeliveredOfflineAndRequiresExplicitAcceptance(t *testing.T) {
 	_, s, host := accountFixture(t)
 	loginAccount(t, s, host, "Case_Admin", "a long password with spaces")
-	_, created, _ := accountRequest(t, s, host, "POST", "/admin/users", `{"username":"Challenge_Driver"}`, origin)
+	_, _, _ = accountRequest(t, s, host, "POST", "/admin/users", `{"username":"Challenge_Driver","password":"123456"}`, origin)
 	peer := independentClient(host)
-	loginAccount(t, s, peer, "Challenge_Driver", created["temporaryPassword"].(string))
-	accountRequest(t, s, peer, "POST", "/password", `{"password":"replacement password"}`, origin)
+	loginAccount(t, s, peer, "Challenge_Driver", "123456")
+	accountRequest(t, s, peer, "POST", "/password", `{"currentPassword":"123456","password":"replacement password"}`, origin)
 	_, people, _ := accountRequest(t, s, host, "GET", "/chat/search?q=Challenge_Driver", "", origin)
 	peerID := people["users"].([]any)[0].(map[string]any)["id"]
 	_, value, _ := admitWithCode(t, s, host, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion}, origin)
@@ -109,10 +109,10 @@ func TestChallengeAdmissionEligibility(t *testing.T) {
 			s, host, roots := configuredServer(t, appserver.Config{Accounts: store, Now: now})
 			host.Jar, _ = cookiejar.New(nil)
 			loginAccount(t, s, host, "Challenge_Admin", "original password")
-			_, created, _ := accountRequest(t, s, host, "POST", "/admin/users", `{"username":"Challenge_Guest"}`, origin)
+			_, _, _ = accountRequest(t, s, host, "POST", "/admin/users", `{"username":"Challenge_Guest","password":"123456"}`, origin)
 			peer := independentClient(host)
-			loginAccount(t, s, peer, "Challenge_Guest", created["temporaryPassword"].(string))
-			accountRequest(t, s, peer, "POST", "/password", `{"password":"replacement password"}`, origin)
+			loginAccount(t, s, peer, "Challenge_Guest", "123456")
+			accountRequest(t, s, peer, "POST", "/password", `{"currentPassword":"123456","password":"replacement password"}`, origin)
 			_, people, _ := accountRequest(t, s, host, "GET", "/chat/search?q=Challenge_Guest", "", origin)
 			peerID := people["users"].([]any)[0].(map[string]any)["id"]
 			_, value, code := admitWithCode(t, s, host, p.AdmissionRequest{Operation: p.AdmissionOperationCreate, Version: p.ProtocolVersion}, origin)

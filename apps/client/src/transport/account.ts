@@ -75,9 +75,10 @@ export interface ManagedUser extends Omit<Account, "expires"> {
 }
 export const adminAPI = {
   users: () => request<{ users: ManagedUser[] }>("/admin/users"),
-  create: (username: string) =>
-    request<{ user: Omit<Account, "expires">; temporaryPassword: string }>("/admin/users", {
+  create: (username: string, password: string) =>
+    request<{ user: Omit<Account, "expires"> }>("/admin/users", {
       username,
+      password,
     }),
   update: (id: number, username: string, avatar?: string) =>
     request<Account>(`/admin/users/${id}/profile`, { username, avatar }),

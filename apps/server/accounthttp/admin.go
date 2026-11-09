@@ -36,6 +36,7 @@ func (s *Server) adminRoutes() {
 	s.app.Post("/api/account/admin/users", func(c *fiber.Ctx) error {
 		var request struct {
 			Username string `json:"username"`
+			Password string `json:"password"`
 		}
 		if len(c.Body()) > 8192 || json.Unmarshal(c.Body(), &request) != nil {
 			return accountError(c, 400, "Enter a username")
@@ -46,11 +47,11 @@ func (s *Server) adminRoutes() {
 		default:
 			return accountError(c, 429, "Busy. Try again shortly")
 		}
-		user, password, err := s.config.Accounts.CreateManaged(request.Username)
+		user, err := s.config.Accounts.CreateManaged(request.Username, request.Password)
 		if err != nil {
 			return accountError(c, 400, err.Error())
 		}
-		return c.JSON(fiber.Map{"user": user, "temporaryPassword": password})
+		return c.JSON(fiber.Map{"user": user})
 	})
 	s.app.Post("/api/account/admin/users/:id/profile", func(c *fiber.Ctx) error {
 		id, err := strconv.ParseInt(c.Params("id"), 10, 64)

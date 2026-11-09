@@ -18,10 +18,10 @@ import (
 func TestChatOfflineRetryAuthorizationAndReadSync(t *testing.T) {
 	_, s, admin := accountFixture(t)
 	loginAccount(t, s, admin, "Case_Admin", "a long password with spaces")
-	_, created, _ := accountRequest(t, s, admin, "POST", "/admin/users", `{"username":"Chat_Driver"}`, origin)
+	_, _, _ = accountRequest(t, s, admin, "POST", "/admin/users", `{"username":"Chat_Driver","password":"123456"}`, origin)
 	peer := independentClient(admin)
-	loginAccount(t, s, peer, "Chat_Driver", created["temporaryPassword"].(string))
-	accountRequest(t, s, peer, "POST", "/password", `{"password":"replacement password"}`, origin)
+	loginAccount(t, s, peer, "Chat_Driver", "123456")
+	accountRequest(t, s, peer, "POST", "/password", `{"currentPassword":"123456","password":"replacement password"}`, origin)
 	status, found, _ := accountRequest(t, s, admin, "GET", "/chat/search?q=chat_dri", "", origin)
 	if status != 200 {
 		t.Fatalf("search: %d %v", status, found)
@@ -94,7 +94,7 @@ func TestChatRetentionDeletionValidationAndRateLimit(t *testing.T) {
 	s, c, _ := configuredServer(t, appserver.Config{Accounts: store})
 	c.Jar, _ = cookiejar.New(nil)
 	loginAccount(t, s, c, "Chat_Admin", "original password")
-	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Retained_Driver"}`, origin)
+	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Retained_Driver","password":"123456"}`, origin)
 	accountID := created["user"].(map[string]any)["id"]
 	_, found, _ := accountRequest(t, s, c, "GET", "/chat/search?q=retained", "", origin)
 	id := found["users"].([]any)[0].(map[string]any)["id"]
@@ -152,7 +152,7 @@ func TestChatRetentionDeletionValidationAndRateLimit(t *testing.T) {
 	if len(thread["messages"].([]any)) != 30 {
 		t.Fatal("history lost on restart/delete")
 	}
-	_, created, _ = accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Retained_Driver"}`, origin)
+	_, created, _ = accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Retained_Driver","password":"123456"}`, origin)
 	_, found, _ = accountRequest(t, s, c, "GET", "/chat/search?q=retained", "", origin)
 	replacement := found["users"].([]any)[0].(map[string]any)["id"]
 	if replacement == id {
@@ -181,10 +181,10 @@ func TestChatPresenceAggregatesTabsSessionsAndExpires(t *testing.T) {
 	accountRequest(t, s, c, "POST", "/chat/sync", `{"client":"idle-tab","activity":"Offline"}`, origin)
 	accountRequest(t, s, other, "POST", "/chat/sync", `{"client":"menu","activity":"Active"}`, origin)
 	// Search from a different account so self is excluded normally.
-	_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Observer_Driver"}`, origin)
+	_, _, _ = accountRequest(t, s, c, "POST", "/admin/users", `{"username":"Observer_Driver","password":"123456"}`, origin)
 	observer := independentClient(c)
-	loginAccount(t, s, observer, "Observer_Driver", created["temporaryPassword"].(string))
-	accountRequest(t, s, observer, "POST", "/password", `{"password":"replacement password"}`, origin)
+	loginAccount(t, s, observer, "Observer_Driver", "123456")
+	accountRequest(t, s, observer, "POST", "/password", `{"currentPassword":"123456","password":"replacement password"}`, origin)
 	presence := func() string {
 		_, found, _ := accountRequest(t, s, observer, "GET", "/chat/search?q=presence", "", origin)
 		return found["users"].([]any)[0].(map[string]any)["presence"].(string)
@@ -219,10 +219,10 @@ func TestChatPinnedLobbyAndQualifiedRaceSuggestions(t *testing.T) {
 	loginAccount(t, s, c, "Race_Admin", "original password")
 	peers := []*http.Client{}
 	for _, name := range []string{"First_Racer", "Second_Racer"} {
-		_, created, _ := accountRequest(t, s, c, "POST", "/admin/users", fmt.Sprintf(`{"username":%q}`, name), origin)
+		_, _, _ = accountRequest(t, s, c, "POST", "/admin/users", fmt.Sprintf(`{"username":%q,"password":"123456"}`, name), origin)
 		peer := independentClient(c)
-		loginAccount(t, s, peer, name, created["temporaryPassword"].(string))
-		accountRequest(t, s, peer, "POST", "/password", `{"password":"replacement password"}`, origin)
+		loginAccount(t, s, peer, name, "123456")
+		accountRequest(t, s, peer, "POST", "/password", `{"currentPassword":"123456","password":"replacement password"}`, origin)
 		peers = append(peers, peer)
 	}
 	// Three qualifying forfeits: first opponent wins frequency despite the second's recency.

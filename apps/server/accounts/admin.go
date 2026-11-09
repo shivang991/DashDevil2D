@@ -42,20 +42,16 @@ func (s *Store) User(id int64) (User, error) {
 	return u, err
 }
 
-func (s *Store) CreateManaged(username string) (User, string, error) {
-	password, err := newToken()
-	if err != nil {
-		return User{}, "", err
-	}
-	if err = s.CreateTemporary(username, password); err != nil {
-		return User{}, "", err
+// CreateManaged creates a playable account with the admin's chosen password.
+func (s *Store) CreateManaged(username, password string) (User, error) {
+	if err := s.create(username, password, false, false); err != nil {
+		return User{}, err
 	}
 	var id int64
-	if err = s.db.QueryRow(`SELECT id FROM accounts WHERE username=?`, username).Scan(&id); err != nil {
-		return User{}, "", err
+	if err := s.db.QueryRow(`SELECT id FROM accounts WHERE username=?`, username).Scan(&id); err != nil {
+		return User{}, err
 	}
-	u, err := s.User(id)
-	return u, password, err
+	return s.User(id)
 }
 
 // ResetManagedPassword atomically replaces credentials and removes every session.

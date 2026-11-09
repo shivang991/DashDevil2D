@@ -15,7 +15,7 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
       method: "POST",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username: "Chat_Opponent" }),
+      body: JSON.stringify({ username: "Chat_Opponent", password: "123456" }),
     });
     return response.json();
   });
@@ -25,11 +25,8 @@ test("persistent DMs, unread, responsive panel and Long Drive visibility", async
     await peer.goto("/");
     await peer.getByRole("button", { name: "Login to play multiplayer" }).click();
     await peer.getByLabel("Username", { exact: true }).fill("Chat_Opponent");
-    await peer.getByLabel("Password", { exact: true }).fill(created.temporaryPassword);
+    await peer.getByLabel("Password", { exact: true }).fill("123456");
     await peer.getByRole("button", { name: "Login", exact: true }).click();
-    await peer.getByLabel("New password", { exact: true }).fill("replacement password");
-    await peer.getByLabel("Confirm new password").fill("replacement password");
-    await peer.getByRole("button", { name: "Save password" }).click();
     await expect(page.getByRole("complementary", { name: "Chat" })).toHaveCount(0);
     await page.getByRole("button", { name: /Open chat/ }).click();
     await page.getByLabel("Search accounts").fill("chat_oppo");
