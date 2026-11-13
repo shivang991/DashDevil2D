@@ -1,0 +1,71 @@
+{
+  "sources": [
+    {
+      "files": [
+        "home-art.png",
+        "mode-art.png"
+      ],
+      "source": "User-provided Dash Devil screenshots",
+      "usage": "Original pixel branding and mode artwork shown through cropped SVG viewports",
+      "license": "User-supplied reference assets; no independent license asserted"
+    },
+    {
+      "files": [
+        "car.png",
+        "car-rival.png",
+        "asphalt.png",
+        "grass.png",
+        "road-edge.png",
+        "heart.png",
+        "coin.png",
+        "lane-divider.png",
+        "barrier.png",
+        "grass-chalk.png",
+        "grass-flowers.png",
+        "grass-hole.png",
+        "grass-stone.png",
+        "dirt.png"
+      ],
+      "source": "User-authorized claude-code-test/apps/client/public/textures",
+      "license": "Existing project assets; original project terms apply"
+    },
+    {
+      "files": [
+        "bruno.woff2"
+      ],
+      "source": "Existing project @fontsource/bruno-ace-sc package",
+      "author": "Astigmatic",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "files": [
+        "bitcount.woff2"
+      ],
+      "source": "Existing project @fontsource-variable/bitcount-ink package",
+      "author": "Peter Bi\u013eak, Typotheque",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "files": [
+        "montserrat.ttf",
+        "montserrat-OFL.txt"
+      ],
+      "source": "https://github.com/google/fonts/tree/main/ofl/montserrat",
+      "license": "SIL Open Font License 1.1"
+    },
+    {
+      "files": [
+        "multiplayer-road-pixel.png"
+      ],
+      "source": "Generated with the built-in image generation tool",
+      "prompt": "Top-down minimalist 16-bit horizontal two-lane asphalt road; blue and red rival cars facing right; checkered line and gray direction chevrons; near-black background; hard square pixels, no text."
+    },
+    {
+      "files": [
+        "dust-tile.png"
+      ],
+      "source": "Generated with the built-in image generation tool",
+      "prompt": "Seamless dust tile: uniform theme-black #090909 ground with sparse lighter gray dust speckles; no haze, gray wash, gradients, or vignette."
+    }
+  ]
+}

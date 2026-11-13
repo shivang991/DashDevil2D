@@ -253,6 +253,8 @@ export function MultiplayerView({
 
   return (
     <main
+      data-screen="multiplayer"
+      data-racing={Boolean(race)}
       ref={main}
       tabIndex={-1}
       className={
@@ -322,7 +324,8 @@ export function MultiplayerView({
                     size="bare"
                     key={value}
                     type="button"
-                    className="relative whitespace-normal min-h-[154px] scale-[0.86] rounded-[20px] border border-neutral-700 bg-neutral-900 px-3 py-5 font-heading text-[clamp(23px,4vw,32px)] leading-[1.2] font-light text-neutral-50 opacity-75 aria-pressed:scale-100 aria-pressed:border-neutral-400 aria-pressed:opacity-100 [@media(max-width:520px)]:min-h-[120px] [@media(max-width:520px)]:rounded-[16px] [@media(max-width:520px)]:px-2 [@media(max-width:520px)]:py-4 [@media(max-width:520px)]:text-[23px] [&_svg]:absolute [&_svg]:bottom-3 [&_svg]:left-[calc(50%_-_6px)] [&_svg]:size-3 [&_svg]:text-neutral-400"
+                    className="mode-selector relative whitespace-normal min-h-[154px] scale-[0.86] rounded-[20px] border border-neutral-700 bg-neutral-900 px-3 py-5 font-heading text-[clamp(23px,4vw,32px)] leading-[1.2] font-light text-neutral-50 opacity-75 aria-pressed:scale-100 aria-pressed:border-neutral-400 aria-pressed:opacity-100 [@media(max-width:520px)]:min-h-[120px] [@media(max-width:520px)]:rounded-[16px] [@media(max-width:520px)]:px-2 [@media(max-width:520px)]:py-4 [@media(max-width:520px)]:text-[23px] [&_svg]:absolute [&_svg]:bottom-3 [&_svg]:left-[calc(50%_-_6px)] [&_svg]:size-3 [&_svg]:text-neutral-400"
+                    aria-label={modeName(value)}
                     aria-pressed={shownMode === value}
                     disabled={
                       inRoom ? !host || !eligible || room!.phase !== RoomPhaseLobby : pending
@@ -353,6 +356,11 @@ export function MultiplayerView({
                       alt=""
                       className="mx-auto h-[112px] w-full object-contain [image-rendering:pixelated] [@media(max-width:520px)]:h-[88px]"
                     />
+                    <span className="mode-caption" aria-hidden="true">
+                      {value === ModeRoadRage
+                        ? "Be the malice or someone's victim"
+                        : "Be #1 to finish a tormented track"}
+                    </span>
                     {inRoom && !host && shownMode === value && <LockKeyhole aria-hidden="true" />}
                   </Button>
                 ))}
@@ -361,7 +369,13 @@ export function MultiplayerView({
           </>
         )}
         {!inRoom ? (
-          <div className="flex flex-col gap-7">
+          <div className="room-admission flex flex-col gap-7">
+            <div className="lobby-road">
+              <img
+                src={`${import.meta.env.BASE_URL}images/design/multiplayer-road-pixel.png`}
+                alt=""
+              />
+            </div>
             <div className="flex flex-col gap-4">
               <Button
                 variant="multiplayer"
@@ -393,7 +407,7 @@ export function MultiplayerView({
           <>
             {!race && (
               <>
-                <div className="flex items-center justify-between gap-6 pt-[30px] pb-3 max-sm:flex-col max-sm:items-stretch max-sm:gap-7 max-sm:pt-3">
+                <div className="joined-players flex items-center justify-between gap-6 pt-[30px] pb-3 max-sm:flex-col max-sm:items-stretch max-sm:gap-7 max-sm:pt-3">
                   <ul
                     className="flex min-w-0 flex-1 flex-col items-stretch gap-[18px] sm:flex-row sm:items-center"
                     aria-label="Players"
@@ -440,16 +454,16 @@ export function MultiplayerView({
                                 ? "Waiting for player"
                                 : !(seat.flags & SeatFlagsConnected)
                                   ? "Reconnecting…"
-                                  : index === room!.host
-                                    ? "Host"
-                                    : "Guest"}
+                                  : seat.flags & SeatFlagsReady
+                                    ? "Ready"
+                                    : "Not ready"}
                             </span>
                           </div>
                         </li>
                       );
                     })}
                   </ul>
-                  <div className="relative shrink-0 max-sm:self-center">
+                  <div className="room-code-control relative shrink-0 max-sm:self-center">
                     <div className="flex items-center rounded-[12px] border border-neutral-700 pl-4 [&>span]:font-heading [&>span]:text-[32px] [&>span]:tracking-[2px] [&>span]:select-all [&_svg]:size-4">
                       <span data-testid="room-code" aria-label="Room code">
                         {state?.code}
@@ -517,9 +531,7 @@ export function MultiplayerView({
                   variant="multiplayer"
                   size="multiplayer"
                   className={
-                    host && canStart
-                      ? "border-neutral-50 animate-[multiplayer-start-pulse_2.4s_ease-in-out_infinite] motion-reduce:animate-none"
-                      : undefined
+                    host && canStart ? "compact-action border-neutral-50" : "compact-action"
                   }
                   disabled={!eligible || !focused || (ready && host && !canStart)}
                   onClick={
@@ -607,7 +619,7 @@ export function MultiplayerView({
           <RoundResult outcome={state.outcome} local={local} identities={state.room?.racers} />
         )}
         <Button
-          className="mt-[58px] min-h-[58px] w-full rounded-[10px] border border-[#b9554e] bg-[#913a34] text-[16px] leading-[calc(20/14)] text-[#fff8f4] enabled:hover:bg-[#a7443c] focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#fff8f4]"
+          className="compact-action result-return mt-8 self-center"
           disabled={!eligible || room?.phase !== RoomPhaseEnded}
           onClick={() =>
             actions?.command(
