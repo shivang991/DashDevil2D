@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: "Bruno Ace SC", sans-serif;
-  --font-chat: Arial, sans-serif;
+  --font-sans: "Montserrat", sans-serif;
+  --font-chat: "Montserrat", sans-serif;
   --font-heading: "Bitcount Ink Variable", monospace;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -272,4 +272,399 @@
   font:
     10px/16px Arial,
     sans-serif;
+}
+
+@font-face {
+  font-family: Montserrat;
+  src: url("/fonts/montserrat.ttf") format("truetype");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bitcount Ink Variable";
+  src: url("/fonts/bitcount.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Bruno Ace SC";
+  src: url("/fonts/bruno.woff2") format("woff2");
+  font-display: swap;
+}
+:root,
+.dark {
+  --background: #090909;
+  --foreground: #f5f4ef;
+  --card: #171717;
+  --popover: #171717;
+  --popover-foreground: #f5f4ef;
+  --primary: #f5f4ef;
+  --primary-foreground: #090909;
+  --secondary: #202020;
+  --secondary-foreground: #f5f4ef;
+  --muted: #202020;
+  --muted-foreground: #aaa9a6;
+  --accent: #202020;
+  --accent-foreground: #f5f4ef;
+  --border: #383838;
+  --input: #606060;
+  --ring: #aaa9a6;
+  --destructive: #ff302b;
+  --quiet: #81817e;
+  --avatar: #242424;
+  --stepped-corners: polygon(
+    4px 0,
+    calc(100% - 4px) 0,
+    calc(100% - 4px) 4px,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    4px 100%,
+    4px calc(100% - 4px),
+    0 calc(100% - 4px),
+    0 4px,
+    4px 4px
+  );
+}
+body,
+.app-shell {
+  background: #090909 url("/images/design/dust-tile.png") repeat center / 640px;
+}
+.app-header {
+  background: #090909;
+  border: 0;
+  color: var(--quiet);
+}
+.home-screen,
+[data-screen="multiplayer"],
+body:has(.game-shell) main {
+  background: transparent;
+}
+button,
+input,
+textarea,
+select,
+[role="menuitem"],
+[role="switch"] {
+  transition: none !important;
+}
+:focus-visible {
+  outline: 2px solid #f5f4ef;
+  outline-offset: 4px;
+}
+.header-icon-button:focus-visible {
+  outline-color: #f5f4ef;
+}
+.header-chat-badge {
+  background: #383838;
+}
+.avatar-initials {
+  font-family: "Bruno Ace SC", sans-serif;
+  background-color: var(--avatar);
+}
+.home-screen > div {
+  max-width: 416px;
+  gap: 24px;
+}
+.abyss-label {
+  margin: -8px 0 -16px;
+  text-align: right;
+  font-size: 11px;
+  color: var(--quiet);
+}
+.menu-entry + .menu-entry::before {
+  content: "";
+  height: 6px;
+  background: radial-gradient(circle at 1px 1px, #383838 1px, transparent 1.2px) 0 0 / 4px 4px;
+}
+.menu-row {
+  border: 0;
+  border-radius: 0;
+  min-height: 80px;
+  padding: 12px 16px;
+}
+.menu-row > div:last-child {
+  border: 0;
+  color: var(--quiet);
+}
+.menu-row > div:last-child svg {
+  color: inherit;
+}
+.account-trigger[data-slot] {
+  border: 0;
+  background: transparent;
+  color: var(--quiet);
+}
+.account-dropdown {
+  width: 192px;
+  padding: 4px;
+  gap: 0;
+}
+.account-dropdown [data-slot] {
+  border: 0;
+  background: transparent;
+  justify-content: flex-start;
+  font-size: 12px;
+}
+.compact-action,
+.mode-selector,
+.room-code-control > div,
+.stepped-panel,
+.account-dropdown,
+.chat-bubble,
+.chat-panel textarea,
+.game-shell,
+.game-shell [class*="aspect-"],
+[data-racing="true"] > section {
+  border-radius: 0;
+  clip-path: var(--stepped-corners);
+  box-shadow: inset 0 0 0 1px #383838;
+}
+/* Focus is outside the silhouette, so remove clipping while keyboard focus is inside. */
+.compact-action:focus-visible,
+.mode-selector:focus-visible,
+.stepped-panel:has(:focus-visible),
+.account-dropdown:has(:focus-visible),
+.chat-panel textarea:focus-visible,
+.game-shell:has(:focus-visible),
+[data-racing="true"] > section:has(:focus-visible) {
+  clip-path: none;
+}
+.compact-action[data-slot] {
+  position: relative;
+  min-height: 40px;
+  width: auto;
+  align-self: center;
+  padding: 8px 30px;
+  border: 1px dotted #606060;
+  background: #171717;
+  color: #f5f4ef;
+  font:
+    500 13px/1.5 Montserrat,
+    sans-serif;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.home-screen .compact-action {
+  width: 100%;
+}
+.compact-action::before,
+.compact-action::after {
+  content: "";
+  position: absolute;
+  top: calc(50% - 1px);
+  width: 2px;
+  height: 2px;
+  background: var(--quiet);
+  box-shadow:
+    0 -4px #606060,
+    0 4px #606060;
+}
+.compact-action::before {
+  left: 12px;
+}
+.compact-action::after {
+  right: 12px;
+}
+.mode-selector[data-slot] {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-style: dotted;
+  transform: none;
+  padding: 16px 8px;
+}
+.mode-selector[aria-pressed="true"] {
+  border-color: #aaa9a6;
+  background: #202020;
+  box-shadow: inset 0 -3px #aaa9a6;
+}
+.mode-caption {
+  font:
+    400 12px/1.6 Montserrat,
+    sans-serif;
+  color: #aaa9a6;
+}
+.lobby-road {
+  width: 100%;
+  height: clamp(72px, 16vw, 110px);
+  overflow: hidden;
+}
+.lobby-road img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  image-rendering: pixelated;
+}
+.room-admission {
+  gap: 12px;
+}
+.room-admission > div:last-child {
+  gap: 0;
+}
+.room-admission > div:last-child > button {
+  position: relative;
+  justify-content: space-between;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+  font: 300 28px/1.2 var(--font-heading);
+  text-transform: uppercase;
+  padding: 24px 16px;
+}
+.room-admission > div:last-child > button::after {
+  content: "→";
+  color: var(--quiet);
+  font: 24px Montserrat;
+}
+.room-admission > div:last-child > button + button::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: radial-gradient(circle at 1px 1px, #383838 1px, transparent 1.2px) 0 0 / 4px 4px;
+}
+.joined-players {
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 0;
+}
+.joined-players ul {
+  order: 2;
+}
+.room-code-control {
+  align-self: flex-end;
+  margin-bottom: 16px;
+}
+.room-code-control [data-testid="room-code"] {
+  font-size: 24px;
+}
+[data-screen="multiplayer"][data-racing="false"] [aria-label="Room messages"] {
+  height: 48px;
+}
+.result-panel {
+  border-color: #606060;
+  background: #171717;
+}
+.result-panel h2 {
+  font-size: 40px;
+  letter-spacing: 0;
+}
+.chat-panel {
+  background: #171717;
+  border-radius: 0;
+}
+.chat-bubble {
+  background: #202020;
+}
+.chat-action[data-slot] {
+  font-family: var(--font-heading);
+  font-weight: 300;
+  font-size: 18px;
+  border-radius: 0;
+}
+.chat-action::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #aaa9a6;
+  box-shadow: 3px 0 #606060;
+}
+.chat-panel textarea {
+  background: #202020;
+  border-color: #606060;
+}
+@media (max-width: 520px) {
+  .mode-caption {
+    font-size: 11px;
+  }
+  .home-screen > div {
+    padding-inline: 24px;
+  }
+}
+.presence-dot::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin-right: 6px;
+  background: currentColor;
+}
+/* Draw the four inset step edges alongside the straight borders. */
+.stepped-panel,
+.mode-selector,
+.account-dropdown,
+.game-shell,
+.game-shell [class*="aspect-"],
+.room-code-control > div {
+  background-image:
+    linear-gradient(#383838, #383838), linear-gradient(#383838, #383838),
+    linear-gradient(#383838, #383838), linear-gradient(#383838, #383838);
+  background-size: 4px 1px;
+  background-repeat: no-repeat;
+  background-position:
+    left top 3px,
+    right top 3px,
+    left bottom 3px,
+    right bottom 3px;
+}
+@font-palette-values --dash-neutral {
+  font-family: "Bitcount Ink Variable";
+  override-colors:
+    0 #f5f4ef,
+    1 #aaa9a6,
+    2 #81817e,
+    3 #f5f4ef,
+    4 #aaa9a6,
+    5 #81817e,
+    6 #f5f4ef,
+    7 #aaa9a6,
+    8 #81817e,
+    9 #f5f4ef,
+    10 #aaa9a6,
+    11 #81817e;
+}
+.font-heading,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.room-admission button,
+.chat-action {
+  font-palette: --dash-neutral;
+}
+/* The supplied color font carries embedded ink colors; neutralize those layers. */
+.font-heading,
+h2,
+h3,
+h4,
+h5,
+h6,
+.room-admission button,
+.chat-action {
+  filter: grayscale(1) brightness(2);
+}
+.account-dropdown [data-slot],
+.chat-action,
+.stepped-panel input {
+  border-radius: 0;
+  clip-path: var(--stepped-corners);
+}
+.account-dropdown [data-slot]:focus-visible,
+.chat-action:focus-visible,
+.stepped-panel input:focus-visible {
+  clip-path: none;
+}
+/* Mode artwork keeps its original palette. */
+.mode-selector.font-heading {
+  filter: none;
+}
+.room-admission > div:last-child > button::after {
+  color: #41413f;
 }

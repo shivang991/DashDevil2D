@@ -40,7 +40,7 @@ test("touch driving combines inputs, clears cancellation, and keeps settings off
   await page.getByRole("button", { name: "Pause", exact: true }).click();
   await expect(page.getByRole("region", { name: "Game paused", exact: true })).toBeVisible();
   await expect(page.getByRole("region", { name: "Game paused", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Resume", exact: true }).click();
+  await page.getByRole("button", { name: "Resume Game", exact: true }).click();
   await expect(page.getByRole("dialog")).toHaveCount(0);
   await expect(accelerate).toBeEnabled();
   for (const viewport of [
@@ -62,9 +62,9 @@ test("touch driving combines inputs, clears cancellation, and keeps settings off
     await page.screenshot({ path: testInfo.outputPath(`touch-${viewport.width}.png`) });
   }
   await page.getByRole("button", { name: "Pause", exact: true }).click();
-  await page.getByRole("button", { name: "Restart", exact: true }).click();
-  await expect(page.locator(".game-overlay")).toHaveText("3");
-  await expect(accelerate).toBeDisabled();
+  await page.getByRole("button", { name: "Resume Game", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Game paused" })).toHaveCount(0);
+  await expect(accelerate).toBeEnabled();
 });
 
 test("short-screen menus remain reachable without scrollbar chrome", async ({ page }) => {

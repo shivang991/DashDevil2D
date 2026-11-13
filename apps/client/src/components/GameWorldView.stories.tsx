@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import { GameWorldView } from "./GameWorldView";
 const playing = {
   health: 2,
@@ -32,7 +32,20 @@ export const Countdown: Story = {
 };
 export const Accelerating: Story = { args: { ui: { ...playing, accelerating: true } } };
 export const LowHealth: Story = { args: { ui: { ...playing, health: 1 } } };
-export const Paused: Story = { args: { ui: { ...playing, paused: true } } };
+export const Paused: Story = {
+  args: { ui: { ...playing, paused: true } },
+  play: async ({ canvasElement }) => {
+    const overlay = within(within(canvasElement).getByRole("region", { name: "Game paused" }));
+    await expect(overlay.getByRole("button", { name: "Resume Game" })).toBeVisible();
+    await expect(overlay.getAllByRole("button")).toHaveLength(1);
+  },
+};
 export const GameOver: Story = {
   args: { ui: { ...playing, status: "gameover", health: 0, gameOverAnimDone: true } },
+  play: async ({ canvasElement }) => {
+    const overlay = within(within(canvasElement).getByRole("region", { name: "Game over" }));
+    await expect(overlay.getByText("Score: 120")).toBeVisible();
+    await expect(overlay.getByRole("button", { name: "Restart Game" })).toBeVisible();
+    await expect(overlay.getAllByRole("button")).toHaveLength(1);
+  },
 };

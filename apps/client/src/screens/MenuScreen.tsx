@@ -51,7 +51,7 @@ export function MenuScreen({
   }
   const authenticated = Boolean(account && !account.mustChangePassword);
   return (
-    <div className="flex items-center justify-center w-full min-h-[var(--app-page-height,100dvh)] bg-neutral-950">
+    <div className="flex items-center justify-center w-full home-screen min-h-[var(--app-page-height,100dvh)] bg-neutral-950">
       <div className="flex flex-col w-full max-w-96 gap-6 p-6 pb-20">
         {/* Branding */}
         <h1 className="flex items-center justify-center py-2">
@@ -66,12 +66,22 @@ export function MenuScreen({
           <>
             <div className="flex items-center justify-between gap-3 text-neutral-400 text-sm">
               <div className="flex min-w-0 items-center gap-3">
-                <Avatar username={account.username} avatar={account.avatar} />
+                <Avatar
+                  className="size-8 text-xs"
+                  username={account.username}
+                  avatar={account.avatar}
+                />
                 <span className="truncate">{account.username}</span>
               </div>
               <DropdownMenu.Root modal={false}>
                 <DropdownMenu.Trigger asChild>
-                  <Button ref={trigger} variant="multiplayer" size="icon" aria-label="Account menu">
+                  <Button
+                    ref={trigger}
+                    variant="multiplayer"
+                    size="icon"
+                    className="account-trigger"
+                    aria-label="Account menu"
+                  >
                     <Menu />
                   </Button>
                 </DropdownMenu.Trigger>
@@ -83,13 +93,12 @@ export function MenuScreen({
                     onCloseAutoFocus={(event) => {
                       if (dialog) event.preventDefault();
                     }}
-                    className="z-40 flex w-56 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-neutral-600 bg-neutral-950 p-3 text-white shadow-lg"
+                    className="account-dropdown z-40 flex w-56 max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-xl border border-neutral-600 bg-neutral-950 p-3 text-white shadow-lg"
                   >
                     <DropdownMenu.Item asChild onSelect={() => setDialog("profile")}>
                       <Button
                         variant="multiplayer"
                         iconLeft={User}
-                        dividerLeft
                         className="justify-start focus:bg-neutral-800 focus:outline-2 focus:outline-white"
                       >
                         Profile
@@ -99,7 +108,6 @@ export function MenuScreen({
                       <Button
                         variant="multiplayer"
                         iconLeft={Gamepad}
-                        dividerLeft
                         className="justify-start focus:bg-neutral-800 focus:outline-2 focus:outline-white"
                       >
                         Race History
@@ -113,7 +121,6 @@ export function MenuScreen({
                       <Button
                         variant="danger-outlined"
                         iconLeft={LogOut}
-                        dividerLeft
                         disabled={!onLogout || loggingOut}
                         className="justify-start focus:bg-destructive/10 focus:outline-2 focus:outline-current"
                       >
@@ -148,7 +155,8 @@ export function MenuScreen({
           </>
         )}
         {/* Menu items */}
-        <div className="flex flex-col gap-3">
+        <p className="abyss-label">Choose Your Abyss</p>
+        <div className="menu-list flex flex-col">
           <MenuItem
             icon="long-drive-icon"
             title="Long Drive"
@@ -171,7 +179,7 @@ export function MenuScreen({
           />
         </div>
         {authenticated && account?.admin && onAdmin && (
-          <Button variant="multiplayer" onClick={onAdmin}>
+          <Button variant="multiplayer" className="compact-action" onClick={onAdmin}>
             Admin
           </Button>
         )}

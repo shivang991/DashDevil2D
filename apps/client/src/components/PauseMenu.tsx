@@ -19,14 +19,15 @@ export function PauseMenu({
       aria-label={race ? "Race menu" : "Game paused"}
       className="game-overlay absolute inset-0 z-30 flex overflow-auto bg-black/65 p-3"
     >
-      <div className="m-auto flex w-36 shrink-0 flex-col gap-2">
+      <div className="m-auto flex w-fit shrink-0 flex-col gap-2">
         <Button
           autoFocus={race}
-          className="min-h-11 bg-red-400 text-neutral-950 hover:bg-red-300"
+          variant="multiplayer"
+          className="compact-action min-h-11"
           onClick={onResume}
         >
           <Play aria-hidden="true" />
-          Resume
+          {race ? "Resume" : "Resume Game"}
         </Button>
         {children}
       </div>

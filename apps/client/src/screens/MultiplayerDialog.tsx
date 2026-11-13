@@ -32,7 +32,7 @@ export function MultiplayerDialog({
         className={`fixed inset-0 z-50 ${variant === "result" ? "bg-black/68" : "bg-black/80"}`}
       />
       <Dialog.Content
-        className={`fixed z-51 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[calc(100dvh_-_40px)] overflow-y-auto flex flex-col border text-neutral-50 ${variant === "result" ? "w-[min(480px,calc(100vw_-_28px))] gap-0 p-[clamp(28px,6vw,44px)] border-[#bcbab5] rounded-[18px] bg-[#101010] text-center" : "w-[min(440px,calc(100vw_-_40px))] gap-5 p-9 border-neutral-600 rounded-[20px] bg-neutral-950 [@media(max-width:520px)]:px-6 [@media(max-width:520px)]:pt-8 [@media(max-width:520px)]:pb-6"}`}
+        className={`stepped-panel fixed z-51 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 max-h-[calc(100dvh_-_40px)] overflow-y-auto flex flex-col border text-neutral-50 ${variant === "result" ? "result-panel w-[min(400px,calc(100vw_-_28px))] gap-0 p-[clamp(28px,6vw,44px)] border-[#bcbab5] rounded-[18px] bg-[#101010] text-center" : "w-[min(440px,calc(100vw_-_40px))] gap-5 p-9 border-neutral-600 rounded-[20px] bg-neutral-950 [@media(max-width:520px)]:px-6 [@media(max-width:520px)]:pt-8 [@media(max-width:520px)]:pb-6"}`}
         onEscapeKeyDown={(event) => {
           event.preventDefault();
           if (!event.repeat) onDismiss?.();
