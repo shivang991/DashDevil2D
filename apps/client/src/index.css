@@ -628,10 +628,18 @@ h6,
   .arcade-action,
   .compact-action,
   .chat-action,
-  .admin-back,
-  .admin-icon-button,
+  .admin-icon-button:not(.admin-close),
   .admin-button:not(:where(.admin-primary, .admin-destructive)),
-  [data-variant="multiplayer"]:not(:where(.account-trigger, .account-dropdown *, .room-admission *))
+  [data-variant="multiplayer"]:not(
+    :where(
+      .account-trigger,
+      .account-dropdown *,
+      .room-admission *,
+      .rounded-full,
+      .border-transparent,
+      .border-0
+    )
+  )
 ) {
   --dot-inset: 10px;
   padding-inline: 22px;
@@ -646,7 +654,7 @@ h6,
     left var(--dot-inset) center,
     right var(--dot-inset) center;
 }
-button:is(.arcade-icon, .admin-icon-button) {
+button:is(.arcade-icon, .admin-icon-button:not(.admin-close)) {
   --dot-inset: 3px;
   padding-inline: 0;
 }
@@ -654,10 +662,18 @@ button:is(.arcade-icon, .admin-icon-button) {
   .arcade-action,
   .compact-action,
   .chat-action,
-  .admin-back,
   .admin-button,
-  .admin-icon-button,
-  [data-variant="multiplayer"]:not(:where(.account-trigger, .account-dropdown *, .room-admission *)),
+  .admin-icon-button:not(.admin-close),
+  [data-variant="multiplayer"]:not(
+    :where(
+      .account-trigger,
+      .account-dropdown *,
+      .room-admission *,
+      .rounded-full,
+      .border-transparent,
+      .border-0
+    )
+  ),
   [data-slot="dialog-content"],
   .stepped-panel,
   .chat-panel,
@@ -685,10 +701,18 @@ button:is(.arcade-icon, .admin-icon-button) {
   .arcade-action,
   .compact-action,
   .chat-action,
-  .admin-back,
   .admin-button,
-  .admin-icon-button,
-  [data-variant="multiplayer"],
+  .admin-icon-button:not(.admin-close),
+  [data-variant="multiplayer"]:not(
+    :where(
+      .account-trigger,
+      .account-dropdown *,
+      .room-admission *,
+      .rounded-full,
+      .border-transparent,
+      .border-0
+    )
+  ),
   .mode-selector,
   .race-view canvas
 ):focus-visible {

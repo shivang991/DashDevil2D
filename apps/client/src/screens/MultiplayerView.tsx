@@ -306,7 +306,7 @@ export function MultiplayerView({
                 size="bare"
                 ref={backButton}
                 type="button"
-                className="arcade-action arcade-icon grid h-14 flex-[0_0_44px] place-items-center rounded-[12px] text-neutral-400 enabled:hover:bg-neutral-800 enabled:hover:text-neutral-50 [@media(max-width:520px)]:basis-9 [&_svg]:size-8 [&_svg]:stroke-[1.5]"
+                className="grid h-14 flex-[0_0_44px] place-items-center rounded-[12px] text-neutral-400 enabled:hover:bg-neutral-800 enabled:hover:text-neutral-50 [@media(max-width:520px)]:basis-9 [&_svg]:size-8 [&_svg]:stroke-[1.5]"
                 aria-label={inRoom ? "Leave" : "Back"}
                 disabled={!inRoom && pending}
                 onClick={inRoom ? requestLeave : onBack}

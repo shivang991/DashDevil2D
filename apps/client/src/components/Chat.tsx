@@ -465,7 +465,6 @@ function ChatPanel({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="arcade-action arcade-icon"
                   onClick={() => setPeer(undefined)}
                   aria-label="Back to conversations"
                 >

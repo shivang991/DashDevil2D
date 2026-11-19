@@ -124,7 +124,7 @@ export function LoginScreen({
         <Button
           disabled={busy}
           type="button"
-          variant={temporary ? "text" : "multiplayer"}
+          variant="text"
           onClick={() => {
             if (temporary)
               void onLogout().catch((failure: unknown) =>
