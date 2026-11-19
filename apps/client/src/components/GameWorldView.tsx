@@ -38,7 +38,7 @@ export function GameWorldView({
             <Button
               variant="ghost"
               size="icon"
-              className="size-11 rounded-[10px] text-neutral-300"
+              className="arcade-action arcade-icon size-11 rounded-[10px] text-neutral-300"
               onClick={onBack}
               aria-label="Back"
             >

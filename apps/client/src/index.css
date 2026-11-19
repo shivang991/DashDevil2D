@@ -421,16 +421,6 @@ select,
   clip-path: var(--stepped-corners);
   box-shadow: inset 0 0 0 1px #383838;
 }
-/* Focus is outside the silhouette, so remove clipping while keyboard focus is inside. */
-.compact-action:focus-visible,
-.mode-selector:focus-visible,
-.stepped-panel:has(:focus-visible),
-.account-dropdown:has(:focus-visible),
-.chat-panel textarea:focus-visible,
-.game-shell:has(:focus-visible),
-[data-racing="true"] > section:has(:focus-visible) {
-  clip-path: none;
-}
 .compact-action[data-slot] {
   position: relative;
   min-height: 40px;
@@ -448,24 +438,6 @@ select,
 }
 .home-screen .compact-action {
   width: 100%;
-}
-.compact-action::before,
-.compact-action::after {
-  content: "";
-  position: absolute;
-  top: calc(50% - 1px);
-  width: 2px;
-  height: 2px;
-  background: var(--quiet);
-  box-shadow:
-    0 -4px #606060,
-    0 4px #606060;
-}
-.compact-action::before {
-  left: 12px;
-}
-.compact-action::after {
-  right: 12px;
 }
 .mode-selector[data-slot] {
   display: flex;
@@ -594,24 +566,6 @@ select,
   margin-right: 6px;
   background: currentColor;
 }
-/* Draw the four inset step edges alongside the straight borders. */
-.stepped-panel,
-.mode-selector,
-.account-dropdown,
-.game-shell,
-.game-shell [class*="aspect-"],
-.room-code-control > div {
-  background-image:
-    linear-gradient(#383838, #383838), linear-gradient(#383838, #383838),
-    linear-gradient(#383838, #383838), linear-gradient(#383838, #383838);
-  background-size: 4px 1px;
-  background-repeat: no-repeat;
-  background-position:
-    left top 3px,
-    right top 3px,
-    left bottom 3px,
-    right bottom 3px;
-}
 @font-palette-values --dash-neutral {
   font-family: "Bitcount Ink Variable";
   override-colors:
@@ -667,4 +621,77 @@ h6,
 }
 .room-admission > div:last-child > button::after {
   color: #41413f;
+}
+
+/* Nine-slice artwork keeps each four-pixel corner intact at every control size. */
+:is(
+  .arcade-action,
+  .compact-action,
+  .chat-action,
+  .admin-back,
+  .admin-icon-button,
+  .admin-button:not(:where(.admin-primary, .admin-destructive)),
+  [data-variant="multiplayer"]:not(:where(.account-trigger, .account-dropdown *, .room-admission *))
+) {
+  --dot-inset: 10px;
+  padding-inline: 22px;
+  background-color: #171717;
+  /* Limit the dot columns to three marks each. */
+  background-repeat: no-repeat;
+  background-image:
+    repeating-linear-gradient(to bottom, #888 0 2px, transparent 2px 4px),
+    repeating-linear-gradient(to bottom, #888 0 2px, transparent 2px 4px);
+  background-size: 2px 10px;
+  background-position:
+    left var(--dot-inset) center,
+    right var(--dot-inset) center;
+}
+button:is(.arcade-icon, .admin-icon-button) {
+  --dot-inset: 3px;
+  padding-inline: 0;
+}
+:is(
+  .arcade-action,
+  .compact-action,
+  .chat-action,
+  .admin-back,
+  .admin-button,
+  .admin-icon-button,
+  [data-variant="multiplayer"]:not(:where(.account-trigger, .account-dropdown *, .room-admission *)),
+  [data-slot="dialog-content"],
+  .stepped-panel,
+  .chat-panel,
+  .chat-bubble,
+  .account-dropdown,
+  .admin-dialog,
+  .admin-drawer,
+  .admin-menu,
+  .admin-table-wrap,
+  .admin-credential,
+  .game-shell,
+  .game-shell [class*="aspect-"],
+  .race-view canvas,
+  [data-racing="true"] > section,
+  .mode-selector,
+  .room-code-control > div
+) {
+  border-radius: 0;
+  border-style: solid;
+  border-width: 1px;
+  border-image: url("./assets/stepped-frame.svg") 5 / 5px stretch;
+  clip-path: var(--stepped-corners);
+}
+:is(
+  .arcade-action,
+  .compact-action,
+  .chat-action,
+  .admin-back,
+  .admin-button,
+  .admin-icon-button,
+  [data-variant="multiplayer"],
+  .mode-selector,
+  .race-view canvas
+):focus-visible {
+  outline: 2px solid #f5f4ef;
+  outline-offset: -4px;
 }

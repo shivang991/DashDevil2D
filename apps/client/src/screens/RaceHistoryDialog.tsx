@@ -113,7 +113,7 @@ export function RaceHistoryDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {open === undefined && (
-        <DialogTrigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
+        <DialogTrigger className="arcade-action rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
           Race History
         </DialogTrigger>
       )}

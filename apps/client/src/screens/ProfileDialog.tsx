@@ -66,7 +66,7 @@ export function ProfileDialog({
       }}
     >
       {controlledOpen === undefined && (
-        <DialogTrigger className="rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
+        <DialogTrigger className="arcade-action rounded-lg border border-neutral-600 px-3 py-2 text-sm text-white">
           Profile
         </DialogTrigger>
       )}
