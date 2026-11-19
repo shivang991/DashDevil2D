@@ -30,7 +30,7 @@ export function LeaveConfirmation({
       onDismiss={onCancel}
     >
       {children}
-      <Button ref={cancel} variant="multiplayer" size="multiplayer" onClick={onCancel}>
+      <Button ref={cancel} variant="multiplayer" size="lg" onClick={onCancel}>
         Cancel
       </Button>
       <Button variant="text" onClick={onConfirm}>

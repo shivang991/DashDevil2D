@@ -10,7 +10,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         text: "min-h-11 self-center text-neutral-400 underline underline-offset-4 hover:text-neutral-50",
-        chat: "border border-blue-400 text-neutral-50 enabled:hover:bg-neutral-800",
+        chat: "chat-action border border-neutral-600 text-neutral-50 enabled:hover:bg-neutral-800",
         multiplayer:
           "border border-neutral-600 bg-neutral-900 text-neutral-50 enabled:hover:border-neutral-400 enabled:hover:bg-neutral-800",
         default: "bg-primary text-primary-foreground hover:bg-primary/90",

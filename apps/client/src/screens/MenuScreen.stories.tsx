@@ -23,7 +23,17 @@ const meta = {
 } satisfies Meta<typeof MenuScreen>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const Default: Story = {};
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText("Choose Your Abyss")).toBeVisible();
+    const row = canvas.getByRole("button", { name: /Long Drive/ });
+    await expect(row).toHaveStyle({ borderTopWidth: "0px" });
+  },
+};
+export const LongUsername: Story = {
+  args: { account: { ...account, username: "Driver_With_A_Very_Long_Name" } },
+};
 export const Navigation: Story = {
   play: async ({ canvasElement, args }) => {
     const canvas = within(canvasElement);

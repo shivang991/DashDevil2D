@@ -24,10 +24,10 @@ import {
 import { ChallengeInvitation } from "./ChallengeInvitation";
 
 const chatBadge =
-  "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[12px] bg-[#2563eb] px-[5px] font-chat text-[12px] text-white";
+  "inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-[12px] bg-neutral-700 px-[5px] font-chat text-[12px] text-white";
 const chatError = "p-3 font-chat text-[14px]";
 const chatField =
-  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-blue-400 w-full rounded-[8px] border border-neutral-600 bg-neutral-950 p-2.5 font-chat text-[16px]";
+  "focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-neutral-100 w-full rounded-[8px] border border-neutral-600 bg-neutral-950 p-2.5 font-chat text-[16px]";
 
 interface ChatBoundary {
   path: string;
@@ -92,7 +92,7 @@ export function ChatShell({ account, children }: { account?: Account; children: 
 export function Presence({ value }: { value: ChatPerson["presence"] }) {
   return (
     <span
-      className={`block font-chat text-[12px] ${value === "Offline" ? "text-neutral-400" : "text-[#60a5fa]"}`}
+      className={`presence-dot block font-chat text-[12px] ${value === "Offline" ? "text-neutral-400" : "text-neutral-200"}`}
     >
       {value}
     </span>
@@ -431,7 +431,7 @@ function ChatPanel({
       </span>
       {visible && expanded && (
         <aside
-          className="fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-[calc(var(--app-header-height,0px)_+_16px)] bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [@media(max-width:600px)]:inset-x-0 [@media(max-width:600px)]:bottom-0 [@media(max-width:600px)]:top-[var(--app-header-height,0px)] [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
+          className="chat-panel fixed right-4 z-60 border border-neutral-600 bg-neutral-900 text-[13px] text-neutral-50 top-[calc(var(--app-header-height,0px)_+_16px)] bottom-4 flex w-[380px] flex-col overflow-hidden rounded-[12px] shadow-[0_16px_48px_#0008] [@media(max-width:600px)]:inset-x-0 [@media(max-width:600px)]:bottom-0 [@media(max-width:600px)]:top-[var(--app-header-height,0px)] [@media(max-width:600px)]:w-full [@media(max-width:600px)]:rounded-none [@media(max-width:600px)]:border-0"
           aria-label="Chat"
           onKeyDown={(event) => {
             event.stopPropagation();
@@ -484,7 +484,7 @@ function ChatPanel({
                 {activeMessages.map((message) => (
                   <div
                     key={message.id}
-                    className={`mb-3 w-fit max-w-[90%] rounded-[10px] px-3 py-2.5 wrap-anywhere [&_p]:text-[15px] [&_p]:leading-[1.45] [&_p]:whitespace-pre-wrap [&_time]:mt-1.5 [&_time]:block [&_time]:text-[10px] [&_time]:text-neutral-400 ${message.sender === snapshot?.self ? "ml-auto mr-0 border border-[#3b82f6] bg-[#172235]" : "ml-0 mr-auto bg-neutral-800"}`}
+                    className={`chat-bubble mb-3 w-fit max-w-[90%] rounded-[10px] px-3 py-2.5 wrap-anywhere [&_p]:text-[15px] [&_p]:leading-[1.45] [&_p]:whitespace-pre-wrap [&_time]:mt-1.5 [&_time]:block [&_time]:text-[10px] [&_time]:text-neutral-400 ${message.sender === snapshot?.self ? "ml-auto mr-0 border border-neutral-600 bg-neutral-800" : "ml-0 mr-auto bg-neutral-800"}`}
                   >
                     {invitationsByID.get(message.id) ? (
                       <ChallengeInvitation
@@ -504,9 +504,6 @@ function ChatPanel({
                     ) : (
                       <p>{message.text}</p>
                     )}
-                    <time dateTime={new Date(message.createdAt).toISOString()}>
-                      {new Date(message.createdAt).toLocaleString()}
-                    </time>
                   </div>
                 ))}
                 <div ref={bottom} />

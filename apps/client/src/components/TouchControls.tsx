@@ -71,7 +71,7 @@ export function TouchControls({
             disabled={disabled}
             aria-label={control === 1 ? "Steer left" : control === 2 ? "Steer right" : "Accelerate"}
             aria-pressed={held.includes(control)}
-            className={`grid h-14 place-items-center rounded-[12px] border border-neutral-600 bg-neutral-900 text-neutral-50 touch-none [-webkit-touch-callout:none] aria-pressed:bg-neutral-200 aria-pressed:text-neutral-900 aria-pressed:border-white disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white [@media(max-height:450px)]:h-11 ${control === 3 ? "ml-auto w-[76px]" : "w-[60px]"}`}
+            className={`arcade-action arcade-icon grid h-14 place-items-center rounded-[12px] border border-neutral-600 bg-neutral-900 text-neutral-50 touch-none [-webkit-touch-callout:none] aria-pressed:bg-neutral-200 aria-pressed:text-neutral-900 aria-pressed:border-white disabled:opacity-35 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white [@media(max-height:450px)]:h-11 ${control === 3 ? "ml-auto w-[76px]" : "w-[60px]"}`}
             onContextMenu={(event) => event.preventDefault()}
             onPointerDown={(event) => {
               if (event.button !== 0 || disabled) return;

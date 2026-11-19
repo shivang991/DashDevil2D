@@ -43,7 +43,7 @@ export function Avatar({
   return (
     <span
       className={cn(
-        "inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-600 bg-neutral-800 text-white",
+        "avatar-initials inline-flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-neutral-600 bg-neutral-800 text-white",
         className,
       )}
       aria-label={`${username} avatar`}

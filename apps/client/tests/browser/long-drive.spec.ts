@@ -42,7 +42,7 @@ for (const viewport of [
       await pause.click();
       const menu = page.getByRole("region", { name: "Game paused", exact: true });
       await expect(menu).toBeVisible();
-      await expect(menu.getByRole("button")).toHaveText(["Resume", "Restart"]);
+      await expect(menu.getByRole("button")).toHaveText(["Resume Game"]);
       const sound = page.getByRole("button", { name: "Mute sound", exact: true });
       await sound.click();
       await expect(page.getByRole("button", { name: "Enable sound", exact: true })).toHaveAttribute(
@@ -56,14 +56,13 @@ for (const viewport of [
       await expect(canvas).toBeFocused();
       await page.keyboard.press("Space");
       await expect(menu).toBeVisible();
-      await menu.getByRole("button", { name: "Resume", exact: true }).click();
+      await menu.getByRole("button", { name: "Resume Game", exact: true }).click();
       await expect(canvas).toBeFocused();
       await page.evaluate(() => window.dispatchEvent(new Event("blur")));
       await expect(menu).toBeVisible();
       await page.evaluate(() => window.dispatchEvent(new Event("focus")));
-      await menu.getByRole("button", { name: "Restart", exact: true }).click();
-      await expect(page.getByRole("status", { name: "Countdown", exact: true })).toHaveText("3");
-      await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeDisabled();
+      await menu.getByRole("button", { name: "Resume Game", exact: true }).click();
+      await expect(menu).toHaveCount(0);
     } finally {
       await context.close();
     }
@@ -81,7 +80,7 @@ test("game over exposes restart and disables pause", async ({ page }) => {
   const result = page.getByRole("region", { name: "Game over", exact: true });
   await expect(result).toBeVisible();
   await expect(page.getByRole("button", { name: "Pause", exact: true })).toBeDisabled();
-  await expect(result.getByRole("button", { name: "Back to Menu", exact: true })).toBeVisible();
-  await result.getByRole("button", { name: "Restart", exact: true }).click();
+  await expect(result.getByRole("button")).toHaveText(["Restart Game"]);
+  await result.getByRole("button", { name: "Restart Game", exact: true }).click();
   await expect(page.getByRole("status", { name: "Countdown", exact: true })).toHaveText("3");
 });

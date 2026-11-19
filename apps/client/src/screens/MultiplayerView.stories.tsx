@@ -39,7 +39,20 @@ const meta = {
 } satisfies Meta<typeof MultiplayerView>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-export const Entry: Story = {};
+export const Entry: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(canvas.getByText("Be the malice or someone's victim")).toBeVisible();
+    await expect(canvas.getByText("Be #1 to finish a tormented track")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Drag Race" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(canvas.getByRole("button", { name: "Create Room" })).toHaveStyle({
+      borderTopWidth: "0px",
+    });
+  },
+};
 export const RoadRage: Story = { args: { mode: ModeRoadRage } };
 export const Loading: Story = { args: { state: undefined } };
 export const Joining: Story = { args: { state: { ...disconnected, pending: "Joining room" } } };

@@ -46,7 +46,7 @@ export function GameWorldView({
             </Button>
           )}
           <img
-            src={`${import.meta.env.BASE_URL}images/long-drive-logo.png`}
+            src={`${import.meta.env.BASE_URL}images/branding/dash-devil-icon.png`}
             alt=""
             width={36}
             height={36}
@@ -145,21 +145,15 @@ export function GameWorldView({
                 aria-label="Game over"
               >
                 <div className="m-auto flex shrink-0 flex-col items-center gap-3">
-                  <h2 className="font-heading text-3xl text-red-400">Game over</h2>
                   <p className="text-lg text-white">Score: {ui.score}</p>
                   <Button
-                    className="min-h-11 w-36 bg-red-400 text-neutral-950 hover:bg-red-300"
+                    variant="multiplayer"
+                    className="compact-action min-h-11"
                     onClick={() => command("reset")}
                   >
                     <RotateCcw aria-hidden="true" />
-                    Restart
+                    Restart Game
                   </Button>
-                  {onBack && (
-                    <Button variant="multiplayer" className="min-h-11 w-36" onClick={onBack}>
-                      <ChevronLeft aria-hidden="true" />
-                      Back to Menu
-                    </Button>
-                  )}
                 </div>
               </div>
             )}

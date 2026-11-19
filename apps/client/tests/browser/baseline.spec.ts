@@ -304,7 +304,7 @@ test("native sound control keeps Space behavior and clears held movement", async
   await page.clock.runFor(20);
   await expect(page.getByRole("button", { name: "Enable sound" })).toBeVisible();
   await expect(page.getByRole("region", { name: "Game paused", exact: true })).toBeVisible();
-  await page.getByRole("button", { name: "Resume", exact: true }).click();
+  await page.getByRole("button", { name: "Resume Game", exact: true }).click();
   await expect(page.locator("canvas")).toHaveAttribute("aria-description", "Cruising");
   await page.locator("canvas").click();
   await page.keyboard.down("w");

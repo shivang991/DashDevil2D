@@ -3,7 +3,6 @@ import {
   OutcomeResultAbandoned,
   OutcomeResultTie,
 } from "@dashdevil/contracts/protocol";
-import { Crown } from "lucide-react";
 import type { RacerIdentity } from "@dashdevil/contracts/protocol";
 import { Avatar } from "./Avatar";
 
@@ -34,16 +33,19 @@ export function RoundResult({
         aria-hidden="true"
       >
         {!neutral && (
-          <Crown
-            className="absolute top-px left-1/2 z-1 size-[55px] -translate-x-1/2 text-[#d9b968]"
+          <svg
+            viewBox="0 0 24 18"
+            className="absolute top-0 left-1/2 size-14 -translate-x-1/2 text-[#d9bc66]"
             fill="currentColor"
-            strokeWidth={1.5}
-          />
+            shapeRendering="crispEdges"
+          >
+            <path d="M0 2h4v4h4V0h8v6h4V2h4v12h-4v4H4v-4H0z" />
+          </svg>
         )}
         {seats.map((seat) => (
           <div
             key={seat}
-            className={`grid [place-items:end_center] overflow-hidden rounded-full border-2 border-[#d2d0ca] ${seat === 1 ? "bg-[#24513c]" : "bg-[#642d2b]"} ${neutral ? "absolute size-[130px] first:left-0 last:right-0" : "relative size-[142px]"}`}
+            className={`grid [place-items:end_center] overflow-hidden rounded-full border-2 border-[#d2d0ca] bg-[#242424] ${neutral ? "absolute size-[130px] first:left-0 last:right-0" : "relative size-[142px]"}`}
           >
             <Avatar
               className="h-full w-full border-0 bg-transparent text-[2.5rem]"
@@ -60,6 +62,17 @@ export function RoundResult({
       >
         {result}
       </p>
+      <ol aria-label="Finishing order" className="mt-6 w-full text-sm text-neutral-400">
+        {(neutral ? [0, 1] : [outcome.result, 1 - outcome.result]).map((seat, index) => (
+          <li key={seat} className="flex justify-between gap-3 py-2">
+            <span className="min-w-0 wrap-anywhere">
+              {!neutral && `${index + 1}. `}
+              {identities?.[seat]?.name ?? `Player_${seat + 1}`}
+            </span>
+            <span>{outcome.cars[seat]?.score ?? 0}</span>
+          </li>
+        ))}
+      </ol>
       <pre hidden data-testid="outcome-evidence">
         {JSON.stringify(outcome)}
       </pre>
