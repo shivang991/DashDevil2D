@@ -688,7 +688,7 @@ export function MultiplayerView({
               />
               <Button
                 variant="multiplayer"
-                size="multiplayer"
+                size="lg"
                 disabled={!state || !/^\d{4}$/.test(code)}
               >
                 Join Room
